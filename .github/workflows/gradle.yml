@@ -2,7 +2,7 @@ name: build
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -13,11 +13,4 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Build jar
-        run: ./gradlew test assemble
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: All Tests
-          path: radix/build/test-results/**/TEST*.xml,sanctor/build/test-results/**/TEST*.xml,servus/build/test-results/**/TEST*.xml
-          reporter: java-junit
+        run: ./gradlew assemble

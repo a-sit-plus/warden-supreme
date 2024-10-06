@@ -1,7 +1,12 @@
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.HttpClients
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree.Companion.test
+import java.net.Socket
+import java.net.URL
+import kotlin.concurrent.thread
 
 
 plugins {
@@ -57,8 +62,9 @@ android {
 
     sourceSets.forEach {
 
-        //TODO
-            it.manifest.srcFile("src/debug/AndroidManifest.xml")
+        //allow plain traffic and set permissions
+        if (it.name.lowercase().contains("test") || name.lowercase().contains("debug"))
+            it.manifest.srcFile("src/androidInstrumentedTest/AndroidManifest.xml")
     }
 
     dependencies {
@@ -94,6 +100,36 @@ android {
     }
 }
 
+
+val startSanctor = tasks.register<DefaultTask>("startSanctor") {
+    doLast {
+        if (!kotlin.runCatching { Socket("localhost", 8080) }.fold(onSuccess = { true }, onFailure = { false }))
+            logger.lifecycle("Starting Sanctor")
+        else {
+            logger.lifecycle("Shutting down Sanctor")
+            runCatching {
+                HttpClients.createDefault().let { client ->
+                  logger.lifecycle("Sanctor response: ${client.execute(HttpGet("http://localhost:8080/shutdown")).statusLine.statusCode}")
+                }
+            }.getOrElse { logger.lifecycle("Sanctor not running"); it.printStackTrace()  }
+
+        }
+       thread(start = true, isDaemon = false) {
+            exec {
+                workingDir = rootDir
+                executable = "./gradlew"
+                args = listOf(":sanctor:jvmTest")
+            }
+        }
+
+        logger.lifecycle("Waiting for Sanctor to start")
+        while (kotlin.runCatching { Socket("localhost", 8080) }.fold(onSuccess = { true }, onFailure = { false })) {
+            Thread.sleep(1000)
+            logger.lifecycle("Waiting for Sanctor to start")
+        }
+        logger.lifecycle("Sanctor started")
+    }
+}
 
 val javadocJar = setupDokka(
     baseUrl = "https://github.com/a-sit-plus/veritas/tree/main/",

@@ -71,7 +71,13 @@ class TestEnv : FreeSpec({
             install(ContentNegotiation) {
                 json()
             }
+
             routing {
+                get("/shutdown") {
+                    call.respondText("Bye!")
+                    System.exit(0)
+                }
+
                 get(ENDPOINT_CHALLENGE) {
 
                     call.respondText(Json.encodeToString(sanctor.issueChallenge(NONCE, 10.minutes, ENDPOINT_ATTEST, timeOffset = -5.minutes)), contentType = ContentType.Application.Json)
