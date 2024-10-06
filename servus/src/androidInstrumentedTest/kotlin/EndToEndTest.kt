@@ -18,8 +18,6 @@ class EndToEndTest : FreeSpec({
     val ENDPOINT_CHALLENGE = "http://10.0.2.2:8080/api/v1/challenge"
     val ENDPOINT_SHUTDOWN = "http://10.0.2.2:8080/shutdown"
 
-
-
     "OK" - {
         val alias = "ALIAS"
         PlatformSigningProvider.deleteSigningKey(alias)

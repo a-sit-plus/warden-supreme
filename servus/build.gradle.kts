@@ -60,6 +60,22 @@ android {
     }
     testBuildType = "debug"
 
+    //just for instrumented tests
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("keystore.p12")
+            storePassword = "123456"
+            keyAlias = "key0"
+            keyPassword = "123456"
+        }
+        create("release") {
+            storeFile = file("keystore.p12")
+            storePassword = "123456"
+            keyAlias = "key0"
+            keyPassword = "123456"
+        }
+    }
+
     sourceSets.forEach {
 
         //allow plain traffic and set permissions

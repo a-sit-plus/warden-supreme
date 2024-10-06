@@ -4,12 +4,15 @@ import at.asitplus.KmmResult
 import at.asitplus.attestation.AttestationException
 import at.asitplus.attestation.Warden
 import at.asitplus.catching
+import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.getJCASignatureInstance
 import at.asitplus.signum.indispensable.jcaSignatureBytes
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.toJcaCertificate
 import at.asitplus.veritatis.AttestationResponse.Failure
+import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.datetime.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -47,6 +50,7 @@ class Sanctor(
      *
      * Should any verification step fail, an [AttestationResponse.Failure] is returned.
      */
+    @OptIn(ExperimentalStdlibApi::class)
     suspend fun verifyKeyAttestation(
         csr: Pkcs10CertificationRequest,
         certificateIssuer: CertificateIssuer
@@ -58,6 +62,10 @@ class Sanctor(
         val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID)
             .getOrElse { return Failure(Failure.Type.CONTENT, it.message)}
 
+        val record= ParsedAttestationRecord.createParsedAttestationRecord((attestationStatement as AndroidKeystoreAttestation).certificateChain.map { it.toJcaCertificate().getOrThrow() })
+        println(record.softwareEnforced().attestationApplicationId().get().signatureDigests().forEach {
+            println(it.toByteArray().toHexString())
+        })
         val result = warden.verifyKeyAttestation(attestationStatement, nonce)
         return result.fold(
             onError = {

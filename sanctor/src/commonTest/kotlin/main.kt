@@ -50,8 +50,8 @@ class TestEnv : FreeSpec({
                     AndroidAttestationConfiguration.AppData(
                         "at.asitplus.veritatis.servus.test",
                         listOf(
-                            "941A4513A3027563D3A6EA48EEE85BA45EB9F69CEEA19EF0EBB17F100BFC8878".hexToByteArray(
-                                HexFormat.UpperCase
+                            "a3e55ba9457de2900fe86303a5d556c496b691afff2c0dd50488bed3e400cc6b".hexToByteArray(
+                                HexFormat.Default
                             )
                         )
                     )
