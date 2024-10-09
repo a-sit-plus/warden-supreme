@@ -23,7 +23,6 @@ import kotlinx.datetime.Clock
  *
  * Based on a _Ktor_ [client]. Automatically installs JSON content negotiation.
  */
-// TODO Why is this not used, e.g. in a test?
 class Servus(client: HttpClient) {
     private val client = client.config {
         install(ContentNegotiation) {
@@ -103,6 +102,5 @@ private fun Attestation.proofAttribute(
 /**
  * convenience shorthand to parse the attestation POST endpoint as a URL
  */
-// TODO Not used
 val AttestationChallenge.attestationEndpointUrl: Url get() = Url(attestationEndpoint);
 

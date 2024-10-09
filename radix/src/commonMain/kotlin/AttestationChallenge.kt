@@ -61,7 +61,7 @@ constructor(
     /**
      * The endpoint to post the CSR containing the attestation proof to
      */
-    val attestationEndpoint: String, // TODO not used
+    val attestationEndpoint: String,
 
     /**
      * The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
