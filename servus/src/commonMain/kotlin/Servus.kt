@@ -2,6 +2,7 @@ package at.asitplus.veritatis
 
 import at.asitplus.KmmResult
 import at.asitplus.catching
+import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.KnownOIDs
 import at.asitplus.signum.indispensable.jsonEncoded
@@ -35,9 +36,8 @@ class Servus(client: HttpClient) {
      */
     suspend fun getChallenge(endpoint: Url) = catching {
         client.get(endpoint).body<AttestationChallenge>().also {
-            if (it.validUntil?.let { it < Clock.System.now() } == true || it.issuedAt > Clock.System.now()) throw IllegalStateException(
-                "System time off!"
-            )
+            if (it.validUntil?.let { it < Clock.System.now() } == true || it.issuedAt > Clock.System.now())
+                throw IllegalStateException("System time off!")
         }
     }
 
@@ -80,17 +80,24 @@ suspend fun Signer.Attestable<*>.createCsr(
     attestation?.let { attestation ->
         sign(
             TbsCertificationRequest(
-                subjectName = subjectName.map { name ->
-                    RelativeDistinguishedName(name.attrsAndValues.filterNot { value -> value.oid == KnownOIDs.serialNumber })
-                } + RelativeDistinguishedName(challenge.getRdnSerialNumber()),
+                subjectName = subjectName.withoutSerialNumber() + RelativeDistinguishedName(challenge.getRdnSerialNumber()),
                 publicKey = publicKey,
-                attributes = additionalAttributes + Pkcs10CertificationRequestAttribute(
-                    challenge.proofOID,
-                    Asn1String.UTF8(attestation.jsonEncoded).encodeToTlv()
-                ),
+                attributes = additionalAttributes + attestation.proofAttribute(challenge),
                 extensions = additionalExtensions
-            ))
+            )
+        )
     } ?: KmmResult.failure(IllegalStateException("No attestation statement present instance found"))
+
+private fun List<RelativeDistinguishedName>.withoutSerialNumber() = map {
+    RelativeDistinguishedName(it.attrsAndValues.filterNot { value -> value.oid == KnownOIDs.serialNumber })
+}
+
+private fun Attestation.proofAttribute(
+    challenge: AttestationChallenge
+) = Pkcs10CertificationRequestAttribute(
+    challenge.proofOID,
+    Asn1String.UTF8(jsonEncoded).encodeToTlv()
+)
 
 /**
  * convenience shorthand to parse the attestation POST endpoint as a URL

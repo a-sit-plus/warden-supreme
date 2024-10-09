@@ -4,15 +4,12 @@ import at.asitplus.KmmResult
 import at.asitplus.attestation.AttestationException
 import at.asitplus.attestation.Warden
 import at.asitplus.catching
-import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.getJCASignatureInstance
 import at.asitplus.signum.indispensable.jcaSignatureBytes
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.indispensable.toJcaCertificate
 import at.asitplus.veritatis.AttestationResponse.Failure
-import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.datetime.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -35,8 +32,7 @@ class Sanctor(
         validity: Duration,
         postEndpoint: String,
         timeOffset: Duration = 5.minutes
-    ) =
-        AttestationChallenge(issuedAt = Clock.System.now() +timeOffset, validity, nonce, postEndpoint, attestationProofOID)
+    ) = AttestationChallenge(Clock.System.now() + timeOffset, validity, nonce, postEndpoint, attestationProofOID)
 
     /**
      * verifies the received CSR:
@@ -50,27 +46,23 @@ class Sanctor(
      *
      * Should any verification step fail, an [AttestationResponse.Failure] is returned.
      */
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun verifyKeyAttestation(
         csr: Pkcs10CertificationRequest,
         certificateIssuer: CertificateIssuer
     ): AttestationResponse {
-        val nonce = csr.tbsCsr.nonce.getOrElse { return Failure(Failure.Type.CONTENT, it.message) }
+        val nonce = csr.tbsCsr.nonce
+            .getOrElse { return Failure(Failure.Type.CONTENT, it.message) }
 
-        if (!nonceValidator.invoke(nonce)) return Failure(Failure.Type.CONTENT, "Invalid nonce")
+        if (!nonceValidator.invoke(nonce))
+            return Failure(Failure.Type.CONTENT, "Invalid nonce")
 
         val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID)
-            .getOrElse { return Failure(Failure.Type.CONTENT, it.message)}
+            .getOrElse { return Failure(Failure.Type.CONTENT, it.message) }
 
-        val record= ParsedAttestationRecord.createParsedAttestationRecord((attestationStatement as AndroidKeystoreAttestation).certificateChain.map { it.toJcaCertificate().getOrThrow() })
-        println(record.softwareEnforced().attestationApplicationId().get().signatureDigests().forEach {
-            println(it.toByteArray().toHexString())
-        })
-        val result = warden.verifyKeyAttestation(attestationStatement, nonce)
-        return result.fold(
+        return warden.verifyKeyAttestation(attestationStatement, nonce).fold(
             onError = {
                 it.cause?.printStackTrace()
-                when (it.cause)  {
+                when (it.cause) {
                     null, is AttestationException.Content -> Failure(Failure.Type.CONTENT, it.explanation)
                     is AttestationException.Certificate.Time -> Failure(Failure.Type.TIME, it.explanation)
                     is AttestationException.Certificate.Trust -> Failure(Failure.Type.TRUST, it.explanation)
@@ -81,7 +73,6 @@ class Sanctor(
                 val signature = csr.signatureAlgorithm.getJCASignatureInstance().getOrElse {
                     return Failure(Failure.Type.INTERNAL, it.message)
                 }
-
                 catching {
                     signature.initVerify(pubKey)
                     if (signature.verify(csr.signature.jcaSignatureBytes))

@@ -11,6 +11,7 @@ import at.asitplus.signum.indispensable.asn1.encoding.asAsn1String
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToString
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
+import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import io.matthewnelson.encoding.base16.Base16
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
@@ -98,9 +99,7 @@ constructor(
      * Encapsulates the nonce encoded into a [KnownOIDs.serialNumber] RDN component for easier parsing
      */
     fun getRdnSerialNumber(): AttributeTypeAndValue = AttributeTypeAndValue.Other(
-        KnownOIDs.serialNumber, Asn1String.Printable(
-            nonce.encodeToString(Base16)
-        )
+        KnownOIDs.serialNumber, Asn1String.Printable(nonce.encodeToString(Base16))
     )
 
     override fun equals(other: Any?): Boolean {
@@ -155,11 +154,16 @@ fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): K
  */
 val TbsCertificationRequest.nonce: KmmResult<ByteArray>
     get() = catching {
-        val noncesRecovered =
-            subjectName.mapNotNull { name -> name.attrsAndValues.find { attributeTypeAndValue -> attributeTypeAndValue.oid == KnownOIDs.serialNumber } }
-        if (noncesRecovered.isEmpty()) throw Asn1StructuralException("No nonce present")
-        else if (noncesRecovered.size != 1) throw Asn1StructuralException("More than one nonce present!")
+        val noncesRecovered = subjectName
+            .mapNotNull { name -> name.findSerialNumber() }
+        if (noncesRecovered.isEmpty())
+            throw Asn1StructuralException("No nonce present")
+        else if (noncesRecovered.size != 1)
+            throw Asn1StructuralException("More than one nonce present!")
         noncesRecovered.first().value.asPrimitive().decodeToString().decodeToByteArray(Base16)
     }
+
+private fun RelativeDistinguishedName.findSerialNumber() =
+    attrsAndValues.find { it.oid == KnownOIDs.serialNumber }
 
 

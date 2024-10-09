@@ -4,3 +4,4 @@ docs/
 build
 .idea
 local.properties
+.kotlin/

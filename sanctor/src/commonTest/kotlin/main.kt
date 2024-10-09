@@ -1,13 +1,11 @@
+import at.asitplus.KmmResult
 import at.asitplus.attestation.IOSAttestationConfiguration
 import at.asitplus.attestation.Warden
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
-import at.asitplus.signum.indispensable.pki.TbsCertificate
+import at.asitplus.signum.indispensable.pki.*
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
@@ -50,9 +48,8 @@ class TestEnv : FreeSpec({
                     AndroidAttestationConfiguration.AppData(
                         "at.asitplus.veritatis.servus.test",
                         listOf(
-                            "a3e55ba9457de2900fe86303a5d556c496b691afff2c0dd50488bed3e400cc6b".hexToByteArray(
-                                HexFormat.Default
-                            )
+                            "a3e55ba9457de2900fe86303a5d556c496b691afff2c0dd50488bed3e400cc6b"
+                                .hexToByteArray(HexFormat.Default)
                         )
                     )
                 ).enableSoftwareAttestation().disableHardwareAttestation().build(),
@@ -79,39 +76,20 @@ class TestEnv : FreeSpec({
                 }
 
                 get(ENDPOINT_CHALLENGE) {
-
-                    call.respondText(Json.encodeToString(sanctor.issueChallenge(NONCE, 10.minutes, ENDPOINT_ATTEST, timeOffset = -5.minutes)), contentType = ContentType.Application.Json)
+                    call.respondText(
+                        Json.encodeToString(
+                            sanctor.issueChallenge(
+                                NONCE,
+                                10.minutes,
+                                ENDPOINT_ATTEST,
+                                timeOffset = -5.minutes
+                            )
+                        ), contentType = ContentType.Application.Json
+                    )
                 }
                 post(PATH_ATTEST) {
-                    val resp =
-                        sanctor.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())) { csr ->
-                            Signer.Ephemeral {
-                                ec { }
-                            }.getOrThrow().let { signer ->
-                                runBlocking {
-                                    signer.sign(
-                                        TbsCertificate(
-                                            serialNumber = Random.nextBytes(32),
-                                            publicKey = signer.publicKey,
-                                            signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
-                                                .getOrThrow(),
-                                            validFrom = Asn1Time(Clock.System.now()),
-                                            validUntil = Asn1Time(Clock.System.now() + 10.days),
-                                            issuerName = listOf(
-                                                RelativeDistinguishedName(
-                                                    AttributeTypeAndValue.CommonName(
-                                                        Asn1String.UTF8(
-                                                            "SANCTOR"
-                                                        )
-                                                    )
-                                                )
-                                            ),
-                                            subjectName = csr.tbsCsr.subjectName,
-                                        )
-                                    ).map { listOf(it) }
-                                }
-                            }
-                        }
+                    val requestBody = Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())
+                    val resp = sanctor.verifyKeyAttestation(requestBody, issueCertificate())
 
                     call.respondText(Json.encodeToString(resp), contentType = ContentType.Application.Json)
                 }
@@ -119,3 +97,30 @@ class TestEnv : FreeSpec({
         }.start(wait = true)
     }
 })
+
+fun issueCertificate() = { csr: Pkcs10CertificationRequest ->
+    Signer.Ephemeral {
+        ec { }
+    }.getOrThrow().let { signer ->
+        runBlocking {
+            signer.sign(csr.toTbsCertificate(signer))
+                .map { listOf(it) }
+        }
+    }
+}
+
+private fun Pkcs10CertificationRequest.toTbsCertificate(
+    signer: Signer
+) = TbsCertificate(
+    serialNumber = Random.nextBytes(32),
+    publicKey = signer.publicKey,
+    signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
+    validFrom = Asn1Time(Clock.System.now()),
+    validUntil = Asn1Time(Clock.System.now() + 10.days),
+    issuerName = listOf(
+        RelativeDistinguishedName(
+            AttributeTypeAndValue.CommonName(Asn1String.UTF8("SANCTOR"))
+        )
+    ),
+    subjectName = tbsCsr.subjectName,
+)
