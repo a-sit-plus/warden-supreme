@@ -42,6 +42,7 @@ constructor(
      * This is not considered sensible information, as clocks must be in sync anyhow.
      */
     @Serializable(with = InstantIso8601Serializer::class)
+    // TODO Why is this not checked at the server side?
     val issuedAt: Instant,
 
     /**
@@ -57,11 +58,10 @@ constructor(
     @Serializable(with = ByteArrayBase64UrlSerializer::class)
     val nonce: ByteArray,
 
-
     /**
      * The endpoint to post the CSR containing the attestation proof to
      */
-    val attestationEndpoint: String,
+    val attestationEndpoint: String, // TODO not used
 
     /**
      * The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
@@ -93,6 +93,7 @@ constructor(
     /**
      * Lazily-evaluated property
      */
+    // TODO Why is this not checked at the server side?
     val validUntil: Instant? by lazy { validity?.let { issuedAt + it } ?: null }
 
     /**
@@ -134,6 +135,7 @@ object DurationWholeSecondsSerializer : KSerializer<Duration> {
 /**
  * Tries to extract an attestation statement from a TBS CSR based on the `proofOID` specified in [challenge]
  */
+// TODO not used, where does this get read again?
 fun TbsCertificationRequest.attestationStatementForChallenge(challenge: AttestationChallenge): KmmResult<Attestation> =
     attestationStatementForOid(challenge.proofOID)
 
