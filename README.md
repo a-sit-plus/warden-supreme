@@ -18,14 +18,6 @@ External contributions are greatly appreciated!
 Just be sure to observe the contribution guidelines (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ---
-<p align="center">
-This project has received funding from the European Union’s Horizon 2020 research and innovation
-programme under grant agreement No 959072.
-</p>
-<p align="center">
-<img src="eu.svg" alt="EU flag">
-</p>
-
 
 <p align="center">
 The Apache License does not apply to the logos, (including the A-SIT logo) and the project/module name(s), as these are the sole property of
