@@ -1,4 +1,4 @@
-rootProject.name = "VERITAS"
+rootProject.name = "WARDEN Supreme"
 pluginManagement {
     repositories {
         google()
@@ -12,6 +12,6 @@ pluginManagement {
     }
 }
 
-include("radix")
-include("servus")
-include("sanctor")
+include("common")
+include("client")
+include("verifier")

@@ -1,4 +1,4 @@
-package at.asitplus.veritatis
+package at.asitplus.attestation.supreme
 
 import at.asitplus.signum.indispensable.io.X509CertificateBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.X509Certificate

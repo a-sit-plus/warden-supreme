@@ -1,4 +1,4 @@
-package at.asitplus.veritatis
+package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
 import at.asitplus.catching
@@ -17,12 +17,12 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.datetime.Clock
 
 /**
- * Servus Veritatis - "Servant of Truth". Mobile client, fetching attestation challenges and posting CSRs containing
+ * Mobile client, fetching attestation challenges and posting CSRs containing
  * attestation statements to an attestation verification endpoint.
  *
  * Based on a _Ktor_ [client]. Automatically installs JSON content negotiation.
  */
-class Servus(client: HttpClient) {
+class AttestationClient(client: HttpClient) {
     private val client = client.config {
         install(ContentNegotiation) {
             json()

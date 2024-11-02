@@ -5,7 +5,6 @@ import org.apache.http.impl.client.HttpClients
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree.Companion.test
 import java.net.Socket
-import java.net.URL
 import kotlin.concurrent.thread
 
 
@@ -19,7 +18,7 @@ plugins {
     id("at.asitplus.gradle.conventions")
 }
 
-group = "at.asitplus.veritatis"
+group = "at.asitplus.wardensupreme"
 val artifactVersion: String by extra
 version = artifactVersion
 
@@ -40,7 +39,7 @@ kotlin {
         }
 
         commonMain.dependencies {
-            api(project(":radix"))
+            api(project(":common"))
             implementation(ktor("client-core"))
             api(ktor("client-content-negotiation"))
             api(ktor("client-encoding"))
@@ -52,7 +51,7 @@ kotlin {
 
 
 android {
-    namespace = "at.asitplus.veritatis.servus"
+    namespace = "at.asitplus.warden.supreme.client"
     compileSdk = 34
     defaultConfig {
         minSdk = 30
@@ -103,7 +102,7 @@ android {
     }
 
     testOptions {
-        targetSdk=30
+        targetSdk = 30
         managedDevices {
             localDevices {
                 create("pixel2api33") {
@@ -117,38 +116,38 @@ android {
 }
 
 
-val startSanctor = tasks.register<DefaultTask>("startSanctor") {
+val startVerifier = tasks.register<DefaultTask>("startVerifier") {
     doLast {
         if (!kotlin.runCatching { Socket("localhost", 8080) }.fold(onSuccess = { true }, onFailure = { false }))
-            logger.lifecycle("Starting Sanctor")
+            logger.lifecycle("Starting Verifier")
         else {
-            logger.lifecycle("Shutting down Sanctor")
+            logger.lifecycle("Shutting down Verifier")
             runCatching {
                 HttpClients.createDefault().let { client ->
-                  logger.lifecycle("Sanctor response: ${client.execute(HttpGet("http://localhost:8080/shutdown")).statusLine.statusCode}")
+                    logger.lifecycle("Verifier response: ${client.execute(HttpGet("http://localhost:8080/shutdown")).statusLine.statusCode}")
                 }
-            }.getOrElse { logger.lifecycle("Sanctor not running"); it.printStackTrace()  }
+            }.getOrElse { logger.lifecycle("Verifier not running"); it.printStackTrace() }
 
         }
-       thread(start = true, isDaemon = false) {
+        thread(start = true, isDaemon = false) {
             exec {
                 workingDir = rootDir
                 executable = "./gradlew"
-                args = listOf(":sanctor:jvmTest")
+                args = listOf(":verifier:jvmTest")
             }
         }
 
-        logger.lifecycle("Waiting for Sanctor to start")
+        logger.lifecycle("Waiting for Verifier to start")
         while (kotlin.runCatching { Socket("localhost", 8080) }.fold(onSuccess = { true }, onFailure = { false })) {
             Thread.sleep(1000)
-            logger.lifecycle("Waiting for Sanctor to start")
+            logger.lifecycle("Waiting for Verifier to start")
         }
-        logger.lifecycle("Sanctor started")
+        logger.lifecycle("Verifier started")
     }
 }
 
 val javadocJar = setupDokka(
-    baseUrl = "https://github.com/a-sit-plus/veritas/tree/main/",
+    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/",
     multiModuleDoc = true
 )
 
@@ -157,9 +156,9 @@ publishing {
         withType<MavenPublication> {
             artifact(javadocJar)
             pom {
-                name.set("Servus Veritatis")
-                description.set("Attestation client; part of the VERITAS integrated key attestation suite")
-                url.set("https://github.com/a-sit-plus/veritas")
+                name.set("WARDEN Supreme Client")
+                description.set("Attestation mobile client; part of the WARDEN Supreme integrated key attestation suite")
+                url.set("https://github.com/a-sit-plus/warden-supreme")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
@@ -179,9 +178,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:git@github.com:a-sit-plus/veritas.git")
-                    developerConnection.set("scm:git:git@github.com:a-sit-plus/veritas.git")
-                    url.set("https://github.com/a-sit-plus/veritas")
+                    connection.set("scm:git:git@github.com:a-sit-plus/warden-supreme.git")
+                    developerConnection.set("scm:git:git@github.com:a-sit-plus/warden-supreme.git")
+                    url.set("https://github.com/a-sit-plus/warden-supreme")
                 }
             }
         }

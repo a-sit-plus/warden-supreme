@@ -1,6 +1,6 @@
 <div align="center">
 
-![VERITAS](veritas.png)
+![WARDEN Supreme](warden-supreme.png)
 
 # Integrated Key Attestation Suite
 

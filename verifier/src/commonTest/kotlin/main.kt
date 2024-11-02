@@ -1,3 +1,5 @@
+package at.asitplus.attestation.supreme
+
 import at.asitplus.attestation.IOSAttestationConfiguration
 import at.asitplus.attestation.Warden
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
@@ -11,7 +13,6 @@ import at.asitplus.signum.indispensable.pki.TbsCertificate
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
-import at.asitplus.veritatis.Sanctor
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.FreeSpec
 import io.ktor.http.*
@@ -44,11 +45,11 @@ class TestEnv : FreeSpec({
         val PROOF_OID = ObjectIdentifier("2.25.123456789")
         val NONCE = Random.nextBytes(16)
 
-        val sanctor = Sanctor(
+        val attestationValidator = AttestationValidator(
             Warden(
                 AndroidAttestationConfiguration.Builder(
                     AndroidAttestationConfiguration.AppData(
-                        "at.asitplus.veritatis.servus.test",
+                        "at.asitplus.attestation.supreme.client.test", //automated tests
                         listOf(
                             "a3e55ba9457de2900fe86303a5d556c496b691afff2c0dd50488bed3e400cc6b".hexToByteArray(
                                 HexFormat.Default
@@ -59,10 +60,10 @@ class TestEnv : FreeSpec({
                 IOSAttestationConfiguration(
                     IOSAttestationConfiguration.AppData(
                         "9CYHJNG644",
-                        "at.asitplus.signumtest.iosApp",
+                        "at.asitplus.signumtest.iosApp", //to test with real app from ios
                         sandbox = true
                     )
-                ), Clock.System, verificationTimeOffset = 5.minutes
+                ), Clock.System, verificationTimeOffset = 3.minutes
             ),
             attestationProofOID = PROOF_OID,
         ) { it.contentEquals(NONCE) }
@@ -80,11 +81,11 @@ class TestEnv : FreeSpec({
 
                 get(ENDPOINT_CHALLENGE) {
 
-                    call.respondText(Json.encodeToString(sanctor.issueChallenge(NONCE, 10.minutes, ENDPOINT_ATTEST, timeOffset = -5.minutes)), contentType = ContentType.Application.Json)
+                    call.respondText(Json.encodeToString(attestationValidator.issueChallenge(NONCE, 10.minutes, ENDPOINT_ATTEST, timeOffset = -5.minutes)), contentType = ContentType.Application.Json)
                 }
                 post(PATH_ATTEST) {
                     val resp =
-                        sanctor.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())) { csr ->
+                        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())) { csr ->
                             Signer.Ephemeral {
                                 ec { }
                             }.getOrThrow().let { signer ->
@@ -101,7 +102,7 @@ class TestEnv : FreeSpec({
                                                 RelativeDistinguishedName(
                                                     AttributeTypeAndValue.CommonName(
                                                         Asn1String.UTF8(
-                                                            "SANCTOR"
+                                                            "WARDEN Supreme"
                                                         )
                                                     )
                                                 )

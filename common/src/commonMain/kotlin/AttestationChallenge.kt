@@ -1,4 +1,4 @@
-package at.asitplus.veritatis
+package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
 import at.asitplus.catching

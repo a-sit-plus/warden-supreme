@@ -1,7 +1,10 @@
-import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.signum.supreme.sign.Signer
-import at.asitplus.veritatis.*
+import at.asitplus.attestation.supreme.AttestationChallenge
+import at.asitplus.attestation.supreme.AttestationClient
+import at.asitplus.attestation.supreme.AttestationResponse
+import at.asitplus.attestation.supreme.attestationEndpointUrl
+import at.asitplus.attestation.supreme.createCsr
 import br.com.colman.kotest.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -21,15 +24,15 @@ class EndToEndTest : FreeSpec({
     "OK" - {
         val alias = "ALIAS"
         PlatformSigningProvider.deleteSigningKey(alias)
-        val servus = Servus(HttpClient())
+        val client = AttestationClient(HttpClient())
         lateinit var challenge: AttestationChallenge
-        "GET challange" {
-            val resp = servus.getChallenge(Url(ENDPOINT_CHALLENGE))
+        "GET challenge" {
+            val resp = client.getChallenge(Url(ENDPOINT_CHALLENGE))
             resp.isSuccess shouldBe true
             challenge = resp.getOrThrow()
         }
 
-        lateinit var signer: Signer.Attestable<AndroidKeystoreAttestation>
+        lateinit var signer: Signer.Attestable<*>
 
         "Create Signer" {
             signer = PlatformSigningProvider.createSigningKey(alias) {
@@ -39,12 +42,12 @@ class EndToEndTest : FreeSpec({
                         this.challenge = challenge.nonce
                     }
                 }
-            }.getOrThrow() as Signer.Attestable<AndroidKeystoreAttestation>
+            }.getOrThrow()
         }
 
         "POST attestation" {
             val csr = signer.createCsr(challenge).getOrThrow()
-            val result = servus.attest(csr, challenge.attestationEndpointUrl)
+            val result = client.attest(csr, challenge.attestationEndpointUrl)
             result.shouldBeInstanceOf<AttestationResponse.Success>()
         }
     }

@@ -9,7 +9,7 @@ plugins {
     id("at.asitplus.gradle.conventions")
 }
 
-group = "at.asitplus.veritatis"
+group = "at.asitplus.wardensupreme"
 val artifactVersion: String by extra
 version = artifactVersion
 
@@ -33,18 +33,17 @@ kotlin {
 
 
 val javadocJar = setupDokka(
-    baseUrl = "https://github.com/a-sit-plus/veritas/tree/main/",
+    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/",
     multiModuleDoc = true
 )
 
 publishing {
     publications {
         withType<MavenPublication> {
-            if (this.name != "relocation") artifact(javadocJar)
             pom {
-                name.set("Radix Veritatis")
-                description.set("Attestation datatypes and utilities; part of the VERITAS integrated key attestation suite")
-                url.set("https://github.com/a-sit-plus/veritas")
+                name.set("Warden Supreme Commons")
+                description.set("Attestation datatypes and utilities; part of the WARDEN Supreme integrated key attestation suite")
+                url.set("https://github.com/a-sit-plus/warden-supreme")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
@@ -64,9 +63,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:git@github.com:a-sit-plus/veritas.git")
-                    developerConnection.set("scm:git:git@github.com:a-sit-plus/veritas.git")
-                    url.set("https://github.com/a-sit-plus/veritas")
+                    connection.set("scm:git:git@github.com:a-sit-plus/warden-supreme.git")
+                    developerConnection.set("scm:git:git@github.com:a-sit-plus/warden-supreme.git")
+                    url.set("https://github.com/a-sit-plus/warden-supreme")
                 }
             }
         }

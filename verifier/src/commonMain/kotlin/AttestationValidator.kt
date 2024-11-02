@@ -1,4 +1,4 @@
-package at.asitplus.veritatis
+package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
 import at.asitplus.attestation.AttestationException
@@ -11,17 +11,18 @@ import at.asitplus.signum.indispensable.jcaSignatureBytes
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toJcaCertificate
-import at.asitplus.veritatis.AttestationResponse.Failure
+import at.asitplus.attestation.supreme.AttestationResponse.Failure
+
 import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.datetime.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Sanctor Veritatis - "Eanctor of Truth". Verifies attestation statements and issues certificates on success.
+ * Verifies attestation statements and issues certificates on success.
  * Expects a preconfigured [Warden] instance and an OID to be used in a CSR to convey an attestation statement.
  */
-class Sanctor(
+class AttestationValidator(
     private val warden: Warden,
     val attestationProofOID: ObjectIdentifier,
     private val nonceValidator: NonceValidator
@@ -98,7 +99,7 @@ class Sanctor(
 }
 
 /**
- * invoked from [Sanctor.verifyKeyAttestation]. Useful to match against in-transit attestation processes.
+ * invoked from [AttestationValidator.verifyKeyAttestation]. Useful to match against in-transit attestation processes.
  * Mist probably, this will check against a nonce cache and evict any matched nonce from the cache.
  * Implementing this function in a meaningful manner is absolutely crucial, since this is the actual nonce
  * matching.

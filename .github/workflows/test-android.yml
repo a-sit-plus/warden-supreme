@@ -25,11 +25,11 @@ jobs:
           api-level: 30
           target: google_apis
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: ./gradlew startSanctor connectedCheck
+          script: ./gradlew startVerifier connectedCheck
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: VERIATS Android Connected Tests
-          path: servus/build/outputs/androidTest-results/connected/**/TEST*.xml
+          name: WARDEN S Android Connected Tests
+          path: client/build/outputs/androidTest-results/connected/**/TEST*.xml
           reporter: java-junit
