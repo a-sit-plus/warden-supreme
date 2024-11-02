@@ -51,7 +51,7 @@ kotlin {
 
 
 android {
-    namespace = "at.asitplus.warden.supreme.client"
+    namespace = "at.asitplus.attestation.supreme.client"
     compileSdk = 34
     defaultConfig {
         minSdk = 30
