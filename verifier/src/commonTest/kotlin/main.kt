@@ -30,20 +30,23 @@ import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalStdlibApi::class)
+@OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
 class TestEnv : FreeSpec({
 
     //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
     //fail at runtime
     "startServer" {
-        println("KTOR server started!")
 
         val ENDPOINT_CHALLENGE = "/api/v1/challenge"
         val PATH_ATTEST = "/api/v1/attest"
         val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
-        val PROOF_OID = ObjectIdentifier("2.25.123456789")
+        val PROOF_OID = ObjectIdentifier(Uuid.parse("c893b702-28f6-4c50-8578-d1d7a1580729"))
         val NONCE = Random.nextBytes(16)
+
+        var running = true
 
         val attestationValidator = AttestationValidator(
             Warden(
@@ -68,7 +71,8 @@ class TestEnv : FreeSpec({
             attestationProofOID = PROOF_OID,
         ) { it.contentEquals(NONCE) }
 
-        embeddedServer(Netty, port = 8080) {
+
+        val server= embeddedServer(Netty, port = 8080) {
             install(ContentNegotiation) {
                 json()
             }
@@ -76,7 +80,7 @@ class TestEnv : FreeSpec({
             routing {
                 get("/shutdown") {
                     call.respondText("Bye!")
-                    System.exit(0)
+                    running=false
                 }
 
                 get(ENDPOINT_CHALLENGE) {
@@ -117,6 +121,8 @@ class TestEnv : FreeSpec({
                     call.respondText(Json.encodeToString(resp), contentType = ContentType.Application.Json)
                 }
             }
-        }.start(wait = true)
+        }.start(wait = false)
+        println("KTOR server started!")
+        while(running) {Thread.sleep(500)}
     }
 })

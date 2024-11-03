@@ -21,6 +21,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.time.Duration
@@ -65,6 +66,7 @@ constructor(
     /**
      * The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
      */
+    @Serializable(with = ObjectIdSerializer::class)
     val proofOID: ObjectIdentifier
 
 ) {
@@ -163,3 +165,12 @@ val TbsCertificationRequest.nonce: KmmResult<ByteArray>
     }
 
 
+object ObjectIdSerializer : KSerializer<ObjectIdentifier> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ObjectIdStringSerializer", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): ObjectIdentifier = ObjectIdentifier(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: ObjectIdentifier) {
+       encoder.encodeString(value.toString())
+    }
+}
