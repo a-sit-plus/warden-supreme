@@ -67,7 +67,7 @@ in a particular manner.
 From a high-level point of view, it really is simple: Validate the certificate chain just like any certificate chain, and evaluate
 a well-documented extension of the leaf certificate to establish trust in an Android client app (Figure&nbsp;2 illustrates this high-level concept in more detail).
 This is one core feature of this library -- make establishing trust in client apps just as simple and straight-forward.
-The other one is providing a unified API to provide a inified API to achieve the same for iOS clients.
+The other one is providing a unified API to provide a unified API to achieve the same for iOS clients.
 
 <div align="center">
 
