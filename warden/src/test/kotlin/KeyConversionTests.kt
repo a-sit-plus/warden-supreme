@@ -1,13 +1,8 @@
-import at.asitplus.attestation.WardenDebugAttestationStatement
 import at.asitplus.attestation.decodeBase64ToArray
 import at.asitplus.attestation.parseToPublicKey
-import at.asitplus.io.multibaseDecode
-import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.fromJcaPublicKey
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import java.security.interfaces.ECPublicKey
 
 class KeyConversionTests : FreeSpec({
 

@@ -1,3 +1,7 @@
+## 2.4.1
+- Update to warden-roboto 1.8.1, allowing for ignoring Android attestation statement creation time
+- Force specifying whether to ignore proxy settings for replaying debug attestation statements.
+
 ## 2.4.0 (Breaking binary configuration changes!)
 - Update to WARDEN-roboto 1.8.0, which changes the Android configuration format to use `Long` instead of `Int` for temporal units in seconds
 - To match WARDEN-roboto, the `attestationStatementValiditySeconds` iOS config has also been changed to `Long`

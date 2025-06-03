@@ -17,7 +17,8 @@ private val jsonDebug = kotlinx.serialization.json.Json {
 
 
 @Serializable
-class WardenDebugAttestationStatement internal constructor(
+@ExposedCopyVisibility
+data class WardenDebugAttestationStatement internal constructor(
     val method: Method,
     val androidAttestationConfiguration: AndroidAttestationConfiguration,
     val iosAttestationConfiguration: IOSAttestationConfiguration,
@@ -37,10 +38,11 @@ class WardenDebugAttestationStatement internal constructor(
     }
 
     /**
-     * Creates a new [Warden] instance based on recorded debug data
+     * Creates a new [Warden] instance based on recorded debug data.
+     * @param ignoreProxy enables direct connection to HTTP endpoints. Helpful for replaying attestations in a network setup that differs from the one where a debug statement was recorded.
      */
-    fun createWarden(): Warden = Warden(
-        androidAttestationConfiguration,
+    fun createWarden(ignoreProxy: Boolean): Warden = Warden(
+        if(ignoreProxy) androidAttestationConfiguration.copy(httpProxy = null) else androidAttestationConfiguration,
         iosAttestationConfiguration,
         FixedTimeClock(verificationTime),
         verificationTimeOffset
@@ -50,40 +52,56 @@ class WardenDebugAttestationStatement internal constructor(
     /**
      * Replay the attestation call that was recorded. I.e., it automatically calls the correct `replay` method
      * baaed on how this debug statement was recorded.
+     * @param ignoreProxy enables direct connection to HTTP endpoints. Helpful for replaying attestations in a network setup that differs from the one where a debug statement was recorded.
      */
-    fun replaySmart() = when (method) {
-        Method.LEGACY -> replayGenericAttestation()
-        Method.SUPREME -> replayKeyAttestation()
-        Method.KEY_ATTESTATION_LEGACY, Method.KEY_ATTESTATION_LEGACY_RAW -> replayKeyAttestationLegacy()
+    fun replaySmart(ignoreProxy: Boolean) = when (method) {
+        Method.LEGACY -> replayGenericAttestation(ignoreProxy)
+        Method.SUPREME -> replayKeyAttestation(ignoreProxy)
+        Method.KEY_ATTESTATION_LEGACY, Method.KEY_ATTESTATION_LEGACY_RAW -> replayKeyAttestationLegacy(ignoreProxy)
     }
 
     /**
-     * Replays ```verifyAttestation(
+     * Replays
+     * ```kotlin
+     *     verifyAttestation(
      *         attestationProof: List<ByteArray>,
      *         challenge: ByteArray,
      *         clientData: ByteArray?
-     *     ): AttestationResult```
+     *     ): AttestationResult
+     *
+     *  ```
+     *
+     * @param ignoreProxy enables direct connection to HTTP endpoints. Helpful for replaying attestations in a network setup that differs from the one where a debug statement was recorded.
      */
-    fun replayGenericAttestation() =
-        createWarden().verifyAttestation(genericAttestationProof!!, challenge!!, clientData)
+    fun replayGenericAttestation(ignoreProxy: Boolean) =
+        createWarden(ignoreProxy).verifyAttestation(genericAttestationProof!!, challenge!!, clientData)
 
     /**
-     * Replays ```verifyKeyAttestation(
+     * Replays
+     * ```kotlin
+     *     verifyKeyAttestation(
      *         attestationProof: Attestation,
      *         challenge: ByteArray
-     *     ): KeyAttestation<PublicKey>```
+     *     ): KeyAttestation<PublicKey>
+     * ```
+     * @param ignoreProxy enables direct connection to HTTP endpoints. Helpful for replaying attestations in a network setup that differs from the one where a debug statement was recorded.
      */
-    fun replayKeyAttestation() = createWarden().verifyKeyAttestation(keyAttestation!!, challenge!!)
+    fun replayKeyAttestation(ignoreProxy: Boolean) = createWarden(ignoreProxy).verifyKeyAttestation(keyAttestation!!, challenge!!)
 
     /**
-     * Replays ```verifyKeyAttestation(
+     * Replays
+     * ```kotlin
+     *     verifyKeyAttestation(
      *         attestationProof: List<ByteArray>,
      *         challenge: ByteArray,
      *         encodedPublicKey: ByteArray
-     *     ): KeyAttestation<PublicKey>```
+     *     ): KeyAttestation<PublicKey>
+     * ```
+     *
+     * @param ignoreProxy enables direct connection to HTTP endpoints. Helpful for replaying attestations in a network setup that differs from the one where a debug statement was recorded.
      */
-    fun replayKeyAttestationLegacy() =
-        createWarden().verifyKeyAttestation(genericAttestationProof!!, challenge!!, clientData!!)
+    fun replayKeyAttestationLegacy(ignoreProxy: Boolean) =
+        createWarden(ignoreProxy).verifyKeyAttestation(genericAttestationProof!!, challenge!!, clientData!!)
 
     /**
      * Produces a JSON representation of this debug info

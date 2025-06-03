@@ -173,9 +173,12 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.challenge
                                     ).serializeCompact()
                                     val replayGenericAttestation =
-                                        WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
-                                    replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replaySmart()
+                                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replayGenericAttestation(ignoreProxy = false)
+                                    replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(
+                                        dbg
+                                    )
+                                        .replaySmart(ignoreProxy = false)
                                     replayGenericAttestation
                                         .shouldNotBeInstanceOf<AttestationResult.Error>()
                                 }
@@ -202,9 +205,12 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.publicKey!!
                                     ).serializeCompact()
                                     val replayKeyAttestationLegacy =
-                                        WardenDebugAttestationStatement.deserializeCompact(dbg).replayKeyAttestationLegacy()
-                                    replayKeyAttestationLegacy shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replaySmart()
+                                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replayKeyAttestationLegacy(ignoreProxy = false)
+                                    replayKeyAttestationLegacy shouldBe WardenDebugAttestationStatement.deserializeCompact(
+                                        dbg
+                                    )
+                                        .replaySmart(ignoreProxy = false)
                                     replayKeyAttestationLegacy
                                         .shouldNotBeInstanceOf<AttestationResult.Error>()
                                 }
@@ -239,9 +245,10 @@ class WardenTest : FreeSpec() {
                                     recordedAttestation.challenge
                                 ).serializeCompact()
                                 val replayGenericAttestation =
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false)
                                 replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart()
+                                    .replaySmart(ignoreProxy = false)
                                 replayGenericAttestation
                                     .shouldNotBeInstanceOf<AttestationResult.Error>()
                             }
@@ -274,9 +281,10 @@ class WardenTest : FreeSpec() {
                                     recordedAttestation.challenge
                                 ).serializeCompact()
                                 val replayGenericAttestation =
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false)
                                 replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart()
+                                    .replaySmart(ignoreProxy = false)
                                 replayGenericAttestation
                                     .shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
@@ -306,9 +314,10 @@ class WardenTest : FreeSpec() {
                                     recordedAttestation.challenge
                                 ).serializeCompact()
                                 val replayGenericAttestation =
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false)
                                 replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart()
+                                    .replaySmart(ignoreProxy = false)
                                 replayGenericAttestation
                                     .shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
@@ -346,9 +355,10 @@ class WardenTest : FreeSpec() {
                                 recordedAttestation.challenge
                             ).serializeCompact()
                             val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false)
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart()
+                                .replaySmart(ignoreProxy = false)
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Error>().apply {
                                     cause.shouldBeInstanceOf<AttestationException.Content>().also {
@@ -391,9 +401,10 @@ class WardenTest : FreeSpec() {
                                 recordedAttestation.challenge.reversedArray()
                             ).serializeCompact()
                             val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false)
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart()
+                                .replaySmart(ignoreProxy = false)
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Error>().apply {
                                     cause.shouldBeInstanceOf<AttestationException.Content>().also {
@@ -442,8 +453,10 @@ class WardenTest : FreeSpec() {
                                 recordedAttestation.attestationProof,
                                 recordedAttestation.challenge
                             ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replaySmart(ignoreProxy = false)
                                 shouldBeInstanceOf<AttestationResult.Error>().apply {
                                     cause.shouldBeInstanceOf<AttestationException.Content>().also {
                                         when (it.platform) {
@@ -494,8 +507,10 @@ class WardenTest : FreeSpec() {
                                 recordedAttestation.challenge,
                                 keyToBeAttested
                             ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayKeyAttestationLegacy().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayKeyAttestationLegacy(ignoreProxy = false).apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replaySmart(ignoreProxy = false)
                                 isSuccess.shouldBeFalse()
                                 details.shouldBeInstanceOf<AttestationResult.Error>().also { println(it) }.apply {
                                     cause.shouldBeInstanceOf<AttestationException.Content>().also {
@@ -544,8 +559,10 @@ class WardenTest : FreeSpec() {
                                     recordedAttestation.attestationProof,
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replaySmart(ignoreProxy = false)
                                     shouldBeInstanceOf<AttestationResult.IOS>()
                                 }
                             }
@@ -574,8 +591,10 @@ class WardenTest : FreeSpec() {
                                     recordedAttestation.attestationProof,
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replaySmart(ignoreProxy = false)
                                     shouldBeInstanceOf<AttestationResult.Error>()
                                         .cause.shouldBeInstanceOf<AttestationException.Content>()
                                         .platformSpecificCause.shouldBeInstanceOf<IosAttestationException>()
@@ -608,8 +627,10 @@ class WardenTest : FreeSpec() {
                                     recordedAttestation.attestationProof,
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replaySmart(ignoreProxy = false)
                                     shouldBeInstanceOf<AttestationResult.Android>()
                                 }
                             }
@@ -629,8 +650,10 @@ class WardenTest : FreeSpec() {
                                     recordedAttestation.attestationProof,
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replaySmart(ignoreProxy = false)
                                     shouldBeInstanceOf<AttestationResult.Android>()
                                 }
                             }
@@ -650,8 +673,10 @@ class WardenTest : FreeSpec() {
                                     recordedAttestation.attestationProof,
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replaySmart(ignoreProxy = false)
                                     shouldBeInstanceOf<AttestationResult.Android>()
                                 }
                             }
@@ -687,8 +712,10 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.attestationProof,
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false).apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replaySmart(ignoreProxy = false)
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                     }
@@ -721,8 +748,10 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.attestationProof,
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false).apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replaySmart(ignoreProxy = false)
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                     }
@@ -755,8 +784,10 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.attestationProof,
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false).apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replaySmart(ignoreProxy = false)
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                     }
@@ -783,10 +814,11 @@ class WardenTest : FreeSpec() {
                                             chain,
                                             recordedAttestation.challenge,
                                         ).serializeCompact()
-                                        WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replayGenericAttestation(ignoreProxy = false)
                                             .apply {
                                                 this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                    .replaySmart()
+                                                    .replaySmart(ignoreProxy = false)
                                                 shouldBeInstanceOf<AttestationResult.Error>()
                                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                             }
@@ -808,10 +840,11 @@ class WardenTest : FreeSpec() {
                                             chain,
                                             recordedAttestation.challenge,
                                         ).serializeCompact()
-                                        WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replayGenericAttestation(ignoreProxy = false)
                                             .apply {
                                                 this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                    .replaySmart()
+                                                    .replaySmart(ignoreProxy = false)
                                                 shouldBeInstanceOf<AttestationResult.Error>()
                                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                             }
@@ -833,10 +866,11 @@ class WardenTest : FreeSpec() {
                                             chain,
                                             recordedAttestation.challenge,
                                         ).serializeCompact()
-                                        WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replayGenericAttestation(ignoreProxy = false)
                                             .apply {
                                                 this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                    .replaySmart()
+                                                    .replaySmart(ignoreProxy = false)
                                                 shouldBeInstanceOf<AttestationResult.Error>()
                                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                             }
@@ -861,8 +895,10 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.attestationProof,
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false).apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replaySmart(ignoreProxy = false)
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -889,8 +925,10 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.attestationProof,
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false).apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replaySmart(ignoreProxy = false)
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -926,8 +964,10 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.attestationProof,
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false).apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replaySmart(ignoreProxy = false)
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -951,8 +991,10 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.attestationProof,
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false).apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replaySmart(ignoreProxy = false)
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -975,8 +1017,10 @@ class WardenTest : FreeSpec() {
                                         recordedAttestation.attestationProof,
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false).apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replaySmart(ignoreProxy = false)
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -1055,8 +1099,10 @@ class WardenTest : FreeSpec() {
                                 attestationProof,
                                 challenge,
                             ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replaySmart(ignoreProxy = false)
                                 shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                             }
@@ -1093,8 +1139,10 @@ class WardenTest : FreeSpec() {
                                 attestationProof,
                                 challenge,
                             ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replaySmart(ignoreProxy = false)
                                 shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Content>()
                             }
@@ -1125,8 +1173,10 @@ class WardenTest : FreeSpec() {
                                 attestationProof,
                                 challenge,
                             ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replaySmart(ignoreProxy = false)
                                 shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Content>()
                             }
@@ -1161,9 +1211,10 @@ class WardenTest : FreeSpec() {
                                     challenge,
                                 ).serializeCompact()
                                 val replayGenericAttestation =
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false)
                                 replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart()
+                                    .replaySmart(ignoreProxy = false)
                                 replayGenericAttestation
                                     .shouldBeInstanceOf<AttestationResult.Android>()
                             }
@@ -1196,9 +1247,10 @@ class WardenTest : FreeSpec() {
                                     challenge,
                                 ).serializeCompact()
                                 val replayGenericAttestation =
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false)
                                 replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart()
+                                    .replaySmart(ignoreProxy = false)
                                 replayGenericAttestation
                                     .shouldBeInstanceOf<AttestationResult.Android>()
                             }
@@ -1230,9 +1282,10 @@ class WardenTest : FreeSpec() {
                                     challenge,
                                 ).serializeCompact()
                                 val replayGenericAttestation =
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replayGenericAttestation(ignoreProxy = false)
                                 replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart()
+                                    .replaySmart(ignoreProxy = false)
                                 replayGenericAttestation
                                     .shouldBeInstanceOf<AttestationResult.Android>()
                             }
@@ -1289,9 +1342,10 @@ class WardenTest : FreeSpec() {
                                 data.challenge,
                             ).serializeCompact()
                             val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false)
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart()
+                                .replaySmart(ignoreProxy = false)
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
                                     attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
@@ -1330,9 +1384,10 @@ class WardenTest : FreeSpec() {
                                 data.challenge,
                             ).serializeCompact()
                             val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false)
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart()
+                                .replaySmart(ignoreProxy = false)
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
                                     attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
@@ -1371,9 +1426,10 @@ class WardenTest : FreeSpec() {
                                 data.challenge,
                             ).serializeCompact()
                             val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false)
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart()
+                                .replaySmart(ignoreProxy = false)
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
                                     attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
@@ -1413,9 +1469,10 @@ class WardenTest : FreeSpec() {
                                 data.challenge,
                             ).serializeCompact()
                             val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation(ignoreProxy = false)
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart()
+                                .replaySmart(ignoreProxy = false)
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
                                     attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
@@ -1452,8 +1509,10 @@ class WardenTest : FreeSpec() {
                             data.challenge,
                         ).serializeCompact()
                         val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation(ignoreProxy = false)
+                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replaySmart(ignoreProxy = false)
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Error>()
                             .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
@@ -1486,8 +1545,10 @@ class WardenTest : FreeSpec() {
                             data.challenge,
                         ).serializeCompact()
                         val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation(ignoreProxy = false)
+                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replaySmart(ignoreProxy = false)
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Error>()
                             .cause.shouldBeInstanceOf<AttestationException.Content>()
@@ -1520,8 +1581,10 @@ class WardenTest : FreeSpec() {
                             data.challenge,
                         ).serializeCompact()
                         val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation(ignoreProxy = false)
+                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replaySmart(ignoreProxy = false)
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Error>()
                             .cause.shouldBeInstanceOf<AttestationException.Content>()
@@ -1573,8 +1636,10 @@ class WardenTest : FreeSpec() {
                             it.first.hexToByteArray(HexFormat.UpperCase),
                         ).serializeCompact()
                         val replayKeyAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg).replayKeyAttestation()
-                        replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayKeyAttestation(ignoreProxy = false)
+                        replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replaySmart(ignoreProxy = false)
                         replayKeyAttestation.isSuccess.shouldBeTrue()
 
                     }
@@ -1588,8 +1653,9 @@ class WardenTest : FreeSpec() {
                             it.first.reversed().hexToByteArray(HexFormat.UpperCase)
                         ).serializeCompact()
                         val attestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation()
-                        attestation shouldBe  WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            .replayKeyAttestation(ignoreProxy = false)
+                        attestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replaySmart(ignoreProxy = false)
                         attestation.isSuccess.shouldBeFalse()
                     }
                 }
@@ -1618,8 +1684,9 @@ class WardenTest : FreeSpec() {
                             it.first.hexToByteArray(HexFormat.UpperCase),
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation()
-                        replayKeyAttestation shouldBe  WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            .replayKeyAttestation(ignoreProxy = false)
+                        replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replaySmart(ignoreProxy = false)
                         replayKeyAttestation.isSuccess.shouldBeFalse()
                     }
                 }
@@ -1652,8 +1719,9 @@ class WardenTest : FreeSpec() {
                                 it.first.hexToByteArray(HexFormat.UpperCase),
                             ).serializeCompact()
                             val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayKeyAttestation()
-                            replayKeyAttestation shouldBe  WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                .replayKeyAttestation(ignoreProxy = false)
+                            replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replaySmart(ignoreProxy = false)
                             replayKeyAttestation.isSuccess.shouldBeFalse()
                         }
 
@@ -1669,8 +1737,9 @@ class WardenTest : FreeSpec() {
                                 it.first.hexToByteArray(HexFormat.UpperCase),
                             ).serializeCompact()
                             val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayKeyAttestation()
-                            replayKeyAttestation shouldBe  WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                .replayKeyAttestation(ignoreProxy = false)
+                            replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replaySmart(ignoreProxy = false)
                             replayKeyAttestation.isSuccess.shouldBeFalse()
                         }
                     }
@@ -1704,8 +1773,9 @@ class WardenTest : FreeSpec() {
                                 it.first.hexToByteArray(HexFormat.UpperCase),
                             ).serializeCompact()
                             val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayKeyAttestation()
-                            replayKeyAttestation shouldBe  WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                .replayKeyAttestation(ignoreProxy = false)
+                            replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replaySmart(ignoreProxy = false)
                             replayKeyAttestation.isSuccess.shouldBeFalse()
                         }
 
@@ -1721,8 +1791,9 @@ class WardenTest : FreeSpec() {
                                 it.first.hexToByteArray(HexFormat.UpperCase),
                             ).serializeCompact()
                             val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayKeyAttestation()
-                            replayKeyAttestation shouldBe  WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                                .replayKeyAttestation(ignoreProxy = false)
+                            replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replaySmart(ignoreProxy = false)
                             replayKeyAttestation.isSuccess.shouldBeFalse()
                         }
                     }
@@ -1757,8 +1828,9 @@ class WardenTest : FreeSpec() {
                             it.first.hexToByteArray(HexFormat.UpperCase),
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation()
-                        replayKeyAttestation shouldBe  WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            .replayKeyAttestation(ignoreProxy = false)
+                        replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replaySmart(ignoreProxy = false)
                         replayKeyAttestation.isSuccess.shouldBeFalse()
                     }
                 }
@@ -1787,8 +1859,9 @@ class WardenTest : FreeSpec() {
                             it.first.hexToByteArray(HexFormat.UpperCase),
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation()
-                        replayKeyAttestation shouldBe  WardenDebugAttestationStatement.deserializeCompact(dbg).replaySmart()
+                            .replayKeyAttestation(ignoreProxy = false)
+                        replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replaySmart(ignoreProxy = false)
                         replayKeyAttestation.isSuccess.shouldBeFalse()
                     }
                 }

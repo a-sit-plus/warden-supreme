@@ -28,7 +28,7 @@ class TemporalOffsetTest : FreeSpec() {
                     shouldNotBeInstanceOf<AttestationResult.Error>()
                     WardenDebugAttestationStatement.deserializeCompact(
                         attestationService.collectDebugInfo(it.attestationProof, it.challenge).serializeCompact()
-                    ).replaySmart() shouldBe this
+                    ).replaySmart(ignoreProxy = false) shouldBe this
                 }
             }
         }
@@ -48,7 +48,7 @@ class TemporalOffsetTest : FreeSpec() {
                     shouldNotBeInstanceOf<AttestationResult.Error>()
                     WardenDebugAttestationStatement.deserializeCompact(
                         attestationService.collectDebugInfo(it.attestationProof, it.challenge).serializeCompact()
-                    ).replaySmart() shouldBe this
+                    ).replaySmart(ignoreProxy = false) shouldBe this
                 }
             }
         }
@@ -68,7 +68,7 @@ class TemporalOffsetTest : FreeSpec() {
                         .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
                     WardenDebugAttestationStatement.deserializeCompact(
                         attestationService.collectDebugInfo(it.attestationProof, it.challenge).serializeCompact()
-                    ).replaySmart() shouldBe this
+                    ).replaySmart(ignoreProxy = false) shouldBe this
 
                 }
             }
@@ -92,7 +92,7 @@ class TemporalOffsetTest : FreeSpec() {
                             pixel6KeyMint200Good.attestationProof,
                             pixel6KeyMint200Good.challenge
                         ).serializeCompact()
-                    ).replaySmart() shouldBe this
+                    ).replaySmart(ignoreProxy = false) shouldBe this
                 }
             }
         }
@@ -116,7 +116,7 @@ class TemporalOffsetTest : FreeSpec() {
 
                     WardenDebugAttestationStatement.deserializeCompact(
                         attestationService.collectDebugInfo(ios16.attestationProof, ios16.challenge).serializeCompact()
-                    ).replaySmart() shouldBe this}
+                    ).replaySmart(ignoreProxy = false) shouldBe this}
             }
         }
     }
