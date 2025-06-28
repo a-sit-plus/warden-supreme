@@ -1,3 +1,14 @@
+# Changelog
+
+## NEXT
+
+* Kotlin 2.1.21
+* Bouncy Castle 1.81
+* KmmResult 1.9.3
+* Signum 3.16.3
+* Ktor 3.2.0
+
+
 ## 2.4.1
 - Update to warden-roboto 1.8.1, allowing for ignoring Android attestation statement creation time
 - Force specifying whether to ignore proxy settings for replaying debug attestation statements.
