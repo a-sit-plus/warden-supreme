@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## 2.4.2
 * Update to latest WARDEN-roboto, bringing Google's PKI cert path validator to guard against cert path validations
 * Per-App trust anchor overrides
 * BEHAVIOURAL CHANGE:
