@@ -154,7 +154,10 @@ val warden = Warden(
                signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
                appVersion = 2, //with a different versioning scheme
                androidVersionOverride = 130000, //so we need to override this
-               patchLevelOverride = PatchLevel(2023, 6) //also override patch level
+               patchLevelOverride = PatchLevel(2023, 6), //also override patch level
+               trustAnchorOverrides = setOf(extraTrustedRootPubKey) // set this app to require
+                                                                    // a custom root for trust for the
+                                                                    // attestation certificate chain
            )
        ),
        androidVersion = 110000,                //OPTIONAL, null by default

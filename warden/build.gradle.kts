@@ -24,7 +24,10 @@ sourceSets.test {
 }
 
 dependencies {
-    api("at.asitplus:warden-roboto:$androidAttestationVersion")
+    api("at.asitplus:warden-roboto:$androidAttestationVersion") {
+        exclude("org.bouncycastle", "bcpkix-jdk18on")
+    }
+    api(bouncycastle("bcpkix", "jdk18on"))
     api(datetime())
     implementation("ch.veehait.devicecheck:devicecheck-appattest:0.9.6")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.14.2")

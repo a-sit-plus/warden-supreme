@@ -138,7 +138,8 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
         }
 
         /**
-         * Indicates either a borked certificate chain or one that is not rooted in one of the configured trust anchors
+         * Indicates either a borked certificate chain or one that is not rooted in one of the configured trust anchors.
+         * It can also indicate revoked certificates.
          */
         class Trust private constructor(platform: Platform, message: String?, cause: Throwable) :
             Certificate(platform, message, cause) {

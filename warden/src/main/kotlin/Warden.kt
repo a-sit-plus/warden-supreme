@@ -3,6 +3,7 @@ package at.asitplus.attestation
 import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
+import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
@@ -426,8 +427,9 @@ class Warden(
         if (results.filter { it.isFailure }.size == androidAttestationCheckers.size) {
             //if time is off, then we need to treat is separately
             results.firstOrNull {
-                it.exceptionOrNull() is CertificateInvalidException &&
-                        (it.exceptionOrNull() as CertificateInvalidException).reason == CertificateInvalidException.Reason.TIME
+               ( it.exceptionOrNull() is CertificateInvalidException &&
+                        (it.exceptionOrNull() as CertificateInvalidException).reason == CertificateInvalidException.Reason.TIME)
+                       || (it.exceptionOrNull() is RevocationException)
             }?.exceptionOrNull()?.let { throw it }
 
             throw results.last() //this way we are most lenient
@@ -441,6 +443,7 @@ class Warden(
             if ((it is CertificateInvalidException) && (it.reason == CertificateInvalidException.Reason.TIME)) AttestationException.Certificate.Time.Android(
                 cause = it
             )
+            else if (it is RevocationException) AttestationException.Certificate.Trust.Android(it.message,it)
             else if (it is CertificateInvalidException) AttestationException.Certificate.Trust.Android(cause = it)
             else if (it is CertificateException) AttestationException.Certificate.Trust.Android(
                 cause = CertificateInvalidException(
