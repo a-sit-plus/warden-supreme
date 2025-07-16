@@ -3,19 +3,13 @@ package at.asitplus.attestation.supreme
 import at.asitplus.KmmResult
 import at.asitplus.attestation.AttestationException
 import at.asitplus.attestation.Warden
+import at.asitplus.attestation.supreme.AttestationResponse.Failure
 import at.asitplus.catching
-import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.getJCASignatureInstance
 import at.asitplus.signum.indispensable.jcaSignatureBytes
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.indispensable.toJcaCertificate
-import at.asitplus.attestation.supreme.AttestationResponse.Failure
-import at.asitplus.signum.indispensable.pki.attestation.androidAttestationExtension
-import at.asitplus.signum.indispensable.pki.leaf
-
-import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.datetime.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -39,7 +33,13 @@ class AttestationValidator(
         postEndpoint: String,
         timeOffset: Duration = 5.minutes
     ) =
-        AttestationChallenge(issuedAt = Clock.System.now() +timeOffset, validity, nonce, postEndpoint, attestationProofOID)
+        AttestationChallenge(
+            issuedAt = Clock.System.now() + timeOffset,
+            validity,
+            nonce,
+            postEndpoint,
+            attestationProofOID
+        )
 
     /**
      * verifies the received CSR:
@@ -63,16 +63,13 @@ class AttestationValidator(
         if (!nonceValidator.invoke(nonce)) return Failure(Failure.Type.CONTENT, "Invalid nonce")
 
         val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID)
-            .getOrElse { return Failure(Failure.Type.CONTENT, it.message)}
+            .getOrElse { return Failure(Failure.Type.CONTENT, it.message) }
 
-        if(attestationStatement is AndroidKeystoreAttestation){
-            println(attestationStatement.certificateChain.leaf.androidAttestationExtension)
-        }
         val result = warden.verifyKeyAttestation(attestationStatement, nonce)
         return result.fold(
             onError = {
                 it.cause?.printStackTrace()
-                when (it.cause)  {
+                when (it.cause) {
                     null, is AttestationException.Content -> Failure(Failure.Type.CONTENT, it.explanation)
                     is AttestationException.Certificate.Time -> Failure(Failure.Type.TIME, it.explanation)
                     is AttestationException.Certificate.Trust -> Failure(Failure.Type.TRUST, it.explanation)

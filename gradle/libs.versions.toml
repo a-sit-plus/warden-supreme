@@ -1,6 +1,6 @@
 [versions]
-signum = "3.16.2-SNAPSHOT"
-supreme = "0.8.2-SNAPSHOT"
+signum = "3.16.2"
+supreme = "0.8.2"
 warden = "2.3.3"
 runner = "1.5.2"
 kotestExtensionsAndroid = "0.1.3"
