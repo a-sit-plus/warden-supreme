@@ -12,6 +12,8 @@ import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toJcaCertificate
 import at.asitplus.attestation.supreme.AttestationResponse.Failure
+import at.asitplus.signum.indispensable.pki.attestation.androidAttestationExtension
+import at.asitplus.signum.indispensable.pki.leaf
 
 import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.datetime.Clock
@@ -63,10 +65,9 @@ class AttestationValidator(
         val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID)
             .getOrElse { return Failure(Failure.Type.CONTENT, it.message)}
 
-        val record= ParsedAttestationRecord.createParsedAttestationRecord((attestationStatement as AndroidKeystoreAttestation).certificateChain.map { it.toJcaCertificate().getOrThrow() })
-        println(record.softwareEnforced().attestationApplicationId().get().signatureDigests().forEach {
-            println(it.toByteArray().toHexString())
-        })
+        if(attestationStatement is AndroidKeystoreAttestation){
+            println(attestationStatement.certificateChain.leaf.androidAttestationExtension)
+        }
         val result = warden.verifyKeyAttestation(attestationStatement, nonce)
         return result.fold(
             onError = {

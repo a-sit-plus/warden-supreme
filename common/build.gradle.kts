@@ -3,6 +3,7 @@ import at.asitplus.gradle.*
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
+    id("com.android.library")
     id("org.jetbrains.dokka")
     id("maven-publish")
     id("signing")
@@ -15,6 +16,7 @@ version = artifactVersion
 
 
 kotlin {
+    androidTarget { publishLibraryVariants("release") }
     jvm()
     iosArm64()
     iosSimulatorArm64()
@@ -31,6 +33,27 @@ kotlin {
     }
 }
 
+
+android {
+    namespace = "at.asitplus.warden.supreme"
+    packaging {
+        listOf(
+            "org/bouncycastle/pqc/crypto/picnic/lowmcL5.bin.properties",
+            "org/bouncycastle/pqc/crypto/picnic/lowmcL3.bin.properties",
+            "org/bouncycastle/pqc/crypto/picnic/lowmcL1.bin.properties",
+            "org/bouncycastle/x509/CertPathReviewerMessages_de.properties",
+            "org/bouncycastle/x509/CertPathReviewerMessages.properties",
+            "org/bouncycastle/pkix/CertPathReviewerMessages_de.properties",
+            "org/bouncycastle/pkix/CertPathReviewerMessages.properties",
+            "/META-INF/{AL2.0,LGPL2.1}",
+            "win32-x86-64/attach_hotspot_windows.dll",
+            "win32-x86/attach_hotspot_windows.dll",
+            "META-INF/versions/9/OSGI-INF/MANIFEST.MF",
+            "META-INF/licenses/*",
+        ).forEach { resources.excludes.add(it) }
+    }
+
+}
 
 val javadocJar = setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/",

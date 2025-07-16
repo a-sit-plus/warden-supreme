@@ -52,9 +52,7 @@ kotlin {
 
 android {
     namespace = "at.asitplus.attestation.supreme.client"
-    compileSdk = 34
     defaultConfig {
-        minSdk = 30
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     testBuildType = "debug"

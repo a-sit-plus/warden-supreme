@@ -39,7 +39,6 @@ class TestEnv : FreeSpec({
     //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
     //fail at runtime
     "startServer" {
-
         val ENDPOINT_CHALLENGE = "/api/v1/challenge"
         val PATH_ATTEST = "/api/v1/attest"
         val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
@@ -72,7 +71,7 @@ class TestEnv : FreeSpec({
         ) { it.contentEquals(NONCE) }
 
 
-        val server= embeddedServer(Netty, port = 8080) {
+        val server = embeddedServer(Netty, port = 8080) {
             install(ContentNegotiation) {
                 json()
             }
@@ -85,11 +84,14 @@ class TestEnv : FreeSpec({
 
                 get(ENDPOINT_CHALLENGE) {
 
+                    println("Issuing Challenge")
                     call.respondText(Json.encodeToString(attestationValidator.issueChallenge(NONCE, 10.minutes, ENDPOINT_ATTEST, timeOffset = -5.minutes)), contentType = ContentType.Application.Json)
                 }
                 post(PATH_ATTEST) {
+                    val src = call.receive<ByteArray>()
+
                     val resp =
-                        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())) { csr ->
+                        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(src)) { csr ->
                             Signer.Ephemeral {
                                 ec { }
                             }.getOrThrow().let { signer ->

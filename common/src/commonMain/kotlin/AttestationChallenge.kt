@@ -7,6 +7,7 @@ import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1StructuralException
 import at.asitplus.signum.indispensable.asn1.KnownOIDs
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
+import at.asitplus.signum.indispensable.asn1.ObjectIdentifierStringSerializer
 import at.asitplus.signum.indispensable.asn1.encoding.asAsn1String
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToString
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
@@ -66,7 +67,7 @@ constructor(
     /**
      * The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
      */
-    @Serializable(with = ObjectIdSerializer::class)
+    @Serializable(with = ObjectIdentifierStringSerializer::class)
     val proofOID: ObjectIdentifier
 
 ) {
@@ -94,7 +95,7 @@ constructor(
     /**
      * Lazily-evaluated property
      */
-    val validUntil: Instant? by lazy { validity?.let { issuedAt + it } ?: null }
+    val validUntil: Instant? by lazy { validity?.let { issuedAt + it } }
 
     /**
      * Encapsulates the nonce encoded into a [KnownOIDs.serialNumber] RDN component for easier parsing
@@ -146,7 +147,7 @@ fun TbsCertificationRequest.attestationStatementForChallenge(challenge: Attestat
  */
 fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): KmmResult<Attestation> =
     catching {
-        attributes?.find { it.oid == oid }?.value?.singleOrNull()
+        attributes.find { it.oid == oid }?.value?.singleOrNull()
             ?.let { Attestation.fromJSON(it.asPrimitive().asAsn1String().value) }
             ?: throw Asn1StructuralException("Attestation statement not present")
     }
@@ -163,14 +164,3 @@ val TbsCertificationRequest.nonce: KmmResult<ByteArray>
         else if (noncesRecovered.size != 1) throw Asn1StructuralException("More than one nonce present!")
         noncesRecovered.first().value.asPrimitive().decodeToString().decodeToByteArray(Base16)
     }
-
-
-object ObjectIdSerializer : KSerializer<ObjectIdentifier> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ObjectIdStringSerializer", PrimitiveKind.STRING)
-
-    override fun deserialize(decoder: Decoder): ObjectIdentifier = ObjectIdentifier(decoder.decodeString())
-
-    override fun serialize(encoder: Encoder, value: ObjectIdentifier) {
-       encoder.encodeString(value.toString())
-    }
-}

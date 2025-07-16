@@ -1,7 +1,7 @@
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 
 plugins {
-    id("at.asitplus.gradle.conventions") version "2.0.20+20241030"
+    id("at.asitplus.gradle.conventions") version "2.1.20+20250409"
     id("com.android.library") version "8.2.2" apply (false)
 }
 
@@ -20,6 +20,6 @@ tasks.getByName("dokkaHtmlMultiModule") {
 
 allprojects {
     repositories {
-        maven("https://s01.oss.sonatype.org/content/repositories/snapshots") //Signum snapshot
+        mavenLocal()
     }
 }
