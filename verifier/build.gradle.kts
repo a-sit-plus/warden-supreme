@@ -37,7 +37,8 @@ kotlin {
         }
 
         jvmMain.dependencies{
-            api(libs.warden)
+            api("at.asitplus:warden:${libs.versions.warden.get()}"){
+                exclude("org.bouncycastle", "bcpkix-jdk18on")}
         }
     }
 }
