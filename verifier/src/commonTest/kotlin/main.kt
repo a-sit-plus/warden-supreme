@@ -3,6 +3,7 @@ package at.asitplus.attestation.supreme
 import at.asitplus.attestation.IOSAttestationConfiguration
 import at.asitplus.attestation.Warden
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
@@ -10,6 +11,7 @@ import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
+import at.asitplus.signum.indispensable.toJcaPublicKey
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
@@ -58,7 +60,12 @@ class TestEnv : FreeSpec({
                             )
                         )
                     )
-                ).enableSoftwareAttestation().disableHardwareAttestation().build(),
+                ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareAttestationTrustAnchor(
+                    CryptoPublicKey.decodeFromPem("-----BEGIN PUBLIC KEY-----\n" +
+                            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
+                            "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
+                            "-----END PUBLIC KEY-----").getOrThrow().toJcaPublicKey().getOrThrow()
+                ).build(),
                 IOSAttestationConfiguration(
                     IOSAttestationConfiguration.AppData(
                         "9CYHJNG644",
