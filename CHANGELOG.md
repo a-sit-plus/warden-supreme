@@ -3,6 +3,7 @@
 
 ## NEXT
 
+ * Export Apple App Attest Validation library as API
 
 ## 2.4.2
 * Update to latest WARDEN-roboto, bringing Google's PKI cert path validator to guard against cert path validations

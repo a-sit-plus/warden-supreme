@@ -29,7 +29,7 @@ dependencies {
     }
     api(bouncycastle("bcpkix", "jdk18on"))
     api(datetime())
-    implementation("ch.veehait.devicecheck:devicecheck-appattest:0.9.6")
+    api("ch.veehait.devicecheck:devicecheck-appattest:0.9.6")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.14.2")
     implementation("net.swiftzer.semver:semver:1.2.0")
     implementation("org.slf4j:slf4j-api:1.7.36")
