@@ -29,6 +29,7 @@ import io.ktor.server.routing.*
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.lang.System.exit
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -53,9 +54,9 @@ class TestEnv : FreeSpec({
             Warden(
                 AndroidAttestationConfiguration.Builder(
                     AndroidAttestationConfiguration.AppData(
-                        "at.asitplus.attestation.supreme.client.test", //automated tests
+                        "at.asitplus.wallet.app.android", //automated tests
                         listOf(
-                            "a3e55ba9457de2900fe86303a5d556c496b691afff2c0dd50488bed3e400cc6b".hexToByteArray(
+                            "90f18fc8514fed2ec9e1f4924cc5de0ef8d7829661a77b923ac2eb5ae3e4a0f2".hexToByteArray(
                                 HexFormat.Default
                             )
                         )
