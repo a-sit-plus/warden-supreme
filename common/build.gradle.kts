@@ -29,6 +29,7 @@ kotlin {
 
         commonMain.dependencies {
             api(libs.signum)
+            api(libs.vck)
         }
     }
 }

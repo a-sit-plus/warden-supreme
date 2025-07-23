@@ -6,6 +6,7 @@ runner = "1.6.2"
 kotestExtensionsAndroid = "0.1.3"
 kotestRunnerAndroid = "1.1.1"
 core = "1.6.1"
+vck = "5.7.2"
 
 [libraries]
 signum = { group = "at.asitplus.signum", name = "indispensable", version.ref = "signum" }
@@ -16,3 +17,4 @@ kotest-extensions-android = { module = "br.com.colman:kotest-extensions-android"
 kotest-runner-android = { module = "br.com.colman:kotest-runner-android", version.ref = "kotestRunnerAndroid" }
 rules = { module = "androidx.test:rules", version.ref = "core" }
 runner = { module = "androidx.test:runner", version.ref = "runner" }
+vck = { group = "at.asitplus.wallet", name = "vck", version.ref = "vck"}
