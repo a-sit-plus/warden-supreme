@@ -106,7 +106,8 @@ abstract class AttestationService {
                     "match key from attestation certificate: ${firstTry.attestationCertificate.publicKey.toLogString()}"
             AttException.Content.Android(
                 reason, AttestationValueException(reason, null, AttestationValueException.Reason.APP_UNEXPECTED,
-                    firstTry.attestationCertificate.publicKey.toLogString() as Any, keyToBeAttested.toLogString())
+                    expectedValue =keyToBeAttested.toCryptoPublicKey(),
+                    actualValue = firstTry.attestationCertificate.publicKey.toCryptoPublicKey())
             ).toAttestationError(reason)
         }
 

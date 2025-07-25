@@ -2,8 +2,15 @@
 
 
 ## NEXT
-
  * Export Apple App Attest Validation library as API
+ * Attach more context to Android exceptions
+ * Verify that Android patch levels are not too far in the future (default leeway: 1 month)
+ * More powerful `patchLevel`
+ * Dependency updates
+   * Update conventions to 20250729
+   * Update Kotlin to 2.2.10
+   * Replace `kotlinx.datetime` with `kotlin.time`
+
 
 ## 2.4.2
 * Update to latest WARDEN-roboto, bringing Google's PKI cert path validator to guard against cert path validations

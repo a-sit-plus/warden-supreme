@@ -4,6 +4,7 @@ package at.asitplus.attestation
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
+import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import java.security.PublicKey
 import java.security.cert.CertPathValidatorException
 import kotlin.time.Clock
@@ -194,7 +195,10 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
         if (other !is AttestationException) return false
 
         if (platform != other.platform) return false
-        if (platformSpecificCause is CertPathValidatorException && other.platformSpecificCause is CertPathValidatorException) {
+
+        if(platformSpecificCause:: class != other.platformSpecificCause::class) return false
+
+        if (platformSpecificCause is CertPathValidatorException) {
             val own = platformSpecificCause as CertPathValidatorException
             val other = other.platformSpecificCause as CertPathValidatorException
             if (own.reason != other.reason) return false

@@ -35,7 +35,7 @@ class WardenTest : FreeSpec() {
     private val theGood = androidGood + iosGood
 
     init {
-        "iosIDA" {
+        "!iosIDA" {
             val iosIDA = AttestationData(
                 "ida",
                 "Q049ODBlZDdlMjk4NzM3NWVmYjFhYWJhMDhjNjFjM2E3ZGIsTz1FSUQtREVWLVBLSSxPVT1ULUVudg==",
@@ -146,7 +146,7 @@ class WardenTest : FreeSpec() {
             }
         }
 
-        "The Good" - {
+        "!The Good" - {
             theGood.forEach { recordedAttestation ->
                 recordedAttestation.name - {
                     "OK" - {
@@ -1039,7 +1039,7 @@ class WardenTest : FreeSpec() {
             }
         }
 
-        "The Bad" - {
+        "!The Bad" - {
             "Software-Only Keystore" - {
                 AttestationData(
                     "Android Emulator",

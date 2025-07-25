@@ -154,24 +154,28 @@ val warden = Warden(
                signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
                appVersion = 2, //with a different versioning scheme
                androidVersionOverride = 130000, //so we need to override this
-               patchLevelOverride = PatchLevel(2023, 6), //also override patch level
+               patchLevelOverride = PatchLevel(2023, 6, maxFuturePatchLevelMonths = 2), //also override patch level and
+                                                                    // consider patch levels from 2 months in the future
+                                                                    // as valid 
+                                                                    // maxFuturePatchLevelMonths defaults to = 1
+                                                                    // null means any future patch level is OK
                trustAnchorOverrides = setOf(extraTrustedRootPubKey) // set this app to require
                                                                     // a custom root for trust for the
                                                                     // attestation certificate chain
            )
        ),
-       androidVersion = 110000,                //OPTIONAL, null by default
-       patchLevel = PatchLevel(2022, 12),      //OPTIONAL, null by default
-       requireStrongBox = false,               //OPTIONAL, defaults to false
-       allowBootloaderUnlock = false,          //OPTIONAL, defaults to false
-       requireRollbackResistance = false,      //OPTIONAL, defaults to false
-       ignoreLeafValidity = false,             //OPTIONAL, defaults to false
+       androidVersion = 110000,                  //OPTIONAL, null by default
+       patchLevel = PatchLevel(2022, 12),        //OPTIONAL, null by default, maxFuturePatchLevelMonths defaults to 1
+       requireStrongBox = false,                 //OPTIONAL, defaults to false
+       allowBootloaderUnlock = false,            //OPTIONAL, defaults to false
+       requireRollbackResistance = false,        //OPTIONAL, defaults to false
+       ignoreLeafValidity = false,               //OPTIONAL, defaults to false
        hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS), //OPTIONAL, defaults shown here
        softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS), //OPTIONAL, defaults shown here
-       verificationSecondsOffset = -300,       //OPTIONAL, defaults to 0
-       disableHardwareAttestation = false,     //OPTIONAL, defaults to false. Set to true to disable HW attestation
-       enableNougatAttestation = false,        //OPTIONAL, defaults to false. Set to true to enable hybrid attestation
-       enableSoftwareAttestation = false,      //OPTIONAL, defaults to false. Set to true to enable SW attestation
+       verificationSecondsOffset = -300,         //OPTIONAL, defaults to 0
+       disableHardwareAttestation = false,       //OPTIONAL, defaults to false. Set to true to disable HW attestation
+       enableNougatAttestation = false,          //OPTIONAL, defaults to false. Set to true to enable hybrid attestation
+       enableSoftwareAttestation = false,        //OPTIONAL, defaults to false. Set to true to enable SW attestation
        attestationStatementValiditySeconds = 300 //OPTIONAL, defaults to 300s
    ),
    iosAttestationConfiguration = IOSAttestationConfiguration(
@@ -183,8 +187,8 @@ val warden = Warden(
           sandbox = false                  //OPTIONAL, defaults to false
           )
       ),
-      iosVersion = 14,                                               //OPTIONAL, null by default
-      attestationStatementValiditySeconds = 300                      //OPTIONAL, defaults to 300s
+      iosVersion = 14,                                              //OPTIONAL, null by default
+      attestationStatementValiditySeconds = 300                     //OPTIONAL, defaults to 300s
    ),
    clock = FixedTimeClock(Instant.parse("2023-04-13T00:00:00Z")),   //OPTIONAL, system clock by default,
    verificationTimeOffset = Duration.ZERO                           //OPTIONAL, defaults to zero

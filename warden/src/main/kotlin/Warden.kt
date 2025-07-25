@@ -1,11 +1,10 @@
-@file:OptIn(ExperimentalTime::class)
-
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
+import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
@@ -52,6 +51,7 @@ import kotlin.time.Duration.Companion.seconds
  * [WARDEN-roboto](https://github.com/a-sit-plus/warden-roboto), which also supports setting a verification time offset.
  * For the sake of consistency and intelligibility, **only** set this offset globally and not inside [iosAttestationConfiguration].
  */
+@OptIn(ExperimentalTime::class)
 class Warden(
     private val androidAttestationConfiguration: AndroidAttestationConfiguration,
     private val iosAttestationConfiguration: IOSAttestationConfiguration,
@@ -300,8 +300,8 @@ class Warden(
                             msg, AttestationException.Content.Android(
                                 msg,
                                 AttestationValueException(msg, reason = AttestationValueException.Reason.APP_UNEXPECTED,
-                                    expectedValue =  it.attestationCertificate.publicKey.encoded as Any,
-                                    actualValue = encodedKey)
+                                    expectedValue = encodedKey,
+                                    actualValue = it.attestationCertificate.publicKey.encoded)
                             )
                         )
                     }
@@ -310,7 +310,7 @@ class Warden(
             else it
         }
         else {
-            kotlin.runCatching {
+            catchingUnwrapped {
                 verifyAttestationApple(
                     attestationProof.first(),
                     challenge,
@@ -540,7 +540,7 @@ class Warden(
         var parsedVersion: ParsedVersions = null to null
         iosVersion?.let { configuredVersion ->
             parsedVersion = parseIosBuildOrVersionNumber(result.second.certificate)
-            kotlin.runCatching {
+            catchingUnwrapped {
                 if (configuredVersion > parsedVersion) {
                     val explanation =
                         "Parsed iOS versions (${parsedVersion.first}, ${parsedVersion.second}) < $configuredVersion"
