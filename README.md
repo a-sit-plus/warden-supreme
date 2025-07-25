@@ -24,7 +24,7 @@ Full API docs are available [here](https://a-sit-plus.github.io/warden/).
 
 ## Demonstration / Usage Example
 This library is intended for integration into back-end services which need to remotely establish trust in mobile clients
-(both Android and iOS). Usually, this means that a mobile client initially request a binding certificate from the back-end
+(both Android and iOS). Usually, this means that a mobile client initially requests a binding certificate from the back-end
 based on a public/private key pair stored inside cryptographic hardware.
 This binding is only granted if device and app integrity can be verified, and if the key can be proven to be stored in hardware.
 <br>
@@ -67,7 +67,7 @@ in a particular manner.
 From a high-level point of view, it really is simple: Validate the certificate chain just like any certificate chain, and evaluate
 a well-documented extension of the leaf certificate to establish trust in an Android client app (Figure&nbsp;2 illustrates this high-level concept in more detail).
 This is one core feature of this library -- make establishing trust in client apps just as simple and straight-forward.
-The other one is providing a unified API to provide a unified API to achieve the same for iOS clients.
+The other one is providing a unified API to achieve the same for iOS clients.
 
 <div align="center">
 
@@ -103,7 +103,7 @@ authentic, uncompromised app on a non-jailbroken device was used to generate thi
 Following Apple's attestation format makes it clear that no data, but only hashes are ever encoded and signed.
 Hence, it allows for a lot of flexibility when it comes to the data to be hashed.
 The new _Supreme_ attestation format exploits this and does not only pass the hash over a challenge to the AppAttest
-service, but instead constructs a structured (JSON) client data object, inspired by WebAuthn and passes tha hash of this data to DCAppAttest. This means that:
+service, but instead constructs a structured (JSON) client data object, inspired by WebAuthn and passes the hash of this data to DCAppAttest. This means that:
 
 1. A `ClientData` object is created based on the challenge and the public key to attest.
 2. The ClientData is serialized to JSON, and the `ByteArray`-representation of this JSON string are hashed using SHA-256:
