@@ -1,8 +1,19 @@
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 
 plugins {
-    id("at.asitplus.gradle.conventions") version "2.1.20+20250409"
-    id("com.android.library") version "8.6.1" apply (false)
+    val kotlinVer =
+        System.getenv("KOTLIN_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotlin.get()
+    val kotestVer =
+        System.getenv("KOTEST_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotest.get()
+    val kspVer = System.getenv("KSP_VERSION_ENV")?.ifBlank { null }
+        ?: "$kotlinVer-${libs.versions.ksp.get()}"
+
+    id("at.asitplus.gradle.conventions") version "20250729"
+    id("io.kotest") version kotestVer
+    kotlin("multiplatform") version kotlinVer apply false
+    kotlin("plugin.serialization") version kotlinVer apply false
+    id("com.google.devtools.ksp") version kspVer
+    id("com.android.library") version "8.10.0" apply (false)
 }
 
 group = "at.asitplus.wardensupreme"
@@ -16,7 +27,6 @@ tasks.getByName("dokkaHtmlMultiModule") {
     includes.from("README.md")
     moduleName.set("WARDEN Supreme")
 }
-
 
 allprojects {
     repositories {

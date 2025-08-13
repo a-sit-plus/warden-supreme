@@ -1,6 +1,5 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.IOSAttestationConfiguration
 import at.asitplus.attestation.Warden
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
@@ -9,7 +8,6 @@ import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.josef.JsonWebToken
 import at.asitplus.signum.indispensable.josef.JwsSigned
 import at.asitplus.signum.indispensable.josef.io.InstantLongSerializer
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
@@ -21,10 +19,10 @@ import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.wallet.lib.agent.EphemeralKeyWithoutCert
-import at.asitplus.wallet.lib.data.vckJsonSerializer
 import at.asitplus.wallet.lib.jws.JwsHeaderNone
 import at.asitplus.wallet.lib.jws.SignJwt
-import io.kotest.common.runBlocking
+import at.asitplus.wallet.lib.jws.SignJwtFun
+import at.asitplus.wallet.lib.jws.VerifyJwsSignature
 import io.kotest.core.spec.style.FreeSpec
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -35,25 +33,17 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.datetime.Clock
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.lang.System.exit
 import kotlin.random.Random
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
-import at.asitplus.wallet.lib.jws.SignJwtFun
-import at.asitplus.wallet.lib.jws.VerifyJwsObject
-import at.asitplus.wallet.lib.jws.VerifyJwsSignature
-import at.asitplus.wallet.lib.jws.VerifyJwsSignatureFun
-import io.kotest.property.Gen
-import kotlinx.serialization.SerialName
-import kotlin.reflect.typeOf
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Instant
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
 class TestEnv : FreeSpec({
@@ -276,7 +266,7 @@ class WalletAttestationToken(
 
     @SerialName("exp")
     @Serializable(with = InstantLongSerializer::class)
-    val expiration: kotlinx.datetime.Instant? = null,
+    val expiration: kotlin.time.Instant? = null,
 
     @SerialName("jti")
     val jwtId: String? = null,
@@ -315,4 +305,3 @@ val dummyWscdInfo = WscdInfo(
     wscdCertificationInformation = "",
     wscdAttackResistance = 2
 )
-

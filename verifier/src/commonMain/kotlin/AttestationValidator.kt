@@ -5,12 +5,13 @@ import at.asitplus.attestation.AttestationException
 import at.asitplus.attestation.Warden
 import at.asitplus.attestation.supreme.AttestationResponse.Failure
 import at.asitplus.catching
+import at.asitplus.signum.indispensable.SpecializedSignatureAlgorithm
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.getJCASignatureInstance
 import at.asitplus.signum.indispensable.jcaSignatureBytes
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -77,13 +78,14 @@ class AttestationValidator(
                 }
             },
             onSuccess = { pubKey, details ->
-                val signature = csr.signatureAlgorithm.getJCASignatureInstance().getOrElse {
-                    return Failure(Failure.Type.INTERNAL, it.message)
-                }
+                val signature =
+                    (csr.signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance().getOrElse {
+                        return Failure(Failure.Type.INTERNAL, it.message)
+                    }
 
                 catching {
                     signature.initVerify(pubKey)
-                    if (signature.verify(csr.signature.jcaSignatureBytes))
+                    if (signature.verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes))
                         return Failure(Failure.Type.TRUST, "CSR signature verification failed")
                 }.onFailure { return Failure(Failure.Type.INTERNAL, it.message) }
 
