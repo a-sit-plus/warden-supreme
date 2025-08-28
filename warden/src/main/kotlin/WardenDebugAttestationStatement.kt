@@ -1,14 +1,16 @@
+@file:OptIn(ExperimentalTime::class)
+
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
-import io.matthewnelson.encoding.core.Encoder.Companion.encodeToString
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 private val jsonDebug = kotlinx.serialization.json.Json {
     encodeDefaults = true
@@ -18,7 +20,8 @@ private val jsonDebug = kotlinx.serialization.json.Json {
 
 @Serializable
 @ExposedCopyVisibility
-data class WardenDebugAttestationStatement internal constructor(
+data class WardenDebugAttestationStatement
+internal constructor(
     val method: Method,
     val androidAttestationConfiguration: AndroidAttestationConfiguration,
     val iosAttestationConfiguration: IOSAttestationConfiguration,
@@ -26,7 +29,7 @@ data class WardenDebugAttestationStatement internal constructor(
     val keyAttestation: Attestation? = null,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray? = null,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val clientData: ByteArray? = null,
-    val verificationTime: Instant,
+    @Serializable(with = InstantLongSerializer::class) val verificationTime: Instant,
     val verificationTimeOffset: Duration = Duration.ZERO
 ) {
 
@@ -42,7 +45,7 @@ data class WardenDebugAttestationStatement internal constructor(
      * @param ignoreProxy enables direct connection to HTTP endpoints. Helpful for replaying attestations in a network setup that differs from the one where a debug statement was recorded.
      */
     fun createWarden(ignoreProxy: Boolean): Warden = Warden(
-        if(ignoreProxy) androidAttestationConfiguration.copy(httpProxy = null) else androidAttestationConfiguration,
+        if (ignoreProxy) androidAttestationConfiguration.copy(httpProxy = null) else androidAttestationConfiguration,
         iosAttestationConfiguration,
         FixedTimeClock(verificationTime),
         verificationTimeOffset
@@ -86,7 +89,8 @@ data class WardenDebugAttestationStatement internal constructor(
      * ```
      * @param ignoreProxy enables direct connection to HTTP endpoints. Helpful for replaying attestations in a network setup that differs from the one where a debug statement was recorded.
      */
-    fun replayKeyAttestation(ignoreProxy: Boolean) = createWarden(ignoreProxy).verifyKeyAttestation(keyAttestation!!, challenge!!)
+    fun replayKeyAttestation(ignoreProxy: Boolean) =
+        createWarden(ignoreProxy).verifyKeyAttestation(keyAttestation!!, challenge!!)
 
     /**
      * Replays

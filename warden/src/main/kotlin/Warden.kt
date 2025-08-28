@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.*
@@ -19,7 +21,6 @@ import ch.veehait.devicecheck.appattest.receipt.ReceiptException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import kotlinx.datetime.Clock
 import net.swiftzer.semver.SemVer
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.DEROctetString
@@ -33,10 +34,8 @@ import java.security.cert.CertPathValidatorException
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import java.security.interfaces.ECPublicKey
-import kotlin.time.Duration
+import kotlin.time.*
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
-import kotlin.time.toKotlinDuration
 
 /**
  * Default, functional Android and Apple App and Key Attestation in all its glory.
@@ -300,7 +299,9 @@ class Warden(
                         AttestationResult.Error(
                             msg, AttestationException.Content.Android(
                                 msg,
-                                AttestationValueException(msg, reason = AttestationValueException.Reason.APP_UNEXPECTED)
+                                AttestationValueException(msg, reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                                    expectedValue =  it.attestationCertificate.publicKey.encoded as Any,
+                                    actualValue = encodedKey)
                             )
                         )
                     }
@@ -378,7 +379,7 @@ class Warden(
             ).let {
                 when (it) {
                     is AttestationResult.Android -> KeyAttestation(
-                        attestationProof.certificateChain.first().publicKey.toJcaPublicKey().getOrThrow(), it
+                        attestationProof.certificateChain.first().decodedPublicKey.getOrThrow().toJcaPublicKey().getOrThrow(), it
                     )
 
                     is AttestationResult.Error -> KeyAttestation(null, it)
@@ -427,9 +428,9 @@ class Warden(
         if (results.filter { it.isFailure }.size == androidAttestationCheckers.size) {
             //if time is off, then we need to treat is separately
             results.firstOrNull {
-               ( it.exceptionOrNull() is CertificateInvalidException &&
+                (it.exceptionOrNull() is CertificateInvalidException &&
                         (it.exceptionOrNull() as CertificateInvalidException).reason == CertificateInvalidException.Reason.TIME)
-                       || (it.exceptionOrNull() is RevocationException)
+                        || (it.exceptionOrNull() is RevocationException)
             }?.exceptionOrNull()?.let { throw it }
 
             throw results.last() //this way we are most lenient
@@ -443,13 +444,15 @@ class Warden(
             if ((it is CertificateInvalidException) && (it.reason == CertificateInvalidException.Reason.TIME)) AttestationException.Certificate.Time.Android(
                 cause = it
             )
-            else if (it is RevocationException) AttestationException.Certificate.Trust.Android(it.message,it)
+            else if (it is RevocationException) AttestationException.Certificate.Trust.Android(it.message, it)
             else if (it is CertificateInvalidException) AttestationException.Certificate.Trust.Android(cause = it)
             else if (it is CertificateException) AttestationException.Certificate.Trust.Android(
                 cause = CertificateInvalidException(
                     message = it.message ?: "",
                     cause = it,
-                    reason = CertificateInvalidException.Reason.TRUST
+                    reason = CertificateInvalidException.Reason.TRUST,
+                    certificateChain = attestationCerts.mapNotNull { it.parseToCertificate() },
+                    invalidCertificate = null
                 )
             ) else if (it is AttestationValueException) AttestationException.Content.Android(
                 cause = it,
@@ -459,7 +462,9 @@ class Warden(
                 cause = AttestationValueException(
                     message = it.message,
                     cause = it,
-                    reason = AttestationValueException.Reason.APP_UNEXPECTED
+                    reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                    expectedValue = "",
+                    actualValue = null
                 )
             )
         )

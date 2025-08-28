@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package at.asitplus.attestation
 
 import at.asitplus.attestation.AttestationException
@@ -14,6 +16,7 @@ import java.security.PublicKey
 import java.security.cert.X509Certificate
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
+import kotlin.time.ExperimentalTime
 import at.asitplus.attestation.AttestationException as AttException
 
 abstract class AttestationService {
@@ -102,7 +105,8 @@ abstract class AttestationService {
             val reason = "Android attestation failed: keyToBeAttested (${keyToBeAttested.toLogString()}) does not " +
                     "match key from attestation certificate: ${firstTry.attestationCertificate.publicKey.toLogString()}"
             AttException.Content.Android(
-                reason, AttestationValueException(reason, null, AttestationValueException.Reason.APP_UNEXPECTED)
+                reason, AttestationValueException(reason, null, AttestationValueException.Reason.APP_UNEXPECTED,
+                    firstTry.attestationCertificate.publicKey.toLogString() as Any, keyToBeAttested.toLogString())
             ).toAttestationError(reason)
         }
 
@@ -426,7 +430,7 @@ object NoopAttestationService : AttestationService() {
             )
 
             is AndroidKeystoreAttestation -> KeyAttestation(
-                attestationProof.certificateChain.first().publicKey.toJcaPublicKey().getOrThrow(),
+                attestationProof.certificateChain.first().decodedPublicKey.getOrThrow().toJcaPublicKey().getOrThrow(),
                 AttestationResult.Android.NOOP(attestationProof.certificateChain.map { it.encodeToDer() })
             )
 

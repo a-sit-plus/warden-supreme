@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
@@ -16,7 +18,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldNotBeInstanceOf
-import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import java.security.KeyPairGenerator
@@ -24,6 +25,8 @@ import java.security.spec.ECGenParameterSpec
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
+import kotlin.time.toKotlinInstant
 
 
 @OptIn(ExperimentalStdlibApi::class)

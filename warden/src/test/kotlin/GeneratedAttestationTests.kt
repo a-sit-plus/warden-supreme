@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
@@ -7,6 +9,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
+import kotlin.time.ExperimentalTime
 
 class GeneratedAttestationTests : FreeSpec(
     {

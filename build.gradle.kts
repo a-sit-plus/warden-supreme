@@ -4,7 +4,7 @@ plugins {
         ?: libs.versions.kotlin.get()) apply false
     kotlin("plugin.serialization") version (System.getenv("KOTLIN_VERSION_ENV")?.let { it.ifBlank { null } }
         ?: libs.versions.kotlin.get()) apply false
-    id("at.asitplus.gradle.conventions") version "20250628"
+    id("at.asitplus.gradle.conventions") version "20250729"
 }
 
 group = "at.asitplus"

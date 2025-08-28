@@ -1,11 +1,16 @@
+@file:OptIn(ExperimentalTime::class)
+
 package at.asitplus.attestation
 
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.toJcaPublicKey
-import kotlinx.datetime.Clock
-import kotlinx.datetime.toJavaInstant
-import kotlinx.datetime.toKotlinInstant
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.bouncycastle.util.encoders.Base64
 import java.security.KeyFactory
 import java.security.PublicKey
@@ -14,6 +19,9 @@ import java.security.cert.X509Certificate
 import java.time.Instant
 import java.time.ZoneId
 import java.util.*
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.toJavaInstant
 
 
 private val ecKeyFactory = KeyFactory.getInstance("EC")
@@ -70,7 +78,7 @@ internal fun Clock.toJavaClock(): java.time.Clock =
 
     }
 
-internal fun kotlinx.datetime.Instant.toJavaDate() = Date.from(toJavaInstant())
+internal fun kotlin.time.Instant.toJavaDate() = Date.from(toJavaInstant())
 
 fun ByteArray.parseToPublicKey(): PublicKey =
     try {
@@ -91,6 +99,20 @@ private fun ByteArray.ensureSize(size: Int): ByteArray = when {
 // taken from https://github.com/Kotlin/kotlinx-datetime/pull/249/
 fun java.time.Clock.toKotlinClock(): Clock = let {
     object : Clock {
-        override fun now() = it.instant().toKotlinInstant()
+        override fun now(): kotlin.time.Instant = it.toKotlinClock().now()
     }
+}
+
+class InstantLongSerializer : KSerializer<kotlin.time.Instant> {
+
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("InstantLongSerializer", PrimitiveKind.LONG)
+
+    override fun deserialize(decoder: Decoder): kotlin.time.Instant {
+        return kotlin.time.Instant.fromEpochMilliseconds(decoder.decodeLong())
+    }
+
+    override fun serialize(encoder: Encoder, value: kotlin.time.Instant) {
+        encoder.encodeLong(value.toEpochMilliseconds())
+    }
+
 }

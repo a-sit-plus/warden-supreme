@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
@@ -12,6 +14,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.datetime.Instant
 import java.security.interfaces.ECPublicKey
 import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 class FeatureDemonstration : FreeSpec() {
     init {

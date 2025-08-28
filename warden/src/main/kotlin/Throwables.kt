@@ -1,13 +1,13 @@
+@file:OptIn(ExperimentalTime::class)
+
 package at.asitplus.attestation
 
-import at.asitplus.attestation.AttestationException.Certificate
-import at.asitplus.attestation.AttestationException.Content
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
-import kotlinx.datetime.Clock
 import java.security.PublicKey
 import java.security.cert.CertPathValidatorException
-
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * Indicated the platform an attestation check failed for.
@@ -194,12 +194,12 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
         if (other !is AttestationException) return false
 
         if (platform != other.platform) return false
-        if(platformSpecificCause is CertPathValidatorException && other.platformSpecificCause is CertPathValidatorException){
+        if (platformSpecificCause is CertPathValidatorException && other.platformSpecificCause is CertPathValidatorException) {
             val own = platformSpecificCause as CertPathValidatorException
-            val other= other.platformSpecificCause as CertPathValidatorException
-            if(own.reason != other.reason) return false
-            if(own.certPath != other.certPath) return false
-            if(own.index != other.index) return false
+            val other = other.platformSpecificCause as CertPathValidatorException
+            if (own.reason != other.reason) return false
+            if (own.certPath != other.certPath) return false
+            if (own.index != other.index) return false
             return true
         }
         if (platformSpecificCause != other.platformSpecificCause) return false
@@ -271,7 +271,8 @@ internal fun <T : PublicKey> logicalError(
     keyToBeAttested: T,
     attestationProof: List<ByteArray>,
     expectedChallenge: ByteArray
-) = RuntimeException("Logical Error attesting key ${
+) = RuntimeException(
+    "Logical Error attesting key ${
     keyToBeAttested.encoded.encodeBase64()
 } for attestation proof ${
     attestationProof.joinToString { it.encodeBase64() }
