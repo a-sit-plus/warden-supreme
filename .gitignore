@@ -1,6 +1,9 @@
 dokka-tmp.md
-docs/
 .gradle
 build
 .idea
 local.properties
+/docs/docs/CHANGELOG.md
+/docs/docs/dokka/
+/docs/site/
+/docs/.cache/

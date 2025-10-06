@@ -1,0 +1,7 @@
+dokka-tmp.md
+docs/
+.gradle
+build
+.idea
+local.properties
+.kotlin

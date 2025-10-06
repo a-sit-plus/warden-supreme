@@ -1,3 +1,12 @@
 [submodule "android-attestation"]
 	path = warden-roboto
 	url = ../android-attestation.git
+[submodule "dependencies/keyattestation"]
+	path = dependencies/keyattestation
+	url = https://github.com/android/keyattestation.git
+[submodule "dependencies/android-key-attestation"]
+	path = dependencies/android-key-attestation
+	url = https://github.com/google/android-key-attestation.git
+[submodule "dependencies/http-proxy"]
+	path = dependencies/http-proxy
+	url = https://github.com/zk-123/http-proxy.git

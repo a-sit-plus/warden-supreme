@@ -1,2 +1,44 @@
 [versions]
-kotlin = "2.2.10"
+kotlin = "2.2.20"
+kotest = "6.0.1"
+guava = "33.4.0-jre"
+autovalue = "1.11.0"
+signum = "3.17.0"
+supreme = "0.9.0"
+cbor = "0.9"
+gson = "2.12.1"
+errorprone = "2.41.0"
+protobuf = "4.29.3"
+devicecheck = "0.9.6"
+jackson = "2.20.0"
+semver = "1.2.0"
+slf4j = "1.7.36"
+ksp = "2.0.3"
+runner = "1.7.0"
+kotestExtensionsAndroid = "0.1.7"
+kotestRunnerAndroid = "1.2.0"
+core = "1.7.0"
+
+[libraries]
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+autovalue-value = { group = "com.google.auto.value", name = "auto-value", version.ref = "autovalue" }
+autovalue-annotations = { group = "com.google.auto.value", name = "auto-value-annotations", version.ref = "autovalue" }
+signum = { group = "at.asitplus.signum", name = "indispensable", version.ref = "signum" }
+supreme = { group = "at.asitplus.signum", name = "supreme", version.ref = "supreme" }
+cbor = { group = "co.nstant.in", name = "cbor", version.ref = "cbor" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+errorprone-annotations = { group = "com.google.errorprone", name = "error_prone_annotations", version.ref = "errorprone" }
+protobuf-javalite = { group = "com.google.protobuf", name = "protobuf-javalite", version.ref = "protobuf" }
+protobuf-kotlinlite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }
+devicecheck = { group = "ch.veehait.devicecheck", name = "devicecheck-appattest", version.ref = "devicecheck" }
+jackson-cbor = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-cbor", version.ref = "jackson" }
+jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+semver = { group = "net.swiftzer.semver", name = "semver", version.ref = "semver" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+slf4j-reload4j = { group = "org.slf4j", name = "slf4j-reload4j", version.ref = "slf4j" }
+
+core = { module = "androidx.test:core", version.ref = "core" }
+kotest-extensions-android = { module = "br.com.colman:kotest-extensions-android", version.ref = "kotestExtensionsAndroid" }
+kotest-runner-android = { module = "br.com.colman:kotest-runner-android", version.ref = "kotestRunnerAndroid" }
+rules = { module = "androidx.test:rules", version.ref = "core" }
+runner = { module = "androidx.test:runner", version.ref = "runner" }

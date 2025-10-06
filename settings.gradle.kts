@@ -1,22 +1,30 @@
-rootProject.name = "WARDEN-root"
+rootProject.name = "Warden-Supreme"
 pluginManagement {
     repositories {
-        maven("https://s01.oss.sonatype.org/content/repositories/snapshots") //KOTEST snapshot
         maven {
             url = uri("https://raw.githubusercontent.com/a-sit-plus/gradle-conventions-plugin/mvn/repo")
             name = "aspConventions"
         }
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
 }
 
-include("warden")
+include("makoto")
+include("makoto-diag")
+include("roboto")
+include("roboto-diag")
+project(":makoto").projectDir = file("serverside/makoto")
+project(":roboto").projectDir = file("serverside/roboto")
+project(":roboto-diag").projectDir = file("utils/roboto-diag")
+project(":makoto-diag").projectDir = file("utils/makoto-diag")
 
-//do not depend on included build for publishing
-if (gradle.startParameter.taskNames.find { it.contains("publish") } == null)
-    includeBuild("warden-roboto") {
-        dependencySubstitution {
-            substitute(module("at.asitplus:warden-roboto")).using(project(":warden-roboto"))
-        }
-    }
+
+
+include("supreme-verifier")
+include("supreme-common")
+include("supreme-client")
+project(":supreme-verifier").projectDir = file("supreme/verifier")
+project(":supreme-common").projectDir = file("supreme/common")
+project(":supreme-client").projectDir = file("supreme/client")

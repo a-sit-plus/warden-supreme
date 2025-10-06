@@ -1,0 +1,104 @@
+site_name: Signum
+site_url: https://a-sit-plus.github.io/warden-supreme/
+
+theme:
+  name: material
+  logo: assets/images/icon.svg
+  favicon: assets/images/icon.svg
+  custom_dir: overrides
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+      font:
+        text: Roboto
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: asp
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+      font:
+        text: Roboto
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: asp-dark
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+      font:
+        text: Roboto
+
+
+extra_css:
+  - stylesheets/extra.css
+
+repo_url: https://github.com/a-sit-plus/warden-supreme
+repo_name: a-sit-plus/warden-supreme
+
+copyright: Copyright &copy; 2025 A-SIT Plus GmbH
+
+plugins:
+  - social
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/solid/earth-americas
+      link: https://plus.a-sit.at/
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:<opensource@a-sit.at>
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.tilde
+  - md_in_html
+  - attr_list
+
+nav:
+    - Docs Hub:
+        - Overview: index.md
+        - Background:
+            - Remote Attestation Primer: bg/primer.md
+            - Platform Specifics: bg/platforms.md
+            - Thread Models and Risks: bg/threatmodels.md
+            - Privacy and Data Protection: bg/privacy.md
+        - Technical Deep Dive:
+            - Android: technical/android.md
+            - iOS: technical/ios.md
+            - Quirks and Hints: technical/quirks.md
+        - Testing: testing.md
+        - References: refs.md
+    - Integration Guide:
+        - Integrating Warden Supreme:
+            - Overview: integration/supreme.md
+            - Debugging: integration/debugging.md
+            - Project Structure: integration/structure.md
+        - Data Model: integration/datamodel.md
+        - Using Warden without Integrated Clients: integration/raw.md
+        - Migration from WARDEN: integration/migration.md
+        - Changelog: CHANGELOG.md
+    - Glossary: glossary.md
+    - API Docs: dokka/index.html
