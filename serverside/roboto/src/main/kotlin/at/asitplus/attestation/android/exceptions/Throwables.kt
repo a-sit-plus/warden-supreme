@@ -1,6 +1,6 @@
 package at.asitplus.attestation.android.exceptions
 
-import at.asitplus.attestation.android.SoftwareAttestationChecker
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacySoftwareAttestationEngine
 import at.asitplus.attestation.android.contentEqualsIfArray
 import java.security.cert.X509Certificate
 
@@ -81,7 +81,7 @@ class AttestationValueException(
 
         /**
          * Indicates that the security level of the attestation does not match the configured one (i.e. an attestation
-         * record produced in hardware being validated against a [SoftwareAttestationChecker].
+         * record produced in hardware being validated against a [LegacySoftwareAttestationEngine].
          *
          * **Note** that this reason might be shadowed by a [CertificateInvalidException] with [CertificateInvalidException.Reason.TRUST]
          * since software and hardware attestation use different trust anchors

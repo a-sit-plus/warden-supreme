@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacyHardwareAttestationEngine
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationCreator
@@ -30,7 +31,7 @@ class FakeAttestationTests : FreeSpec({
             androidPatchLevel = patchLevel.asSingleInt,
         )
 
-        val checker = HardwareAttestationChecker(
+        val checker = LegacyHardwareAttestationEngine(
             AndroidAttestationConfiguration(
                 AndroidAttestationConfiguration.AppData(
                     packageName = packageName,
@@ -56,7 +57,7 @@ class FakeAttestationTests : FreeSpec({
                 vendorPatchLevel = 0,
             )
 
-            HardwareAttestationChecker(
+            LegacyHardwareAttestationEngine(
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
@@ -106,7 +107,7 @@ class FakeAttestationTests : FreeSpec({
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationChecker(
+                LegacyHardwareAttestationEngine(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -139,7 +140,7 @@ class FakeAttestationTests : FreeSpec({
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationChecker(
+                LegacyHardwareAttestationEngine(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -160,7 +161,7 @@ class FakeAttestationTests : FreeSpec({
                 )
 
                 shouldThrow<AttestationValueException> {
-                    HardwareAttestationChecker(
+                    LegacyHardwareAttestationEngine(
                         AndroidAttestationConfiguration(
                             AndroidAttestationConfiguration.AppData(
                                 packageName = packageName,
@@ -196,7 +197,7 @@ class FakeAttestationTests : FreeSpec({
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationChecker(
+                LegacyHardwareAttestationEngine(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -230,7 +231,7 @@ class FakeAttestationTests : FreeSpec({
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationChecker(
+                LegacyHardwareAttestationEngine(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -256,7 +257,7 @@ class FakeAttestationTests : FreeSpec({
 
         "but not with a real cert from a real device" - {
 
-            val checker = HardwareAttestationChecker(
+            val checker = LegacyHardwareAttestationEngine(
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
@@ -276,7 +277,7 @@ class FakeAttestationTests : FreeSpec({
             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
             "unless overridden" {
-                val checker = HardwareAttestationChecker(
+                val checker = LegacyHardwareAttestationEngine(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -302,7 +303,7 @@ class FakeAttestationTests : FreeSpec({
             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
             "but never without trust anchors" {
-                val checker = HardwareAttestationChecker(
+                val checker = LegacyHardwareAttestationEngine(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -325,7 +326,7 @@ class FakeAttestationTests : FreeSpec({
         }
 
         "and the fake attestation must not verify against the google root key" {
-            val trustedChecker = HardwareAttestationChecker(
+            val trustedChecker = LegacyHardwareAttestationEngine(
                 AndroidAttestationConfiguration(
                     applications = listOf(
                         AndroidAttestationConfiguration.AppData(

@@ -23,6 +23,8 @@ class TemporalOffsetTest : FreeSpec() {
     private val exactStartOfValidity: Map<String, AttestationData> = mapOf(
         "KeyMint 200" to AttestationData(
             "Pixel 6",
+            packageName = ATT_CLIENT_PKG_NAME,
+            expectedDigests = ATT_CLIENT_DIGESTS,
             challengeB64 = "9w11c/H1kgfx+2Lqrqscug==",
             attestationProofB64 = listOf(
                 """

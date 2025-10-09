@@ -1,5 +1,9 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacyAttestationEngine
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacyHardwareAttestationEngine
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacyNougatHybridAttestationEngine
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacySoftwareAttestationEngine
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
@@ -67,14 +71,26 @@ val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
  * Default trust anchors used to verify software attestation
  */
 val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
+    //SW_EC_ROOT
     KeyFactory.getInstance("EC")
         .generatePublic(
-            X509EncodedKeySpec(Base64.getDecoder().decode(SoftwareAttestationChecker.GOOGLE_SOFTWARE_EC_ROOT))
+            X509EncodedKeySpec(
+                Base64.getDecoder().decode(
+                    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+                            "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
+                )
+            )
         ),
+    //HW EC ROOT
     KeyFactory.getInstance("RSA")
         .generatePublic(
             X509EncodedKeySpec(
-                Base64.getDecoder().decode(SoftwareAttestationChecker.GOOGLE_SOFTWARE_RSA_ROOT)
+                Base64.getDecoder().decode(
+                    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+                            "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+                            "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+                            "+Vfkl5YLCazOkjWFmwIDAQAB"
+                )
             )
         )
 )
@@ -101,18 +117,18 @@ val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
  * @param softwareAttestationTrustAnchors Manually specify the trust anchor for SW-attested certificate chains.
  * Defaults to google SW attestation keys. Overriding this set is useful for automated end-to-end tests, for example.
  * The default trust anchors are accessible through [DEFAULT_SOFTWARE_TRUST_ANCHORS]
- * @param disableHardwareAttestation Entirely disable creation of a [HardwareAttestationChecker].
+ * @param disableHardwareAttestation Entirely disable creation of a [LegacyHardwareAttestationEngine].
  * Only change this flag, if you **really** know what you are doing!
  * @param enableNougatAttestation Enables hybrid attestation.
- * [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+ * [LegacyNougatHybridAttestationEngine] can only be instantiated if this flag is set to true.
  * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
  * devices only support hardware-backed key attestation, but provide no indication about the OS state.
  * Hence, app-attestation cannot be trusted, but key attestation still can.
  * @param enableSoftwareAttestation Enables software attestation.
- * A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+ * A [LegacySoftwareAttestationEngine] can only be instantiated if this flag is set to true.
  * Only change this flag, if you **really** know what you are doing!
  * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
- * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+ * [LegacyHardwareAttestationEngine] and a [LegacySoftwareAttestationEngine].
  */
 @Serializable
 data class AndroidAttestationConfiguration @JvmOverloads constructor(
@@ -137,14 +153,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Set to `true` if *StrongBox* security level should be required.
-     * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+     * **BEWARE** that this switch is utterly useless if [LegacyNougatHybridAttestationEngine] of [LegacySoftwareAttestationEngine] is used
      */
     val requireStrongBox: Boolean = false,
 
     /**
      * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
      * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-     * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+     * **BEWARE** that this switch is utterly useless if [LegacyNougatHybridAttestationEngine] of [LegacySoftwareAttestationEngine] is used
      */
     val allowBootloaderUnlock: Boolean = false,
 
@@ -188,14 +204,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val attestationStatementValiditySeconds: Long? = 5 * 60,
 
     /**
-     * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+     * Entirely disable creation of a [LegacyHardwareAttestationEngine]. Only change this flag, if you **really** know what
      * you are doing!
      * @see enableSoftwareAttestation
      */
     val disableHardwareAttestation: Boolean = false,
 
     /**
-     * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+     * Enables hybrid attestation. A [LegacyNougatHybridAttestationEngine] can only be instantiated if this flag is set to true.
      * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
      * devices only support hardware-backed key attestation, but provide no indication about the OS state.
      * Hence, app-attestation cannot be trusted, but key attestation still can.
@@ -203,10 +219,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val enableNougatAttestation: Boolean = false,
 
     /**
-     * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+     * Enables software attestation. A [LegacySoftwareAttestationEngine] can only be instantiated if this flag is set to true.
      * Only change this flag, if you **really** know what you are doing!
-     * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-     * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+     * Enabling this flag, while keeping [disableHardwareAttestation] `false` makes is possible to instantiate both a
+     * [LegacyHardwareAttestationEngine] and a [LegacySoftwareAttestationEngine].
      */
     val enableSoftwareAttestation: Boolean = false,
 
@@ -241,14 +257,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [egacyNougatHybridAttestationChecker] of [LegacySoftwareAttestationEngine] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [LegacyNougatHybridAttestationEngine] of [LegacySoftwareAttestationEngine] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -290,14 +306,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         attestationStatementValiditySeconds: Long? = 5 * 60,
 
         /**
-         * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+         * Entirely disable creation of a [LegacyHardwareAttestationEngine]. Only change this flag, if you **really** know what
          * you are doing!
          * @see enableSoftwareAttestation
          */
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables hybrid attestation. A [LegacyNougatHybridAttestationEngine] can only be instantiated if this flag is set to true.
          * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
          * devices only support hardware-backed key attestation, but provide no indication about the OS state.
          * Hence, app-attestation cannot be trusted, but key attestation still can.
@@ -305,10 +321,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableNougatAttestation: Boolean = false,
 
         /**
-         * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables software attestation. A [LegacySoftwareAttestationEngine] can only be instantiated if this flag is set to true.
          * Only change this flag, if you **really** know what you are doing!
          * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-         * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+         * [LegacyHardwareAttestationEngine] and a [LegacySoftwareAttestationEngine].
          */
         enableSoftwareAttestation: Boolean = false,
 
@@ -353,14 +369,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [LegacyNougatHybridAttestationEngine] of [LegacySoftwareAttestationEngine] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [LegacyNougatHybridAttestationEngine] of [LegacySoftwareAttestationEngine] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -389,7 +405,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         attestationStatementValiditySeconds: Long? = 5 * 60,
 
         /**
-         * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+         * Entirely disable creation of a [LegacyHardwareAttestationEngine]. Only change this flag, if you **really** know what
          * you are doing!
          * @see enableSoftwareAttestation
          */
@@ -397,7 +413,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables hybrid attestation. A [LegacyNougatHybridAttestationEngine] can only be instantiated if this flag is set to true.
          * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
          * devices only support hardware-backed key attestation, but provide no indication about the OS state.
          * Hence, app-attestation cannot be trusted, but key attestation still can.
@@ -405,10 +421,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableNougatAttestation: Boolean = false,
 
         /**
-         * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables software attestation. A [LegacySoftwareAttestationEngine] can only be instantiated if this flag is set to true.
          * Only change this flag, if you **really** know what you are doing!
          * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-         * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+         * [LegacyHardwareAttestationEngine] and a [LegacySoftwareAttestationEngine].
          */
         enableSoftwareAttestation: Boolean = false,
 
@@ -835,6 +851,27 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + (httpProxy?.hashCode() ?: 0)
         return result
     }
+
+
+    /**
+     * Creates a legacy Android attestation engine matching [level]
+     * @throws AndroidAttestationException in case the security level clashes with the config (i.e. [level]` = `[AttestationSecurityLevel.HARDWARE] but [disableHardwareAttestation]` = true` )
+     */
+    @Throws(AndroidAttestationException::class)
+    fun legacyEngineForLevel(level: AttestationSecurityLevel): LegacyAttestationEngine =
+        when (level) {
+            AttestationSecurityLevel.HARDWARE -> LegacyHardwareAttestationEngine(this)
+            AttestationSecurityLevel.NOUGAT -> LegacyNougatHybridAttestationEngine(this)
+            AttestationSecurityLevel.SOFTWARE -> LegacySoftwareAttestationEngine(this)
+        }
+
+}
+
+
+enum class AttestationSecurityLevel {
+    HARDWARE,
+    NOUGAT,
+    SOFTWARE
 }
 
 private fun ByteArray.parsePublicKey() =

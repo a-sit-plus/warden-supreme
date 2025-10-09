@@ -10,3 +10,6 @@
 [submodule "dependencies/http-proxy"]
 	path = dependencies/http-proxy
 	url = https://github.com/zk-123/http-proxy.git
+[submodule "dependencies/signum"]
+	path = dependencies/signum
+	url = git@github.com:a-sit-plus/signum.git

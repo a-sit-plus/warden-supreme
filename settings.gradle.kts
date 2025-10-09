@@ -28,3 +28,7 @@ include("supreme-client")
 project(":supreme-verifier").projectDir = file("supreme/verifier")
 project(":supreme-common").projectDir = file("supreme/common")
 project(":supreme-client").projectDir = file("supreme/client")
+
+if (System.getProperty("publishing.excludeIncludedBuilds") != "true") {
+    includeBuild("dependencies/signum")
+} else logger.lifecycle("Excluding Signum from this build")
