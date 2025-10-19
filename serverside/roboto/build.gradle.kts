@@ -1,10 +1,7 @@
-import at.asitplus.gradle.AspVersions
 import at.asitplus.gradle.bouncycastle
 import at.asitplus.gradle.datetime
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
-import org.gradle.kotlin.dsl.support.listFilesOrdered
-import org.jetbrains.kotlin.gradle.targets.js.testing.karma.processKarmaStackTrace
 
 val artifactVersion: String by extra
 val groupId: String by extra
@@ -22,8 +19,10 @@ plugins {
 
 sourceSets.main {
     java {
-        srcDirs("${project.rootDir}/dependencies/android-key-attestation/src/main/java",
-            "${project.rootDir}/dependencies/keyattestation/src/main/kotlin/")
+        srcDirs(
+            "${project.rootDir}/dependencies/android-key-attestation/src/main/java",
+            "${project.rootDir}/dependencies/keyattestation/src/main/kotlin/"
+        )
 
 
         exclude(
@@ -33,7 +32,7 @@ sourceSets.main {
         )
         File("${project.rootDir}/dependencies/android-key-attestation/src/main/java/com/google/android/attestation/AuthorizationList.java").let {
             if (it.exists()) {
-               it.delete()
+                it.delete()
             }
         }
     }
@@ -50,7 +49,8 @@ sourceSets.test {
     }
     resources {
         srcDirs(
-            rootProject.layout.projectDirectory.dir("dependencies").dir("android-key-attestation").dir("src").dir("test")
+            rootProject.layout.projectDirectory.dir("dependencies").dir("android-key-attestation").dir("src")
+                .dir("test")
                 .dir("resources"),
             "src/test/resources"
         )
@@ -68,7 +68,7 @@ dependencies {
     api(libs.guava)
     implementation(libs.autovalue.annotations)
     annotationProcessor(libs.autovalue.value)
-    api(libs.signum)  {
+    api(libs.signum) {
         exclude("org.bouncycastle", "bcpkix-jdk18on")
     }
 
@@ -99,13 +99,20 @@ val javadocJar = setupDokka(
     multiModuleDoc = true
 )
 
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+}
 
 
 publishing {
     publications {
         register("mavenJava", MavenPublication::class) {
             from(components["java"])
-            if (this.name != "relocation") artifact(javadocJar.get())
+            if (this.name != "relocation") {
+                artifact(javadocJar.get())
+                artifact(sourcesJar.get())
+            }
             pom {
                 name.set("Warden roboto")
                 description.set("Server-Side Android Attestation Library")
@@ -134,6 +141,11 @@ publishing {
                     url.set("https://github.com/a-sit-plus/warden-supreme")
                 }
             }
+        }
+    }
+    repositories {
+        mavenLocal {
+            signing.isRequired = false
         }
     }
 }

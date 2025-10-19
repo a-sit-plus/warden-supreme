@@ -2,7 +2,6 @@ import at.asitplus.gradle.bouncycastle
 import at.asitplus.gradle.datetime
 import at.asitplus.gradle.setupDokka
 import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.support.listFilesOrdered
 
 plugins {
     kotlin("jvm")
@@ -44,11 +43,20 @@ val javadocJar = setupDokka(
     multiModuleDoc = true
 )
 
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+}
+
+
 publishing {
     publications {
         register("mavenJava", MavenPublication::class) {
             from(components["java"])
-            if (this.name != "relocation") artifact(javadocJar.get())
+            if (this.name != "relocation") {
+                artifact(javadocJar.get())
+                artifact(sourcesJar.get())
+            }
             pom {
                 name.set("Warden makoto")
                 description.set("Server-Side Android+iOS Attestation Library")

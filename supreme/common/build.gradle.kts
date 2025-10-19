@@ -65,6 +65,7 @@ val javadocJar = setupDokka(
 publishing {
     publications {
         withType<MavenPublication> {
+            artifact(javadocJar)
             pom {
                 name.set("Warden Supreme Commons")
                 description.set("Attestation datatypes and utilities; part of the WARDEN Supreme integrated key attestation suite")
@@ -97,11 +98,6 @@ publishing {
     }
     repositories {
         mavenLocal {
-            signing.isRequired = false
-        }
-        maven {
-            url = uri(layout.projectDirectory.dir("..").dir("repo"))
-            name = "local"
             signing.isRequired = false
         }
     }

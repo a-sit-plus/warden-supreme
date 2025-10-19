@@ -8,7 +8,7 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-brightgreen.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Kotlin](https://img.shields.io/badge/kotlin-2.0.20-blue.svg?logo=kotlin)](http://kotlinlang.org)
 ![Java](https://img.shields.io/badge/java-17-blue.svg?logo=OPENJDK)
-[![Maven Central](https://img.shields.io/maven-central/v/at.asitplus.warden/verifier)](https://mvnrepository.com/artifact/at.asitplus.warden/verfier)
+[![Maven Central](https://img.shields.io/maven-central/v/at.asitplus.warden/supreme-common)](https://mvnrepository.com/artifact/at.asitplus.warden/)
 
 </div>
 

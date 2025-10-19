@@ -103,4 +103,4 @@ jobs:
       - name: Build mkdics HTML
         run: |
           export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib
-          ./gradlew mkDocsSite
+          ./gradlew mkDocsBuild

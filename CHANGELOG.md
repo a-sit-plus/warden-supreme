@@ -3,7 +3,7 @@
 Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as a dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-## Warden Supreme 0.2.0
+## Warden Supreme 0.9.0
 * Breaking change: `AttestationResult` hierarchy has been amended by a `Verified` subinterface
 * Export Apple App Attest Validation library as API dependency
 * Attach more context to Android exceptions
@@ -14,9 +14,6 @@ this changelog also includes the original WARDEN changelog.
     * Update conventions to 20250729
     * Update Kotlin to 2.2.20
     * Replace `kotlinx.datetime` with `kotlin.time`
-
-## Warden Supreme 0.1.0
-* Internal prototype
 
 ### WARDEN 2.0.0
 Breaking changes ahead!
