@@ -3,6 +3,8 @@
 Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as a dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
+## Warden Supreme NEXT
+
 ## Warden Supreme 0.9.0
 * Breaking change: `AttestationResult` hierarchy has been amended by a `Verified` subinterface
 * Export Apple App Attest Validation library as API dependency

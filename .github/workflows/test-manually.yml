@@ -9,7 +9,7 @@ on:
         type: string
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     env:
       KOTLIN_VERSION_ENV: ${{ inputs.kotlin-version }}
     steps:
@@ -22,17 +22,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Build jar
-        run: ./gradlew test assemble
+        run: ./gradlew allTests assemble
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
           name: All Tests
-          path: serverside/**/build/test-results/**/TEST*.xml
+          path: serverside/**/build/test-results/**/TEST*.xml,utils/**/build/test-results/**/TEST*.xml,supreme/**/build/test-results/**/TEST*.xml
           reporter: java-junit
-      - name: Upload jar
-        uses: actions/upload-artifact@v4
-        with:
-          name: warden
-          path: |
-            build/libs/*jar
