@@ -1,5 +1,9 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacyAttestationEngine
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacyHardwareAttestationEngine
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacyNougatHybridAttestationEngine
+import at.asitplus.attestation.android.at.asitplus.attestation.android.legacy.LegacySoftwareAttestationEngine
 import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
@@ -18,6 +22,7 @@ private val jsonDebug = kotlinx.serialization.json.Json {
     ignoreUnknownKeys = true
 }
 
+//TODO this also needs to be made aware of different engines
 @Serializable
 class AndroidDebugAttestationStatement(
     val kind: Type,
@@ -28,16 +33,16 @@ class AndroidDebugAttestationStatement(
 ) {
 
     constructor(
-        checker: AndroidAttestationChecker,
+        checker: AttestationEngine<*,*>,
         configuration: AndroidAttestationConfiguration,
         verificationTime: Date,
         challenge: ByteArray,
         attestationStatement: List<X509Certificate>
     ) : this(
         when (checker) {
-            is HardwareAttestationChecker -> Type.HARDWARE
-            is SoftwareAttestationChecker -> Type.SOFTWARE
-            is NougatHybridAttestationChecker -> Type.NOUGAT_HYBRID
+            is LegacyHardwareAttestationEngine -> Type.HARDWARE
+            is LegacySoftwareAttestationEngine -> Type.SOFTWARE
+            is LegacyNougatHybridAttestationEngine -> Type.NOUGAT_HYBRID
             else -> throw IllegalArgumentException("Unknown checker type")
         },
         configuration,
@@ -47,11 +52,11 @@ class AndroidDebugAttestationStatement(
 
     )
 
-    fun checkerFromConfig(): AndroidAttestationChecker =
+    fun checkerFromConfig(): LegacyAttestationEngine =
         when (kind) {
-            Type.HARDWARE -> HardwareAttestationChecker(configuration)
-            Type.SOFTWARE -> SoftwareAttestationChecker(configuration)
-            Type.NOUGAT_HYBRID -> NougatHybridAttestationChecker(configuration)
+            Type.HARDWARE -> LegacyHardwareAttestationEngine(configuration)
+            Type.SOFTWARE -> LegacySoftwareAttestationEngine(configuration)
+            Type.NOUGAT_HYBRID -> LegacyNougatHybridAttestationEngine(configuration)
         }
 
     fun replay() = checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)

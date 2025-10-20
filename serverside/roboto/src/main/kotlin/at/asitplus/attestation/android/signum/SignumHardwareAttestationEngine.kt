@@ -1,22 +1,16 @@
-package at.asitplus.attestation.android
+package at.asitplus.attestation.android.at.asitplus.attestation.android.legacy
 
+import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import com.google.android.attestation.ParsedAttestationRecord
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.cache.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.serialization.kotlinx.json.*
 import java.util.*
 
-class HardwareAttestationChecker @JvmOverloads constructor(
+class SignumHardwareAttestationEngine @JvmOverloads constructor(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
-) : AndroidAttestationChecker(attestationConfiguration, verifyChallenge) {
+) : LegacyAttestationEngine(attestationConfiguration, verifyChallenge) {
 
     init {
         if (attestationConfiguration.disableHardwareAttestation) throw object :
