@@ -31,7 +31,7 @@ jobs:
           ./gradlew :supreme-client:pixel2api33Setup :supreme-verifier:jvmTestClasses startVerifier pixel2api33Check
           kill "$LOGCAT_PID" || true
       - name: Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         if: success() || failure()
         with:
           name: Warden Supreme Android Connected Tests

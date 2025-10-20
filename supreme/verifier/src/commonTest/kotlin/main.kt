@@ -156,8 +156,11 @@ class TestEnv : FreeSpec({
             }
         }.start(wait = false)
         println("KTOR server started!")
+        val before = Clock.System.now()
+
         while (running) {
-            Thread.sleep(5000)
+            Thread.sleep(1000)
+            if(Clock.System.now()-before>5.minutes) running = false
         }
         server.stop()
     }
