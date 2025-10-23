@@ -1,17 +1,8 @@
-name: Test Manually
-on:
-  workflow_dispatch:
-    inputs:
-      kotlin-version:
-        description: 'Override Kotlin version?'
-        required: false
-        default: ''
-        type: string
+name: Test makoto + roboto
+on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      KOTLIN_VERSION_ENV: ${{ inputs.kotlin-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -22,7 +13,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Build jar
-        run: ./gradlew :makoto:test :roboto:test assemble
+        run: ./gradlew :makoto:test :roboto:test
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: success() || failure()

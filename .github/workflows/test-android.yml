@@ -1,4 +1,4 @@
-name: Test Android implementation
+name: Test Supreme Integration
 on: [push]
 jobs:
   test:
