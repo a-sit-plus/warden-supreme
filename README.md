@@ -106,8 +106,12 @@ val warden = Warden(
                                                                     // as valid 
                                                                     // maxFuturePatchLevelMonths defaults to 1
                                                                     // null means any future patch level is OK
-               trustAnchorOverrides = setOf(extraTrustedRootPubKey) // require a custom root as the trust anchor
+               
+               trustAnchorOverrides = setOf(extraTrustedRootPubKey),// require a custom root as the trust anchor
                                                                     // for the attestation certificate chain
+               
+               requireRemoteProvisioningOverride = true             // require a remotely provisioned attestation
+                                                                    // certificate for extra security
            )
        ),
        androidVersion = 110000,                  // OPTIONAL, null by default
@@ -122,8 +126,11 @@ val warden = Warden(
        disableHardwareAttestation = false,       // OPTIONAL, defaults to false; set true to disable HW attestation
        enableNougatAttestation = false,          // OPTIONAL, defaults to false; set true to enable hybrid attestation
        enableSoftwareAttestation = false,        // OPTIONAL, defaults to false; set true to enable SW attestation
-       attestationStatementValiditySeconds = 300 // OPTIONAL, defaults to 300s
-   ),
+       attestationStatementValiditySeconds = 300,// OPTIONAL, defaults to 300s
+       httpProxy = null,                         //OPTIONAL HTTP proxy url, such as http://proxy.domain:12345, defaults to null for no proxy
+       requireRemoteKeyProvisioning = false       //OPTIONAL, whether to require a remotely-provisioned attestation certificate
+
+    ),
    iosAttestationConfiguration = IosAttestationConfiguration(
       applications = listOf(
         IosAttestationConfiguration.AppData(

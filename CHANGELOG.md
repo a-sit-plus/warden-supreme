@@ -3,7 +3,10 @@
 Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as a dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-## Warden Supreme NEXT
+## Warden Supreme 1.0.0
+* First-Class support for remote provisioning checks on Android
+* Update `keyattestation to 2025-10-21`
+* Update to Signum 3.18.0 / Supreme 0.10.0
 
 ## Warden Supreme 0.9.0
 * Breaking change: `AttestationResult` hierarchy has been amended by a `Verified` subinterface

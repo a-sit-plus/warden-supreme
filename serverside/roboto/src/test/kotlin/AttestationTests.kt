@@ -749,14 +749,17 @@ fun attestationService(
     requireStrongBox: Boolean = false,
     unlockedBootloaderAllowed: Boolean = false,
     requireRollbackResistance: Boolean = false,
-    attestationStatementValiditiy: Duration = 5.minutes
+    attestationStatementValiditiy: Duration = 5.minutes,
+    rkpRequired: Boolean=false,
+    rkpAppRequired: Boolean?=null,
 ) = HardwareAttestationChecker(
     AndroidAttestationConfiguration(
         listOf(
             AndroidAttestationConfiguration.AppData(
                 packageName = androidPackageName,
                 signatureDigests = androidAppSignatureDigest,
-                appVersion = androidAppVersion
+                appVersion = androidAppVersion,
+                requireRemoteKeyProvisioningOverride = rkpAppRequired
             )
         ),
         androidVersion = androidVersion,
@@ -764,7 +767,8 @@ fun attestationService(
         requireStrongBox = requireStrongBox,
         allowBootloaderUnlock = unlockedBootloaderAllowed,
         requireRollbackResistance = requireRollbackResistance,
-        attestationStatementValiditySeconds = attestationStatementValiditiy.inWholeSeconds
+        attestationStatementValiditySeconds = attestationStatementValiditiy.inWholeSeconds,
+        requireRemoteKeyProvisioning = rkpRequired,
 
     )
 )
