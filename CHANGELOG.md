@@ -5,8 +5,14 @@ this changelog also includes the original WARDEN changelog.
 
 ## Warden Supreme 1.0.0
 * First-Class support for remote provisioning checks on Android
-* Update `keyattestation to 2025-10-21`
-* Update to Signum 3.18.0 / Supreme 0.10.0
+* Dependency Updates
+    * `keyattestation` to 2025-10-21
+    * Signum 3.18.0 / Supreme 0.10.0
+    * Guava 33.5.0-jre
+    * gson 2.13.2
+    * errorprone 2.43.0
+    * protobuf 4.33.0
+    * semver 2.1.0
 
 ## Warden Supreme 0.9.0
 * Breaking change: `AttestationResult` hierarchy has been amended by a `Verified` subinterface
