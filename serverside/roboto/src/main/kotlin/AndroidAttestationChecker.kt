@@ -129,42 +129,6 @@ abstract class AndroidAttestationChecker(
 
     }
 
-    /**
-     * Returns the parsed, but generic contents of the [Remote Key Provisioning
-     * extension](https://source.android.com/docs/security/features/keystore/attestation#provisioninginfo_extension),
-     * if present in an Android attestation certificate chain.
-     * One would assume that we could define a type-safe data structure for that, but Samsung being Samsung
-     * has kindly reminded us of the fact that phrases like "conforms schema" are thrown around far too often in specifications.
-     *
-     * Google's code has such a type for that, but I wouldn't trust vendors to observe the CBOR schema,
-     * so we just check for valid CBOR as a baseline.
-     *
-     * @see provisioningInfo to get the number of issued certificates
-     */
-    fun List<X509Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
-        get(1).getExtensionValue(OID_RKP)?.let {
-            val rkpData = CborDecoder.decode(Asn1Element.parse(it).asOctetString().content)
-            rkpData.first() as co.nstant.`in`.cbor.model.Map
-        }
-    }.getOrNull()
-
-    /**
-     * **TRIES** to parse the number of remotely provisioned attestation certificates.
-     * Note that this method returning `null` does not necessarily mean that a remotely provisioned
-     * certificate is not present. It could very well be that the extension is present but botched.
-     * (Looking at you, Samsung!).
-     *
-     * @see isRemoteKeyProvisioned
-     */
-    fun List<X509Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
-        get(1).provisioningInfo()?.certificatesIssued
-    }.getOrNull()
-
-    /**
-     * Indicates whether the attestation certificate in this certificate chain is remotely provisioned
-     */
-    fun List<X509Certificate>.isRemoteKeyProvisioned(): Boolean = getRkpData() != null
-
     @Throws(RevocationException::class, CertificateInvalidException::class)
     private fun verifyCertificatePair(
         certificate: X509Certificate,
@@ -615,3 +579,40 @@ fun HttpClientConfig<*>.setup(proxyUrl: String?) =
         install(ContentNegotiation) { json(json) }
         engine { proxyUrl?.let { proxy = ProxyBuilder.http(it) } }
     }
+
+
+/**
+ * Returns the parsed, but generic contents of the [Remote Key Provisioning
+ * extension](https://source.android.com/docs/security/features/keystore/attestation#provisioninginfo_extension),
+ * if present in an Android attestation certificate chain.
+ * One would assume that we could define a type-safe data structure for that, but Samsung being Samsung
+ * has kindly reminded us of the fact that phrases like "conforms schema" are thrown around far too often in specifications.
+ *
+ * Google's code has such a type for that, but I wouldn't trust vendors to observe the CBOR schema,
+ * so we just check for valid CBOR as a baseline.
+ *
+ * @see provisioningInfo to get the number of issued certificates
+ */
+fun List<X509Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
+    get(1).getExtensionValue(OID_RKP)?.let {
+        val rkpData = CborDecoder.decode(Asn1Element.parse(it).asOctetString().content)
+        rkpData.first() as co.nstant.`in`.cbor.model.Map
+    }
+}.getOrNull()
+
+/**
+ * **TRIES** to parse the number of remotely provisioned attestation certificates.
+ * Note that this method returning `null` does not necessarily mean that a remotely provisioned
+ * certificate is not present. It could very well be that the extension is present but botched.
+ * (Looking at you, Samsung!).
+ *
+ * @see isRemoteKeyProvisioned
+ */
+fun List<X509Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
+    get(1).provisioningInfo()?.certificatesIssued
+}.getOrNull()
+
+/**
+ * Indicates whether the attestation certificate in this certificate chain is remotely provisioned
+ */
+fun List<X509Certificate>.isRemoteKeyProvisioned(): Boolean = getRkpData() != null

@@ -228,7 +228,7 @@ this typically works as follows:
 post(ENDPOINT_ATTEST) {
     val src = call.receive<ByteArray>()
     val resp =
-        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(src)) { csr ->
+        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(src)) { csr, _ ->
         
         /* certificateSigner is assumed to be a `Signer` instance configured to use the CA key for signing */
         certificateSigner.sign(

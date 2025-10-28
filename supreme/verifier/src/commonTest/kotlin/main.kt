@@ -1,7 +1,11 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.attestation.AttestationException
+import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.exceptions.AttestationValueException
+import at.asitplus.attestation.android.isRemoteKeyProvisioned
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
@@ -125,7 +129,8 @@ class TestEnv : FreeSpec({
                             onAttestationError = { stmt ->
                                 println(stmt.serializeCompact())
                                 stmt.serializeCompact()
-                            }) { csr ->
+                            }) { csr, _ ->
+
                             Signer.Ephemeral {
                                 ec { }
                             }.getOrThrow().let { signer ->

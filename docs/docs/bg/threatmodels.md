@@ -1,5 +1,9 @@
 # Threat Models and Risks
 
+!!! bug inline end "Android Private Key Extraction"
+    A small percentage of vendors store private key material in plain that should only be accessible
+    inside secure hardware. See
+
 Attestation is not a panacea—nothing ever is.
 Attestation is, however, a powerful mechanism that significantly raises the security bar for clients that would
 otherwise be untrusted.  
@@ -19,13 +23,13 @@ use your service.
 To keep such devices and apps out, require strong, cryptographic platform guarantees:
 
 - Android  
-  - Accept only attestation records with `verifiedBootState: Verified` and a locked bootloader.  
-  - Enforce a minimum OS security patch level to exclude known, widely exploited vulnerabilities.  
-  - Verify the app identity: compare package name and signing‑certificate digest(s) against your allowlist.
+    - Accept only attestation records with `verifiedBootState: Verified` and a locked bootloader.  
+    - Enforce a minimum OS security patch level to exclude known, widely exploited vulnerabilities.  
+    - Verify the app identity: compare package name and signing‑certificate digest(s) against your allowlist.
 
 - iOS  
-  - Require a complete App Attest certificate chain, validate the challenge/nonce, and ensure the device counter
-  increases monotonically.
+    - Require a complete App Attest certificate chain, validate the challenge/nonce, and ensure the device counter
+    increases monotonically.
 
 Since software‑only Android attestation can be forged on rooted devices, the policy decision is simple:  
 **Accept hardware‑backed attestation only; reject software attestation.** This preserves access for honest users while
@@ -41,6 +45,24 @@ filtering out cheap, commoditized attacks.
     
     In each case, the app identity (package name + signer digest) and the hardware‑backed attestation prevent a repackaged or resigned app from being accepted.
 
+### Attack Goals
+The goals of using off-the-shelf methods to tamper with apps are twofold:
+
+1. Circumvent root checks and modify app logic on one's own device
+2. Distribute malware inside repackaged apps through unofficial app stores
+
+The first class of "attackers" can be treated as an untrusted client a user deliberately employs themself.
+Assuming that a user only has access to their own data, this does not pose privacy risks or endanger other users.
+It **can** be an issue in multiplayer games, for example, as it will allow cheating. **Even sophisticated means
+to circumvent attestation (see [Threat Model&nbsp;C](#threat-model-c--targeted-attackers-with-physical-device-access)) will still keep other users safe!**
+
+The second class of attackers has malicious intent and tries to harm legitimate users at scale. They do not have access
+to their victims' devices and thus cannot modify the operating system.
+Hence, these attackers are limited to modifying the actual application they distribute, and any invasive changes to a device
+or the operating system are irrelevant for such scenarios. **If you backend enforces and properly checks attestation, your users are safe**,
+because sophisticated means to circumvent attestation require physical access to a victim's device
+(see [Threat Model&nbsp;C](#threat-model-c--targeted-attackers-with-physical-device-access)).
+
 ### Concrete Example: Repackaging ID Austria
 
 Public demonstrations have shown attempts to repackage apps to bypass client‑side checks (e.g., root/jailbreak
@@ -55,7 +77,7 @@ which explores patching attempts against the Austrian _Digitales Amt_ app.
 - It showcases that client‑side defenses alone (root checks, anti‑debug, obfuscation) can be removed or bypassed once an
   attacker controls the binary, reinforcing the need for server‑side verification based on cryptography rather than
   heuristics.
-- It serves as a real‑world illustration that repackaging is mechanically feasible but strategically futile against
+- It serves as a real‑world illustration that repackaging is feasible but strategically futile against
   services that enforce hardware‑backed attestation and app‑identity binding.
 
 **Why this fails under proper attestation:**
@@ -98,14 +120,17 @@ Defense therefore focuses on distinguishing real, unique devices and making hori
 - **Cost‑increasing policy levers** (apply based on audience support):
     - Minimum Android OS version: Set a recent floor to exclude older, cheaper second‑hand devices that dominate farms.  
     - Patch‑level floor: Require recent security patch levels to filter out poorly maintained devices.  
-    - Device capabilities: Prefer StrongBox when feasible to rule out inexpensive hardware.
+    - Device capabilities:
+        - Prefer StrongBox when feasible to rule out inexpensive hardware.
+        - Require Remote Key Provisioning
     - Integrity signals: Combine attestation with server‑side anomaly detection (rate limits, IP reputation, proof‑of‑work for abuse endpoints) to degrade automation ROI.
 
 !!! warning inline end
     Consider your target audience! If you target a wide user base, you cannot demand fully updated, top-of-the-line devices.
 
-The goal is to ensure real hardware, block modified apps, and systematically remove the cheapest device classes from
-eligibility. Even the simple fact of requiring real hardware raises the cost of Sybil attacks astronomically compared to using emulators.
+The goal is to ensure real hardware, block modified apps, systematically remove the cheapest device classes from
+eligibility, and enforce remote key provisioning.
+Even the simple fact of requiring real hardware raises the cost of Sybil attacks astronomically compared to using emulators.
 Enforcing modern hardware with up‑to‑date security greatly increases the
 operating cost of a bot farm and reduces feasibility of such operations.
 
@@ -134,6 +159,10 @@ These controls will exclude older or lower‑end devices. The policy trade‑off
         - Hardware attestation
         - Locked bootloader + verified boot (possibly allowing known-good custom ROM verified boot keys)
         - Reject older patch‑levels
+    - Strong Sybil Resistance
+        - Require remote key provisioning
+        - Require recent OS versions
+        - Require more recent patch levels
     - Hardening against targeted attacks:
         - Require StrongBox
         - Rollback resistance

@@ -5,6 +5,7 @@ this changelog also includes the original WARDEN changelog.
 
 ## Warden Supreme 1.0.0
 * First-Class support for remote provisioning checks on Android
+* API CHANGE: `CerfificateIssuer` Lambda now also has access to the full attestation result
 * Dependency Updates
     * `keyattestation` to 2025-10-21
     * Signum 3.18.0 / Supreme 0.10.0

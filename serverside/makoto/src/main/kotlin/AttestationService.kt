@@ -380,9 +380,9 @@ data class KeyAttestation<T : PublicKey> internal constructor(
     @Suppress("UNUSED")
     inline fun <R> fold(
         onError: (AttestationResult.Error) -> R,
-        onSuccess: (T, AttestationResult) -> R
+        onSuccess: (T, AttestationResult.Verified) -> R
     ): R =
-        if (isSuccess) onSuccess(attestedPublicKey!!, details)
+        if (isSuccess) onSuccess(attestedPublicKey!!, details as AttestationResult.Verified)
         else {
             onError(details as AttestationResult.Error)
         }
