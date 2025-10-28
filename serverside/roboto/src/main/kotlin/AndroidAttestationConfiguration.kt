@@ -2,12 +2,17 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.CryptoPrivateKey
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
+import at.asitplus.signum.indispensable.toJcaPublicKey
 import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
+import org.bouncycastle.jce.spec.ECKeySpec
 import java.security.KeyFactory
 import java.security.PublicKey
+import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
 import java.util.*
@@ -59,7 +64,12 @@ data class PatchLevel @JvmOverloads constructor(
  */
 val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("RSA")
-        .generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(GOOGLE_ROOT_CA_PUB_KEY)))
+        .generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(GOOGLE_ROOT_CA_PUB_KEY))),
+    //new Google EC Root
+    CryptoPublicKey.decodeFromDer(Base64.getDecoder()
+                    .decode("MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEI9ojcU7fPlsFCjxy6IRqzgeOoK0b+YsV9FPQywiyw8EQRTkJ9u3qwfnI4DGoSLlBqClTXJfgfCcZvs60FikNMHnu4fkRzObfgDkU2KNXezT9/RQ+XvNslxPHrHCowhGr")
+            ).toJcaPublicKey().getOrThrow()
+
 )
 
 
@@ -641,7 +651,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
             if (patchLevelOverride != other.patchLevelOverride) return false
 
-            if(requireRemoteKeyProvisioningOverride != other.requireRemoteKeyProvisioningOverride) return false
+            if (requireRemoteKeyProvisioningOverride != other.requireRemoteKeyProvisioningOverride) return false
 
             return true
         }

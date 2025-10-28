@@ -41,6 +41,7 @@ import java.time.YearMonth
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
+import javax.security.auth.x500.X500Principal
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -594,6 +595,7 @@ fun HttpClientConfig<*>.setup(proxyUrl: String?) =
  * @see provisioningInfo to get the number of issued certificates
  */
 fun List<X509Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
+    require(isRemoteKeyProvisioned())
     get(1).getExtensionValue(OID_RKP)?.let {
         val rkpData = CborDecoder.decode(Asn1Element.parse(it).asOctetString().content)
         rkpData.first() as co.nstant.`in`.cbor.model.Map
@@ -609,10 +611,31 @@ fun List<X509Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchin
  * @see isRemoteKeyProvisioned
  */
 fun List<X509Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
+    require(isRemoteKeyProvisioned())
     get(1).provisioningInfo()?.certificatesIssued
 }.getOrNull()
 
 /**
- * Indicates whether the attestation certificate in this certificate chain is remotely provisioned
+ * Indicates whether the attestation certificate in this certificate chain is remotely provisioned.
+ *
+ * This snippet incorporates [code](https://github.com/android/keyattestation/blob/main/src/main/kotlin/provider/KeyAttestationCertPath.kt#L119) from Google's CertPathValidator
  */
-fun List<X509Certificate>.isRemoteKeyProvisioned(): Boolean = getRkpData() != null
+fun List<X509Certificate>.isRemoteKeyProvisioned(): Boolean {
+    val principal = get(size - 2).subjectX500Principal
+    val rdn =parseDN( principal.getName(X500Principal.RFC1779))
+    return rdn["CN"] == "Droid CA2" && rdn["O"] == "Google LLC"
+}
+
+//taken from https://github.com/android/keyattestation/blob/main/src/main/kotlin/provider/KeyAttestationCertPath.kt#L143C1-L154C2 as it is private in the incorporated code
+private fun parseDN(dn: String): Map<String, String> {
+    val attributes = mutableMapOf<String, String>()
+    val parts = dn.split(",")
+
+    for (part in parts) {
+        val keyValue = part.trim().split("=", limit = 2)
+        if (keyValue.size == 2) {
+            attributes[keyValue[0].trim()] = keyValue[1].trim()
+        }
+    }
+    return attributes
+}
