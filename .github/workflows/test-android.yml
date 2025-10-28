@@ -28,7 +28,7 @@ jobs:
           adb devices                                # makes sure the daemon is up
           adb logcat -v time &                       # stream to stdout
           LOGCAT_PID=$!
-          ./gradlew :supreme-client:pixel2api33Setup :supreme-verifier:jvmTestClasses startVerifier pixel2api33Check
+          ./gradlew :supreme-client:pixelAVDSetup :supreme-verifier:jvmTestClasses startVerifier pixelAVDAndroidDeviceTest
           kill "$LOGCAT_PID" || true
       - name: Test Report
         uses: dorny/test-reporter@v2

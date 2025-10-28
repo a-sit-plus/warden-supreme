@@ -2,8 +2,9 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
-import at.asitplus.test.FreeSpec
-import io.kotest.datatest.withData
+import at.asitplus.testballoon.minus
+import at.asitplus.testballoon.withData
+import de.infix.testBalloon.framework.testSuite
 
 val sammy14 = AttestationData(
     name = "Samsung SM-S921B",
@@ -78,9 +79,9 @@ val pixel6KeyMint200Good = AttestationData(
     packageOverride = "at.asitplus.attestation_client"
 )
 
-class RkpTests : FreeSpec({
+val RkpTests by testSuite {
     "RKP Ext Present" - {
-        withData(listOf(sammy14 to null, pixel6KeyMint200Good to false)) {(it, rkpOverride) ->
+        withData(listOf(sammy14 to null, pixel6KeyMint200Good to false)) { (it, rkpOverride) ->
             val res = attestationService(
                 androidPackageName = it.packageOverride!!,
                 rkpRequired = true,
@@ -88,7 +89,5 @@ class RkpTests : FreeSpec({
             ).verifyAttestation(it.attestationCertChain, it.verificationDate, it.challenge)
             println(res)
         }
-
     }
-
-})
+}

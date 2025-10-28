@@ -1,11 +1,7 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.attestation.AttestationException
-import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.exceptions.AttestationValueException
-import at.asitplus.attestation.android.isRemoteKeyProvisioned
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
@@ -18,7 +14,8 @@ import at.asitplus.signum.indispensable.toJcaPublicKey
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
-import io.kotest.core.spec.style.FreeSpec
+import at.asitplus.testballoon.invoke
+import de.infix.testBalloon.framework.testSuite
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -38,7 +35,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
-class TestEnv : FreeSpec({
+val TestEnv by testSuite {
 
     //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
     //fail at runtime
@@ -122,7 +119,7 @@ class TestEnv : FreeSpec({
                         attestationValidator.verifyKeyAttestation(
                             Pkcs10CertificationRequest.decodeFromDer(src),
                             onPreAttestationError = {
-                                val msg= this.throwable?.message?:""
+                                val msg = this.throwable?.message ?: ""
                                 println(msg)
                                 msg
                             },
@@ -165,8 +162,8 @@ class TestEnv : FreeSpec({
 
         while (running) {
             Thread.sleep(1000)
-            if(Clock.System.now()-before>5.minutes) running = false
+            if (Clock.System.now() - before > 5.minutes) running = false
         }
         server.stop()
     }
-})
+}

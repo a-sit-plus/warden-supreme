@@ -1,11 +1,14 @@
 import at.asitplus.attestation.BuildNumber
+import at.asitplus.testballoon.minus
+import at.asitplus.testballoon.withData
+import de.infix.testBalloon.framework.testSuite
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.comparables.shouldBeLessThan
 import java.util.*
 import kotlin.random.Random
 
-class BuildNumberTest : FreeSpec({
+val BuildNumberTest by testSuite {
 
     "presorted" - {
         val buildTrains = List(50) { it }
@@ -60,6 +63,4 @@ class BuildNumberTest : FreeSpec({
             BuildNumber(it.second) shouldBeLessThan BuildNumber(testVectors[it.first + 1])
         }
     }
-
-
-})
+}

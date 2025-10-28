@@ -3,6 +3,9 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationCreator
+import at.asitplus.testballoon.invoke
+import at.asitplus.testballoon.minus
+import de.infix.testBalloon.framework.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
@@ -11,7 +14,7 @@ import java.time.ZoneOffset
 import java.util.*
 import kotlin.random.Random
 
-class FakeAttestationTests : FreeSpec({
+val FakeAttestationTests by testSuite {
 
     "Fake Attestation Test" - {
         val challenge = "42".encodeToByteArray()
@@ -352,4 +355,4 @@ class FakeAttestationTests : FreeSpec({
 
     }
 
-})
+}

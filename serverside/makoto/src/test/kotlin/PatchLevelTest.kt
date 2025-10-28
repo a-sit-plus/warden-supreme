@@ -1,14 +1,15 @@
 import at.asitplus.attestation.android.PatchLevel
+import at.asitplus.testballoon.minus
+import at.asitplus.testballoon.withData
+import de.infix.testBalloon.framework.testSuite
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.FreeSpec
-import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 import java.time.Month
 import java.time.YearMonth
 
 private data class YmTestData(val year: Int, val month: Int, val javaMonth: Month)
 
-class PatchLevelTest : FreeSpec({
+val PatchLevelTest by testSuite {
 
     "conversion" - {
         withData(
@@ -41,7 +42,7 @@ class PatchLevelTest : FreeSpec({
     }
 
     "parserCheck" - {
-        "illegal"- {
+        "illegal" - {
             withData(
                 "0" to "0",
                 "0" to "13",
@@ -53,7 +54,7 @@ class PatchLevelTest : FreeSpec({
             }
         }
 
-        "legal"- {
+        "legal" - {
             withData(
                 "0" to "1",
                 "-0" to "1", /*same as above*/
@@ -62,7 +63,7 @@ class PatchLevelTest : FreeSpec({
                 "9999999" to "01",
             ) { (y, m) ->
                 val singleInt = "$y$m".toInt()
-              val pl =PatchLevel.fromSingleInt(singleInt)
+                val pl = PatchLevel.fromSingleInt(singleInt)
                 pl.year shouldBe y.toInt()
                 pl.month shouldBe m.toInt()
             }
@@ -70,4 +71,4 @@ class PatchLevelTest : FreeSpec({
 
 
     }
-})
+}

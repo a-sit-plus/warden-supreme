@@ -1,13 +1,14 @@
 package at.asitplus.attestation
 
-import io.kotest.core.spec.style.AnnotationSpec
+import at.asitplus.testballoon.invoke
+import de.infix.testBalloon.framework.testSuite
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-class NoopAttestationServiceTest : AnnotationSpec() {
+val NoopAttestationServiceTest by testSuite {
 
-    @Test
-    fun TestNOOP() {
-        NoopAttestationService.verifyAttestation(listOf(), byteArrayOf()).shouldBeInstanceOf<AttestationResult.IOS.NOOP>()
+    "TestNOOP" {
+        NoopAttestationService.verifyAttestation(listOf(), byteArrayOf())
+            .shouldBeInstanceOf<AttestationResult.IOS.NOOP>()
         NoopAttestationService.verifyAttestation(listOf(), byteArrayOf()).shouldBeInstanceOf<AttestationResult.IOS>()
         NoopAttestationService.verifyAttestation(listOf(byteArrayOf(), byteArrayOf(), byteArrayOf()), byteArrayOf())
             .shouldBeInstanceOf<AttestationResult.Android>()

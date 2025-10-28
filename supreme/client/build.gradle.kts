@@ -1,20 +1,20 @@
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
+import com.android.build.api.dsl.androidLibrary
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree.Companion.test
 import java.net.Socket
 import kotlin.concurrent.thread
 
 
 plugins {
-    id("com.android.library")
+    id("com.android.kotlin.multiplatform.library")
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka")
     id("maven-publish")
     id("signing")
+    id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
 }
 
@@ -29,11 +29,35 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     iosX64()
-    androidTarget {
-        publishLibraryVariants("release")
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        instrumentedTestVariant.sourceSetTree.set(test)
+    androidLibrary {
+        namespace = "at.asitplus.attestation.supreme.client"
+        withDeviceTestBuilder {
+            sourceSetTreeName = "test"
+        }.configure {
+            instrumentationRunnerArguments["timeout_msec"] = "2400000"
+            managedDevices {
+                localDevices {
+                    create("pixelAVD").apply {
+                        device = "Pixel 4"
+                        apiLevel = 30
+                        systemImageSource = "aosp-atd"
+                    }
+                }
+            }
+        }
+
+
+        packaging {
+            resources.excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            resources.excludes.add("win32-x86-64/attach_hotspot_windows.dll")
+            resources.excludes.add("win32-x86/attach_hotspot_windows.dll")
+            resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
+            resources.excludes.add("META-INF/licenses/*")
+        }
     }
+
+
+
 
     sourceSets {
         all {
@@ -48,71 +72,71 @@ kotlin {
             api(ktor("serialization-kotlinx-json"))
             api(libs.supreme)
         }
+
+        getByName("androidDeviceTest").dependencies {
+            implementation(ktor("client-cio"))
+            implementation(ktor("serialization-kotlinx-json"))
+            implementation(ktor("client-content-negotiation"))
+        }
     }
 }
 
 
-android {
-    namespace = "at.asitplus.attestation.supreme.client"
-    defaultConfig {
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    testBuildType = "debug"
+//The new KMP android library plugin is just the worst!
+val ksPath = layout.projectDirectory.file("keystore.p12").asFile.absolutePath
+val ksPass = "123456"
+val keyAlias = "key0"
+val keyPass = "123456"
+val ksType = "PKCS12" // important for .p12
 
-    //just for instrumented tests
-    signingConfigs {
-        getByName("debug") {
-            storeFile = file("keystore.p12")
-            storePassword = "123456"
-            keyAlias = "key0"
-            keyPassword = "123456"
+// Helper to locate apksigner (falls back to PATH if not found via ANDROID_SDK_ROOT)
+fun findApkSigner(): String {
+    val sdkRoot = providers.environmentVariable("ANDROID_SDK_ROOT").orNull
+        ?: providers.environmentVariable("ANDROID_HOME").orNull ?: project.extra.get("sdk.dir")
+    if (sdkRoot != null) {
+        val buildTools = File("$sdkRoot/build-tools")
+        val latest = buildTools.listFiles()?.maxByOrNull { it.name } // pick highest version
+        val exe = File(latest, "apksigner")
+        if (exe.exists()) return exe.absolutePath
+    }
+    return "apksigner"
+}
+
+val resignTestApk = tasks.register("resignTestApk") {
+    // make sure the APK exists first
+    dependsOn("packageAndroidDeviceTest")
+
+    doLast {
+        val outDir = layout.buildDirectory.dir("outputs/apk/androidTest").get().asFile
+        val apks = fileTree(outDir) { include("**/*.apk") }.files.toList()
+        require(apks.isNotEmpty()) {
+            "No androidDeviceTest APKs found under: $outDir"
         }
-        create("release") {
-            storeFile = file("keystore.p12")
-            storePassword = "123456"
-            keyAlias = "key0"
-            keyPassword = "123456"
-        }
-    }
 
-    sourceSets.forEach {
+        val apksigner = findApkSigner()
 
-        //allow plain traffic and set permissions
-        if (it.name.lowercase().contains("test") || name.lowercase().contains("debug"))
-            it.manifest.srcFile("src/androidInstrumentedTest/AndroidManifest.xml")
-    }
-
-    dependencies {
-        androidTestImplementation(libs.runner)
-        androidTestImplementation(libs.core)
-        androidTestImplementation(libs.rules)
-        androidTestImplementation(ktor("client-cio"))
-        androidTestImplementation(ktor("serialization-kotlinx-json"))
-        androidTestImplementation(ktor("client-content-negotiation"))
-    }
-
-    packaging {
-        resources.excludes.add("/META-INF/{AL2.0,LGPL2.1}")
-        resources.excludes.add("win32-x86-64/attach_hotspot_windows.dll")
-        resources.excludes.add("win32-x86/attach_hotspot_windows.dll")
-        resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
-        resources.excludes.add("META-INF/licenses/*")
-    }
-
-    testOptions {
-        targetSdk = 30
-        managedDevices {
-            localDevices {
-                create("pixel2api33") {
-                    device = "Pixel 2"
-                    apiLevel = 30
-                    systemImageSource = "aosp-atd"
-                }
+        apks.forEach { apk ->
+            // Re-sign IN PLACE so downstream install tasks pick up the fixed cert
+            exec {
+                commandLine(
+                    apksigner, "sign",
+                    "--ks", ksPath,
+                    "--ks-pass", "pass:$ksPass",
+                    "--ks-key-alias", keyAlias,
+                    "--key-pass", "pass:$keyPass",
+                    "--ks-type", ksType,
+                    apk.absolutePath
+                )
             }
         }
+        println("Re-signed ${apks.size} device-test APK(s) with $keyAlias from $ksPath")
     }
 }
-
+tasks.findByName("createAndroidDeviceTestApkListingFileRedirect")?.dependsOn(resignTestApk)
+tasks.whenObjectAdded {
+    if (name == "createAndroidDeviceTestApkListingFileRedirect")
+        dependsOn(resignTestApk)
+}
 
 val startVerifier = tasks.register<DefaultTask>("startVerifier") {
     group = "verification"

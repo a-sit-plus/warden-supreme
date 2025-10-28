@@ -2,25 +2,26 @@
 
 package at.asitplus.attestation.android
 
-import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
+import at.asitplus.testballoon.minus
+import at.asitplus.testballoon.withData
+import at.asitplus.testballoon.withDataSuites
+import de.infix.testBalloon.framework.testSuite
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.FreeSpec
-import io.kotest.datatest.withData
 import io.kotest.matchers.string.shouldContain
-import kotlin.time.toJavaInstant
-import kotlin.time.toKotlinInstant
 import java.util.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
+import kotlin.time.toJavaInstant
+import kotlin.time.toKotlinInstant
 
-class TemporalOffsetTest : FreeSpec() {
+val TemporalOffsetTest by testSuite {
 
-    private val exactStartOfValidity: Map<String, AttestationData> = mapOf(
+    val exactStartOfValidity: Map<String, AttestationData> = mapOf(
         "KeyMint 200" to AttestationData(
             "Pixel 6",
             challengeB64 = "9w11c/H1kgfx+2Lqrqscug==",
@@ -80,55 +81,54 @@ class TemporalOffsetTest : FreeSpec() {
         )
     )
 
-    init {
-        "Exact Time of Validity" - {
-            withData(exactStartOfValidity) {
-                attestationService().verifyAttestation(
-                    it.attestationCertChain,
-                    it.verificationDate,
-                    it.challenge
-                )
-            }
+
+    "Exact Time of Validity" - {
+        withData(exactStartOfValidity) {
+            attestationService().verifyAttestation(
+                it.attestationCertChain,
+                it.verificationDate,
+                it.challenge
+            )
         }
+    }
 
-        "Exact Time of Validity + 1D" - {
-            withData(exactStartOfValidity) {
-                attestationService(
-                    attestationStatementValiditiy = 1.days + 1.seconds
-                ).verifyAttestation(
-                    it.attestationCertChain,
-                    Date.from((it.verificationDate.toInstant().toKotlinInstant() + 1.days).toJavaInstant()),
-                    it.challenge,
-                )
-            }
+    "Exact Time of Validity + 1D" - {
+        withData(exactStartOfValidity) {
+            attestationService(
+                attestationStatementValiditiy = 1.days + 1.seconds
+            ).verifyAttestation(
+                it.attestationCertChain,
+                Date.from((it.verificationDate.toInstant().toKotlinInstant() + 1.days).toJavaInstant()),
+                it.challenge,
+            )
         }
+    }
 
-        "Exact Time of Validity - 1D" - {
+    "Exact Time of Validity - 1D" - {
+        withDataSuites(exactStartOfValidity) {
             withData(exactStartOfValidity) {
-                withData(exactStartOfValidity) {
-                    shouldThrow<AttestationValueException> {
-                        attestationService().verifyAttestation(
-                            it.attestationCertChain,
-                            Date.from((it.verificationDate.toInstant().toKotlinInstant() - 1.seconds).toJavaInstant()),
-                            it.challenge,
-                        )
-                    }.message!!.shouldContain("too far in the future")
-                }
+                shouldThrow<AttestationValueException> {
+                    attestationService().verifyAttestation(
+                        it.attestationCertChain,
+                        Date.from((it.verificationDate.toInstant().toKotlinInstant() - 1.seconds).toJavaInstant()),
+                        it.challenge,
+                    )
+                }.message!!.shouldContain("too far in the future")
+            }
 
 
-                withData(exactStartOfValidity) {
-                    shouldThrow<AttestationValueException> {
-                        attestationService().verifyAttestation(
-                            it.attestationCertChain,
-                            Date.from((it.verificationDate.toInstant().toKotlinInstant() + 10.minutes).toJavaInstant()),
-                            it.challenge,
-                        )
-                    }.message!!.shouldContain("too far in the past")
-                }
-
+            withData(exactStartOfValidity) {
+                shouldThrow<AttestationValueException> {
+                    attestationService().verifyAttestation(
+                        it.attestationCertChain,
+                        Date.from((it.verificationDate.toInstant().toKotlinInstant() + 10.minutes).toJavaInstant()),
+                        it.challenge,
+                    )
+                }.message!!.shouldContain("too far in the past")
             }
 
         }
+
     }
 }
 
