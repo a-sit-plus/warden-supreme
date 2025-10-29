@@ -14,6 +14,7 @@ plugins {
     id("maven-publish")
     id("org.jetbrains.dokka")
     id("signing")
+    id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
 }
 

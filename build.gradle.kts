@@ -2,14 +2,13 @@ import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 
 plugins {
     val kotlinVer = System.getenv("KOTLIN_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotlin.get()
-    val kotestVer = System.getenv("KOTEST_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotest.get()
-    val kspVer = System.getenv("KSP_VERSION_ENV")?.ifBlank { null } ?: "$kotlinVer-${libs.versions.ksp.get()}"
-    id("io.kotest") version kotestVer apply false //we need the plugin in the classpath until I clean up the conventions plugins
+    val testballoonVer = System.getenv("TESTBALLOON_VERSION_OVERRIDE")?.ifBlank { null } ?: libs.versions.testballoon.get()
+
+    id("de.infix.testBalloon") version testballoonVer apply false
     kotlin("jvm") version kotlinVer apply false
     kotlin("plugin.serialization") version kotlinVer apply false
-    id("at.asitplus.gradle.conventions") version "20250729"
-    id("com.google.devtools.ksp") version kspVer
-    id("com.android.library") version "8.10.0" apply (false)
+    id("at.asitplus.gradle.conventions") version "20251023"
+    id("com.android.kotlin.multiplatform.library") version "8.12.3" apply (false)
 }
 
 val artifactVersion: String by extra

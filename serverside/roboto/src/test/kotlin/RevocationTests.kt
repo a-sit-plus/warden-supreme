@@ -1,8 +1,11 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.testballoon.invoke
+import at.asitplus.testballoon.minus
 import com.zkdcloud.proxy.http.ServerStart
 import com.zkdcloud.proxy.http.handler.client.ExceptionDuplexHandler
 import com.zkdcloud.proxy.http.handler.client.JudgeTypeInboundHandler
+import de.infix.testBalloon.framework.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
@@ -57,7 +60,7 @@ val TEST_CERT = """
         """.trimIndent()
 
 
-class RevocationTestFromGoogleSources : FreeSpec({
+val RevocationTestFromGoogleSources by testSuite {
 
     "custom implementation" - {
 
@@ -119,7 +122,7 @@ class RevocationTestFromGoogleSources : FreeSpec({
 
 
     }
-})
+}
 
 private fun MockEngine.setup(proxyUrl: String?) = HttpClient(this) { setup(proxyUrl) }
 

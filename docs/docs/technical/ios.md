@@ -218,12 +218,9 @@ completeness, this section lists general common pitfalls.
 
 ## References & useful libraries
 
-- Apple — DeviceCheck (App Attest landing): https://developer.apple.com/documentation/devicecheck
-- Apple — Validating apps that connect to your server (with
-  diagrams): https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server
-- Apple — Attestation Object Validation Guide (validation
-  details): https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide
-- Apple — Establishing your app’s integrity (
-  client-side): https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity
-- Server validation library (Kotlin): https://github.com/veehaitch/devicecheck-appattest
+- [Apple — DeviceCheck (App Attest landing)](https://developer.apple.com/documentation/devicecheck)
+- [Apple — Validating apps that connect to your server (with diagrams)](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)
+- [Apple — Attestation Object Validation Guide (validation details)](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)
+- [Apple — Establishing your app’s integrity (client-side)](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity)
+- [Server validation library (Kotlin)](https://github.com/veehaitch/devicecheck-appattest)
 

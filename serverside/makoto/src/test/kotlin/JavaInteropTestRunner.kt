@@ -1,12 +1,12 @@
 package at.asitplus.attestation
 
 import JavaInteropTest
-import io.kotest.core.spec.style.AnnotationSpec
+import at.asitplus.testballoon.invoke
+import de.infix.testBalloon.framework.testSuite
 
-class JavaInteropTestRunner : AnnotationSpec() {
-    @Test
-    fun testDefaults() = JavaInteropTest.testDefaults()
-    @Test
-    fun testAttestationCallsJavaFriendliness() = JavaInteropTest.testAttestationCallsJavaFriendliness()
+val JavaInteropTestRunner by testSuite {
+
+    "testDefaults" { JavaInteropTest.testDefaults() }
+    "testAttestationCallsJavaFriendliness" { JavaInteropTest.testAttestationCallsJavaFriendliness() }
 
 }

@@ -2,12 +2,17 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.CryptoPrivateKey
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
+import at.asitplus.signum.indispensable.toJcaPublicKey
 import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
+import org.bouncycastle.jce.spec.ECKeySpec
 import java.security.KeyFactory
 import java.security.PublicKey
+import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
 import java.util.*
@@ -59,7 +64,12 @@ data class PatchLevel @JvmOverloads constructor(
  */
 val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("RSA")
-        .generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(GOOGLE_ROOT_CA_PUB_KEY)))
+        .generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(GOOGLE_ROOT_CA_PUB_KEY))),
+    //new Google EC Root
+    CryptoPublicKey.decodeFromDer(Base64.getDecoder()
+                    .decode("MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEI9ojcU7fPlsFCjxy6IRqzgeOoK0b+YsV9FPQywiyw8EQRTkJ9u3qwfnI4DGoSLlBqClTXJfgfCcZvs60FikNMHnu4fkRzObfgDkU2KNXezT9/RQ+XvNslxPHrHCowhGr")
+            ).toJcaPublicKey().getOrThrow()
+
 )
 
 
@@ -211,6 +221,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val enableSoftwareAttestation: Boolean = false,
 
     /**
+     * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+     * for attestation checks to pass
+     */
+    val requireRemoteKeyProvisioning: Boolean = false,
+
+    /**
      * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
      */
     val httpProxy: String? = null,
@@ -316,6 +332,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
          */
         httpProxy: String? = null,
+
+        /**
+         * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+         * for attestation checks to pass
+         */
+        requireRemoteKeyProvisioning: Boolean = false,
     ) : this(
         listOf(singleApp),
         androidVersion = androidVersion,
@@ -331,7 +353,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation = disableHardwareAttestation,
         enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
-        httpProxy = httpProxy
+        httpProxy = httpProxy,
+        requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
     )
 
     /**
@@ -440,6 +463,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
          */
         httpProxy: String? = null,
+
+        /**
+         * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+         * for attestation checks to pass
+         */
+        requireRemoteKeyProvisioning: Boolean = false,
     ) : this(
         applications = apps,
         androidVersion = version,
@@ -456,6 +485,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
         httpProxy = httpProxy,
+        requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
     )
 
     /**
@@ -506,6 +536,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         val trustAnchorOverrides: Set<@Serializable(with = PubKeyBasePemSerializer::class) PublicKey>? = null,
 
+        /**
+         * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+         * for attestation checks to pass
+         */
+        val requireRemoteKeyProvisioningOverride: Boolean? = null,
+
         ) {
         init {
             if (signatureDigests.isEmpty()) throw object :
@@ -544,6 +580,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
             private var trustAnchorOverrides: Set<PublicKey>? = null
 
+            var requireRemoteKeyProvisioningOverride: Boolean? = null
+
             /**
              * @see AppData.appVersion
              */
@@ -564,6 +602,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
              */
             fun overrideTrustAnchors(trustAnchors: Set<PublicKey>) = apply { trustAnchorOverrides = trustAnchors }
 
+            /**
+             * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+             * for attestation checks to pass
+             */
+            fun overrideRequireRemoteProvisioning(required: Boolean) =
+                apply { requireRemoteKeyProvisioningOverride = required }
+
             fun build() =
                 AppData(
                     packageName,
@@ -571,7 +616,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                     appVersion,
                     androidVersionOverride,
                     patchLevelOverride,
-                    trustAnchorOverrides
+                    trustAnchorOverrides,
+                    requireRemoteKeyProvisioningOverride,
                 )
         }
 
@@ -605,6 +651,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
             if (patchLevelOverride != other.patchLevelOverride) return false
 
+            if (requireRemoteKeyProvisioningOverride != other.requireRemoteKeyProvisioningOverride) return false
+
             return true
         }
 
@@ -615,6 +663,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + packageName.hashCode()
             result = 31 * result + signatureDigests.hashCode()
             result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
+            result = 31 * result + trustAnchorOverrides.hashCode()
+            result = 31 * result + requireRemoteKeyProvisioningOverride.hashCode()
             return result
         }
 
@@ -656,6 +706,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var enableSwAttestation: Boolean = false
         private var enableNougatAttestation: Boolean = false
         private var httpProxy: String? = null
+        private var requireRemoteKeyProvisioning: Boolean = false
 
         /**
          * specifies a minimum Android version
@@ -746,6 +797,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         fun httpProxy(url: String) = apply { httpProxy = url }
 
+        /**
+         * @see at.asitplus.attestation.android.AndroidAttestationConfiguration.requireRemoteKeyProvisioning
+         */
+        fun requireRemoteKeyProvisioning(required: Boolean) = apply { requireRemoteKeyProvisioning = required }
+
         fun build() = AndroidAttestationConfiguration(
             applications = applications,
             androidVersion = androidVersion,
@@ -762,6 +818,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             enableSoftwareAttestation = enableSwAttestation,
             enableNougatAttestation = enableNougatAttestation,
             httpProxy = httpProxy,
+            requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
         )
 
     }
@@ -813,6 +870,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         if (httpProxy != other.httpProxy) return false
 
+        if (requireRemoteKeyProvisioning != other.requireRemoteKeyProvisioning) return false
+
         return true
     }
 
@@ -833,6 +892,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + hardwareAttestationTrustAnchors.hashCode()
         result = 31 * result + softwareAttestationTrustAnchors.hashCode()
         result = 31 * result + (httpProxy?.hashCode() ?: 0)
+        result = 31 * result + requireRemoteKeyProvisioning.hashCode()
         return result
     }
 }

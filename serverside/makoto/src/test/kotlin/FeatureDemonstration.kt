@@ -5,7 +5,10 @@ package at.asitplus.attestation
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.data.attestationCertChain
+import at.asitplus.testballoon.invoke
+import at.asitplus.testballoon.minus
 import com.google.android.attestation.ParsedAttestationRecord
+import de.infix.testBalloon.framework.testSuite
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeIn
@@ -16,8 +19,8 @@ import java.security.interfaces.ECPublicKey
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-class FeatureDemonstration : FreeSpec() {
-    init {
+val FeatureDemonstration by testSuite {
+
 
         val service = Warden(
             androidAttestationConfiguration = AndroidAttestationConfiguration(
@@ -199,4 +202,3 @@ class FeatureDemonstration : FreeSpec() {
             }
         }
     }
-}

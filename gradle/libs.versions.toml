@@ -1,23 +1,22 @@
 [versions]
-kotlin = "2.2.20"
-kotest = "6.0.1"
-guava = "33.4.0-jre"
+kotlin = "2.2.21"
+kotest = "6.0.3"
+guava = "33.5.0-jre"
 autovalue = "1.11.0"
-signum = "3.17.0"
-supreme = "0.9.0"
+signum = "3.18.2"
+supreme = "0.10.2"
 cbor = "0.9"
-gson = "2.12.1"
-errorprone = "2.41.0"
-protobuf = "4.29.3"
+gson = "2.13.2"
+errorprone = "2.43.0"
+protobuf = "4.33.0"
 devicecheck = "0.9.6"
 jackson = "2.20.0"
+
+#keep it nice and lenient
 semver = "1.2.0"
+
 slf4j = "1.7.36"
-ksp = "2.0.3"
-runner = "1.7.0"
-kotestExtensionsAndroid = "0.1.7"
-kotestRunnerAndroid = "1.2.0"
-core = "1.7.0"
+testballoon = "0.6.3-K2.2.20-SNAPSHOT"
 
 [libraries]
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
@@ -36,9 +35,3 @@ jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-modul
 semver = { group = "net.swiftzer.semver", name = "semver", version.ref = "semver" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-reload4j = { group = "org.slf4j", name = "slf4j-reload4j", version.ref = "slf4j" }
-
-core = { module = "androidx.test:core", version.ref = "core" }
-kotest-extensions-android = { module = "br.com.colman:kotest-extensions-android", version.ref = "kotestExtensionsAndroid" }
-kotest-runner-android = { module = "br.com.colman:kotest-runner-android", version.ref = "kotestRunnerAndroid" }
-rules = { module = "androidx.test:rules", version.ref = "core" }
-runner = { module = "androidx.test:runner", version.ref = "runner" }

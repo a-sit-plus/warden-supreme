@@ -118,8 +118,8 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 
 ## References & libraries
 
-- Developer guide (Key Attestation): https://developer.android.com/privacy-and-security/security-key-attestation
-- AOSP schema & extension documentation: https://source.android.com/docs/security/features/keystore/attestation#schema
-- Libraries (legacy): https://github.com/google/android-key-attestation
-- Libraries (current): https://github.com/android/keyattestation
+- [Developer guide (Key Attestation)](https://developer.android.com/privacy-and-security/security-key-attestation)
+- [AOSP schema & extension documentation](https://source.android.com/docs/security/features/keystore/attestation#schema)
+- [Libraries (legacy)](https://github.com/google/android-key-attestation)
+- [Libraries (current)](https://github.com/android/keyattestation)
 - Warden Supreme (this project)

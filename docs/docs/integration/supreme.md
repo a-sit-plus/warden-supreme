@@ -3,7 +3,7 @@
 
 [![A-SIT Plus Official](https://img.shields.io/badge/A--SIT_Plus-official-005b79?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDMuNzYyODYgMTg0LjgxOTk5Ij48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiIGNsaXBQYXRoVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMCA1OTUuMjhoODQxLjg5VjBIMFoiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyBjbGlwLXBhdGg9InVybCgjYSkiIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMyAwIDAgLTEuMzMzMzMzMyAtNDgyLjI1IDUxNy41MykiPjxwYXRoIGZpbGw9IiMwMDViNzkiIGQ9Ik00MTUuNjcgMjQ5LjUzYy03LjE1LjA4LTEzLjk0IDEtMjAuMTcgMi43NWE1Mi4zMyA1Mi4zMyAwIDAgMC0xNy40OCA4LjQ2IDQwLjQzIDQwLjQzIDAgMCAwLTExLjk2IDE0LjU2Yy0yLjY4IDUuNDEtNC4xNCAxMS44NC00LjM1IDE5LjA5bC0uMDIgNi4xMnYyLjE3YS43MS43MSAwIDAgMCAuNy43M2gxNi41MmMuMzkgMCAuNy0uMzIuNzEtLjdsLjAxLTIuMmMwLTIuNi4wMi01LjgyLjAzLTYuMDcuMi00LjYgMS4yNC04LjY2IDMuMDgtMTIuMDZhMjguNTIgMjguNTIgMCAwIDEgOC4yMy05LjU4IDM1LjI1IDM1LjI1IDAgMCAxIDExLjk2LTUuNTggNTUuMzggNTUuMzggMCAwIDEgMTIuNTgtMS43NmM0LjMyLjEgOC42LjcgMTIuNzQgMS44YTM1LjA3IDM1LjA3IDAgMCAxIDExLjk2IDUuNTcgMjguNTQgMjguNTQgMCAwIDEgOC4yNCA5LjU3YzEuOTYgMy42NCAzIDguMDIgMy4xMiAxMy4wMnYyNC4wOUgzNjIuNGEuNy43IDAgMCAwLS43MS43VjMzNWMwIDguNDMuMDEgOC4wNS4wMSA4LjE0LjIgNy4zIDEuNjcgMTMuNzcgNC4zNiAxOS4yMmE0MC40MyA0MC40MyAwIDAgMCAxMS45NiAxNC41N2M1IDMuNzYgMTAuODcgNi42MSAxNy40OCA4LjQ2YTc3LjUgNzcuNSAwIDAgMCAyMC4wMiAyLjc3YzcuMTUtLjA3IDEzLjk0LTEgMjAuMTctMi43NGE1Mi4zIDUyLjMgMCAwIDAgMTcuNDgtOC40NiA0MC40IDQwLjQgMCAwIDAgMTEuOTUtMTQuNTdjMS42Mi0zLjI2IDMuNzctMTAuMDQgMy43Ny0xNC42OCAwLS4zOC0uMTctLjc0LS41NC0uODJsLTE2Ljg5LS40Yy0uMi0uMDQtLjM0LjM0LS4zNC41NCAwIC4yNy0uMDMuNC0uMDYuNi0uNSAyLjgyLTEuMzggNS40LTIuNjEgNy42OWEyOC41MyAyOC41MyAwIDAgMS04LjI0IDkuNTggMzUuMDEgMzUuMDEgMCAwIDEtMTEuOTYgNS41NyA1NS4yNSA1NS4yNSAwIDAgMS0xMi41NyAxLjc3Yy00LjMyLS4xLTguNjEtLjcxLTEyLjc1LTEuOGEzNS4wNSAzNS4wNSAwIDAgMS0xMS45Ni01LjU3IDI4LjUyIDI4LjUyIDAgMCAxLTguMjMtOS41OGMtMS44Ni0zLjQ0LTIuOS03LjU1LTMuMDktMTIuMmwtLjAxLTcuNDdoODkuMTZhLjcuNyAwIDAgMCAuNy0uNzJ2LTM5LjVjLS4xLTcuNjUtMS41OC0xNC40LTQuMzgtMjAuMDZhNDAuNCA0MC40IDAgMCAwLTExLjk1LTE0LjU2IDUyLjM3IDUyLjM3IDAgMCAwLTE3LjQ4LTguNDcgNzcuNTYgNzcuNTYgMCAwIDAtMjAuMDEtMi43N1oiLz48cGF0aCBmaWxsPSIjY2U0OTJlIiBkPSJNNDE5LjM4IDI4MC42M2gtNy41N2EuNy43IDAgMCAwLS43MS43MXYxNS40MmE4LjE3IDguMTcgMCAwIDAtMy43OCA2LjkgOC4yOCA4LjI4IDAgMCAwIDE2LjU0IDAgOC4yOSA4LjI5IDAgMCAwLTMuNzYtNi45di0xNS40MmEuNy43IDAgMCAwLS43Mi0uNzEiLz48L2c%2BPC9zdmc%2B&logoColor=white&labelColor=white)](https://a-sit-plus.github.io)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-brightgreen.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![Kotlin](https://img.shields.io/badge/kotlin-2.0.20-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.2.21-blue.svg?logo=kotlin)](http://kotlinlang.org)
 ![Java](https://img.shields.io/badge/java-17-blue.svg?logo=OPENJDK)
 [![Maven Central](https://img.shields.io/maven-central/v/at.asitplus.warden/supreme-common)](https://mvnrepository.com/artifact/at.asitplus.warden/)
 
@@ -76,54 +76,61 @@ The following snippet lists all configuration values:
 ```kotlin
 val warden = Warden(
     androidAttestationConfiguration = AndroidAttestationConfiguration(
-       applications = listOf(   // REQUIRED: add applications to be attested
-           AndroidAttestationConfiguration.AppData(
-               packageName = "at.asitplus.attestation_client",
-               signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
-               appVersion = 5
-           ),
-           AndroidAttestationConfiguration.AppData( // dedicated app for the latest Android version
-               packageName = "at.asitplus.attestation_client-tiramisu",
-               signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
-               appVersion = 2, // with a different versioning scheme
-               androidVersionOverride = 130000, // so we need to override this
-               patchLevelOverride = PatchLevel(2023, 6, maxFuturePatchLevelMonths = 2), // also override patch level and
-                                                                    // consider patch levels from 2 months in the future
-                                                                    // as valid 
-                                                                    // maxFuturePatchLevelMonths defaults to 1
-                                                                    // null means any future patch level is OK
-               trustAnchorOverrides = setOf(extraTrustedRootPubKey) // require a custom root as the trust anchor
-                                                                    // for the attestation certificate chain
-           )
-       ),
-       androidVersion = 110000,                  // OPTIONAL, null by default
-       patchLevel = PatchLevel(2022, 12),        // OPTIONAL, null by default; maxFuturePatchLevelMonths defaults to 1
-       requireStrongBox = false,                 // OPTIONAL, defaults to false
-       allowBootloaderUnlock = false,            // OPTIONAL, defaults to false
-       requireRollbackResistance = false,        // OPTIONAL, defaults to false
-       ignoreLeafValidity = false,               // OPTIONAL, defaults to false
-       hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS), // OPTIONAL, defaults shown here
-       softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS), // OPTIONAL, defaults shown here
-       verificationSecondsOffset = -300,         // OPTIONAL, defaults to 0
-       disableHardwareAttestation = false,       // OPTIONAL, defaults to false; set true to disable HW attestation
-       enableNougatAttestation = false,          // OPTIONAL, defaults to false; set true to enable hybrid attestation
-       enableSoftwareAttestation = false,        // OPTIONAL, defaults to false; set true to enable SW attestation
-       attestationStatementValiditySeconds = 300 // OPTIONAL, defaults to 300s
-   ),
-   iosAttestationConfiguration = IosAttestationConfiguration(
-      applications = listOf(
-        IosAttestationConfiguration.AppData(
-          teamIdentifier = "9CYHJNG644",
-          bundleIdentifier = "at.asitplus.attestation-client",
-          iosVersionOverride = "16.0",     // OPTIONAL, null by default
-          sandbox = false                  // OPTIONAL, defaults to false
-          )
-      ),
-      iosVersion = 14,                                              // OPTIONAL, null by default
-      attestationStatementValiditySeconds = 300                     // OPTIONAL, defaults to 300s
-   ),
-   clock = FixedTimeClock(Instant.parse("2023-04-13T00:00:00Z")),   // OPTIONAL, system clock by default
-   verificationTimeOffset = Duration.ZERO                           // OPTIONAL, defaults to zero
+        applications = listOf(   // REQUIRED: add applications to be attested
+            AndroidAttestationConfiguration.AppData(
+                packageName = "at.asitplus.attestation_client",
+                signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
+                appVersion = 5
+            ),
+            AndroidAttestationConfiguration.AppData( // dedicated app for the latest Android version
+                packageName = "at.asitplus.attestation_client-tiramisu",
+                signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
+                appVersion = 2, // with a different versioning scheme
+                androidVersionOverride = 130000, // so we need to override this
+                patchLevelOverride = PatchLevel(2023, 6, maxFuturePatchLevelMonths = 2), // also override patch level and
+                                                                     // consider patch levels from 2 months in the future
+                                                                     // as valid 
+                                                                     // maxFuturePatchLevelMonths defaults to 1
+                                                                     // null means any future patch level is OK
+
+                trustAnchorOverrides = setOf(extraTrustedRootPubKey),// require a custom root as the trust anchor
+                                                                     // for the attestation certificate chain
+
+                requireRemoteProvisioningOverride = true // require a remotely-provisioned attestation
+                                                         // certificate for extra security
+            )
+        ),
+        androidVersion = 110000,                  // OPTIONAL, null by default
+        patchLevel = PatchLevel(2022, 12),        // OPTIONAL, null by default; maxFuturePatchLevelMonths defaults to 1
+        requireStrongBox = false,                 // OPTIONAL, defaults to false
+        allowBootloaderUnlock = false,            // OPTIONAL, defaults to false
+        requireRollbackResistance = false,        // OPTIONAL, defaults to false
+        ignoreLeafValidity = false,               // OPTIONAL, defaults to false
+        hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS), // OPTIONAL, defaults shown here
+        softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS), // OPTIONAL, defaults shown here
+        verificationSecondsOffset = -300,         // OPTIONAL, defaults to 0
+        disableHardwareAttestation = false,       // OPTIONAL, defaults to false; set true to disable HW attestation
+        enableNougatAttestation = false,          // OPTIONAL, defaults to false; set true to enable hybrid attestation
+        enableSoftwareAttestation = false,        // OPTIONAL, defaults to false; set true to enable SW attestation
+        attestationStatementValiditySeconds = 300,// OPTIONAL, defaults to 300s
+        httpProxy = null,                         //OPTIONAL HTTP proxy url, such as http://proxy.domain:12345, defaults to null for no proxy
+        requireRemoteKeyProvisioning = false      //OPTIONAL, whether to require a remotely provisioned attestation certificate
+
+    ),
+    iosAttestationConfiguration = IosAttestationConfiguration(
+        applications = listOf(
+            IosAttestationConfiguration.AppData(
+                teamIdentifier = "9CYHJNG644",
+                bundleIdentifier = "at.asitplus.attestation-client",
+                iosVersionOverride = "16.0",     // OPTIONAL, null by default
+                sandbox = false                  // OPTIONAL, defaults to false
+            )
+        ),
+        iosVersion = 14,                                              // OPTIONAL, null by default
+        attestationStatementValiditySeconds = 300                     // OPTIONAL, defaults to 300s
+    ),
+    clock = FixedTimeClock(Instant.parse("2023-04-13T00:00:00Z")),   // OPTIONAL, system clock by default
+    verificationTimeOffset = Duration.ZERO                           // OPTIONAL, defaults to zero
 )
 ```
 
@@ -221,7 +228,7 @@ this typically works as follows:
 post(ENDPOINT_ATTEST) {
     val src = call.receive<ByteArray>()
     val resp =
-        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(src)) { csr ->
+        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(src)) { csr, _ ->
         
         /* certificateSigner is assumed to be a `Signer` instance configured to use the CA key for signing */
         certificateSigner.sign(
