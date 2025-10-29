@@ -3,6 +3,8 @@
 Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as a dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
+## NEXT
+
 ## Warden Supreme 0.9.1
 * First-Class support for remote provisioning checks on Android
 * API CHANGE: `CerfificateIssuer` Lambda now also has access to the full attestation result
