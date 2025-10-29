@@ -34,6 +34,9 @@ jobs:
         uses: dorny/test-reporter@v2
         if: success() || failure()
         with:
-          name: Warden Supreme Android Connected Tests
-          path: supreme/client/build/outputs/androidTest-results/managedDevice/debug/**/TEST*.xml
+          name: Warden Supreme Android Device Tests
+          path: supreme/client/build/outputs/androidTest-results/managedDevice/**/pixelAVD/TEST*.xml
+          list-suites: failed
+          list-tests: failed
           reporter: java-junit
+          use-actions-summary: true
