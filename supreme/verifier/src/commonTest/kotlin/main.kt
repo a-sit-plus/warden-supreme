@@ -110,7 +110,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                                 STMT_VALIDITY,
                                 timeZone = TimeZone.currentSystemDefault(),
                                 ENDPOINT_ATTEST,
-                                timeOffset = VERIFICATION_OFFSET
+                                timeOffset = -5.minutes
                             )
                         ), contentType = ContentType.Application.Json
                     )

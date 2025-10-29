@@ -59,14 +59,16 @@ class AttestationValidator(
 
     /**
      * Issues a new attestation challenge, using [nonce], valid for a duration of [validity], expecting an CSR containing an attestation statement to be `HTTP POST`ed to [postEndpoint].
-     * It is recommended, to pass  a [timeZone].
+     * It is recommended, to pass a [timeZone].
+     *
+     * It is possible to pass a [timeOffset] to account for an incorrect server clock. This value is added to the returned [AttestationChallenge.issuedAt] and accounted for when calculating [AttestationChallenge.validUntil].
      */
     fun issueChallenge(
         nonce: ByteArray,
         validity: Duration?,
         timeZone: TimeZone?,
         postEndpoint: String,
-        timeOffset: Duration
+        timeOffset: Duration = Duration.ZERO,
     ) =
         AttestationChallenge(
             issuedAt = Clock.System.now() + timeOffset,
