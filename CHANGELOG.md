@@ -3,13 +3,14 @@
 Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as a dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-## Warden Supreme 1.0.0
+## Warden Supreme 0.9.1
 * First-Class support for remote provisioning checks on Android
 * API CHANGE: `CerfificateIssuer` Lambda now also has access to the full attestation result
-* FIX: challenge validity checks
+* FIX: [challenge validity checks](https://github.com/a-sit-plus/warden-supreme/issues/4)
+* Added new Google HW root signing key
 * Dependency Updates
     * `keyattestation` to 2025-10-21
-    * Signum 3.18.0 / Supreme 0.10.0
+    * Signum 3.18.2 / Supreme 0.10.2
     * Guava 33.5.0-jre
     * gson 2.13.2
     * errorprone 2.43.0
