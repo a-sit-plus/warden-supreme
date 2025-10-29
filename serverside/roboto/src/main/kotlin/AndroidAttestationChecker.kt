@@ -4,8 +4,12 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.asn1.Asn1Element
+import at.asitplus.signum.indispensable.asn1.encoding.parse
+import co.nstant.`in`.cbor.CborDecoder
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.android.keyattestation.verifier.provider.KeyAttestationProvider
+import com.android.keyattestation.verifier.provisioningInfo
 import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
 import com.google.android.attestation.RootOfTrust
@@ -37,7 +41,13 @@ import java.time.YearMonth
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
+import javax.security.auth.x500.X500Principal
 import kotlin.jvm.optionals.getOrNull
+
+/**
+ * The object identifier containing the remote key provisioning extension.
+ */
+const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
 
 abstract class AndroidAttestationChecker(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
@@ -58,7 +68,8 @@ abstract class AndroidAttestationChecker(
     @Throws(CertificateInvalidException::class, RevocationException::class)
     private fun List<X509Certificate>.verifyCertificateChain(
         verificationDate: Date,
-        actualTrustAnchors: Collection<PublicKey>
+        actualTrustAnchors: Collection<PublicKey>,
+        requireRKP: Boolean
     ) {
         catchingUnwrapped { verifyRootCertificate(verificationDate, actualTrustAnchors) }
             .onFailure {
@@ -105,6 +116,15 @@ abstract class AndroidAttestationChecker(
                 reason = CertificateInvalidException.Reason.TRUST, //we have ruled out time beforehand
                 certificateChain = certificateChain,
                 invalidCertificate = null
+            )
+        }
+
+        //add it at the bottom, when we know we can trust the chain.
+        //also: adding it here, makes sure it never interferes with other checks, so behavior stays the same
+        if (requireRKP) {
+            if (!certificateChain.isRemoteKeyProvisioned()) throw AttestationValueException(
+                "Certificate chain does not contain a remotely-provisioned attestation certificate",
+                reason = AttestationValueException.Reason.SEC_LEVEL, expectedValue = true, actualValue = false
             )
         }
 
@@ -253,7 +273,8 @@ abstract class AndroidAttestationChecker(
                     "Invalid Application Signature Digest",
                     reason = AttestationValueException.Reason.APP_SIGNER_DIGEST,
                     expectedValue = application.signatureDigests,
-                    actualValue = softwareEnforced().attestationApplicationId().get().signatureDigests().map { it.toByteArray() }
+                    actualValue = softwareEnforced().attestationApplicationId().get().signatureDigests()
+                        .map { it.toByteArray() }
                 )
             }
         }.onFailure {
@@ -305,7 +326,8 @@ abstract class AndroidAttestationChecker(
         (patchLevel ?: attestationConfiguration.patchLevel)?.let {
             it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
                 val fromAttestation = osPatchLevel().get()
-                val calendar = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC)).apply { time = verificationDate }
+                val calendar =
+                    Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC)).apply { time = verificationDate }
                 val currentYearMonth = YearMonth.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1)
                 val difference = currentYearMonth.until(fromAttestation, ChronoUnit.MONTHS)
                 if (difference > maxFuturePatchLevelMonths.toLong()) throw AttestationValueException(
@@ -427,7 +449,9 @@ abstract class AndroidAttestationChecker(
         }.key
 
         val thisAppsTrustAnchors = attestedApp.trustAnchorOverrides ?: trustAnchors
-        certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors)
+        val rkpRequired =
+            attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
+        certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
 
         val receivedChallenge = parsedAttestationRecord.attestationChallenge().toByteArray()
         if (!verifyChallenge(
@@ -556,3 +580,62 @@ fun HttpClientConfig<*>.setup(proxyUrl: String?) =
         install(ContentNegotiation) { json(json) }
         engine { proxyUrl?.let { proxy = ProxyBuilder.http(it) } }
     }
+
+
+/**
+ * Returns the parsed, but generic contents of the [Remote Key Provisioning
+ * extension](https://source.android.com/docs/security/features/keystore/attestation#provisioninginfo_extension),
+ * if present in an Android attestation certificate chain.
+ * One would assume that we could define a type-safe data structure for that, but Samsung being Samsung
+ * has kindly reminded us of the fact that phrases like "conforms schema" are thrown around far too often in specifications.
+ *
+ * Google's code has such a type for that, but I wouldn't trust vendors to observe the CBOR schema,
+ * so we just check for valid CBOR as a baseline.
+ *
+ * @see provisioningInfo to get the number of issued certificates
+ */
+fun List<X509Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
+    require(isRemoteKeyProvisioned())
+    get(1).getExtensionValue(OID_RKP)?.let {
+        val rkpData = CborDecoder.decode(Asn1Element.parse(it).asOctetString().content)
+        rkpData.first() as co.nstant.`in`.cbor.model.Map
+    }
+}.getOrNull()
+
+/**
+ * **TRIES** to parse the number of remotely provisioned attestation certificates.
+ * Note that this method returning `null` does not necessarily mean that a remotely provisioned
+ * certificate is not present. It could very well be that the extension is present but botched.
+ * (Looking at you, Samsung!).
+ *
+ * @see isRemoteKeyProvisioned
+ */
+fun List<X509Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
+    require(isRemoteKeyProvisioned())
+    get(1).provisioningInfo()?.certificatesIssued
+}.getOrNull()
+
+/**
+ * Indicates whether the attestation certificate in this certificate chain is remotely provisioned.
+ *
+ * This snippet incorporates [code](https://github.com/android/keyattestation/blob/main/src/main/kotlin/provider/KeyAttestationCertPath.kt#L119) from Google's CertPathValidator
+ */
+fun List<X509Certificate>.isRemoteKeyProvisioned(): Boolean {
+    val principal = get(size - 2).subjectX500Principal
+    val rdn =parseDN( principal.getName(X500Principal.RFC1779))
+    return rdn["CN"] == "Droid CA2" && rdn["O"] == "Google LLC"
+}
+
+//taken from https://github.com/android/keyattestation/blob/main/src/main/kotlin/provider/KeyAttestationCertPath.kt#L143C1-L154C2 as it is private in the incorporated code
+private fun parseDN(dn: String): Map<String, String> {
+    val attributes = mutableMapOf<String, String>()
+    val parts = dn.split(",")
+
+    for (part in parts) {
+        val keyValue = part.trim().split("=", limit = 2)
+        if (keyValue.size == 2) {
+            attributes[keyValue[0].trim()] = keyValue[1].trim()
+        }
+    }
+    return attributes
+}

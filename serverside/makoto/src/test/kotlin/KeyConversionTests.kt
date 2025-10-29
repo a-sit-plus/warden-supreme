@@ -1,10 +1,12 @@
 import at.asitplus.attestation.decodeBase64ToArray
 import at.asitplus.attestation.parseToPublicKey
 import at.asitplus.signum.indispensable.toCryptoPublicKey
-import io.kotest.core.spec.style.FreeSpec
+import at.asitplus.testballoon.invoke
+import at.asitplus.testballoon.minus
+import de.infix.testBalloon.framework.testSuite
 import io.kotest.matchers.shouldBe
 
-class KeyConversionTests : FreeSpec({
+val KeyConversionTests by testSuite {
 
     "Given an X509-encoded key" - {
         val x509Key =
@@ -22,4 +24,4 @@ class KeyConversionTests : FreeSpec({
             }
         }
     }
-})
+}

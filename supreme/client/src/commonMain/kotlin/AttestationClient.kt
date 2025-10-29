@@ -33,18 +33,22 @@ class AttestationClient(client: HttpClient) {
 
     /**
      * Fetches a challenge from an endpoint. This is the first step in an attestation ceremony.
-     * This will fail if the System time is off too much:
-     *  * [AttestationChallenge.validUntil] is earlier than the current system clock
-     *  * [AttestationChallenge.issuedAt] is earlier than the current system clock
+     * This will fail if the system time is off too much:
+     *  * [AttestationChallenge.validUntil] is earlier than the local system clock
+     *  * [AttestationChallenge.issuedAt] is later than the local system clock
      *
-     * The reason for the second constrain is the simple fact that if the current system clock lags behind the challenge issuing
-     * time, certificate chain validation (`notBefore`) will fail.
+     * The reason for the second constraint is the simple fact that if the backend's clock lags behind the local system clock
+     * (i.e., challenge issuing time is after [Clock.System.now]), certificate chain validation will fail, due to the
+     * leaf certificate's `notBefore` being in the future from the backend's point of view.
+     *
+     * The first contraint simply fails early for challenges that will be rejected by the backend anyhow. Since [AttestationChallenge.validUntil] may be `null`,
+     * this check is only performed if the challenge indicates any validity.
      */
     suspend fun getChallenge(endpoint: Url): KmmResult<AttestationChallenge> = catching {
         client.get(endpoint).body<AttestationChallenge>().also {
-            var now = Clock.System.now()
-            if (it.validUntil?.let { it < now } == true || it.issuedAt < now) throw IllegalStateException(
-                "System time off: issuedAt: ${it.issuedAt}, validUntil: ${it.validUntil}, now: $now"
+            val now = Clock.System.now()
+            if (it.validUntil?.let { it < now } == true || it.issuedAt > now) throw IllegalStateException(
+                "System time off: issuedAt: ${it.issuedAt}, validUntil: ${it.validUntil}, local system time: $now"
             )
         }
     }

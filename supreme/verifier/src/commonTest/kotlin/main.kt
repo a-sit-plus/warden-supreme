@@ -14,7 +14,10 @@ import at.asitplus.signum.indispensable.toJcaPublicKey
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
-import io.kotest.core.spec.style.FreeSpec
+import at.asitplus.testballoon.invoke
+import de.infix.testBalloon.framework.TestConfig
+import de.infix.testBalloon.framework.testScope
+import de.infix.testBalloon.framework.testSuite
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -34,7 +37,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
-class TestEnv : FreeSpec({
+val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 20.minutes)) {
 
     //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
     //fail at runtime
@@ -107,7 +110,7 @@ class TestEnv : FreeSpec({
                                 STMT_VALIDITY,
                                 timeZone = TimeZone.currentSystemDefault(),
                                 ENDPOINT_ATTEST,
-                                timeOffset = VERIFICATION_OFFSET
+                                timeOffset = -5.minutes
                             )
                         ), contentType = ContentType.Application.Json
                     )
@@ -118,14 +121,15 @@ class TestEnv : FreeSpec({
                         attestationValidator.verifyKeyAttestation(
                             Pkcs10CertificationRequest.decodeFromDer(src),
                             onPreAttestationError = {
-                                val msg= this.throwable?.message?:""
+                                val msg = this.throwable?.message ?: ""
                                 println(msg)
                                 msg
                             },
                             onAttestationError = { stmt ->
                                 println(stmt.serializeCompact())
                                 stmt.serializeCompact()
-                            }) { csr ->
+                            }) { csr, _ ->
+
                             Signer.Ephemeral {
                                 ec { }
                             }.getOrThrow().let { signer ->
@@ -160,8 +164,8 @@ class TestEnv : FreeSpec({
 
         while (running) {
             Thread.sleep(1000)
-            if(Clock.System.now()-before>5.minutes) running = false
+            if (Clock.System.now() - before > 5.minutes) running = false
         }
         server.stop()
     }
-})
+}

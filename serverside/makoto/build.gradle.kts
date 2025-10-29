@@ -10,6 +10,7 @@ plugins {
     id("maven-publish")
     id("signing")
     id("at.asitplus.gradle.conventions")
+    id("de.infix.testBalloon")
 }
 
 val artifactVersion: String by extra
@@ -35,6 +36,7 @@ dependencies {
 
     testImplementation(libs.slf4j.reload4j)
     testImplementation(kotlin("reflect"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
 }
 
 

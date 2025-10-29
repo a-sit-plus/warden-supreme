@@ -22,8 +22,8 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.Immutable;
 import com.google.protobuf.ByteString;
 import org.bouncycastle.asn1.*;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;

@@ -59,14 +59,16 @@ class AttestationValidator(
 
     /**
      * Issues a new attestation challenge, using [nonce], valid for a duration of [validity], expecting an CSR containing an attestation statement to be `HTTP POST`ed to [postEndpoint].
-     * It is recommended, to pass  a [timeZone].
+     * It is recommended, to pass a [timeZone].
+     *
+     * It is possible to pass a [timeOffset] to account for an incorrect server clock. This value is added to the returned [AttestationChallenge.issuedAt] and accounted for when calculating [AttestationChallenge.validUntil].
      */
     fun issueChallenge(
         nonce: ByteArray,
         validity: Duration?,
         timeZone: TimeZone?,
         postEndpoint: String,
-        timeOffset: Duration
+        timeOffset: Duration = Duration.ZERO,
     ) =
         AttestationChallenge(
             issuedAt = Clock.System.now() + timeOffset,
@@ -100,7 +102,7 @@ class AttestationValidator(
      * In case the CSR signature is invalid, this callback is also invoked.
      *
      * [onAttestationSuccess] allows side-effect-free operations on successful attestation statement verification.
-     * Logging and/or collecting numbers for statistical analysis come to mind.
+     * Logging and/or collecting numbers for statistical analysis comes to mind.
      *
      * Should any verification step fail, an [AttestationResponse.Failure] is returned.
      */
@@ -158,7 +160,6 @@ class AttestationValidator(
                 }
             },
             onSuccess = { pubKey, details ->
-                details as AttestationResult.Verified
                 val signature =
                     (csr.signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance().getOrElse {
                         //TODO: is this internal?
@@ -192,7 +193,7 @@ class AttestationValidator(
                     )
                 }
 
-                certificateIssuer.invoke(csr).fold(
+                certificateIssuer.invoke(csr, details).fold(
                     onSuccess = {
                         catchingUnwrapped {
                             details.onAttestationSuccess(
@@ -236,7 +237,7 @@ sealed class ChallengeValidationResult {
  * Hence, a certificate can be issued and the whole certificate chain (from newly issued certificate up to the CA)
  * shall be returned.
  */
-typealias CertificateIssuer = suspend (Pkcs10CertificationRequest) -> KmmResult<CertificateChain>
+typealias CertificateIssuer = suspend (Pkcs10CertificationRequest, AttestationResult.Verified) -> KmmResult<CertificateChain>
 
 sealed class PreAttestationError {
     abstract val throwable: Throwable?

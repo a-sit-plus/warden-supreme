@@ -63,17 +63,15 @@
 }
 
 .md-typeset code {
-    font-size: .8rem;
+    font-size: 100%;
     font-feature-settings: "kern", "liga";
 }
 
 .admonition code {
-    font-size: .7rem;
     font-feature-settings: "kern", "liga";
 }
 
 .md-typeset details code {
-    font-size: .7rem;
 }
 
 .linenodiv {
