@@ -105,8 +105,8 @@ This concerns the vendor patch level field, not the OS patch level, and requires
 ### OS Bugs and Quirks
 
 #### Bootloader Unlock Destroying Keys
-Many devices **destroy keys** or make attestation impossible after a bootloader unlock. There is nothing to be done about this, and even relocking often cannot bring back
-cryptographic keys sent to nirvana!
+Many devices **destroy keys** or make attestation impossible after a bootloader unlock. There is nothing to be done about this, and even relocking typically cannot bring back
+cryptographic keys sent to nirvana! Hence, this issue manifests itself **on the client device**.
 While **technically** not a violation of the Android certification requirements, it very much is bad practice at the vendor's end.
 This is especially hard to swallow for device owners, since buying a new device is the only thing that can be done about this. Known affected devices:
 
@@ -130,12 +130,14 @@ attestation information. This was a deliberate choice by Google, that has since 
 
 #### Remote provisioning
 Newer Android devices support remote key provisioning and even require key rollover. Hence, offline devices can **exhaust key pools**, causing transient attestation failures. Taking devices online fixes this issue.
-The issue manifest itself on the client as `r#ERROR_PENDING_INTERNET_CONNECTIVITY 2: Error::Rc(r#OUT_OF_KEYS_PENDING_INTERNET_CONNECTIVITY)) (public error code: 16 internal Keystore code: 24)`
+The issue manifests itself **on the client device** as `r#ERROR_PENDING_INTERNET_CONNECTIVITY 2: Error::Rc(r#OUT_OF_KEYS_PENDING_INTERNET_CONNECTIVITY)) (public error code: 16 internal Keystore code: 24)`
+when trying to create an attestation statement.
 
 #### PKIX Certificate Path Quirks
 Especially older Android versions deliberately botched the certificate path leading from the leaf certificate to a Google root certificate.
-This was done to prevent those certificate chains from being used for TLS certificates.
-Warden Supreme includes a manual check **and** Google's custom PKIX certificate path validator introduced with the new upstream attestation library
+This prevents attestation certificate chains from being used for TLS certificates (which you should not do, anyway).
+Warden Supreme includes a manual check **and** Google's custom PKIX certificate path validator introduced with the new upstream attestation library.
+If you need a certificate chain that works for TLS, issue your own for an attested key (see [Integration Guide](../integration/supreme.md)).
 
 ## iOS
 
