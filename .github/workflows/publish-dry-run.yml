@@ -100,7 +100,7 @@ jobs:
           python-version: 3.x
       - run: pip install mkdocs-material==9.5.40
       - run: pip install mkdocs-material[imaging]==9.5.40
-      - name: Build mkdics HTML
+      - name: Build mkdocs HTML
         run: |
           export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib
-          ./gradlew mkDocsBuild
+          ./gradlew mkDocsSite
