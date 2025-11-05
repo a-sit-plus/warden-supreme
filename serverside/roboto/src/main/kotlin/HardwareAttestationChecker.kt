@@ -3,14 +3,6 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import com.google.android.attestation.ParsedAttestationRecord
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.cache.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.serialization.kotlinx.json.*
 import java.util.*
 
 class HardwareAttestationChecker @JvmOverloads constructor(
@@ -21,7 +13,7 @@ class HardwareAttestationChecker @JvmOverloads constructor(
     init {
         if (attestationConfiguration.disableHardwareAttestation) throw object :
             AndroidAttestationException("Hardware attestation is disabled!", null) {}
-        if (attestationConfiguration.hardwareAttestationTrustAnchors.isEmpty()) throw object :
+        if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw object :
             AndroidAttestationException("No hardware attestation trust anchors configured", null) {}
     }
 
@@ -60,7 +52,7 @@ class HardwareAttestationChecker @JvmOverloads constructor(
         }
     }
 
-    override val trustAnchors = attestationConfiguration.hardwareAttestationTrustAnchors
+    override val trustAnchors = attestationConfiguration.hardwareTrustedRoots
 
     @Throws(AttestationValueException::class)
     override fun ParsedAttestationRecord.verifyAndroidVersion(versionOverride: Int?, osPatchLevel: PatchLevel?, verificationDate: Date) =

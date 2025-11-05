@@ -2,6 +2,7 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
@@ -62,13 +63,15 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                         )
                     )
                 )
-            ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareAttestationTrustAnchor(
-                CryptoPublicKey.decodeFromPem(
-                    "-----BEGIN PUBLIC KEY-----\n" +
-                            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
-                            "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
-                            "-----END PUBLIC KEY-----"
-                ).getOrThrow().toJcaPublicKey().getOrThrow()
+            ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustAnchor(
+                TrustedRoot.PublicKey(
+                    CryptoPublicKey.decodeFromPem(
+                        "-----BEGIN PUBLIC KEY-----\n" +
+                                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
+                                "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
+                                "-----END PUBLIC KEY-----"
+                    ).getOrThrow().toJcaPublicKey().getOrThrow()
+                )
             ).ingoreLeafValidity()
                 .attestationStatementValiditySeconds(STMT_VALIDITY.inWholeSeconds)
                 .build(),

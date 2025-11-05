@@ -146,16 +146,21 @@ class Warden(
         clock.toJavaClock(),
         verificationTimeOffset.toJavaDuration()
     )
-    private val attestationValidators: Map<AppleAppAttest, AttestationValidator> =
-        iosApps.values.associateWith { app ->
-            app.createAttestationValidator(
-                clock = appAttestClock,
-                receiptValidator = app.createReceiptValidator(
+    private val attestationValidators: Map<AppleAppAttest, List<AttestationValidator>> =
+        iosApps.map { (cfg, app) ->
+
+            val anchors = cfg.attestationTrustAnchorsOverride ?: iosAttestationConfiguration.trustedRoots
+            app to anchors.map { trustAnchor ->
+                app.createAttestationValidator(
                     clock = appAttestClock,
-                    maxAge = iosAttestationConfiguration.attestationStatementValiditySeconds.seconds.toJavaDuration()
+                    receiptValidator = app.createReceiptValidator(
+                        clock = appAttestClock,
+                        maxAge = iosAttestationConfiguration.attestationStatementValiditySeconds.seconds.toJavaDuration(),
+                        trustAnchor = trustAnchor.trustAnchor
+                    )
                 )
-            )
-        }
+            }
+        }.toMap()
 
     override val ios = object : IOS {
         override fun verifyAppAttestation(attestationObject: ByteArray, challenge: ByteArray) =
@@ -299,9 +304,11 @@ class Warden(
                         AttestationResult.Error(
                             msg, AttestationException.Content.Android(
                                 msg,
-                                AttestationValueException(msg, reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                                AttestationValueException(
+                                    msg, reason = AttestationValueException.Reason.APP_UNEXPECTED,
                                     expectedValue = encodedKey,
-                                    actualValue = it.attestationCertificate.publicKey.encoded)
+                                    actualValue = it.attestationCertificate.publicKey.encoded
+                                )
                             )
                         )
                     }
@@ -379,7 +386,8 @@ class Warden(
             ).let {
                 when (it) {
                     is AttestationResult.Android -> KeyAttestation(
-                        attestationProof.certificateChain.first().decodedPublicKey.getOrThrow().toJcaPublicKey().getOrThrow(), it
+                        attestationProof.certificateChain.first().decodedPublicKey.getOrThrow().toJcaPublicKey()
+                            .getOrThrow(), it
                     )
 
                     is AttestationResult.Error -> KeyAttestation(null, it)
@@ -499,22 +507,36 @@ class Warden(
         expectedChallenge: ByteArray,
         assertionData: AssertionData?,
         counter: Long
-    ): AttestationResult = runCatching {
+    ): AttestationResult = catchingUnwrapped {
         log.debug("Verifying iOS attestation")
 
         val parsedAttestationCert =
             X509CertificateHolder(appAttestReader.readValue<AttestationObject>(attestationObject).attStmt.x5c.first())
 
+        val results = attestationValidators.map { (app, validators) ->
 
-        val results = attestationValidators.map { (app, attestationValidator) ->
-            app to runCatching {
-                attestationValidator.validate(
-                    attestationObject = attestationObject,
-                    keyIdBase64 = MessageDigest.getInstance("SHA-256")
-                        .digest(parsedAttestationCert.subjectPublicKeyInfo.publicKeyData.bytes)
-                        .encodeBase64(),
-                    serverChallenge = expectedChallenge,
-                )
+            //TODO simplify
+            app to catchingUnwrapped {
+                var res: Result<ValidatedAttestation> = Result.failure(ReceiptException.InvalidCertificateChain(""))
+                var check = true
+                validators.forEach { attestationValidator ->
+                    if (check) res = catchingUnwrapped {
+                        attestationValidator.validate(
+                            attestationObject = attestationObject,
+                            keyIdBase64 = MessageDigest.getInstance("SHA-256")
+                                .digest(parsedAttestationCert.subjectPublicKeyInfo.publicKeyData.bytes)
+                                .encodeBase64(),
+                            serverChallenge = expectedChallenge,
+                        )
+                    }
+                    if (res.isFailure) {
+                        if (res.exceptionOrNull()!! is ReceiptException.InvalidCertificateChain) {
+                            /*all good; just a trust anchor mismatch*/
+                        } else check = false
+                    } else
+                        check = false
+                }
+                res.getOrThrow()
             }
         }
 

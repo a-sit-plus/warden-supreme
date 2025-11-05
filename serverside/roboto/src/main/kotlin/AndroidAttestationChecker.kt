@@ -68,11 +68,11 @@ abstract class AndroidAttestationChecker(
     @Throws(CertificateInvalidException::class, RevocationException::class)
     private fun List<X509Certificate>.verifyCertificateChain(
         verificationDate: Date,
-        actualTrustAnchors: Collection<PublicKey>,
+        actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
     ) {
-        catchingUnwrapped { verifyRootCertificate(verificationDate, actualTrustAnchors) }
-            .onFailure {
+        val trustedRoot = catchingUnwrapped { verifyRootCertificate(verificationDate, actualTrustAnchors) }
+            .getOrElse {
                 throw if (it is CertificateInvalidException) it else CertificateInvalidException.InvalidRoot(
                     message = "could not verify root certificate (valid from: ${last().notBefore} to ${last().notAfter}), verification date: $verificationDate",
                     cause = it,
@@ -93,6 +93,8 @@ abstract class AndroidAttestationChecker(
                 if (i == 0) EternalX509Certificate(cert) else cert
             } else this
 
+
+
         certificateChain.reversed().zipWithNext { parent, certificate ->
             verifyCertificatePair(certificate, parent, verificationDate, revocationStatusList, certificateChain)
         }
@@ -101,9 +103,7 @@ abstract class AndroidAttestationChecker(
         catchingUnwrapped {
             newPkixCertPathValidator.validate(
                 KeyAttestationCertPath(certificateChain),
-                PKIXParameters(
-                    setOf(TrustAnchor(certificateChain.last(), null))
-                ).apply {
+                PKIXParameters(setOf(trustedRoot.trustAnchor)).apply {
                     date = verificationDate
                     isRevocationEnabled =
                         false //we check manually as per the official documentation, and we've done that already
@@ -169,14 +169,16 @@ abstract class AndroidAttestationChecker(
 
     private fun List<X509Certificate>.verifyRootCertificate(
         verificationDate: Date,
-        actualTrustAnchors: Collection<PublicKey>,
-    ) {
+        actualTrustAnchors: Collection<TrustedRoot>,
+    ): TrustedRoot {
         val root = last()
         root.checkValidity(verificationDate)
-        val matchingTrustAnchor = actualTrustAnchors
-            .firstOrNull { root.publicKey.encoded.contentEquals(it.encoded) }
+        val matchingTrustAnchor = actualTrustAnchors.filter { it is TrustedRoot.Certificate }
+            .firstOrNull { root.encoded.contentEquals(it.derEncoded) }
+            ?: actualTrustAnchors.filter { it is TrustedRoot.PublicKey }
+                .firstOrNull { root.publicKey.encoded.contentEquals(it.derEncoded) }
             ?: run {
-                throw if (DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.encoded }
+                throw if (HARDWARE_TRUST_ANCHORS.map { it.publicKey.encoded }
                         .firstOrNull { it.contentEquals(root.publicKey.encoded) } != null)
                     CertificateInvalidException.OtherMatchingRoot(
                         message = "No matching root certificate. Found a default HARDWARE Root",
@@ -184,7 +186,7 @@ abstract class AndroidAttestationChecker(
                         certificateChain = this,
                         rootCertStage = CertificateInvalidException.OtherMatchingRoot.Stage.HARDWARE
                     )
-                else if (DEFAULT_SOFTWARE_TRUST_ANCHORS.map { it.encoded }
+                else if (SOFTWARE_TRUST_ANCHORS.map { it.publicKey.encoded }
                         .firstOrNull { it.contentEquals(root.publicKey.encoded) } != null)
                     CertificateInvalidException.OtherMatchingRoot(
                         message = "No matching root certificate. Found a default SOFTWARE Root",
@@ -198,10 +200,11 @@ abstract class AndroidAttestationChecker(
                     certificateChain = this
                 )
             }
-        root.verify(matchingTrustAnchor)
+        root.verify(matchingTrustAnchor.publicKey)
+        return matchingTrustAnchor
     }
 
-    protected abstract val trustAnchors: Collection<PublicKey>
+    protected abstract val trustAnchors: Collection<TrustedRoot>
 
     protected open fun ParsedAttestationRecord.verifyAttestationTime(verificationDate: Instant) {
         var checkTime = verificationDate.plusSeconds(attestationConfiguration.verificationSecondsOffset.toLong())
@@ -448,7 +451,7 @@ abstract class AndroidAttestationChecker(
                 .let { throw it }
         }.key
 
-        val thisAppsTrustAnchors = attestedApp.trustAnchorOverrides ?: trustAnchors
+        val thisAppsTrustAnchors = attestedApp.trustedRootOverrides ?: trustAnchors
         val rkpRequired =
             attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
         certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
@@ -622,7 +625,7 @@ fun List<X509Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = c
  */
 fun List<X509Certificate>.isRemoteKeyProvisioned(): Boolean {
     val principal = get(size - 2).subjectX500Principal
-    val rdn =parseDN( principal.getName(X500Principal.RFC1779))
+    val rdn = parseDN(principal.getName(X500Principal.RFC1779))
     return rdn["CN"] == "Droid CA2" && rdn["O"] == "Google LLC"
 }
 
