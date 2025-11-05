@@ -14,12 +14,32 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.security.MessageDigest
 import java.security.cert.TrustAnchor
+import javax.security.auth.x500.X500Principal
 
-
+/**
+ * Represents a trusted root entity, which can either be a public key or an X.509 certificate.
+ *
+ * This sealed class hierarchy encapsulates otherwise disjoint trust anchor types
+ *
+ * A trusted root can be constructed from either:
+ *  - An X.509 certificate, which serves as the trust anchor.
+ *  - A raw public key, optionally associated with a certificate authority's distinguished name.
+ */
 @Serializable(with = TrustedRootSerializer::class)
 sealed class TrustedRoot(protected val value: Asn1Encodable<*>) {
 
-    data class PublicKey(val key: java.security.PublicKey) : TrustedRoot(key.toCryptoPublicKey().getOrThrow()) {
+    /**
+     * Creates a TrustedRoot from a public key.
+     * @param key the public key
+     * @param caName the common name of the certificate authority issuing the certificate, if known.
+     * Leave blank if you do not care for Subject/Issuer name checks inside the Android Cert Path Validator (which makes sense for raw public keys)
+     */
+
+    data class PublicKey @JvmOverloads constructor(
+        val key: java.security.PublicKey,
+        val caName: X500Principal? = null
+    ) :
+        TrustedRoot(key.toCryptoPublicKey().getOrThrow()) {
         @Throws(Throwable::class)
         constructor(encoded: ByteArray) : this(CryptoPublicKey.decodeFromDer(encoded).toJcaPublicKey().getOrThrow())
     }
@@ -44,7 +64,11 @@ sealed class TrustedRoot(protected val value: Asn1Encodable<*>) {
     val trustAnchor: TrustAnchor by lazy {
         when (this) {
             is Certificate -> TrustAnchor(certificate, null)
-            is PublicKey -> TrustAnchor("CN=" + MessageDigest.getInstance("SHA-256").digest(key.encoded), key, null)
+            is PublicKey -> TrustAnchor(
+                caName ?: X500Principal(
+                    "CN=" + MessageDigest.getInstance("SHA-256").digest(key.encoded)
+                ), key, null
+            )
         }
     }
 
@@ -73,6 +97,11 @@ sealed class TrustedRoot(protected val value: Asn1Encodable<*>) {
         fun decode(encoded: ByteArray): TrustedRoot = catchingUnwrapped { TrustedRoot.PublicKey(encoded) }.getOrElse {
             catchingUnwrapped { TrustedRoot.Certificate(encoded) }.getOrElse { throw Asn1Exception("Input is neither public key nor certificate") }
         }
+
+        operator fun invoke(publicKey: java.security.PublicKey, caName: X500Principal? = null) =
+            TrustedRoot.PublicKey(publicKey, caName)
+
+        operator fun invoke(cert: java.security.cert.X509Certificate) = TrustedRoot.Certificate(cert)
     }
 
 }

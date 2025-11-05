@@ -201,7 +201,10 @@ abstract class AndroidAttestationChecker(
                 )
             }
         root.verify(matchingTrustAnchor.publicKey)
-        return matchingTrustAnchor
+        return matchingTrustAnchor.let {
+            if (it is TrustedRoot.PublicKey && it.caName == null) it.copy(caName = root.issuerX500Principal)
+            else it
+        }
     }
 
     protected abstract val trustAnchors: Collection<TrustedRoot>
