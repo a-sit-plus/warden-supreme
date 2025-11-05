@@ -1,6 +1,7 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.TrustedRoot
+import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.receipt.ReceiptValidator
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -34,12 +35,13 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
     val attestationStatementValiditySeconds: Long = 5 * 60,
 
     /**
-     * Manually specify the trust anchor(s). Defaults to the Apple public root CA G3.
+     * Manually specify the trust anchors.
+     * Apple's trust anchors come in pairs: a [TrustedRootPair.attestationRoot] and a [TrustedRootPair.receiptRoot].
+     * Defaults to the Apples trust anchors available in [APPLE_DEFAULT_TRUSTED_ROOTS].
      * Overriding this set is useful for automated end-to-end tests, for example.
-     * The default trust anchor is accessible through [ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR]
+     * Note that currently only Certificates are supported as trust anchors, no raw public keys
      */
-    val trustedRoots: Set<TrustedRoot>
-    = linkedSetOf(TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert)),
+    val trustedRoots: Set<TrustedRootPair> = linkedSetOf(APPLE_DEFAULT_TRUSTED_ROOTS),
 ) {
 
 
@@ -48,9 +50,9 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         singleApp: AppData,
         iosVersion: OsVersions? = null,
         attestationStatementValiditySeconds: Long = 5 * 60,
-        attestationTrustAnchors: Set<TrustedRoot>
-        = linkedSetOf(TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert)),
-    ) : this(listOf(singleApp), iosVersion, attestationStatementValiditySeconds, attestationTrustAnchors)
+        trustedRoots: Set<TrustedRootPair>
+        = linkedSetOf(APPLE_DEFAULT_TRUSTED_ROOTS),
+    ) : this(listOf(singleApp), iosVersion, attestationStatementValiditySeconds, trustedRoots)
 
     init {
         if (trustedRoots.isEmpty())
@@ -179,7 +181,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         /**
          * Optional parameter. IF present, takes precedence over the globally configured trust anchors.
          */
-        val attestationTrustAnchorsOverride: Set<TrustedRoot>? = null,
+        val trustedRootOverrides: Set<TrustedRootPair>? = null,
 
         ) {
 
@@ -192,7 +194,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         class Builder(private val teamIdentifier: String, private val bundleIdentifier: String) {
             private var sandbox = false
             private var iosVersionOverride: OsVersions? = null
-            private var attestationTrustAnchorsOverride: Set<TrustedRoot>? =
+            private var trustedRootOverrides: Set<TrustedRootPair>? =
                 null
 
             /**
@@ -206,10 +208,10 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             fun overrideIosVersion(version: OsVersions) = apply { iosVersionOverride = version }
 
             /**
-             * @see AppData.attestationTrustAnchorsOverride
+             * @see AppData.trustedRootOverrides
              */
-            fun overrideTrustAnchors(trustAnchors: Set<TrustedRoot>) =
-                apply { attestationTrustAnchorsOverride = trustAnchors }
+            fun overrideTrustedRoots(trustAnchors: Set<TrustedRootPair>) =
+                apply { trustedRootOverrides = trustAnchors }
 
             fun build() = AppData(teamIdentifier, bundleIdentifier, sandbox, iosVersionOverride)
         }
@@ -222,7 +224,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             if (teamIdentifier != other.teamIdentifier) return false
             if (bundleIdentifier != other.bundleIdentifier) return false
             if (iosVersionOverride != other.iosVersionOverride) return false
-            if (attestationTrustAnchorsOverride?.map { it.toString() } != other.attestationTrustAnchorsOverride?.map { it.toString() }) return false
+            if (trustedRootOverrides?.map { it.toString() } != other.trustedRootOverrides?.map { it.toString() }) return false
 
             return true
         }
@@ -232,7 +234,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + teamIdentifier.hashCode()
             result = 31 * result + bundleIdentifier.hashCode()
             result = 31 * result + (iosVersionOverride?.hashCode() ?: 0)
-            result = 31 * result + (attestationTrustAnchorsOverride?.hashCode() ?: 0)
+            result = 31 * result + (trustedRootOverrides?.hashCode() ?: 0)
             return result
         }
     }
@@ -327,3 +329,24 @@ class BuildNumber private constructor(
     }
 }
 
+/**
+ * Represents a pair of trusted root entities for Apple's AppAttest ecosystem.
+ */
+typealias TrustedRootPair = Pair<TrustedRoot.Certificate, TrustedRoot.Certificate>
+
+val TrustedRootPair.attestationRoot get() = first
+val TrustedRootPair.receiptRoot get() = second
+
+/**
+ * Represents a default tuple of trusted root certificates specific to Apple's ecosystem.
+ *
+ * `APPLE_DEFAULT_TRUSTED_ROOTS` pairs two `TrustedRoot.Certificate` instances derived from
+ * Apple's built-in trust anchors. These trust anchors correspond to:
+ *
+ * - The root certificate used for Apple App Attest (`APPLE_APP_ATTEST_ROOT_CA_BUILTIN_TRUST_ANCHOR`).
+ * - The root certificate used for Apple receipt validation (`APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR`).
+ *
+ */
+val APPLE_DEFAULT_TRUSTED_ROOTS =
+    TrustedRoot.Certificate(AttestationValidator.APPLE_APP_ATTEST_ROOT_CA_BUILTIN_TRUST_ANCHOR.trustedCert) to
+            TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert)

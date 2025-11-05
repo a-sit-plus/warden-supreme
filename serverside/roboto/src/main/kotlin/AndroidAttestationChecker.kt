@@ -178,7 +178,7 @@ abstract class AndroidAttestationChecker(
             ?: actualTrustAnchors.filter { it is TrustedRoot.PublicKey }
                 .firstOrNull { root.publicKey.encoded.contentEquals(it.derEncoded) }
             ?: run {
-                throw if (HARDWARE_TRUST_ANCHORS.map { it.publicKey.encoded }
+                throw if (GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.publicKey.encoded }
                         .firstOrNull { it.contentEquals(root.publicKey.encoded) } != null)
                     CertificateInvalidException.OtherMatchingRoot(
                         message = "No matching root certificate. Found a default HARDWARE Root",
@@ -186,7 +186,7 @@ abstract class AndroidAttestationChecker(
                         certificateChain = this,
                         rootCertStage = CertificateInvalidException.OtherMatchingRoot.Stage.HARDWARE
                     )
-                else if (SOFTWARE_TRUST_ANCHORS.map { it.publicKey.encoded }
+                else if (GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.publicKey.encoded }
                         .firstOrNull { it.contentEquals(root.publicKey.encoded) } != null)
                     CertificateInvalidException.OtherMatchingRoot(
                         message = "No matching root certificate. Found a default SOFTWARE Root",

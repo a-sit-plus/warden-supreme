@@ -34,7 +34,7 @@ sealed class TrustedRoot(protected val value: Asn1Encodable<*>) {
      * @param caName the common name of the certificate authority issuing the certificate, if known.
      * Leave blank if you do not care for Subject/Issuer name checks inside the Android Cert Path Validator (which makes sense for raw public keys)
      */
-
+    @Serializable(with = TrustedRootSerializer::class)
     data class PublicKey @JvmOverloads constructor(
         val key: java.security.PublicKey,
         val caName: X500Principal? = null
@@ -43,7 +43,8 @@ sealed class TrustedRoot(protected val value: Asn1Encodable<*>) {
         @Throws(Throwable::class)
         constructor(encoded: ByteArray) : this(CryptoPublicKey.decodeFromDer(encoded).toJcaPublicKey().getOrThrow())
     }
-
+    
+    @Serializable(with = TrustedRootSerializer::class)
     data class Certificate(val certificate: java.security.cert.X509Certificate) :
         TrustedRoot(certificate.toKmpCertificate().getOrThrow()) {
         @Throws(Throwable::class)

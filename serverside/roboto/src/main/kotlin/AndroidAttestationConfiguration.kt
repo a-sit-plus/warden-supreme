@@ -62,7 +62,7 @@ data class PatchLevel @JvmOverloads constructor(
 /**
  * Default trust anchors used to verify hardware attestation
  */
-val HARDWARE_TRUST_ANCHORS = arrayOf(
+val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
     //Current RSA ROOT
     TrustedRoot.Certificate(
         X509Certificate.decodeFromPem(
@@ -271,9 +271,9 @@ val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
 )
 
 /**
- * Default trust anchors used to verify software attestation
+ * Default trust anchors used to verify software attestation working up to Android 11. Useful for testing.
  */
-val SOFTWARE_TRUST_ANCHORS = DEFAULT_SOFTWARE_TRUST_ANCHORS.map { TrustedRoot.PublicKey(it) }.toTypedArray()
+val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11 = DEFAULT_SOFTWARE_TRUST_ANCHORS.map { TrustedRoot.PublicKey(it) }.toTypedArray()
 
 
 /**
@@ -370,16 +370,16 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     /**
      * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
      * Overriding this set is useful for automated end-to-end tests, for example.
-     * The default trust anchors are accessible through [HARDWARE_TRUST_ANCHORS]
+     * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
      */
-    val hardwareTrustedRoots: Set<TrustedRoot> = linkedSetOf(*HARDWARE_TRUST_ANCHORS),
+    val hardwareTrustedRoots: Set<TrustedRoot> = linkedSetOf(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS),
 
     /**
      * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
      * Overriding this set is useful for automated end-to-end tests, for example.
-     * The default trust anchors are accessible through [SOFTWARE_TRUST_ANCHORS]
+     * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
      */
-    val softwareTrustedRoots: Set<TrustedRoot> = linkedSetOf(*SOFTWARE_TRUST_ANCHORS),
+    val softwareTrustedRoots: Set<TrustedRoot> = linkedSetOf(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11),
 
 
     /**
@@ -466,17 +466,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are accessible through [HARDWARE_TRUST_ANCHORS]
+         * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
          */
-        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*HARDWARE_TRUST_ANCHORS.map { it.publicKey }
+        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.publicKey }
             .toTypedArray()),
 
         /**
          * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are accessible through [SOFTWARE_TRUST_ANCHORS]
+         * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
          */
-        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*SOFTWARE_TRUST_ANCHORS.map { it.publicKey }
+        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.publicKey }
             .toTypedArray()),
 
         /**
@@ -596,17 +596,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are accessible through [HARDWARE_TRUST_ANCHORS]
+         * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
          */
-        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*HARDWARE_TRUST_ANCHORS.map { it.publicKey }
+        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.publicKey }
             .toTypedArray()),
 
         /**
          * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are accessible through [SOFTWARE_TRUST_ANCHORS]
+         * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
          */
-        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*SOFTWARE_TRUST_ANCHORS.map { it.publicKey }
+        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.publicKey }
             .toTypedArray()),
 
         /**
@@ -735,16 +735,16 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are accessible through [HARDWARE_TRUST_ANCHORS]
+         * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
          */
-        hardwareTrustedRoots: Set<TrustedRoot> = linkedSetOf(*HARDWARE_TRUST_ANCHORS),
+        hardwareTrustedRoots: Set<TrustedRoot> = linkedSetOf(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS),
 
         /**
          * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are accessible through [SOFTWARE_TRUST_ANCHORS]
+         * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
          */
-        softwareTrustedRoots: Set<TrustedRoot> = linkedSetOf(*SOFTWARE_TRUST_ANCHORS),
+        softwareTrustedRoots: Set<TrustedRoot> = linkedSetOf(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11),
 
 
         /**
@@ -883,18 +883,18 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * The reason for this format in the default constructor is to make file-based configuration through [Hoplite](https://github.com/sksamuel/hoplite) a breeze.
          * Defaults to google HW attestation key.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are [HARDWARE_TRUST_ANCHORS]
+         * The default trust anchors are [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
          */
-        hardwareTrustedRoots: Set<ByteArray> = HARDWARE_TRUST_ANCHORS.map { it.derEncoded }.toSet(),
+        hardwareTrustedRoots: Set<ByteArray> = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.derEncoded }.toSet(),
 
         /**
          * Manually specify the trust anchor for SW-attested certificate chains as X.509-encoded public keys.
          * The reason for this format in the default constructor is to make file-based configuration through [Hoplite](https://github.com/sksamuel/hoplite) a breeze.
          * Defaults to google SW attestation keys.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are [SOFTWARE_TRUST_ANCHORS]
+         * The default trust anchors are [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
          */
-        softwareTrustedRoots: Set<ByteArray> = SOFTWARE_TRUST_ANCHORS.map { it.derEncoded }.toSet(),
+        softwareTrustedRoots: Set<ByteArray> = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.derEncoded }.toSet(),
 
         /**
          * List of applications which can be attested
@@ -1210,8 +1210,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var bootloaderUnlockAllowed: Boolean = false
         private var rollbackResitanceRequired: Boolean = false
         private var ignoreLeafValidity: Boolean = false
-        private var hardwareAttestationTrustAnchors = mutableSetOf<TrustedRoot>(*HARDWARE_TRUST_ANCHORS)
-        private var softwareAttestationTrustAnchors = mutableSetOf<TrustedRoot>(*SOFTWARE_TRUST_ANCHORS)
+        private var hardwareAttestationTrustAnchors = mutableSetOf<TrustedRoot>(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS)
+        private var softwareAttestationTrustAnchors = mutableSetOf<TrustedRoot>(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11)
         private var verificationSecondsOffset = 0L
         private var attestationStatementValiditySeconds: Long? = 5 * 60
         private var disableHwAttestation: Boolean = false

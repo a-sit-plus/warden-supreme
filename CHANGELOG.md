@@ -7,7 +7,7 @@ this changelog also includes the original WARDEN changelog.
 * Rework Trust Anchor Management:
      * iOS now also supports setting custom Trust Anchors
      * Android trust anchors can now be certificates or public keys
-     * Existing signatures are preserved for compatibility **but will be removed in the next major release**
+     * Existing function signatures are preserved for compatibility **but will be removed in the next major release**
 
 ## Warden Supreme 0.9.1
 * First-Class support for remote provisioning checks on Android

@@ -149,15 +149,16 @@ class Warden(
     private val attestationValidators: Map<AppleAppAttest, List<AttestationValidator>> =
         iosApps.map { (cfg, app) ->
 
-            val anchors = cfg.attestationTrustAnchorsOverride ?: iosAttestationConfiguration.trustedRoots
+            val anchors = cfg.trustedRootOverrides ?: iosAttestationConfiguration.trustedRoots
             app to anchors.map { trustAnchor ->
                 app.createAttestationValidator(
                     clock = appAttestClock,
                     receiptValidator = app.createReceiptValidator(
                         clock = appAttestClock,
                         maxAge = iosAttestationConfiguration.attestationStatementValiditySeconds.seconds.toJavaDuration(),
-                        trustAnchor = trustAnchor.trustAnchor
-                    )
+                        trustAnchor = trustAnchor.receiptRoot.trustAnchor
+                    ),
+                    trustAnchor = trustAnchor.attestationRoot.trustAnchor,
                 )
             }
         }.toMap()
