@@ -63,7 +63,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                         )
                     )
                 )
-            ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustAnchor(
+            ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(
                 TrustedRoot.PublicKey(
                     CryptoPublicKey.decodeFromPem(
                         "-----BEGIN PUBLIC KEY-----\n" +

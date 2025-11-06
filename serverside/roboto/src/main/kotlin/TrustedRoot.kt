@@ -26,71 +26,80 @@ import javax.security.auth.x500.X500Principal
  *  - A raw public key, optionally associated with a certificate authority's distinguished name.
  */
 @Serializable(with = TrustedRootSerializer::class)
-sealed class TrustedRoot(protected val value: Asn1Encodable<*>) {
+sealed interface TrustedRoot {
+    val value: Asn1Encodable<*>
 
     /**
      * Creates a TrustedRoot from a public key.
-     * @param key the public key
+     * @param publicKey the public key
      * @param caName the common name of the certificate authority issuing the certificate, if known.
      * Leave blank if you do not care for Subject/Issuer name checks inside the Android Cert Path Validator (which makes sense for raw public keys)
      */
     @Serializable(with = TrustedRootSerializer::class)
     data class PublicKey @JvmOverloads constructor(
-        val key: java.security.PublicKey,
+        override val publicKey: java.security.PublicKey,
         val caName: X500Principal? = null
-    ) :
-        TrustedRoot(key.toCryptoPublicKey().getOrThrow()) {
+    ) : TrustedRoot {
         @Throws(Throwable::class)
         constructor(encoded: ByteArray) : this(CryptoPublicKey.decodeFromDer(encoded).toJcaPublicKey().getOrThrow())
+
+        override val value = publicKey.toCryptoPublicKey().getOrThrow()
+
+        override val trustAnchor = TrustAnchor(
+            caName ?: X500Principal(
+                "CN=" + MessageDigest.getInstance("SHA-256").digest(publicKey.encoded)
+            ), publicKey, null
+        )
+
+        override fun toString(): String = derEncoded.encodeBase64()
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is TrustedRoot) return false
+
+            //better safe than sorry
+            if (!derEncoded.contentEquals(other.derEncoded)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int = derEncoded.contentHashCode()
+
     }
-    
+
     @Serializable(with = TrustedRootSerializer::class)
-    data class Certificate(val certificate: java.security.cert.X509Certificate) :
-        TrustedRoot(certificate.toKmpCertificate().getOrThrow()) {
+    data class Certificate(val certificate: java.security.cert.X509Certificate) : TrustedRoot {
+        override val value = certificate.toKmpCertificate().getOrThrow()
+
         @Throws(Throwable::class)
         constructor(encoded: ByteArray) : this(
             X509Certificate.decodeFromDer(encoded).toJcaCertificateBlocking().getOrThrow()
         )
-    }
 
-    val publicKey: java.security.PublicKey by lazy {
-        when (this) {
-            is Certificate -> certificate.publicKey
-            is PublicKey -> key
+        override val publicKey: java.security.PublicKey by lazy { certificate.publicKey }
+        override val trustAnchor = TrustAnchor(certificate, null)
+
+        override fun toString(): String = derEncoded.encodeBase64()
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is TrustedRoot) return false
+
+            //better safe than sorry
+            if (!derEncoded.contentEquals(other.derEncoded)) return false
+
+            return true
         }
+
+        override fun hashCode(): Int = derEncoded.contentHashCode()
     }
 
-    val derEncoded: ByteArray by lazy { value.encodeToDer() }
+    val publicKey: java.security.PublicKey
 
-    val trustAnchor: TrustAnchor by lazy {
-        when (this) {
-            is Certificate -> TrustAnchor(certificate, null)
-            is PublicKey -> TrustAnchor(
-                caName ?: X500Principal(
-                    "CN=" + MessageDigest.getInstance("SHA-256").digest(key.encoded)
-                ), key, null
-            )
-        }
-    }
 
-    override fun toString(): String = when (this) {
-        is TrustedRoot.Certificate -> derEncoded.encodeBase64()
-        is TrustedRoot.PublicKey -> derEncoded.encodeBase64()
-    }
+    val derEncoded: ByteArray get() = value.encodeToDer()
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is TrustedRoot) return false
-
-        //better safe than sorry
-        if (!derEncoded.contentEquals(other.derEncoded)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return derEncoded.contentHashCode()
-    }
+    val trustAnchor: TrustAnchor
 
     companion object {
         @JvmStatic
@@ -116,7 +125,7 @@ object TrustedRootSerializer : KSerializer<TrustedRoot> {
     ) {
         when (value) {
             is TrustedRoot.Certificate -> CertPemSerializer.serialize(encoder, value.certificate)
-            is TrustedRoot.PublicKey -> PubKeyBasePemSerializer.serialize(encoder, value.key)
+            is TrustedRoot.PublicKey -> PubKeyBasePemSerializer.serialize(encoder, value.publicKey)
         }
     }
 

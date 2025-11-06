@@ -5,9 +5,26 @@ this changelog also includes the original WARDEN changelog.
 
 ## NEXT
 * Rework Trust Anchor Management:
-     * iOS now also supports setting custom Trust Anchors
-     * Android trust anchors can now be certificates or public keys
-     * Existing function signatures are preserved for compatibility **but will be removed in the next major release**
+     * Introduce `TrustedRoot` interface to represent trust anchors
+         * `TrustedRoot.Certificate` for certificates 
+         * `TrustedRoot.PublicKey` for using raw public keys, optionally specifying a CA name 
+            * No CA name -> no CA name check
+            * CA name set -> CA name check
+     * Android trust anchors can now be certificates or public keys thanks to `TrustedRoot`
+         * Default hardware attestation trust anchors are available in `GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS` 
+         * Default software attestation trust anchors for Android <=11 are available in `GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11` 
+     * iOS now also supports setting custom trust anchors (currently certificates only) via
+         * `trustedRoots` config property
+         * `trustedRootOverrides` for app-specific overrides
+         * `overrideTrustedRoots` for the builder
+         * Defaults trusted roots are available in `APPLE_DEFAULT_TRUSTED_ROOTS`
+     * Default android trust anchors are now all the attestation certificates, not just a raw public key
+     * Existing function signatures and constants are preserved for compatibility **but will be removed in the next major release**
+     * Android configuration migration guide (iOS only got added functionality):
+         * `hardwareAttestationTrustAnchors` -> `hardwareTrustedRoots`
+         * `softwareAttestationTrustAnchors` -> `softwareTrustedRoots`
+         * `AppData.overrideTrustAnchors` -> `AppData.overrideTrustedRoots`
+         * `AppData.trustAnchorOverrides` -> `AppData.trustedRootOverrides`
 
 ## Warden Supreme 0.9.1
 * First-Class support for remote provisioning checks on Android

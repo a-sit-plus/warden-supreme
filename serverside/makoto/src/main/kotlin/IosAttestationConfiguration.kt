@@ -41,7 +41,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
      * Overriding this set is useful for automated end-to-end tests, for example.
      * Note that currently only Certificates are supported as trust anchors, no raw public keys
      */
-    val trustedRoots: Set<TrustedRootPair> = linkedSetOf(APPLE_DEFAULT_TRUSTED_ROOTS),
+    val trustedRoots: Set<TrustedRootPair> = APPLE_DEFAULT_TRUSTED_ROOTS,
 ) {
 
 
@@ -51,7 +51,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         iosVersion: OsVersions? = null,
         attestationStatementValiditySeconds: Long = 5 * 60,
         trustedRoots: Set<TrustedRootPair>
-        = linkedSetOf(APPLE_DEFAULT_TRUSTED_ROOTS),
+        = APPLE_DEFAULT_TRUSTED_ROOTS,
     ) : this(listOf(singleApp), iosVersion, attestationStatementValiditySeconds, trustedRoots)
 
     init {
@@ -347,6 +347,6 @@ val TrustedRootPair.receiptRoot get() = second
  * - The root certificate used for Apple receipt validation (`APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR`).
  *
  */
-val APPLE_DEFAULT_TRUSTED_ROOTS =
+val APPLE_DEFAULT_TRUSTED_ROOTS:Set<TrustedRootPair> = linkedSetOf(
     TrustedRoot.Certificate(AttestationValidator.APPLE_APP_ATTEST_ROOT_CA_BUILTIN_TRUST_ANCHOR.trustedCert) to
-            TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert)
+            TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert))

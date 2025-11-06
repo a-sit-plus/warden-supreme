@@ -85,68 +85,78 @@ attestation statements), configuration needs to deal with each platform separate
 
 ### 1.1 Back-End Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
-The following snippet lists all configuration values:
+The following snippet lists all configuration values (migration notes are shown in parentheses):
 
 ```kotlin
 val warden = Warden(
-    androidAttestationConfiguration = AndroidAttestationConfiguration(
-       applications = listOf(   // REQUIRED: add applications to be attested
-           AndroidAttestationConfiguration.AppData(
-               packageName = "at.asitplus.attestation_client",
-               signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
-               appVersion = 5
-           ),
-           AndroidAttestationConfiguration.AppData( // dedicated app for the latest Android version
-               packageName = "at.asitplus.attestation_client-tiramisu",
-               signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
-               appVersion = 2, // with a different versioning scheme
-               androidVersionOverride = 130000, // so we need to override this
-               patchLevelOverride = PatchLevel(2023, 6, maxFuturePatchLevelMonths = 2), // also override patch level and
-                                                                    // consider patch levels from 2 months in the future
-                                                                    // as valid 
-                                                                    // maxFuturePatchLevelMonths defaults to 1
-                                                                    // null means any future patch level is OK
-               
-               trustAnchorOverrides = setOf(extraTrustedRootPubKey),// require a custom root as the trust anchor
-                                                                    // for the attestation certificate chain
-               
-               requireRemoteProvisioningOverride = true             // require a remotely provisioned attestation
-                                                                    // certificate for extra security
-           )
-       ),
-       androidVersion = 110000,                  // OPTIONAL, null by default
-       patchLevel = PatchLevel(2022, 12),        // OPTIONAL, null by default; maxFuturePatchLevelMonths defaults to 1
-       requireStrongBox = false,                 // OPTIONAL, defaults to false
-       allowBootloaderUnlock = false,            // OPTIONAL, defaults to false
-       requireRollbackResistance = false,        // OPTIONAL, defaults to false
-       ignoreLeafValidity = false,               // OPTIONAL, defaults to false
-       hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS), // OPTIONAL, defaults shown here
-       softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS), // OPTIONAL, defaults shown here
-       verificationSecondsOffset = -300,         // OPTIONAL, defaults to 0
-       disableHardwareAttestation = false,       // OPTIONAL, defaults to false; set true to disable HW attestation
-       enableNougatAttestation = false,          // OPTIONAL, defaults to false; set true to enable hybrid attestation
-       enableSoftwareAttestation = false,        // OPTIONAL, defaults to false; set true to enable SW attestation
-       attestationStatementValiditySeconds = 300,// OPTIONAL, defaults to 300s
-       httpProxy = null,                         //OPTIONAL HTTP proxy url, such as http://proxy.domain:12345, defaults to null for no proxy
-       requireRemoteKeyProvisioning = false       //OPTIONAL, whether to require a remotely-provisioned attestation certificate
+  androidAttestationConfiguration = AndroidAttestationConfiguration(
+    applications = listOf(   // REQUIRED: add applications to be attested
+        AndroidAttestationConfiguration.AppData(
+          packageName = "at.asitplus.attestation_client",
+          signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
+          appVersion = 5
+        ),
+        AndroidAttestationConfiguration.AppData( // dedicated app for the latest Android version
+          packageName = "at.asitplus.attestation_client-tiramisu",
+          signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
+          appVersion = 2, // with a different versioning scheme
+          androidVersionOverride = 130000, // so we need to override this
+          patchLevelOverride = PatchLevel(2023, 6, maxFuturePatchLevelMonths = 2), // also override patch level and
+                                                               // consider patch levels from 2 months in the future
+                                                               // as valid 
+                                                               // maxFuturePatchLevelMonths defaults to 1
+                                                               // null means any future patch level is OK
+                
+   /*(1)*/trustedRootOverrides = setOf(myCustomRoot),  // require a custom root as the trust anchor
+                                                       // for the attestation certificate chain
 
+          requireRemoteProvisioningOverride = true // require a remotely-provisioned attestation
+                                                   // certificate for extra security
+        )
     ),
-   iosAttestationConfiguration = IosAttestationConfiguration(
-      applications = listOf(
-        IosAttestationConfiguration.AppData(
-          teamIdentifier = "9CYHJNG644",
-          bundleIdentifier = "at.asitplus.attestation-client",
-          iosVersionOverride = "16.0",     // OPTIONAL, null by default
-          sandbox = false                  // OPTIONAL, defaults to false
-          )
-      ),
-      iosVersion = 14,                                              // OPTIONAL, null by default
-      attestationStatementValiditySeconds = 300                     // OPTIONAL, defaults to 300s
-   ),
-   clock = FixedTimeClock(Instant.parse("2023-04-13T00:00:00Z")),   // OPTIONAL, system clock by default
-   verificationTimeOffset = Duration.ZERO                           // OPTIONAL, defaults to zero
+    androidVersion = 110000,                  // OPTIONAL, null by default
+    patchLevel = PatchLevel(2022, 12),        // OPTIONAL, null by default; maxFuturePatchLevelMonths defaults to 1
+    requireStrongBox = false,                 // OPTIONAL, defaults to false
+    allowBootloaderUnlock = false,            // OPTIONAL, defaults to false
+    requireRollbackResistance = false,        // OPTIONAL, defaults to false
+    ignoreLeafValidity = false,               // OPTIONAL, defaults to false
+/*(2)*/hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS,   // OPTIONAL, defaults shown here
+/*(3)*/softwareTrustedRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11, // OPTIONAL, defaults shown here
+    verificationSecondsOffset = -300,         // OPTIONAL, defaults to 0
+    disableHardwareAttestation = false,       // OPTIONAL, defaults to false; set true to disable HW attestation
+    enableNougatAttestation = false,          // OPTIONAL, defaults to false; set true to enable hybrid attestation
+    enableSoftwareAttestation = false,        // OPTIONAL, defaults to false; set true to enable SW attestation
+    attestationStatementValiditySeconds = 300,// OPTIONAL, defaults to 300s
+    httpProxy = null,                         //OPTIONAL HTTP proxy url, such as http://proxy.domain:12345, defaults to null for no proxy
+    requireRemoteKeyProvisioning = false      //OPTIONAL, whether to require a remotely provisioned attestation certificate
+  ),
+  iosAttestationConfiguration = IosAttestationConfiguration(
+    applications = listOf(
+      IosAttestationConfiguration.AppData(
+        teamIdentifier = "9CYHJNG644",
+        bundleIdentifier = "at.asitplus.attestation-client",
+        iosVersionOverride = "16.0",     // OPTIONAL, null by default
+        sandbox = false,                 // OPTIONAL, defaults to false
+ /*(4)*/trustedRootOverrides = setOf(myCustomRoots) //require a custom trusted root
+      )
+    ),
+    iosVersion = 14,                                             // OPTIONAL, null by default
+    attestationStatementValiditySeconds = 300                    // OPTIONAL, defaults to 300s
+  ),
+  clock = FixedTimeClock(Instant.parse("2023-04-13T00:00:00Z")),   // OPTIONAL, system clock by default
+  verificationTimeOffset = Duration.ZERO,                          // OPTIONAL, defaults to zero
+/*(5)*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS                  // OPTIONAL, defaults shown here
 )
 ```
+> [!TIP]
+> 1. Pre 0.9.2-migration note: This used to be called `trustAnchorOverrides`.  
+>    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
+> 2. Pre 0.9.2-migration note: this used to be `hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS)`.  
+>    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
+> 3. Pre 0.9.2-migration note: this used to be `softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS)`.  
+>    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
+> 4. New since version 0.9.2!
+> 5. New since version 0.9.2!
 
 The (nullable) properties like patch level, iOS version, or Android app version essentially allow for excluding outdated devices.
 Defining custom logic to verify the attestation challenge for Android is unsupported by design, considering iOS constraints and inconsistencies between platforms resulting from such a customisation.
