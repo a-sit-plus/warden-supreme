@@ -516,12 +516,12 @@ class Warden(
 
         val results = attestationValidators.map { (app, validators) ->
 
-            //TODO simplify
-            app to catchingUnwrapped {
-                var res: Result<ValidatedAttestation> = Result.failure(ReceiptException.InvalidCertificateChain(""))
-                var check = true
-                validators.forEach { attestationValidator ->
-                    if (check) res = catchingUnwrapped {
+            //this exception is a also encompasses trust anchor mismatches
+            var res: Result<ValidatedAttestation> = Result.failure(ReceiptException.InvalidCertificateChain(""))
+            validators.forEach { attestationValidator ->
+                //check for trust-anchor mismatch
+                if (res.isFailure && (res.exceptionOrNull() is ReceiptException.InvalidCertificateChain)) {
+                    res = catchingUnwrapped {
                         attestationValidator.validate(
                             attestationObject = attestationObject,
                             keyIdBase64 = MessageDigest.getInstance("SHA-256")
@@ -530,15 +530,12 @@ class Warden(
                             serverChallenge = expectedChallenge,
                         )
                     }
-                    if (res.isFailure) {
-                        if (res.exceptionOrNull()!! is ReceiptException.InvalidCertificateChain) {
-                            /*all good; just a trust anchor mismatch*/
-                        } else check = false
-                    } else
-                        check = false
                 }
-                res.getOrThrow()
+                //else we NOOP through the rest of the configured validators (and thus through configured trust anchors)
+                //if a trust anchors mismatched, the above if clause is tried with the next validator in line
             }
+            //and app to result, so we get the one successful result (if any)
+            app to res
         }
 
         if (results.filter { (_, result) -> result.isFailure }.size == results.size)
