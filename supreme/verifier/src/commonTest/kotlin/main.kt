@@ -16,8 +16,8 @@ import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.TestConfig
-import de.infix.testBalloon.framework.testScope
+import de.infix.testBalloon.framework.core.TestConfig
+import de.infix.testBalloon.framework.core.testScope
 import de.infix.testBalloon.framework.core.testSuite
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
