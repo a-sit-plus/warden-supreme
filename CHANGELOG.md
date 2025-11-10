@@ -226,7 +226,7 @@ attestation on Android, please re-read the readme!
 - better java interop
 
 ###  0.5.5 (java-interop impaired)
-- android-attestation (0.9.2)
+- android-attestation (0.10.0)
 
 ###  0.5.4 (broken!)
 - fix dependency on wrong android-attestation version

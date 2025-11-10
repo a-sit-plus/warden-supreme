@@ -149,14 +149,14 @@ val warden = Warden(
 )
 ```
 > [!TIP]
-> 1. Pre 0.9.2-migration note: This used to be called `trustAnchorOverrides`.  
+> 1. Pre 0.10.0-migration note: This used to be called `trustAnchorOverrides`.  
 >    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-> 2. Pre 0.9.2-migration note: this used to be `hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS)`.  
+> 2. Pre 0.10.0-migration note: this used to be `hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS)`.  
 >    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-> 3. Pre 0.9.2-migration note: this used to be `softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS)`.  
+> 3. Pre 0.10.0-migration note: this used to be `softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS)`.  
 >    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-> 4. New since version 0.9.2!
-> 5. New since version 0.9.2!
+> 4. New since version 0.10.0!
+> 5. New since version 0.10.0!
 
 The (nullable) properties like patch level, iOS version, or Android app version essentially allow for excluding outdated devices.
 Defining custom logic to verify the attestation challenge for Android is unsupported by design, considering iOS constraints and inconsistencies between platforms resulting from such a customisation.
