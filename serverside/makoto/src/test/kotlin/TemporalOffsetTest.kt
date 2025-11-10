@@ -3,7 +3,7 @@ package at.asitplus.attestation
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf

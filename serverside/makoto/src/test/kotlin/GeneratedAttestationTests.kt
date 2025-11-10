@@ -7,7 +7,7 @@ import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random

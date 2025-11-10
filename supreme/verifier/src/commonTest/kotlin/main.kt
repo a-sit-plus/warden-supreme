@@ -18,7 +18,7 @@ import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.TestConfig
 import de.infix.testBalloon.framework.testScope
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*

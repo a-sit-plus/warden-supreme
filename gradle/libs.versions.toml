@@ -1,6 +1,5 @@
 [versions]
 kotlin = "2.2.21"
-kotest = "6.0.3"
 guava = "33.5.0-jre"
 autovalue = "1.11.0"
 signum = "3.18.2"
@@ -16,7 +15,7 @@ jackson = "2.20.0"
 semver = "1.2.0"
 
 slf4j = "1.7.36"
-testballoon = "0.6.3-K2.2.20-SNAPSHOT"
+testballoon = "0.7.1-K2.2.21"
 
 [libraries]
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }

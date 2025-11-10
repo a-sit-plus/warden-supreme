@@ -9,7 +9,7 @@ import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import com.google.android.attestation.ParsedAttestationRecord
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe

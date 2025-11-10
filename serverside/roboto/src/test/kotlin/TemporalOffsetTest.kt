@@ -8,7 +8,7 @@ import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
 import at.asitplus.testballoon.withDataSuites
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.string.shouldContain
 import java.util.*

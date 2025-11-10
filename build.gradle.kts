@@ -7,7 +7,7 @@ plugins {
     id("de.infix.testBalloon") version testballoonVer apply false
     kotlin("jvm") version kotlinVer apply false
     kotlin("plugin.serialization") version kotlinVer apply false
-    id("at.asitplus.gradle.conventions") version "20251023"
+    id("at.asitplus.gradle.conventions") version "20251109"
     id("com.android.kotlin.multiplatform.library") version "8.12.3" apply (false)
 }
 

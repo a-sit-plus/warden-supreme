@@ -4,7 +4,7 @@ import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 
 val sammy14 = AttestationData(
     name = "Samsung SM-S921B",
