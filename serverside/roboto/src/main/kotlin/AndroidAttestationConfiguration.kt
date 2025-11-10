@@ -1087,39 +1087,60 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             /**
              * @see AppData.androidVersionOverride
              */
-            fun overrideAndroidVersion(version: Int) = apply { androidVersionOverride = version }
+            fun androidVersionOverride(version: Int) = apply { androidVersionOverride = version }
+
+            /**
+             * @see AppData.androidVersionOverride
+             */
+            @Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("androidVersionOverride(version)"))
+            fun overrideAndroidVersion(version: Int) = androidVersionOverride(version)
 
             /**
              * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
              */
-            fun overridePatchLevel(level: PatchLevel) = apply { patchLevelOverride = level }
+            @Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("patchLevelOverride(version)"))
+            fun overridePatchLevel(level: PatchLevel) = patchLevelOverride(level)
+
+            /**
+             * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
+             */
+            fun patchLevelOverride(level: PatchLevel) = apply { patchLevelOverride = level }
 
             /**
              * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
              */
             @Deprecated(
-                "Will be removed in favour of `overrideTrustedRoots` in 1.0.0",
-                ReplaceWith("overrideTrustedRoots")
+                "To be removed in 1.0.0", ReplaceWith("trustedRootOverrides(trustAnchors)")
             )
-            fun overrideTrustAnchors(trustAnchors: Set<PublicKey>) = overrideTrustedRoots(trustAnchors)
+            fun overrideTrustAnchors(trustAnchors: Set<PublicKey>) = trustedRootOverrides(trustAnchors)
 
             /**
              * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
              */
             @JvmName("overrideTrustedRootKeys")
-            fun overrideTrustedRoots(trustedRoots: Set<PublicKey>) =
+            fun trustedRootOverrides(trustedRoots: Set<PublicKey>) =
                 apply { trustedRootOverrides = trustedRoots.map { TrustedRoot.PublicKey(it) }.toSet() }
 
             /**
              * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
              */
-            fun overrideTrustedRoots(trustedRoots: Set<TrustedRoot>) = apply { trustedRootOverrides = trustedRoots }
+            fun trustedRootOverrides(trustedRoots: Set<TrustedRoot>) = apply { trustedRootOverrides = trustedRoots }
 
             /**
              * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
              * for attestation checks to pass
              */
-            fun overrideRequireRemoteProvisioning(required: Boolean) =
+            @Deprecated(
+                "To be removed in 1.0.0",
+                replaceWith = ReplaceWith("requireRemoteProvisioningOverride(required)")
+            )
+            fun overrideRequireRemoteProvisioning(required: Boolean) = requireRemoteProvisioningOverride(required)
+
+            /**
+             * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+             * for attestation checks to pass
+             */
+            fun requireRemoteProvisioningOverride(required: Boolean) =
                 apply { requireRemoteKeyProvisioningOverride = required }
 
             fun build() =

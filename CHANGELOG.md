@@ -23,8 +23,10 @@ this changelog also includes the original WARDEN changelog.
      * Android configuration migration guide (iOS only got added functionality):
          * `hardwareAttestationTrustAnchors` -> `hardwareTrustedRoots`
          * `softwareAttestationTrustAnchors` -> `softwareTrustedRoots`
-         * `AppData.overrideTrustAnchors` -> `AppData.overrideTrustedRoots`
+         * `AppData.overrideTrustAnchors` -> `AppData.trustedRootOverrides`
          * `AppData.trustAnchorOverrides` -> `AppData.trustedRootOverrides`
+* Consistent configuration Builder API functions
+  * `overrideXXX(s)` -> `XXXoverride(s)`
 
 ## Warden Supreme 0.9.1
 * First-Class support for remote provisioning checks on Android

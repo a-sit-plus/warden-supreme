@@ -205,12 +205,18 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             /**
              * @see AppData.iosVersionOverride
              */
+            @Deprecated("To be removed with 1.0.0", replaceWith = ReplaceWith("iosVersionOverride(version)"))
             fun overrideIosVersion(version: OsVersions) = apply { iosVersionOverride = version }
+
+            /**
+             * @see AppData.iosVersionOverride
+             */
+            fun iosVersionOverride(version: OsVersions) = overrideIosVersion(version)
 
             /**
              * @see AppData.trustedRootOverrides
              */
-            fun overrideTrustedRoots(trustAnchors: Set<TrustedRootPair>) =
+            fun trustedRootOverrides(trustAnchors: Set<TrustedRootPair>) =
                 apply { trustedRootOverrides = trustAnchors }
 
             fun build() = AppData(teamIdentifier, bundleIdentifier, sandbox, iosVersionOverride)
