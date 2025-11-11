@@ -86,6 +86,9 @@ publishing {
         }
     }
 }
+tasks.withType<Test>().configureEach {
+    maxHeapSize = "10G"
+}
 
 signing {
     val signingKeyId: String? by project
