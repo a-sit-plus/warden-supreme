@@ -9,7 +9,7 @@ import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import com.google.android.attestation.ParsedAttestationRecord
 import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -286,7 +286,8 @@ val AttestationTests by testSuite {
         }
     }
 
-    "Captured Real Devices" - {
+
+    "Captured Real Devices"  - {
         listOf(
             AttestationData(
                 "Nokia X10",

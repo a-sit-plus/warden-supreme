@@ -3,7 +3,7 @@ package at.asitplus.attestation.test
 import android.os.StrictMode
 import at.asitplus.attestation.supreme.*
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
 import io.kotest.core.log
 import io.kotest.matchers.shouldBe

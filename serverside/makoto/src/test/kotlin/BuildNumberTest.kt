@@ -1,7 +1,7 @@
 import at.asitplus.attestation.BuildNumber
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.comparables.shouldBeLessThan

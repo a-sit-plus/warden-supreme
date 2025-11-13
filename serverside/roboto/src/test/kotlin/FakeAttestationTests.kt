@@ -5,7 +5,7 @@ import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe

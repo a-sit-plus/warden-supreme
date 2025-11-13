@@ -1,7 +1,7 @@
 package at.asitplus.attestation
 
 import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 val NoopAttestationServiceTest by testSuite {

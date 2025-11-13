@@ -3,15 +3,6 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import com.google.android.attestation.ParsedAttestationRecord
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.cache.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.serialization.kotlinx.json.*
-import java.security.PublicKey
 import java.util.*
 
 class SoftwareAttestationChecker @JvmOverloads constructor(
@@ -21,7 +12,7 @@ class SoftwareAttestationChecker @JvmOverloads constructor(
     init {
         if (!attestationConfiguration.enableSoftwareAttestation) throw object :
             AndroidAttestationException("Software attestation is disabled!", null) {}
-        if (attestationConfiguration.softwareAttestationTrustAnchors.isEmpty()) throw object :
+        if (attestationConfiguration.softwareTrustedRoots.isEmpty()) throw object :
             AndroidAttestationException("No software attestation trust anchors configured", null) {}
     }
 
@@ -50,7 +41,7 @@ class SoftwareAttestationChecker @JvmOverloads constructor(
         )
     }
 
-    override val trustAnchors: Collection<PublicKey> = attestationConfiguration.softwareAttestationTrustAnchors
+    override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
 
     @Throws(AttestationValueException::class)
     override fun ParsedAttestationRecord.verifyAndroidVersion(versionOverride: Int?, osPatchLevel: PatchLevel?, verificationDate: Date) =

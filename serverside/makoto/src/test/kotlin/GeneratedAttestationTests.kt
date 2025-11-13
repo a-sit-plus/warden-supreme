@@ -4,9 +4,10 @@ package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
+import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.testSuite
+import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
@@ -42,7 +43,7 @@ val GeneratedAttestationTests by testSuite {
             requireStrongBox = false,
             allowBootloaderUnlock = false,
             ignoreLeafValidity = false,
-            hardwareAttestationTrustAnchors = setOf(attestationProof.last().publicKey)
+            hardwareTrustedRoots = setOf(TrustedRoot( attestationProof.last()))
         ),
         iosAttestationConfiguration = IosAttestationConfiguration(
             applications = listOf(

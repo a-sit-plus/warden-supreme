@@ -54,14 +54,14 @@ The goals of using off-the-shelf methods to tamper with apps are twofold:
 The first class of "attackers" can be treated as an untrusted client a user deliberately employs themself.
 Assuming that a user only has access to their own data, this does not pose privacy risks or endanger other users.
 It **can** be an issue in multiplayer games, for example, as it will allow cheating. **Even sophisticated means
-to circumvent attestation (see [Threat Model&nbsp;C](#threat-model-c--targeted-attackers-with-physical-device-access)) will still keep other users safe!**
+to circumvent attestation (see [Threat Model&nbsp;C](#threat-model-c-targeted-attackers-with-physical-device-access)) will still keep other users safe!**
 
 The second class of attackers has malicious intent and tries to harm legitimate users at scale. They do not have access
 to their victims' devices and thus cannot modify the operating system.
 Hence, these attackers are limited to modifying the actual application they distribute, and any invasive changes to a device
 or the operating system are irrelevant for such scenarios. **If you backend enforces and properly checks attestation, your users are safe**,
 because sophisticated means to circumvent attestation require physical access to a victim's device
-(see [Threat Model&nbsp;C](#threat-model-c--targeted-attackers-with-physical-device-access)).
+(see [Threat Model&nbsp;C](#threat-model-c-targeted-attackers-with-physical-device-access)).
 
 ### Concrete Example: Repackaging ID Austria
 

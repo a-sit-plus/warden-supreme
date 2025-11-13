@@ -87,7 +87,6 @@ publishing {
     }
 }
 
-
 signing {
     val signingKeyId: String? by project
     val signingKey: String? by project
