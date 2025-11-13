@@ -2,17 +2,16 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.CryptoPrivateKey
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
+import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
-import org.bouncycastle.jce.spec.ECKeySpec
 import java.security.KeyFactory
 import java.security.PublicKey
-import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
 import java.util.*
@@ -59,23 +58,205 @@ data class PatchLevel @JvmOverloads constructor(
     }
 }
 
+
 /**
  * Default trust anchors used to verify hardware attestation
  */
+val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
+    //Current RSA ROOT
+    TrustedRoot.Certificate(
+        X509Certificate.decodeFromPem(
+            """
+            -----BEGIN CERTIFICATE-----
+            MIIFHDCCAwSgAwIBAgIJAPHBcqaZ6vUdMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
+            BAUTEGY5MjAwOWU4NTNiNmIwNDUwHhcNMjIwMzIwMTgwNzQ4WhcNNDIwMzE1MTgw
+            NzQ4WjAbMRkwFwYDVQQFExBmOTIwMDllODUzYjZiMDQ1MIICIjANBgkqhkiG9w0B
+            AQEFAAOCAg8AMIICCgKCAgEAr7bHgiuxpwHsK7Qui8xUFmOr75gvMsd/dTEDDJdS
+            Sxtf6An7xyqpRR90PL2abxM1dEqlXnf2tqw1Ne4Xwl5jlRfdnJLmN0pTy/4lj4/7
+            tv0Sk3iiKkypnEUtR6WfMgH0QZfKHM1+di+y9TFRtv6y//0rb+T+W8a9nsNL/ggj
+            nar86461qO0rOs2cXjp3kOG1FEJ5MVmFmBGtnrKpa73XpXyTqRxB/M0n1n/W9nGq
+            C4FSYa04T6N5RIZGBN2z2MT5IKGbFlbC8UrW0DxW7AYImQQcHtGl/m00QLVWutHQ
+            oVJYnFPlXTcHYvASLu+RhhsbDmxMgJJ0mcDpvsC4PjvB+TxywElgS70vE0XmLD+O
+            JtvsBslHZvPBKCOdT0MS+tgSOIfga+z1Z1g7+DVagf7quvmag8jfPioyKvxnK/Eg
+            sTUVi2ghzq8wm27ud/mIM7AY2qEORR8Go3TVB4HzWQgpZrt3i5MIlCaY504LzSRi
+            igHCzAPlHws+W0rB5N+er5/2pJKnfBSDiCiFAVtCLOZ7gLiMm0jhO2B6tUXHI/+M
+            RPjy02i59lINMRRev56GKtcd9qO/0kUJWdZTdA2XoS82ixPvZtXQpUpuL12ab+9E
+            aDK8Z4RHJYYfCT3Q5vNAXaiWQ+8PTWm2QgBR/bkwSWc+NpUFgNPN9PvQi8WEg5Um
+            AGMCAwEAAaNjMGEwHQYDVR0OBBYEFDZh4QB8iAUJUYtEbEf/GkzJ6k8SMB8GA1Ud
+            IwQYMBaAFDZh4QB8iAUJUYtEbEf/GkzJ6k8SMA8GA1UdEwEB/wQFMAMBAf8wDgYD
+            VR0PAQH/BAQDAgIEMA0GCSqGSIb3DQEBCwUAA4ICAQB8cMqTllHc8U+qCrOlg3H7
+            174lmaCsbo/bJ0C17JEgMLb4kvrqsXZs01U3mB/qABg/1t5Pd5AORHARs1hhqGIC
+            W/nKMav574f9rZN4PC2ZlufGXb7sIdJpGiO9ctRhiLuYuly10JccUZGEHpHSYM2G
+            tkgYbZba6lsCPYAAP83cyDV+1aOkTf1RCp/lM0PKvmxYN10RYsK631jrleGdcdkx
+            oSK//mSQbgcWnmAEZrzHoF1/0gso1HZgIn0YLzVhLSA/iXCX4QT2h3J5z3znluKG
+            1nv8NQdxei2DIIhASWfu804CA96cQKTTlaae2fweqXjdN1/v2nqOhngNyz1361mF
+            mr4XmaKH/ItTwOe72NI9ZcwS1lVaCvsIkTDCEXdm9rCNPAY10iTunIHFXRh+7KPz
+            lHGewCq/8TOohBRn0/NNfh7uRslOSZ/xKbN9tMBtw37Z8d2vvnXq/YWdsm1+JLVw
+            n6yYD/yacNJBlwpddla8eaVMjsF6nBnIgQOf9zKSe06nSTqvgwUHosgOECZJZ1Eu
+            zbH4yswbt02tKtKEFhx+v+OTge/06V+jGsqTWLsfrOCNLuA8H++z+pUENmpqnnHo
+            vaI47gC+TNpkgYGkkBT6B/m/U01BuOBBTzhIlMEZq9qkDWuM2cA5kW5V3FJUcfHn
+            w1IdYIg2Wxg7yHcQZemFQg==
+            -----END CERTIFICATE-----
+            """.trimIndent()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+    ),
+    //new Google EC Root
+    TrustedRoot.Certificate(
+        X509Certificate.decodeFromPem(
+            """
+            -----BEGIN CERTIFICATE-----
+            MIICIjCCAaigAwIBAgIRAISp0Cl7DrWK5/8OgN52BgUwCgYIKoZIzj0EAwMwUjEc
+            MBoGA1UEAwwTS2V5IEF0dGVzdGF0aW9uIENBMTEQMA4GA1UECwwHQW5kcm9pZDET
+            MBEGA1UECgwKR29vZ2xlIExMQzELMAkGA1UEBhMCVVMwHhcNMjUwNzE3MjIzMjE4
+            WhcNMzUwNzE1MjIzMjE4WjBSMRwwGgYDVQQDDBNLZXkgQXR0ZXN0YXRpb24gQ0Ex
+            MRAwDgYDVQQLDAdBbmRyb2lkMRMwEQYDVQQKDApHb29nbGUgTExDMQswCQYDVQQG
+            EwJVUzB2MBAGByqGSM49AgEGBSuBBAAiA2IABCPaI3FO3z5bBQo8cuiEas4HjqCt
+            G/mLFfRT0MsIssPBEEU5Cfbt6sH5yOAxqEi5QagpU1yX4HwnGb7OtBYpDTB57uH5
+            Eczm34A5FNijV3s0/f0UPl7zbJcTx6xwqMIRq6NCMEAwDwYDVR0TAQH/BAUwAwEB
+            /zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFFIyuyz7RkOb3NaBqQ5lZuA0QepA
+            MAoGCCqGSM49BAMDA2gAMGUCMETfjPO/HwqReR2CS7p0ZWoD/LHs6hDi422opifH
+            EUaYLxwGlT9SLdjkVpz0UUOR5wIxAIoGyxGKRHVTpqpGRFiJtQEOOTp/+s1GcxeY
+            uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
+            -----END CERTIFICATE-----
+            """.trimIndent()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+    ),
+    //Old, but as of 2025 still valid root certificate. Will expire in 2026
+    TrustedRoot.Certificate(
+        X509Certificate.decodeFromPem(
+            """
+            -----BEGIN CERTIFICATE-----
+            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
+            w1IdYIg2Wxg7yHcQZemFQg==
+            -----END CERTIFICATE-----
+            """.trimIndent()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+    ),
+
+    //old, but still valid
+    TrustedRoot.Certificate(
+        X509Certificate.decodeFromPem(
+            """
+            -----BEGIN CERTIFICATE-----
+            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
+            ex0SdDrx+tWUDqG8At2JHA==
+            -----END CERTIFICATE-----
+            """.trimIndent()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+    ),
+
+    //old, but still valid
+    TrustedRoot.Certificate(
+        X509Certificate.decodeFromPem(
+            """
+            -----BEGIN CERTIFICATE-----
+            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
+            mD/vFDkzF+wm7cyWpQpCVQ==
+            -----END CERTIFICATE-----
+            """.trimIndent()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+    ),
+)
+
+
+/**
+ * Default public keys used as trust anchors used to verify hardware attestation
+ */
+@Deprecated("Supports only public keys", replaceWith = ReplaceWith("HARDWARE_TRUST_ANCHORS"))
 val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("RSA")
         .generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(GOOGLE_ROOT_CA_PUB_KEY))),
     //new Google EC Root
-    CryptoPublicKey.decodeFromDer(Base64.getDecoder()
-                    .decode("MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEI9ojcU7fPlsFCjxy6IRqzgeOoK0b+YsV9FPQywiyw8EQRTkJ9u3qwfnI4DGoSLlBqClTXJfgfCcZvs60FikNMHnu4fkRzObfgDkU2KNXezT9/RQ+XvNslxPHrHCowhGr")
-            ).toJcaPublicKey().getOrThrow()
+    CryptoPublicKey.decodeFromDer(
+        Base64.getDecoder()
+            .decode("MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEI9ojcU7fPlsFCjxy6IRqzgeOoK0b+YsV9FPQywiyw8EQRTkJ9u3qwfnI4DGoSLlBqClTXJfgfCcZvs60FikNMHnu4fkRzObfgDkU2KNXezT9/RQ+XvNslxPHrHCowhGr")
+    ).toJcaPublicKey().getOrThrow()
 
 )
 
 
 /**
- * Default trust anchors used to verify software attestation
+ * Default public keys used as trust anchors used to verify software attestation
  */
+@Deprecated("Supports only public keys", replaceWith = ReplaceWith("SOFTWARE_TRUST_ANCHORS"))
 val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("EC")
         .generatePublic(
@@ -88,6 +269,13 @@ val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
             )
         )
 )
+
+/**
+ * Default trust anchors used to verify software attestation working up to Android 11. Useful for testing.
+ */
+val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11: Set<TrustedRoot> =
+    DEFAULT_SOFTWARE_TRUST_ANCHORS.map { TrustedRoot.PublicKey(it) }.toSet()
+
 
 /**
  * Main Android attestation configuration class serving as ground truth for all key and app attestation verifications.
@@ -105,10 +293,10 @@ val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
  * @param requireRollbackResistance optional parameter. Unsupported by most devices.
  * See [Official Documentation](https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance)
  * @param ignoreLeafValidity optional parameter. Whether to ignore the timely validity of the leaf certificate (looking at you, Samsung!)
- * @param hardwareAttestationTrustAnchors Manually specify the trust anchor for HW-attested certificate chains.
+ * @param hardwareTrustedRoots Manually specify the trust anchor for HW-attested certificate chains.
  * Defaults to google HW attestation key. Overriding this set is useful for automated end-to-end tests, for example.
  * The default trust anchors are accessible through [DEFAULT_HARDWARE_TRUST_ANCHORS]
- * @param softwareAttestationTrustAnchors Manually specify the trust anchor for SW-attested certificate chains.
+ * @param softwareTrustedRoots Manually specify the trust anchor for SW-attested certificate chains.
  * Defaults to google SW attestation keys. Overriding this set is useful for automated end-to-end tests, for example.
  * The default trust anchors are accessible through [DEFAULT_SOFTWARE_TRUST_ANCHORS]
  * @param disableHardwareAttestation Entirely disable creation of a [HardwareAttestationChecker].
@@ -167,23 +355,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * Whether to ignore the timely validity of the leaf certificate
      */
     val ignoreLeafValidity: Boolean = false,
-
-    /**
-     * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
-     * Overriding this set is useful for automated end-to-end tests, for example.
-     * The default trust anchors are accessible through [DEFAULT_HARDWARE_TRUST_ANCHORS]
-     */
-    val hardwareAttestationTrustAnchors: Set<@Serializable(with = PubKeyBasePemSerializer::class) PublicKey>
-    = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS),
-
-    /**
-     * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
-     * Overriding this set is useful for automated end-to-end tests, for example.
-     * The default trust anchors are accessible through [DEFAULT_SOFTWARE_TRUST_ANCHORS]
-     */
-    val softwareAttestationTrustAnchors: Set<@Serializable(with = PubKeyBasePemSerializer::class) PublicKey>
-    = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS),
-
     /**
      *  Tolerance in seconds added to verification date
      */
@@ -196,6 +367,21 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
      */
     val attestationStatementValiditySeconds: Long? = 5 * 60,
+
+    /**
+     * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
+     * Overriding this set is useful for automated end-to-end tests, for example.
+     * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
+     */
+    val hardwareTrustedRoots: Set<TrustedRoot> = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS,
+
+    /**
+     * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
+     * Overriding this set is useful for automated end-to-end tests, for example.
+     * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
+     */
+    val softwareTrustedRoots: Set<TrustedRoot> = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11,
+
 
     /**
      * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
@@ -219,7 +405,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
      */
     val enableSoftwareAttestation: Boolean = false,
-
     /**
      * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
      * for attestation checks to pass
@@ -231,11 +416,142 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      */
     val httpProxy: String? = null,
 
+
     ) {
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    @Deprecated("Uses raw public keys for trust anchors. To be removed in 1.0.0")
+    constructor(
+
+        /**
+         * List of applications which can be attested
+         */
+        applications: List<AppData>,
+
+        /**
+         * optional parameter. If set, attestation enforces Android version to be greater or equal to this parameter.
+         * **Caution:** Major Android versions increment in steps of ten-thousands. I.e. Android 11 is specified as `110000`
+         * Can be overridden for individual apps
+         */
+        androidVersion: Int? = null,
+
+        /**
+         * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
+         * Can be overridden for individual apps.
+         */
+        patchLevel: PatchLevel? = null,
+
+        /**
+         * Set to `true` if *StrongBox* security level should be required.
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         */
+        requireStrongBox: Boolean = false,
+
+        /**
+         * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
+         * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         */
+        allowBootloaderUnlock: Boolean = false,
+
+        /**
+         * Unsupported by most devices. See [Official Documentation](https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance)
+         */
+        requireRollbackResistance: Boolean = false,
+
+        /**
+         * Whether to ignore the timely validity of the leaf certificate
+         */
+        ignoreLeafValidity: Boolean = false,
+
+        /**
+         * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
+         * Overriding this set is useful for automated end-to-end tests, for example.
+         * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
+         */
+        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.publicKey }
+            .toTypedArray()),
+
+        /**
+         * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
+         * Overriding this set is useful for automated end-to-end tests, for example.
+         * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
+         */
+        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.publicKey }
+            .toTypedArray()),
+
+        /**
+         *  Tolerance in seconds added to verification date
+         */
+        verificationSecondsOffset: Long = 0,
+
+        /**
+         * Validity of the attestation statement in seconds. This is not the certificate validity!
+         * An attestation statement has a creation time. This value indicates how far in the past the creation time might be.
+         *
+         * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
+         */
+        attestationStatementValiditySeconds: Long? = 5 * 60,
+
+        /**
+         * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+         * you are doing!
+         * @see enableSoftwareAttestation
+         */
+        disableHardwareAttestation: Boolean = false,
+
+        /**
+         * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+         * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
+         * devices only support hardware-backed key attestation, but provide no indication about the OS state.
+         * Hence, app-attestation cannot be trusted, but key attestation still can.
+         */
+        enableNougatAttestation: Boolean = false,
+
+        /**
+         * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+         * Only change this flag, if you **really** know what you are doing!
+         * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
+         * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+         */
+        enableSoftwareAttestation: Boolean = false,
+
+        /**
+         * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+         * for attestation checks to pass
+         */
+        requireRemoteKeyProvisioning: Boolean = false,
+
+        /**
+         * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
+         */
+        httpProxy: String? = null,
+
+        ) : this(
+        applications = applications,
+        androidVersion = androidVersion,
+        patchLevel = patchLevel,
+        requireStrongBox = requireStrongBox,
+        allowBootloaderUnlock = allowBootloaderUnlock,
+        requireRollbackResistance = requireRollbackResistance,
+        ignoreLeafValidity = ignoreLeafValidity,
+        hardwareTrustedRoots = hardwareAttestationTrustAnchors.map { TrustedRoot.PublicKey(it) }.toSet(),
+        softwareTrustedRoots = softwareAttestationTrustAnchors.map { TrustedRoot.PublicKey(it) }.toSet(),
+        verificationSecondsOffset = verificationSecondsOffset,
+        attestationStatementValiditySeconds = attestationStatementValiditySeconds,
+        disableHardwareAttestation = disableHardwareAttestation,
+        enableNougatAttestation = enableNougatAttestation,
+        enableSoftwareAttestation = enableSoftwareAttestation,
+        httpProxy = httpProxy,
+        requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+    )
 
     /**
      * Convenience constructor to attest a single app
      */
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    @Deprecated("Uses raw public keys for trust anchors. To be removed in 1.0.0")
     constructor(
         /**
          * The single application to be attested
@@ -281,16 +597,18 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are accessible through [DEFAULT_HARDWARE_TRUST_ANCHORS]
+         * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
          */
-        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS),
+        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.publicKey }
+            .toTypedArray()),
 
         /**
          * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are accessible through [DEFAULT_SOFTWARE_TRUST_ANCHORS]
+         * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
          */
-        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS),
+        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.publicKey }
+            .toTypedArray()),
 
         /**
          *  Tolerance in seconds added to verification date
@@ -346,8 +664,133 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         allowBootloaderUnlock = allowBootloaderUnlock,
         requireRollbackResistance = requireRollbackResistance,
         ignoreLeafValidity = ignoreLeafValidity,
-        hardwareAttestationTrustAnchors = hardwareAttestationTrustAnchors,
-        softwareAttestationTrustAnchors = softwareAttestationTrustAnchors,
+        hardwareTrustedRoots = hardwareAttestationTrustAnchors.map { TrustedRoot.PublicKey(it) }.toSet(),
+        softwareTrustedRoots = softwareAttestationTrustAnchors.map { TrustedRoot.PublicKey(it) }.toSet(),
+        verificationSecondsOffset = verificationSecondsOffset,
+        attestationStatementValiditySeconds = attestationStatementValiditySeconds,
+        disableHardwareAttestation = disableHardwareAttestation,
+        enableNougatAttestation = enableNougatAttestation,
+        enableSoftwareAttestation = enableSoftwareAttestation,
+        httpProxy = httpProxy,
+        requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+    )
+
+    /**
+     * Convenience constructor to attest a single app
+     */
+    constructor(
+        /**
+         * The single application to be attested
+         */
+        singleApp: AppData,
+
+        /**
+         * optional parameter. If set, attestation enforces Android version to be greater or equal to this parameter.
+         * **Caution:** Major Android versions increment in steps of ten-thousands. I.e. Android 11 is specified as `110000`
+         * Can be overridden for individual apps
+         */
+        androidVersion: Int? = null,
+
+        /**
+         * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
+         * Can be overridden for individual apps.
+         */
+        patchLevel: PatchLevel? = null,
+
+        /**
+         * Set to `true` if *StrongBox* security level should be required.
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         */
+        requireStrongBox: Boolean = false,
+
+        /**
+         * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
+         * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         */
+        allowBootloaderUnlock: Boolean = false,
+
+        /**
+         * Unsupported by most devices. See [Official Documentation](https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance)
+         */
+        requireRollbackResistance: Boolean = false,
+
+        /**
+         * Whether to ignore the timely validity of the leaf certificate
+         */
+        ignoreLeafValidity: Boolean = false,
+
+        /**
+         *  Tolerance in seconds added to verification date
+         */
+        verificationSecondsOffset: Long = 0,
+
+        /**
+         * Validity of the attestation statement in seconds. This is not the certificate validity!
+         * An attestation statement has a creation time. This value indicates how far in the past the creation time might be.
+         *
+         * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
+         */
+        attestationStatementValiditySeconds: Long? = 5 * 60,
+
+        /**
+         * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
+         * Overriding this set is useful for automated end-to-end tests, for example.
+         * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
+         */
+        hardwareTrustedRoots: Set<TrustedRoot> = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS,
+
+        /**
+         * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
+         * Overriding this set is useful for automated end-to-end tests, for example.
+         * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
+         */
+        softwareTrustedRoots: Set<TrustedRoot> = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11,
+
+
+        /**
+         * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+         * you are doing!
+         * @see enableSoftwareAttestation
+         */
+        disableHardwareAttestation: Boolean = false,
+
+        /**
+         * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+         * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
+         * devices only support hardware-backed key attestation, but provide no indication about the OS state.
+         * Hence, app-attestation cannot be trusted, but key attestation still can.
+         */
+        enableNougatAttestation: Boolean = false,
+
+        /**
+         * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+         * Only change this flag, if you **really** know what you are doing!
+         * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
+         * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+         */
+        enableSoftwareAttestation: Boolean = false,
+
+        /**
+         * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
+         */
+        httpProxy: String? = null,
+
+        /**
+         * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+         * for attestation checks to pass
+         */
+        requireRemoteKeyProvisioning: Boolean = false,
+    ) : this(
+        listOf(singleApp),
+        androidVersion = androidVersion,
+        patchLevel = patchLevel,
+        requireStrongBox = requireStrongBox,
+        allowBootloaderUnlock = allowBootloaderUnlock,
+        requireRollbackResistance = requireRollbackResistance,
+        ignoreLeafValidity = ignoreLeafValidity,
+        hardwareTrustedRoots = hardwareTrustedRoots,
+        softwareTrustedRoots = softwareTrustedRoots,
         verificationSecondsOffset = verificationSecondsOffset,
         attestationStatementValiditySeconds = attestationStatementValiditySeconds,
         disableHardwareAttestation = disableHardwareAttestation,
@@ -441,21 +884,21 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * The reason for this format in the default constructor is to make file-based configuration through [Hoplite](https://github.com/sksamuel/hoplite) a breeze.
          * Defaults to google HW attestation key.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchor is accessible through [GOOGLE_ROOT_CA_PUB_KEY].
+         * The default trust anchors are [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
          */
-        hardwareAttestationRootKeys: Set<ByteArray> = DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.encoded }.toSet(),
+        hardwareTrustedRoots: Set<ByteArray> = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.derEncoded }.toSet(),
 
         /**
          * Manually specify the trust anchor for SW-attested certificate chains as X.509-encoded public keys.
          * The reason for this format in the default constructor is to make file-based configuration through [Hoplite](https://github.com/sksamuel/hoplite) a breeze.
          * Defaults to google SW attestation keys.
          * Overriding this set is useful for automated end-to-end tests, for example.
-         * The default trust anchors are [GOOGLE_SOFTWARE_EC_ROOT], [GOOGLE_SOFTWARE_RSA_ROOT]
+         * The default trust anchors are [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
          */
-        softwareAttestationRootKeys: Set<ByteArray> = DEFAULT_SOFTWARE_TRUST_ANCHORS.map { it.encoded }.toSet(),
+        softwareTrustedRoots: Set<ByteArray> = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.derEncoded }.toSet(),
 
         /**
-         * List of applications, which can be attested
+         * List of applications which can be attested
          */
         apps: List<AppData>,
 
@@ -477,8 +920,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         allowBootloaderUnlock = allowBootloaderUnlock,
         requireRollbackResistance = requireRollbackResistance,
         ignoreLeafValidity = ignoreLeafValidity,
-        hardwareAttestationTrustAnchors = hardwareAttestationRootKeys.map { it.parsePublicKey() }.toSet(),
-        softwareAttestationTrustAnchors = softwareAttestationRootKeys.map { it.parsePublicKey() }.toSet(),
+        hardwareTrustedRoots = hardwareTrustedRoots.map { TrustedRoot.decode(it) }.toSet(),
+        softwareTrustedRoots = softwareTrustedRoots.map { TrustedRoot.decode(it) }.toSet(),
         verificationSecondsOffset = verificationSecondsOffset,
         attestationStatementValiditySeconds = attestationStatementValiditySeconds,
         disableHardwareAttestation = disableHardwareAttestation,
@@ -531,10 +974,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         internal val patchLevelOverride: PatchLevel? = null,
 
-        /**
-         * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
-         */
-        val trustAnchorOverrides: Set<@Serializable(with = PubKeyBasePemSerializer::class) PublicKey>? = null,
 
         /**
          * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
@@ -542,7 +981,65 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         val requireRemoteKeyProvisioningOverride: Boolean? = null,
 
+        /**
+         * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
+         */
+        val trustedRootOverrides: Set<TrustedRoot>? = null,
+
         ) {
+
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        @kotlin.internal.LowPriorityInOverloadResolution
+        @Deprecated("Uses raw public keys for trust anchors. To be removed in 1.0.0")
+        constructor(
+            /**
+             * Android app package name (e.g. `at.asitplus.demo`)
+             */
+            packageName: String,
+            /**
+             * SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing certificate for
+             * production play store releases.
+             * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
+             */
+            signatureDigests: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
+
+            /**
+             * optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
+             */
+            appVersion: Int? = null,
+
+            /**
+             * optional parameter. If set, attestation enforces Android version to be greater or equal to this parameter.
+             * **Caution:** Major Android versions increment in steps of ten-thousands. I.e. Android 11 is specified as `110000`
+             */
+            androidVersionOverride: Int? = null,
+
+            /**
+             * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
+             */
+            patchLevelOverride: PatchLevel? = null,
+
+            /**
+             * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
+             */
+            trustAnchorOverrides: Set<@Serializable(with = PubKeyBasePemSerializer::class) PublicKey>? = null,
+
+            /**
+             * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+             * for attestation checks to pass
+             */
+            requireRemoteKeyProvisioningOverride: Boolean? = null,
+
+            ) : this(
+            packageName,
+            signatureDigests,
+            appVersion,
+            androidVersionOverride,
+            patchLevelOverride,
+            requireRemoteKeyProvisioningOverride,
+            trustAnchorOverrides?.map { TrustedRoot.PublicKey(it) }?.toSet(),
+        )
+
         init {
             if (signatureDigests.isEmpty()) throw object :
                 AndroidAttestationException("No signature digests specified", null) {}
@@ -578,7 +1075,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             private var androidVersionOverride: Int? = null
             private var patchLevelOverride: PatchLevel? = null
 
-            private var trustAnchorOverrides: Set<PublicKey>? = null
+            private var trustedRootOverrides: Set<TrustedRoot>? = null
 
             var requireRemoteKeyProvisioningOverride: Boolean? = null
 
@@ -590,23 +1087,60 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             /**
              * @see AppData.androidVersionOverride
              */
-            fun overrideAndroidVersion(version: Int) = apply { androidVersionOverride = version }
+            fun androidVersionOverride(version: Int) = apply { androidVersionOverride = version }
+
+            /**
+             * @see AppData.androidVersionOverride
+             */
+            @Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("androidVersionOverride(version)"))
+            fun overrideAndroidVersion(version: Int) = androidVersionOverride(version)
 
             /**
              * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
              */
-            fun overridePatchLevel(level: PatchLevel) = apply { patchLevelOverride = level }
+            @Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("patchLevelOverride(version)"))
+            fun overridePatchLevel(level: PatchLevel) = patchLevelOverride(level)
+
+            /**
+             * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
+             */
+            fun patchLevelOverride(level: PatchLevel) = apply { patchLevelOverride = level }
 
             /**
              * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
              */
-            fun overrideTrustAnchors(trustAnchors: Set<PublicKey>) = apply { trustAnchorOverrides = trustAnchors }
+            @Deprecated(
+                "To be removed in 1.0.0", ReplaceWith("trustedRootOverrides(trustAnchors)")
+            )
+            fun overrideTrustAnchors(trustAnchors: Set<PublicKey>) = trustedRootOverrides(trustAnchors)
+
+            /**
+             * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
+             */
+            @JvmName("overrideTrustedRootKeys")
+            fun trustedRootOverrides(trustedRoots: Set<PublicKey>) =
+                apply { trustedRootOverrides = trustedRoots.map { TrustedRoot.PublicKey(it) }.toSet() }
+
+            /**
+             * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
+             */
+            fun trustedRootOverrides(trustedRoots: Set<TrustedRoot>) = apply { trustedRootOverrides = trustedRoots }
 
             /**
              * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
              * for attestation checks to pass
              */
-            fun overrideRequireRemoteProvisioning(required: Boolean) =
+            @Deprecated(
+                "To be removed in 1.0.0",
+                replaceWith = ReplaceWith("requireRemoteProvisioningOverride(required)")
+            )
+            fun overrideRequireRemoteProvisioning(required: Boolean) = requireRemoteProvisioningOverride(required)
+
+            /**
+             * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+             * for attestation checks to pass
+             */
+            fun requireRemoteProvisioningOverride(required: Boolean) =
                 apply { requireRemoteKeyProvisioningOverride = required }
 
             fun build() =
@@ -616,8 +1150,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                     appVersion,
                     androidVersionOverride,
                     patchLevelOverride,
-                    trustAnchorOverrides,
                     requireRemoteKeyProvisioningOverride,
+                    trustedRootOverrides,
                 )
         }
 
@@ -663,7 +1197,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + packageName.hashCode()
             result = 31 * result + signatureDigests.hashCode()
             result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
-            result = 31 * result + trustAnchorOverrides.hashCode()
+            result = 31 * result + trustedRootOverrides.hashCode()
             result = 31 * result + requireRemoteKeyProvisioningOverride.hashCode()
             return result
         }
@@ -671,7 +1205,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     }
 
     init {
-        if (hardwareAttestationTrustAnchors.isEmpty() && softwareAttestationTrustAnchors.isEmpty())
+        if (hardwareTrustedRoots.isEmpty() && softwareTrustedRoots.isEmpty())
             throw object : AndroidAttestationException("No trust anchors configured", null) {}
 
         if (applications.isEmpty()) throw object : AndroidAttestationException("No apps configured", null) {}
@@ -698,8 +1232,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var bootloaderUnlockAllowed: Boolean = false
         private var rollbackResitanceRequired: Boolean = false
         private var ignoreLeafValidity: Boolean = false
-        private var hardwareAttestationTrustAnchors = mutableSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS)
-        private var softwareAttestationTrustAnchors = mutableSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS)
+        private var hardwareTrustedRoots =
+            mutableSetOf<TrustedRoot>(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.toTypedArray())
+        private var softwareTrustedRoots =
+            mutableSetOf<TrustedRoot>(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.toTypedArray())
         private var verificationSecondsOffset = 0L
         private var attestationStatementValiditySeconds: Long? = 5 * 60
         private var disableHwAttestation: Boolean = false
@@ -740,28 +1276,59 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         fun ingoreLeafValidity() = apply { ignoreLeafValidity = true }
 
         /**
-         * @see AndroidAttestationConfiguration.hardwareAttestationTrustAnchors
+         * @see AndroidAttestationConfiguration.hardwareTrustedRoots
          */
+        @JvmName("hardwareAttestationTrustAnchorPublicKeys")
         fun hardwareAttestationTrustAnchors(anchors: Set<PublicKey>) =
-            apply { hardwareAttestationTrustAnchors.apply { clear(); addAll(anchors) } }
+            apply { hardwareTrustedRoots.apply { clear(); addAll(anchors.map { TrustedRoot.PublicKey(it) }) } }
 
         /**
          * adds a single hardware attestation trust anchor
-         * @see AndroidAttestationConfiguration.hardwareAttestationTrustAnchors
+         * @see AndroidAttestationConfiguration.hardwareTrustedRoots
          */
-        fun addHardwareAttestationTrustAnchor(anchor: PublicKey) = apply { hardwareAttestationTrustAnchors += anchor }
+        @JvmName("addHardwareAttestationTrustAnchorPublicKey")
+        fun addHardwareAttestationTrustAnchor(anchor: PublicKey) =
+            apply { hardwareTrustedRoots += TrustedRoot.PublicKey(anchor) }
 
         /**
-         * @see AndroidAttestationConfiguration.softwareAttestationTrustAnchors
+         * @see AndroidAttestationConfiguration.softwareTrustedRoots
          */
+        @JvmName("softwareAttestationTrustAnchorPublicKeys")
         fun softwareAttestationTrustAnchors(anchors: Set<PublicKey>) =
-            apply { softwareAttestationTrustAnchors.apply { clear(); addAll(anchors) } }
+            apply { softwareTrustedRoots.apply { clear(); addAll(anchors.map { TrustedRoot.PublicKey(it) }) } }
 
         /**
          * adds a single software attestation trust anchor
-         * @see AndroidAttestationConfiguration.softwareAttestationTrustAnchors
+         * @see AndroidAttestationConfiguration.softwareTrustedRoots
          */
-        fun addSoftwareAttestationTrustAnchor(anchor: PublicKey) = apply { softwareAttestationTrustAnchors += anchor }
+        @JvmName("addSoftwareAttestationTrustAnchorPublicKey")
+        fun addSoftwareAttestationTrustAnchor(anchor: PublicKey) =
+            apply { softwareTrustedRoots += TrustedRoot.PublicKey(anchor) }
+
+
+        /**
+         * @see AndroidAttestationConfiguration.hardwareTrustedRoots
+         */
+        fun hardwareTrustedRoots(anchors: Set<TrustedRoot>) =
+            apply { hardwareTrustedRoots.apply { clear(); addAll(anchors) } }
+
+        /**
+         * adds a single hardware attestation trust anchor
+         * @see AndroidAttestationConfiguration.hardwareTrustedRoots
+         */
+        fun addHardwareTrustedRoot(anchor: TrustedRoot) = apply { hardwareTrustedRoots += anchor }
+
+        /**
+         * @see AndroidAttestationConfiguration.softwareTrustedRoots
+         */
+        fun softwareTrustedRoots(anchors: Set<TrustedRoot>) =
+            apply { softwareTrustedRoots.apply { clear(); addAll(anchors) } }
+
+        /**
+         * adds a single software attestation trust anchor
+         * @see AndroidAttestationConfiguration.softwareTrustedRoots
+         */
+        fun addSoftwareTrustedRoot(anchor: TrustedRoot) = apply { softwareTrustedRoots += anchor }
 
         /**
          * @see AndroidAttestationConfiguration.verificationSecondsOffset
@@ -810,8 +1377,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             allowBootloaderUnlock = bootloaderUnlockAllowed,
             requireRollbackResistance = rollbackResitanceRequired,
             ignoreLeafValidity = ignoreLeafValidity,
-            hardwareAttestationTrustAnchors = hardwareAttestationTrustAnchors,
-            softwareAttestationTrustAnchors = softwareAttestationTrustAnchors,
+            hardwareTrustedRoots = hardwareTrustedRoots,
+            softwareTrustedRoots = softwareTrustedRoots,
             verificationSecondsOffset = verificationSecondsOffset,
             attestationStatementValiditySeconds = attestationStatementValiditySeconds,
             disableHardwareAttestation = disableHwAttestation,
@@ -832,8 +1399,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "allowBootloaderUnlock=$allowBootloaderUnlock, " +
                 "requireRollbackResistance=$requireRollbackResistance, " +
                 "ignoreLeafValidity=$ignoreLeafValidity, " +
-                "hardwareAttestationTrustAnchors=${hardwareAttestationTrustAnchors.joinToString { it.encoded.encodeBase64() }}, " +
-                "softwareAttestationTrustAnchors=${softwareAttestationTrustAnchors.joinToString { it.encoded.encodeBase64() }}, " +
+                "hardwareAttestationTrustAnchors=${hardwareTrustedRoots.joinToString { it.derEncoded.encodeBase64() }}, " +
+                "softwareAttestationTrustAnchors=${softwareTrustedRoots.joinToString { it.derEncoded.encodeBase64() }}, " +
                 "verificationSecondsOffset=$verificationSecondsOffset, " +
                 "attestationStatementValiditySeconds=$attestationStatementValiditySeconds, " +
                 "disableHardwareAttestation=$disableHardwareAttestation, " +
@@ -862,11 +1429,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (applications != other.applications) return false
         if (patchLevel != other.patchLevel) return false
 
-        if (hardwareAttestationTrustAnchors.size != other.hardwareAttestationTrustAnchors.size) return false
-        hardwareAttestationTrustAnchors.forEachIndexed { index, publicKey -> if (!publicKey.encoded.contentEquals(other.hardwareAttestationTrustAnchors.toList()[index].encoded)) return false }
-
-        if (softwareAttestationTrustAnchors.size != other.softwareAttestationTrustAnchors.size) return false
-        softwareAttestationTrustAnchors.forEachIndexed { index, publicKey -> if (!publicKey.encoded.contentEquals(other.softwareAttestationTrustAnchors.toList()[index].encoded)) return false }
+        if (hardwareTrustedRoots != other.hardwareTrustedRoots) return false
+        if (softwareTrustedRoots != other.softwareTrustedRoots) return false
 
         if (httpProxy != other.httpProxy) return false
 
@@ -889,8 +1453,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + (osPatchLevel ?: 0)
         result = 31 * result + applications.hashCode()
         result = 31 * result + (patchLevel?.hashCode() ?: 0)
-        result = 31 * result + hardwareAttestationTrustAnchors.hashCode()
-        result = 31 * result + softwareAttestationTrustAnchors.hashCode()
+        result = 31 * result + hardwareTrustedRoots.hashCode()
+        result = 31 * result + softwareTrustedRoots.hashCode()
         result = 31 * result + (httpProxy?.hashCode() ?: 0)
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
         return result

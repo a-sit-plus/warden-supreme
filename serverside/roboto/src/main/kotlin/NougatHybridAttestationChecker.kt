@@ -3,14 +3,6 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import com.google.android.attestation.ParsedAttestationRecord
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.cache.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.serialization.kotlinx.json.*
 import java.time.Instant
 import java.util.*
 
@@ -22,7 +14,7 @@ class NougatHybridAttestationChecker @JvmOverloads constructor(
     init {
         if (!attestationConfiguration.enableNougatAttestation) throw object :
             AndroidAttestationException("Nougat attestation is disabled!", null) {}
-        if (attestationConfiguration.hardwareAttestationTrustAnchors.isEmpty()) throw object :
+        if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw object :
             AndroidAttestationException("No Nougat (Software) attestation trust anchors configured", null) {}
     }
 
@@ -50,7 +42,7 @@ class NougatHybridAttestationChecker @JvmOverloads constructor(
         }
     }
 
-    override val trustAnchors = attestationConfiguration.softwareAttestationTrustAnchors
+    override val trustAnchors = attestationConfiguration.softwareTrustedRoots
 
     @Throws(AttestationValueException::class)
     override fun ParsedAttestationRecord.verifyAndroidVersion(versionOverride: Int?, osPatchLevel: PatchLevel?, verificationDate: Date) {
