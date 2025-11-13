@@ -7,6 +7,7 @@ import at.asitplus.signum.indispensable.asn1.KnownOIDs
 import at.asitplus.signum.indispensable.asn1.serialNumber
 import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.*
+import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import io.ktor.client.*
@@ -54,7 +55,7 @@ class AttestationClient(client: HttpClient) {
     }
 
     /**
-     * Posts a [csr] containing an attestation challenge, as created by [createCsr].
+     * Posts a [csr] containing an attestation challenge, as created by [createAttestationProof].
      * @throws Throwable for any IO/low-level errors. Attestation failures are **not** thrown but encoded into the [AttestationResponse]!
      */
     @Throws(Throwable::class)
@@ -63,6 +64,70 @@ class AttestationClient(client: HttpClient) {
             contentType(ContentType.Application.OctetStream)
             setBody(csr.encodeToDer())
         }.body<AttestationResponse>()
+}
+
+
+/**
+ * Creates a signed CSR from a received [AttestationChallenge] according to [AttestationChallenge.keyConstraints].
+ * Hence, if no constraints are set, this method will always fail!
+ *
+ * Encodes the challenge's nonce into a [KnownOIDs.serialNumber] subjectName
+ * and the attestation statement into a Pkcs10CertificationRequestAttribute with [AttestationChallenge.proofOID].
+ * Since this operation prepares and directly signs the CSR, it may require user authentication.
+ */
+suspend fun AttestationChallenge.createAttestationProof(
+    /**
+     * The alias to assign to the newly created signer. Must not exist!
+     */
+    alias: String,
+    ): KmmResult<Pkcs10CertificationRequest> {
+
+
+    val params = keyConstraints?.algorithmParameters
+        ?: throw IllegalArgumentException("No algorithm specified. Refusing to automatically create an attested key")
+    val protectionParameters = keyConstraints?.keyProtection
+    val signer = PlatformSigningProvider.createSigningKey(alias) {
+
+        when (params) {
+            is KeyConstraints.AlgorithmParameters.EC -> ec {
+                curve = params.curve
+                digests = params.digests
+
+                purposes {
+                    signing = params.allowSigning
+                    keyAgreement = params.allowKeyAgreement
+                }
+
+            }
+
+            is KeyConstraints.AlgorithmParameters.RSA -> rsa {
+                paddings = params.paddings
+                digests = params.digests
+                bits = params.keySize.bits.toInt()
+                purposes {
+                    signing = params.allowSigning
+                    decrypting = params.allowDecrypting
+                }
+            }
+        }
+        hardware {
+            attestation {
+                challenge = this@createAttestationProof.nonce
+            }
+            protectionParameters?.let {
+                protection {
+                    it.timeout?.let { timeout = it }
+                    factors {
+                        it.biometry?.let { biometry = it }
+                        it.deviceLock?.let { deviceLock = it }
+                        it.allowNewBiometricFactors?.let { biometryWithNewFactors = it }
+                    }
+                }
+            }
+        }
+    }.getOrThrow()
+
+    return signer.createCsr(this)
 }
 
 /**

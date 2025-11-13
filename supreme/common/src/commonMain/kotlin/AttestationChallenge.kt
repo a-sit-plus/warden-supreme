@@ -2,9 +2,8 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
 import at.asitplus.catching
-import at.asitplus.signum.indispensable.Attestation
+import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.asn1.*
-import at.asitplus.signum.indispensable.asn1.encoding.asAsn1String
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToString
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
@@ -14,26 +13,21 @@ import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import io.matthewnelson.encoding.core.Encoder.Companion.encodeToString
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 /**
  * A generic representation of a challenge sent the server.
  */
+@ConsistentCopyVisibility
 @Serializable
 data class AttestationChallenge
 /**
  * @throws IllegalArgumentException in case the nonce is larger than 128 bytes
  */
 @Throws(IllegalArgumentException::class)
-constructor(
+private constructor(
     /**
      * The issuing time of the nonce. Useful to detect clock drifts and exit early.
      * This is not considered sensible information, as clocks must be in sync anyhow.
@@ -69,12 +63,42 @@ constructor(
      * The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
      */
     @Serializable(with = ObjectIdentifierStringSerializer::class)
-    val proofOID: ObjectIdentifier
+    val proofOID: ObjectIdentifier,
 
-) {
+    /**
+     * Indicates the wire format version
+     */
+    val version: Int? = null,
+
+    /**
+     * Specified key constraints for the client
+     */
+    val keyConstraints: KeyConstraints? = null,
+
+    ) {
     init {
         if (nonce.size > 128) throw IllegalArgumentException("nonce too large! must be at most 128 bytes.")
     }
+
+    constructor(
+        issuedAt: Instant,
+        validity: Duration? = null,
+        timeZone: TimeZone? = null,
+        nonce: ByteArray,
+        attestationEndpoint: String,
+        proofOID: ObjectIdentifier,
+        keyConstraints: KeyConstraints? = null,
+    ) : this(
+        issuedAt,
+        validity,
+        timeZone,
+        nonce,
+        attestationEndpoint,
+        proofOID,
+        version = 1,
+        keyConstraints,
+    )
+
 
     /**
      * Convenience constructor to pass two instants instead of instant and duration
@@ -85,14 +109,17 @@ constructor(
         timeZone: TimeZone?,
         nonce: ByteArray,
         attestationEndpoint: String,
-        proofOID: ObjectIdentifier
+        proofOID: ObjectIdentifier,
+        keyConstrains: KeyConstraints? = null,
     ) : this(
         issuedAt,
         validUntil - issuedAt,
         timeZone,
         nonce,
         attestationEndpoint,
-        proofOID
+        proofOID,
+        version = 1,
+        keyConstrains
     )
 
     /**
@@ -126,16 +153,7 @@ constructor(
         result = 31 * result + nonce.contentHashCode()
         return result
     }
-}
 
-object DurationWholeSecondsSerializer : KSerializer<Duration> {
-    override val descriptor = PrimitiveSerialDescriptor("DurationInWholeSeconds", PrimitiveKind.LONG)
-
-    override fun deserialize(decoder: Decoder): Duration = decoder.decodeLong().seconds
-
-    override fun serialize(encoder: Encoder, value: Duration) {
-        encoder.encodeLong(value.inWholeSeconds)
-    }
 }
 
 /**
@@ -151,7 +169,10 @@ fun TbsCertificationRequest.attestationStatementForChallenge(challenge: Attestat
 fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): KmmResult<Attestation> =
     catching {
         attributes.find { it.oid == oid }?.value?.singleOrNull()
-            ?.let { Attestation.fromJSON(it.asPrimitive().asAsn1String().value) }
+            ?.let {
+                it.asPrimitive()
+                Attestation.fromJSON(Asn1String.decodeFromTlv(it.asPrimitive()).value)
+            }
             ?: throw Asn1StructuralException("Attestation statement not present")
     }
 

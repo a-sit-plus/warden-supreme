@@ -69,6 +69,7 @@ class AttestationValidator(
         timeZone: TimeZone?,
         postEndpoint: String,
         timeOffset: Duration = Duration.ZERO,
+        keyConstraints: KeyConstraints? = null
     ) =
         AttestationChallenge(
             issuedAt = Clock.System.now() + timeOffset,
@@ -76,7 +77,8 @@ class AttestationValidator(
             timeZone,
             nonce,
             postEndpoint,
-            attestationProofOID
+            attestationProofOID,
+            keyConstraints
         )
 
     /**
@@ -151,7 +153,14 @@ class AttestationValidator(
         val result = warden.verifyKeyAttestation(attestationStatement, nonce)
         return result.fold(
             onError = {
-                val explanation = catchingUnwrapped { it.onAttestationError(warden.collectDebugInfo(attestationStatement,nonce)) }.getOrNull()
+                val explanation = catchingUnwrapped {
+                    it.onAttestationError(
+                        warden.collectDebugInfo(
+                            attestationStatement,
+                            nonce
+                        )
+                    )
+                }.getOrNull()
                 when (it.cause) {
                     null, is AttestationException.Content -> Failure(Failure.Type.CONTENT, explanation)
                     is AttestationException.Certificate.Time -> Failure(Failure.Type.TIME, explanation)
@@ -176,7 +185,8 @@ class AttestationValidator(
                     signature.initVerify(pubKey)
                     if (signature.verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)) {
                         val explanation = catchingUnwrapped {
-                            AttestationResult.Error("CSR signature verification failed").onAttestationError(warden.collectDebugInfo(attestationStatement,nonce))
+                            AttestationResult.Error("CSR signature verification failed")
+                                .onAttestationError(warden.collectDebugInfo(attestationStatement, nonce))
                         }.getOrNull()
                         return Failure(
                             Failure.Type.TRUST,

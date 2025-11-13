@@ -1,9 +1,11 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
@@ -113,7 +115,8 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                                 STMT_VALIDITY,
                                 timeZone = TimeZone.currentSystemDefault(),
                                 ENDPOINT_ATTEST,
-                                timeOffset = -5.minutes
+                                timeOffset = -5.minutes,
+                                keyConstraints = KeyConstraints(AlgorithmParameters.EC(ECCurve.SECP_256_R_1))
                             )
                         ), contentType = ContentType.Application.Json
                     )

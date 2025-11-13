@@ -5,7 +5,6 @@ import at.asitplus.attestation.supreme.*
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
-import io.kotest.core.log
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.*
@@ -36,16 +35,7 @@ val EndToEndTest by testSuite {
         resp.isSuccess shouldBe true
         val attestationChallenge: AttestationChallenge = resp.getOrThrow()
 
-        val signer = PlatformSigningProvider.createSigningKey(alias) {
-            ec {}
-            hardware {
-                attestation {
-                    this.challenge = attestationChallenge.nonce
-                }
-            }
-        }.getOrThrow()
-
-        val csr = signer.createCsr(attestationChallenge).getOrThrow()
+        val csr = attestationChallenge.createAttestationProof(alias).getOrThrow()
         val result = client.attest(csr, attestationChallenge.attestationEndpointUrl)
         val clue =
             if (result is AttestationResponse.Failure)
