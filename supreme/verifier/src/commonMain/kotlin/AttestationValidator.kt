@@ -10,7 +10,10 @@ import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
+import org.kotlincrypto.random.CryptoRand
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -29,7 +32,8 @@ class AttestationValidator(
     private val warden: Warden,
     val attestationProofOID: ObjectIdentifier,
     val defaultKeyConstraints: KeyConstraints? = null,
-    private val challengeValidator: ChallengeValidator
+    private val nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
+    private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(warden.clock)
 ) {
     /**
      *
@@ -47,17 +51,18 @@ class AttestationValidator(
     constructor(
         androidAttestationConfiguration: AndroidAttestationConfiguration,
         iosAttestationConfiguration: IosAttestationConfiguration,
-
         attestationProofOID: ObjectIdentifier,
         clock: Clock = Clock.System,
         verificationTimeOffset: Duration = Duration.ZERO,
         defaultKeyConstraints: KeyConstraints? = null,
-        challengeValidator: ChallengeValidator
+        nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
+        challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock)
     ) : this(
         Makoto(androidAttestationConfiguration, iosAttestationConfiguration, clock, verificationTimeOffset),
         attestationProofOID,
         defaultKeyConstraints,
-        challengeValidator
+        nonceGenerator,
+        challengeValidator,
     )
 
     /**
@@ -74,22 +79,21 @@ class AttestationValidator(
      * It is possible to pass a [timeOffset] to account for an incorrect server clock. This value is added to the returned [AttestationChallenge.issuedAt] and accounted for when calculating [AttestationChallenge.validUntil].
      */
     suspend fun issueChallenge(
-        nonce: ByteArray,
-        validity: Duration?,
+        validity: Duration,
         timeZone: TimeZone?,
         postEndpoint: String,
         timeOffset: Duration = Duration.ZERO,
         keyConstraints: KeyConstraints? = this.defaultKeyConstraints
     ) =
         AttestationChallenge(
-            issuedAt = Clock.System.now() + timeOffset,
+            issuedAt = warden.clock.now() + timeOffset,
             validity,
             timeZone,
-            nonce,
+            nonceGenerator(),
             postEndpoint,
             attestationProofOID,
             keyConstraints
-        )
+        ).also { challengeValidator.store(it) }
 
     /**
      * Verifies the received CSR:
@@ -132,7 +136,7 @@ class AttestationValidator(
             return Failure(Failure.Type.CONTENT, explanation)
         }
 
-        when (val challengeValidationResult = challengeValidator.invoke(nonce)) {
+        when (val challengeValidationResult = challengeValidator.validate(nonce)) {
             is ChallengeValidationResult.Failure -> {
                 val explanation = catchingUnwrapped {
                     ChallengeVerification(
@@ -146,7 +150,8 @@ class AttestationValidator(
                 )
             }
 
-            ChallengeValidationResult.Success -> {}
+            is ChallengeValidationResult.Success -> {} //for now, we don't care for the issued challenge
+            //but we may in teh future, e.g. to check whether Key Constraints are actually fulfilled.
         }
 
         val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID)
@@ -243,10 +248,18 @@ class AttestationValidator(
  * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
  * matching, ensuring freshness!
  */
-typealias ChallengeValidator = suspend (ByteArray) -> ChallengeValidationResult
+interface ChallengeValidator {
+    suspend fun store(challenge: AttestationChallenge)
+    suspend fun validate(nonce: ByteArray): ChallengeValidationResult
+}
+
+/**
+ *
+ */
+typealias NonceGenerator = suspend () -> ByteArray
 
 sealed class ChallengeValidationResult {
-    object Success : ChallengeValidationResult()
+    class Success(val validatedChallenge: AttestationChallenge) : ChallengeValidationResult()
     class Failure(val reason: Throwable?) : ChallengeValidationResult()
 }
 
@@ -272,4 +285,37 @@ sealed class PreAttestationError {
         PreAttestationError()
 
     class OperationalError(override val throwable: Throwable) : PreAttestationError()
+}
+
+class InMemoryChallengeCache(private val clock: Clock) : ChallengeValidator {
+
+    private val mutex = Mutex()
+    private val challengeList = mutableListOf<AttestationChallenge>()
+
+    override suspend fun store(challenge: AttestationChallenge) {
+        mutex.withLock {
+            pruneExpiredEntries()
+            challengeList.add(challenge)
+        }
+    }
+
+    override suspend fun validate(nonce: ByteArray): ChallengeValidationResult {
+        mutex.withLock {
+            pruneExpiredEntries()
+            val ind = challengeList.indexOfFirst { it.nonce.contentEquals(nonce) }
+            return if (ind == -1) ChallengeValidationResult.Failure(IllegalStateException("No challenge found"))
+            else ChallengeValidationResult.Success(challengeList.removeAt(ind))
+
+        }
+    }
+
+    private fun pruneExpiredEntries() {
+        for (i in challengeList.indices.reversed()) {
+            if (challengeList[i].validUntil <= clock.now()) {
+                challengeList.removeAt(i)
+            }
+        }
+    }
+
+
 }

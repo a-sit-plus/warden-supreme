@@ -11,6 +11,7 @@ ensuring that only authentic, untampered apps can access a service. This project
 [WARDEN](https://github.com/a-sit-plus/warden) and [WARDEN‑roboto](https://github.com/a-sit-plus/warden-roboto),
 integrating them with [Signum](https://a-sit-plus.github.io/signum/), a Kotlin Multiplatform crypto/PKI library,
 to deliver a streamlined attestation format and developer experience.
+**It condenses the actual creation of an attestable, hardware-backed key down to a single line of code on the client**
 
 !!! tip
     Already familiar with attestation? **[Jump to the Integration Guide](integration/supreme.md)**.

@@ -40,7 +40,6 @@ val EndToEndTest by testSuite {
             if (result is AttestationResponse.Failure)
                 result.kind.name + ": " + (result.explanation ?: "FAIL")
             else ""
-        System.err.println(clue)
         withClue(clue) { result.shouldBeInstanceOf<AttestationResponse.Success>() }
     }
 

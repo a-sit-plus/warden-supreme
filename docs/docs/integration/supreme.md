@@ -56,114 +56,69 @@ An attestation flow works as follows, in accordance with Figure&nbsp;1:
 5. The back-end responds either with the full certificate chain (success) or a detailed error reason (failure).
 
 
-
-
 <figure>
     <img src="../../assets/images/flow.png" alt="Remotely establishing trust in mobile clients">
     <figcaption>Figure&nbsp;1: Remotely establishing trust in mobile clients</figcaption>
 </figure>
 
 
-
 As shown in Figure&nbsp;1, the back-end needs to be configured before being able to assert the trustworthiness of a client.
 While the actual API is unified for Android and iOS (both for verifying attestation statements and on the mobile clients creating
 attestation statements), configuration needs to deal with each platform separately.
 
+### Warden Supreme MWE
+Warden Supreme integrates server-side and client side logic into a lean interface. To get going, the following steps are required:
+* Decide on HTTPS endpoints and on an OID to convey the Attestation proof from app to backend (inside a signed CSR).
+* Backend:
+   1. Add the dependencies (client in the app, verifier on the backend)
+   2. Configure a `Warden` instance on the back-end. This defines which devices and apps will be considered trustworthy
+   3. Create an `AttestationVerifier` based on
+       * the configured `Warden` instance
+       * the HTTPS endpoints
+       * the OID
+   4. Start an HTTP server to expose the endpoints
+* Mobile App
+  1. Wire the verifier to the HTTPS endpoints to an `AttestationClient`
+  2. Call into the Endpoints
+  3. Store the received certificate chain after a successful attestation
+
 ### Back-End Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
-The following snippet lists all configuration values:
+The following snippet shows an MWE:
 
 !!! tip "Migration Info"
     Warden Supreme 0.10.0 revamped trust anchor management and thus changed configuration parameters.
-    Click the inline annotations in the code block below for more details.
+    The old signatures still exist but will be removed in 1.0.0!
 
 ```kotlin
-val warden = Warden(
-    androidAttestationConfiguration = AndroidAttestationConfiguration(
-        applications = listOf(   // REQUIRED: add applications to be attested
-            AndroidAttestationConfiguration.AppData(
-                packageName = "at.asitplus.attestation_client",
-                signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
-                appVersion = 5
-            ),
-            AndroidAttestationConfiguration.AppData( // dedicated app for the latest Android version
-                packageName = "at.asitplus.attestation_client-tiramisu",
-                signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
-                appVersion = 2, // with a different versioning scheme
-                androidVersionOverride = 130000, // so we need to override this
-                patchLevelOverride = PatchLevel(2023, 6, maxFuturePatchLevelMonths = 2), // also override patch level and
-                                                                     // consider patch levels from 2 months in the future
-                                                                     // as valid 
-                                                                     // maxFuturePatchLevelMonths defaults to 1
-                                                                     // null means any future patch level is OK
-
-
-             /*(1)!*/trustedRootOverrides = setOf(myCustomRoot),  // require a custom root as the trust anchor
-                                                             // for the attestation certificate chain
-
-                requireRemoteProvisioningOverride = true // require a remotely-provisioned attestation
-                                                         // certificate for extra security
-            )
-        ),
-        androidVersion = 110000,                  // OPTIONAL, null by default
-        patchLevel = PatchLevel(2022, 12),        // OPTIONAL, null by default; maxFuturePatchLevelMonths defaults to 1
-        requireStrongBox = false,                 // OPTIONAL, defaults to false
-        allowBootloaderUnlock = false,            // OPTIONAL, defaults to false
-        requireRollbackResistance = false,        // OPTIONAL, defaults to false
-        ignoreLeafValidity = false,               // OPTIONAL, defaults to false
-     /*(2)!*/hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS,   // OPTIONAL, defaults shown here
-     /*(3)!*/softwareTrustedRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11, // OPTIONAL, defaults shown here
-        verificationSecondsOffset = -300,         // OPTIONAL, defaults to 0
-        disableHardwareAttestation = false,       // OPTIONAL, defaults to false; set true to disable HW attestation
-        enableNougatAttestation = false,          // OPTIONAL, defaults to false; set true to enable hybrid attestation
-        enableSoftwareAttestation = false,        // OPTIONAL, defaults to false; set true to enable SW attestation
-        attestationStatementValiditySeconds = 300,// OPTIONAL, defaults to 300s
-        httpProxy = null,                         //OPTIONAL HTTP proxy url, such as http://proxy.domain:12345, defaults to null for no proxy
-        requireRemoteKeyProvisioning = false      //OPTIONAL, whether to require a remotely provisioned attestation certificate
-
-    ),
-    iosAttestationConfiguration = IosAttestationConfiguration(
-        applications = listOf(
-            IosAttestationConfiguration.AppData(
-                teamIdentifier = "9CYHJNG644",
-                bundleIdentifier = "at.asitplus.attestation-client",
-                iosVersionOverride = "16.0",     // OPTIONAL, null by default
-                sandbox = false,                 // OPTIONAL, defaults to false
-             /*(4)!*/trustedRootOverrides = setOf(myCustomRoots) //require a custom trusted root
-            )
-        ),
-        iosVersion = 14,                                             // OPTIONAL, null by default
-        attestationStatementValiditySeconds = 300                    // OPTIONAL, defaults to 300s
-    ),
-    clock = FixedTimeClock(Instant.parse("2023-04-13T00:00:00Z")),   // OPTIONAL, system clock by default
-    verificationTimeOffset = Duration.ZERO,                          // OPTIONAL, defaults to zero
- /*(5)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS                       // OPTIONAL, defaults shown here
-)
+--8<-- "Readme-Config-min.kt:8"
 ```
 
-1. Pre 0.10.0-migration note: This used to be called `trustAnchorOverrides`.  
-   **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-2. Pre 0.10.0-migration note: this used to be `#!kotlin hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS)`.  
-   **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-3. Pre 0.10.0-migration note: this used to be `#!kotlin softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS)`.  
-   **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-4. New since version 0.10.0!
-5. New since version 0.10.0!
+1. At least one Android application needs to be configured.
+2. You will want to ignore the validity of Android leaf certificates, as many vendors mess this up. **Be sure to ensure freshness through other means!**
+3. At least one iOS application needs to be configured.
 
-The (nullable) properties like patch level, iOS version, or Android app version essentially allow for excluding outdated devices.
-Defining custom logic to verify the attestation challenge for Android is unsupported by design, considering iOS constraints and inconsistencies between platforms resulting from such a customisation.
-More details on the configuration can be found in the API documentation.
+!!! info "With great power comes great responsibility!"
+    The above really is an MWE!  
+    Many more configuration properties exist, and it is recommended to explicitly set **all those that are relevant to your specifix scenario**,
+    as the value of every single one should very much be the result of careful consideration.
+    In the end, a strongly informed decision about every property is required to reflect the intended audience and the required security properties.
+    
+    **Warden Supreme, by definition, cannot take these decisions from you!**
+
+The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-warden/index.html).
+
 
 
 
 #### A Note on Android Attestation
 This library allows combining different flavours of Android attestation, ranging from full hardware attestation
 to (rather useless in practice) software-only attestation, which can be useful for testing using an Android emulator.
-Hardware attestation is enabled by default, while hybrid and software-only attestation need to be explicitly enabled
-through `enableNougatAttestation` and `enableSoftwareAttestation`, respectively. Doing so will chain the corresponding
+Hardware attestation is enabled by default, while hybrid and software-only attestation needs to be explicitly enabled.
+Doing so will chain the corresponding
 `AndroidAttestationChecker`s from the strictest (hardware) to the least strict (software-only).
 Naturally, hardware attestation can also be disabled by setting `disableHardwareAttestation = true`, although there is probably
-no real use case for such a configuration except for testing.
+no real use case for such a configuration **except for testing**.
 
 ### Example Usage
 A verifier expects the following parameters to be configured:

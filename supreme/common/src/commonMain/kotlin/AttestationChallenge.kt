@@ -2,15 +2,13 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
 import at.asitplus.catching
-import at.asitplus.signum.indispensable.*
+import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.asn1.*
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToString
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import io.matthewnelson.encoding.base16.Base16
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
-import io.matthewnelson.encoding.core.Encoder.Companion.encodeToString
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
 import kotlinx.serialization.Serializable
@@ -36,10 +34,10 @@ private constructor(
     val issuedAt: Instant,
 
     /**
-     * How long this nonce is considered valid. Can be omitted, if the server does not want to disclose this information.
+     * How long this nonce is considered valid.
      */
     @Serializable(with = DurationWholeSecondsSerializer::class)
-    val validity: Duration? = null,
+    val validity: Duration,
     /**
      * The server timezone. Can be omitted if the server does not want to disclose this information
      */
@@ -52,7 +50,6 @@ private constructor(
      */
     @Serializable(with = ByteArrayBase64UrlSerializer::class)
     val nonce: ByteArray,
-
 
     /**
      * The endpoint to post the CSR containing the attestation proof to
@@ -82,7 +79,7 @@ private constructor(
 
     constructor(
         issuedAt: Instant,
-        validity: Duration? = null,
+        validity: Duration,
         timeZone: TimeZone? = null,
         nonce: ByteArray,
         attestationEndpoint: String,
@@ -125,14 +122,14 @@ private constructor(
     /**
      * Lazily-evaluated property
      */
-    val validUntil: Instant? by lazy { validity?.let { issuedAt + it } }
+    val validUntil: Instant by lazy { issuedAt + validity }
 
     /**
      * Encapsulates the nonce encoded into a [KnownOIDs.serialNumber] RDN component for easier parsing
      */
     fun getRdnSerialNumber(): AttributeTypeAndValue = AttributeTypeAndValue.Other(
         KnownOIDs.serialNumber, Asn1String.Printable(
-            nonce.encodeToString(Base16)
+            nonce.toHexString(HexFormat.UpperCase)
         )
     )
 
@@ -186,5 +183,5 @@ val TbsCertificationRequest.challenge: KmmResult<ByteArray>
             subjectName.mapNotNull { name -> name.attrsAndValues.find { attributeTypeAndValue -> attributeTypeAndValue.oid == KnownOIDs.serialNumber } }
         if (noncesRecovered.isEmpty()) throw Asn1StructuralException("No nonce present")
         else if (noncesRecovered.size != 1) throw Asn1StructuralException("More than one nonce present!")
-        noncesRecovered.first().value.asPrimitive().decodeToString().decodeToByteArray(Base16)
+        noncesRecovered.first().value.asPrimitive().decodeToString().hexToByteArray()
     }

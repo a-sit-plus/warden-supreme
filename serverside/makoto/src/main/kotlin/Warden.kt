@@ -55,7 +55,7 @@ typealias Makoto = Warden
 class Warden(
     private val androidAttestationConfiguration: AndroidAttestationConfiguration,
     private val iosAttestationConfiguration: IosAttestationConfiguration,
-    private val clock: Clock = Clock.System,
+    val clock: Clock = Clock.System,
     private val verificationTimeOffset: Duration = Duration.ZERO
 ) : AttestationService() {
 

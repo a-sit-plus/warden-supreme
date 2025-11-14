@@ -1,9 +1,9 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.asn1.Asn1String
@@ -53,7 +53,6 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
         val PATH_ATTEST = "/api/v1/attest"
         val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
         val PROOF_OID = ObjectIdentifier(Uuid.parse("c893b702-28f6-4c50-8578-d1d7a1580729"))
-        val NONCE = Random.nextBytes(16)
 
         var running = true
 
@@ -89,10 +88,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
             ),
             attestationProofOID = PROOF_OID,
             Clock.System, verificationTimeOffset = VERIFICATION_OFFSET,
-        ) {
-            if (it.contentEquals(NONCE)) ChallengeValidationResult.Success
-            else ChallengeValidationResult.Failure(null)
-        }
+        )
 
 
         val server = embeddedServer(Netty, port = 8080) {
@@ -113,7 +109,6 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                     call.respondText(
                         Json.encodeToString(
                             attestationValidator.issueChallenge(
-                                NONCE,
                                 STMT_VALIDITY,
                                 timeZone = TimeZone.currentSystemDefault(),
                                 ENDPOINT_ATTEST,
