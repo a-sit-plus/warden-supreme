@@ -46,6 +46,8 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
     //fail at runtime
     val STMT_VALIDITY = 15.minutes
     val VERIFICATION_OFFSET = 3.minutes
+
+
     "startServer" {
         val ENDPOINT_CHALLENGE = "/api/v1/challenge"
         val PATH_ATTEST = "/api/v1/attest"

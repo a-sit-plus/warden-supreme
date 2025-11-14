@@ -1,9 +1,10 @@
 # Changelog
 
-Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as a dedicated artefacts,
+Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 ## NEXT
+* Truly, fully integrated key attestation, making key creation on the client an actual one-liner.
 * Rework Trust Anchor Management:
      * Introduce `TrustedRoot` interface to represent trust anchors
          * `TrustedRoot.Certificate` for certificates 

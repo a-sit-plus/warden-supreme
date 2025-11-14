@@ -5,7 +5,6 @@ import at.asitplus.attestation.*
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.supreme.AttestationResponse.Failure
 import at.asitplus.attestation.supreme.PreAttestationError.ChallengeVerification
-import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
@@ -18,12 +17,18 @@ import kotlin.time.ExperimentalTime
 
 /**
  * Verifies attestation statements and issues certificates on success.
- * Expects a preconfigured [Warden] instance and an OID to be used in a CSR to convey an attestation statement.
+ * Expects a preconfigured [Warden] instance and an [attestationProofOID] to be used in a CSR to convey an attestation statement.
+ *
+ * When [defaultKeyConstraints] is specified, all issued challenges will automatically convey this, unless overridden.
+ * **Note that key constraints cannot be reliably enforced** due to technical client limitations. Not all platforms can restrict key usage and properties!
+ *
+ * If your app relies on Warden Supreme, they will be respected, though, but there is no cryptography-backed enforcement.
  * Also requires a [challengeValidator], checking challenges validity and invalidating it once used.
  */
 class AttestationValidator(
     private val warden: Warden,
     val attestationProofOID: ObjectIdentifier,
+    val defaultKeyConstraints: KeyConstraints? = null,
     private val challengeValidator: ChallengeValidator
 ) {
     /**
@@ -34,6 +39,7 @@ class AttestationValidator(
      * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
      * @param clock a clock to set the time of verification (used for certificate validity checks)
      * @param verificationTimeOffset allows for fine-grained clock drift compensation (this duration is added to the certificate
+     * @param defaultKeyConstraints allows for specifying key constraints to the client. Not all platforms can restrict key usage and properties!
      * @param challengeValidator lambda checking challenges validity and invalidating it once used
      * validity checks); can be negative.
      */
@@ -45,15 +51,17 @@ class AttestationValidator(
         attestationProofOID: ObjectIdentifier,
         clock: Clock = Clock.System,
         verificationTimeOffset: Duration = Duration.ZERO,
+        defaultKeyConstraints: KeyConstraints? = null,
         challengeValidator: ChallengeValidator
     ) : this(
         Makoto(androidAttestationConfiguration, iosAttestationConfiguration, clock, verificationTimeOffset),
         attestationProofOID,
+        defaultKeyConstraints,
         challengeValidator
     )
 
     /**
-     * alias for [warden]
+     * Alias for [warden]
      */
     val makoto: Makoto get() = warden
 
@@ -61,15 +69,17 @@ class AttestationValidator(
      * Issues a new attestation challenge, using [nonce], valid for a duration of [validity], expecting an CSR containing an attestation statement to be `HTTP POST`ed to [postEndpoint].
      * It is recommended, to pass a [timeZone].
      *
+     * Specify [keyConstraints] to communicate to the type of key and its properties to the client, for automatic key creation. Defaults to [defaultKeyConstraints].
+     *
      * It is possible to pass a [timeOffset] to account for an incorrect server clock. This value is added to the returned [AttestationChallenge.issuedAt] and accounted for when calculating [AttestationChallenge.validUntil].
      */
-    fun issueChallenge(
+    suspend fun issueChallenge(
         nonce: ByteArray,
         validity: Duration?,
         timeZone: TimeZone?,
         postEndpoint: String,
         timeOffset: Duration = Duration.ZERO,
-        keyConstraints: KeyConstraints? = null
+        keyConstraints: KeyConstraints? = this.defaultKeyConstraints
     ) =
         AttestationChallenge(
             issuedAt = Clock.System.now() + timeOffset,
@@ -82,7 +92,7 @@ class AttestationValidator(
         )
 
     /**
-     * verifies the received CSR:
+     * Verifies the received CSR:
      * * Validates nonce contained in the [csr] against the [challengeValidator]
      * * extracts the attestation statement from the [csr]
      * * calls upon [warden] for key attestation based on the extracted attestation statement
@@ -181,7 +191,7 @@ class AttestationValidator(
                         )
                     }
 
-                catching {
+                catchingUnwrapped {
                     signature.initVerify(pubKey)
                     if (signature.verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)) {
                         val explanation = catchingUnwrapped {
@@ -228,7 +238,7 @@ class AttestationValidator(
 }
 
 /**
- * invoked from [AttestationValidator.verifyKeyAttestation]. Useful to match against in-transit attestation processes.
+ * Invoked from [AttestationValidator.verifyKeyAttestation]. Useful to match against in-transit attestation processes.
  * Most probably, this will check against a nonce cache and evict any matched nonce from the cache.
  * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
  * matching, ensuring freshness!

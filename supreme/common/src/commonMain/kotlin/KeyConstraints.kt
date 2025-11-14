@@ -1,8 +1,11 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.RSAPadding
+import at.asitplus.signum.indispensable.SignatureAlgorithm
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.nativeDigest
 import kotlinx.serialization.Serializable
@@ -11,6 +14,8 @@ import kotlin.time.Duration
 /**
  * Constraints on the key to be created on the client.
  * If properly set, allows for ridiculously hands-free key and attestation statement creation
+ *
+ * **Note that not all clients can enforce all constraints!**
  */
 @Serializable
 data class KeyConstraints(

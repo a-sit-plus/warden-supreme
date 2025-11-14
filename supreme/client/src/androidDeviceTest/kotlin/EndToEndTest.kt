@@ -31,7 +31,6 @@ val EndToEndTest by testSuite {
         PlatformSigningProvider.deleteSigningKey(alias)
         val client: AttestationClient = AttestationClient(HttpClient())
         val resp = client.getChallenge(Url(ENDPOINT_CHALLENGE))
-        System.err.println(resp)
         resp.isSuccess shouldBe true
         val attestationChallenge: AttestationChallenge = resp.getOrThrow()
 
