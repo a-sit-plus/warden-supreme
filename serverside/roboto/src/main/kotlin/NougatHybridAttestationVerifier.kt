@@ -6,10 +6,12 @@ import com.google.android.attestation.ParsedAttestationRecord
 import java.time.Instant
 import java.util.*
 
-class NougatHybridAttestationChecker @JvmOverloads constructor(
+@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("NougatHybridAttestationVerifier"))
+typealias NougatHybridAttestationChecker = NougatHybridAttestationVerifier
+class NougatHybridAttestationVerifier @JvmOverloads constructor(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
-) : AndroidAttestationChecker(attestationConfiguration, verifyChallenge) {
+) : Roboto(attestationConfiguration, verifyChallenge) {
 
     init {
         if (!attestationConfiguration.enableNougatAttestation) throw object :
@@ -19,7 +21,7 @@ class NougatHybridAttestationChecker @JvmOverloads constructor(
     }
 
     @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifySecurityLevel() {
+    override fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean?/*ignored*/) {
         if (attestationConfiguration.requireStrongBox) {
             if (keymasterSecurityLevel() != ParsedAttestationRecord.SecurityLevel.STRONG_BOX) throw AttestationValueException(
                 "Keymaster security level not StrongBox", reason = AttestationValueException.Reason.SEC_LEVEL,

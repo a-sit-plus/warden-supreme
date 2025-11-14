@@ -49,11 +49,14 @@ import kotlin.jvm.optionals.getOrNull
  */
 const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
 
-abstract class AndroidAttestationChecker(
+@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("Roboto"))
+typealias AndroidAttestationChecker = Roboto
+
+abstract class Roboto(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
     private val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
 ) {
-    companion object {
+    companion object Companion {
         init {
             Security.addProvider(KeyAttestationProvider())
         }
@@ -485,7 +488,7 @@ abstract class AndroidAttestationChecker(
     }
 
     @Throws(AttestationValueException::class)
-    protected abstract fun ParsedAttestationRecord.verifySecurityLevel()
+    protected abstract fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean? = null)
 
     /**
      * taken and adapted from [com.google.android.attestation.CertificateRevocationStatus] to separate downloading and checking
@@ -499,7 +502,7 @@ abstract class AndroidAttestationChecker(
             return entries[serialNumberNormalised] != null //any entry is a red flag!
         }
 
-        companion object {
+        companion object Companion {
             @JvmStatic
             private val client by lazy { HttpClient(CIO) { setup(null) } }
 

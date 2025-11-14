@@ -12,8 +12,8 @@ val makoto = Makoto(
             signerDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray())
         )
     ),
-    /*(2)!*/iosAttestationConfiguration = IosAttestationConfiguration(
-        IosAttestationConfiguration.AppData(
+    iosAttestationConfiguration = IosAttestationConfiguration(
+        /*(2)!*/IosAttestationConfiguration.AppData(
             teamIdentifier = "9CYHJNG644",
             bundleIdentifier = "at.asitplus.attestation-client",
         )

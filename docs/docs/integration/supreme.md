@@ -102,14 +102,55 @@ This combination makes it possible to attest its authenticity.
 
 !!! info "With great power comes great responsibility!"
     The above really is an MWE!  
-    Many more configuration properties exist, and it is recommended to explicitly set **all those that are relevant to your specifix scenario**,
+    Many more configuration properties exist, and it is recommended to explicitly set **all those that are relevant to your specific scenario**,
     as the value of every single one should very much be the result of careful consideration.
     In the end, a strongly informed decision about every property is required to reflect the intended audience and the required security properties.
     
     **Warden Supreme, by definition, cannot take these decisions from you!**
 
-The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-warden/index.html).
 
+The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-warden/index.html) and a comprehensive example can be expanded below.
+
+
+??? example "Click to expand"
+    The below config illustrates configuring two different Android apps: a regular one for the masses and a second one
+    with much tighter security constraints. This makes no sense when Warden Supreme is integrated into a back-end.
+    If, however, a dedicated attestation service is deployed that is then used to issue certificates for apps used by different services, this can be legitimate. 
+    A single iOS-app is configured for test purposes only. In this example, the iOS app has not yet launched and is purely simulated.
+    To still be able to test the attestation code path for iOS, custom trusted roots are set and all iOS attestation proofs
+    sent to the back-end are created in software, purely for evaluation purposes.
+    
+    **Be sure to check the annotations!**
+    
+    ```kotlin
+    --8<-- "Readme-Config.kt:15"
+    ```
+    
+    1. The basic application for the masses
+    2. A second, experimental high-security app
+    3. Different package name from the first app
+    4. Enforce minimum version, Android 16, an up-do-date security patches
+    5. Allow for more leeway
+    6. Only remote key provisioning is considered trustworthy for this app
+    7. Only the RKP trust anchor is considered trustworthy
+    8. We want our app to have a dedicated HSM
+    9. By default, Android 13 with a somewhat will be required without enforcing the most recent security patches or StrongBox to reach a wider audience.
+    This concerns the first app, since the second one overrides these values.
+    10. This is hardly used in practice and shows the default
+    11. This is rather optimistic, but the majority of devices running Android 13 should not screw this up.
+    12. Usully, you will always want hardware attestation, so you'd need to explicityl disable it
+    13. This is for devices launched with Android 7.0 who have not received an upgraded KeyMaster. Such devices are onyl capable of key attestation.  
+    Their app attestation claims are only software-atested!
+    14. Warden Supreme does not need to enforce this, because cryptographic nonces are used to ensure freshness.  
+    It is not recommended to set this value, because many OEMs mess this up!
+    15. REquired if you run Warden behind a proxy to fetch revocation information from Google servers!
+    16. A single iOS app for evaluation purposes.
+    17. Uses the test stage
+    18. Custom trusted root is set, to enable generating iOS attestation proofs in software for evaluation purposes.
+    19. This could already be a production value, in preparation for the real iOS app
+    20. This is simply Apple's recommendation plus a five minute offset
+    21. Eplicitly set production trusted roots as default
+    22. Account for clock drift!
 
 
 

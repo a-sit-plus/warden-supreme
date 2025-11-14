@@ -36,6 +36,7 @@ import java.security.interfaces.ECPublicKey
 import kotlin.time.*
 import kotlin.time.Duration.Companion.seconds
 
+@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("Makoto"))
 typealias Warden = Makoto
 
 /**
@@ -85,7 +86,7 @@ class Makoto(
 
     private val log = LoggerFactory.getLogger(this.javaClass)
 
-    private val androidAttestationCheckers = mutableListOf<AndroidAttestationChecker>().apply {
+    private val androidAttestationVerifiers = mutableListOf<Roboto>().apply {
 
         if (verificationTimeOffset.inWholeSeconds > Int.MAX_VALUE) throw AttestationException.Configuration(
             Platform.ANDROID,
@@ -115,15 +116,15 @@ class Makoto(
             androidAttestationConfiguration.copy(verificationSecondsOffset = androidOffset)
 
         if (!correctlyOffsetAndroidConfig.disableHardwareAttestation) add(
-            HardwareAttestationChecker(
+            HardwareAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
         if (correctlyOffsetAndroidConfig.enableNougatAttestation) add(
-            NougatHybridAttestationChecker(
+            NougatHybridAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
         if (correctlyOffsetAndroidConfig.enableSoftwareAttestation) add(
-            SoftwareAttestationChecker(
+            SoftwareAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
     }
@@ -425,7 +426,7 @@ class Makoto(
             return AttestationResult.Error("Could not parse Android attestation certificate chain")
 
         //throws exception on fail
-        val results = androidAttestationCheckers.map {
+        val results = androidAttestationVerifiers.map {
             runCatching {
                 it.verifyAttestation(
                     certificates,
@@ -434,7 +435,7 @@ class Makoto(
                 )
             }
         }
-        if (results.filter { it.isFailure }.size == androidAttestationCheckers.size) {
+        if (results.filter { it.isFailure }.size == androidAttestationVerifiers.size) {
             //if time is off, then we need to treat is separately
             results.firstOrNull {
                 (it.exceptionOrNull() is CertificateInvalidException &&
