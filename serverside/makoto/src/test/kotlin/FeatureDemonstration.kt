@@ -4,7 +4,6 @@ package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
-import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
@@ -15,7 +14,6 @@ import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.datetime.Instant
-import java.security.KeyPairGenerator
 import java.security.interfaces.ECPublicKey
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -23,12 +21,12 @@ import kotlin.time.ExperimentalTime
 val FeatureDemonstration by testSuite {
 
 
-    val service = Warden(
+    val service = Makoto(
         androidAttestationConfiguration = AndroidAttestationConfiguration(
             listOf(
                 AndroidAttestationConfiguration.AppData(
                     packageName = "at.asitplus.attestation_client",
-                    signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()),
+                    signerDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()),
                     appVersion = 1, //optional
                 )
             ),
@@ -203,12 +201,12 @@ val FeatureDemonstration by testSuite {
         }
 
         "Custom Trust Anchor" {
-            Warden(
+            Makoto(
                 androidAttestationConfiguration = AndroidAttestationConfiguration(
                     listOf(
                         AndroidAttestationConfiguration.AppData(
                             packageName = "at.asitplus.attestation_client",
-                            signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()),
+                            signerDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()),
                             appVersion = 1, //optional
                         )
                     ),

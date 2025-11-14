@@ -120,7 +120,7 @@ val WardenTest by testSuite {
             pubKeyB64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFT1XwEeF8NftY84GfnqTFBoxHNkdG7wZHcOkLKwT4W6333Jqmga1XkKySq/ApnslBPNZE1Os363SAv8X85ZIrQ=="
         )
 
-        Warden(
+        Makoto(
             AndroidAttestationConfiguration.Builder(
                 AndroidAttestationConfiguration.AppData(
                     "foo",
@@ -692,7 +692,7 @@ val WardenTest by testSuite {
                         val clock =
                             FixedTimeClock(recordedAttestation.verificationDate.toInstant().toKotlinInstant())
                         "Software-Only" {
-                            Warden(
+                            Makoto(
                                 androidAttestationConfiguration = AndroidAttestationConfiguration(
                                     listOf(
                                         AndroidAttestationConfiguration.AppData(
@@ -728,7 +728,7 @@ val WardenTest by testSuite {
                         }
 
                         "Nougat attestation" {
-                            Warden(
+                            Makoto(
                                 androidAttestationConfiguration = AndroidAttestationConfiguration(
                                     listOf(
                                         AndroidAttestationConfiguration.AppData(
@@ -763,7 +763,7 @@ val WardenTest by testSuite {
                             }
                         }
                         "Software + Nougat attestation" {
-                            Warden(
+                            Makoto(
                                 androidAttestationConfiguration = AndroidAttestationConfiguration(
                                     listOf(
                                         AndroidAttestationConfiguration.AppData(
@@ -1119,7 +1119,7 @@ val WardenTest by testSuite {
                 }
 
                 "Nougat Hybrid attestation should fail" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1155,7 +1155,7 @@ val WardenTest by testSuite {
                 }
 
                 "HW Attestation and Nougat Hybrid attestation combined should fail" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1191,7 +1191,7 @@ val WardenTest by testSuite {
                 "Software attestation should work" - {
 
                     "stand-alone" {
-                        Warden(
+                        Makoto(
                             androidAttestationConfiguration = AndroidAttestationConfiguration(
                                 listOf(
                                     AndroidAttestationConfiguration.AppData(
@@ -1226,7 +1226,7 @@ val WardenTest by testSuite {
                     }
 
                     "with Nougat attestation" {
-                        Warden(
+                        Makoto(
                             androidAttestationConfiguration = AndroidAttestationConfiguration(
                                 listOf(
                                     AndroidAttestationConfiguration.AppData(
@@ -1262,7 +1262,7 @@ val WardenTest by testSuite {
                     }
 
                     "with Nougat and HW attestation" {
-                        Warden(
+                        Makoto(
                             androidAttestationConfiguration = AndroidAttestationConfiguration(
                                 listOf(
                                     AndroidAttestationConfiguration.AppData(
@@ -1319,7 +1319,7 @@ val WardenTest by testSuite {
 
             "Nougat Hybrid attestation should work" - {
                 "stand-alone" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1363,7 +1363,7 @@ val WardenTest by testSuite {
 
 
                 "with Hardware attestation" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1404,7 +1404,7 @@ val WardenTest by testSuite {
                 }
 
                 "with Hardware + Sowftware Attestation " {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1446,7 +1446,7 @@ val WardenTest by testSuite {
                 }
 
                 "with Software Attestation" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1490,7 +1490,7 @@ val WardenTest by testSuite {
             }
 
             "Hardware attestation should fail" {
-                Warden(
+                Makoto(
                     androidAttestationConfiguration = AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -1525,7 +1525,7 @@ val WardenTest by testSuite {
             }
 
             "Hardware + SW attestation should fail" {
-                Warden(
+                Makoto(
                     androidAttestationConfiguration = AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -1561,7 +1561,7 @@ val WardenTest by testSuite {
             }
 
             "SW attestation should fail" {
-                Warden(
+                Makoto(
                     androidAttestationConfiguration = AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -1613,7 +1613,7 @@ val WardenTest by testSuite {
             )
         )
         withData(ios, android) {
-            Warden(
+            Makoto(
                 AndroidAttestationConfiguration.Builder(
                     AndroidAttestationConfiguration.AppData(
                         "at.asitplus.cryptotest.androidApp",
@@ -1666,7 +1666,7 @@ val WardenTest by testSuite {
             }
 
             withClue("Invalid App ID") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "borked",
@@ -1697,7 +1697,7 @@ val WardenTest by testSuite {
             }
 
             withClue("Attestation created in the future") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",
@@ -1751,7 +1751,7 @@ val WardenTest by testSuite {
             }
 
             withClue("Verification Clock too far in the future (i.e. statement too old)") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",
@@ -1805,7 +1805,7 @@ val WardenTest by testSuite {
             }
 
             withClue("Invalid Signature / Team ID") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",
@@ -1841,7 +1841,7 @@ val WardenTest by testSuite {
             }
 
             withClue("Timewarp") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",

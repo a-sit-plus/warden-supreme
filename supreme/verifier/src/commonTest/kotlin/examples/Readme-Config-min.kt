@@ -1,26 +1,21 @@
 package docs.config.minimal
 
 import at.asitplus.attestation.IosAttestationConfiguration
-import at.asitplus.attestation.Warden
+import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 
 
-val warden = Warden(
+val makoto = Makoto(
     androidAttestationConfiguration = AndroidAttestationConfiguration(
-        applications = listOf(   // REQUIRED: add applications to be attested
-           /*(1)!*/AndroidAttestationConfiguration.AppData(
-                packageName = "at.asitplus.attestation_client",
-                signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray())
-            )
-        ),
-       /*(2)!*/ignoreLeafValidity = true
+        /*(1)!*/AndroidAttestationConfiguration.AppData(
+            packageName = "at.asitplus.attestation_client",
+            signerDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray())
+        )
     ),
-   /*(3)!*/iosAttestationConfiguration = IosAttestationConfiguration(
-        applications = listOf(
-            IosAttestationConfiguration.AppData(
-                teamIdentifier = "9CYHJNG644",
-                bundleIdentifier = "at.asitplus.attestation-client",
-            )
+    /*(2)!*/iosAttestationConfiguration = IosAttestationConfiguration(
+        IosAttestationConfiguration.AppData(
+            teamIdentifier = "9CYHJNG644",
+            bundleIdentifier = "at.asitplus.attestation-client",
         )
     )
 )

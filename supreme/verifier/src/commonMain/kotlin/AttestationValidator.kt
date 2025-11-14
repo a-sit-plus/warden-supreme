@@ -20,7 +20,7 @@ import kotlin.time.ExperimentalTime
 
 /**
  * Verifies attestation statements and issues certificates on success.
- * Expects a preconfigured [Warden] instance and an [attestationProofOID] to be used in a CSR to convey an attestation statement.
+ * Expects a preconfigured [Makoto] instance and an [attestationProofOID] to be used in a CSR to convey an attestation statement.
  *
  * When [defaultKeyConstraints] is specified, all issued challenges will automatically convey this, unless overridden.
  * **Note that key constraints cannot be reliably enforced** due to technical client limitations. Not all platforms can restrict key usage and properties!
@@ -29,7 +29,7 @@ import kotlin.time.ExperimentalTime
  * Also requires a [challengeValidator], checking challenges validity and invalidating it once used.
  */
 class AttestationValidator(
-    private val warden: Warden,
+    private val warden: Makoto,
     val attestationProofOID: ObjectIdentifier,
     val defaultKeyConstraints: KeyConstraints? = null,
     private val nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },

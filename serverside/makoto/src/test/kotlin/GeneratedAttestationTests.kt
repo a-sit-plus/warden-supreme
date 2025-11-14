@@ -29,12 +29,12 @@ val GeneratedAttestationTests by testSuite {
         androidVersion
     )
 
-    val attestationService = Warden(
+    val attestationService = Makoto(
         androidAttestationConfiguration = AndroidAttestationConfiguration(
             applications = listOf(
                 AndroidAttestationConfiguration.AppData(
                     packageName = packageName,
-                    signatureDigests = listOf(signatureDigest),
+                    signerDigests = listOf(signatureDigest),
                     appVersion = appVersion
                 )
             ),

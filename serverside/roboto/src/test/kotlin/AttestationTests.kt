@@ -759,7 +759,7 @@ fun attestationService(
         listOf(
             AndroidAttestationConfiguration.AppData(
                 packageName = androidPackageName,
-                signatureDigests = androidAppSignatureDigest,
+                signerDigests = androidAppSignatureDigest,
                 appVersion = androidAppVersion,
                 requireRemoteKeyProvisioningOverride = rkpAppRequired
             )

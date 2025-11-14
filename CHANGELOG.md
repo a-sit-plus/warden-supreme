@@ -1,35 +1,46 @@
 # Changelog
 
-Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as dedicated artefacts,
+Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as
+dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 ## NEXT
-* Truly, fully integrated key attestation, making key creation on the client an actual one-liner.
+
+This release introduces breaking changes to the integrated ("Supreme") components to deliver **truly, fully integrated
+key and app attestation**, pinning down the last unnecessarily moving parts.
+
+* Ignore Android leaf cert validity by default, as the default Warden Supreme Verifier uses strong cryptographic nonces.
+* Rename Warden -> Makoto to more clearly distinguish individual components by name
+    * A `typealias Warden = Makoto` is present, but marked as deprecated for
 * Rework Trust Anchor Management:
-     * Introduce `TrustedRoot` interface to represent trust anchors
-         * `TrustedRoot.Certificate` for certificates 
-         * `TrustedRoot.PublicKey` for using raw public keys, optionally specifying a CA name 
+    * Introduce `TrustedRoot` interface to represent trust anchors
+        * `TrustedRoot.Certificate` for certificates
+        * `TrustedRoot.PublicKey` for using raw public keys, optionally specifying a CA name
             * No CA name -> no CA name check
             * CA name set -> CA name check
-     * Android trust anchors can now be certificates or public keys thanks to `TrustedRoot`
-         * Default hardware attestation trust anchors are available in `GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS` 
-         * Default software attestation trust anchors for Android <=11 are available in `GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11` 
-     * iOS now also supports setting custom trust anchors (currently certificates only) via
-         * `trustedRoots` config property
-         * `trustedRootOverrides` for app-specific overrides
-         * `overrideTrustedRoots` for the builder
-         * Defaults trusted roots are available in `APPLE_DEFAULT_TRUSTED_ROOTS`
-     * Default android trust anchors are now all the attestation certificates, not just a raw public key
-     * Existing function signatures and constants are preserved for compatibility **but will be removed in the next major release**
-     * Android configuration migration guide (iOS only got added functionality):
-         * `hardwareAttestationTrustAnchors` -> `hardwareTrustedRoots`
-         * `softwareAttestationTrustAnchors` -> `softwareTrustedRoots`
-         * `AppData.overrideTrustAnchors` -> `AppData.trustedRootOverrides`
-         * `AppData.trustAnchorOverrides` -> `AppData.trustedRootOverrides`
+    * Android trust anchors can now be certificates or public keys thanks to `TrustedRoot`
+        * Default hardware attestation trust anchors are available in `GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS`
+        * Default software attestation trust anchors for Android <=11 are available in
+          `GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11`
+    * iOS now also supports setting custom trust anchors (currently certificates only) via
+        * `trustedRoots` config property
+        * `trustedRootOverrides` for app-specific overrides
+        * `overrideTrustedRoots` for the builder
+        * Defaults trusted roots are available in `APPLE_DEFAULT_TRUSTED_ROOTS`
+    * Default android trust anchors are now all the attestation certificates, not just a raw public key
+    * Existing function signatures and constants are preserved for compatibility **but will be removed in the next major
+      release**
+    * Android configuration migration guide (iOS only got added functionality):
+        * `hardwareAttestationTrustAnchors` -> `hardwareTrustedRoots`
+        * `softwareAttestationTrustAnchors` -> `softwareTrustedRoots`
+        * `AppData.overrideTrustAnchors` -> `AppData.trustedRootOverrides`
+        * `AppData.trustAnchorOverrides` -> `AppData.trustedRootOverrides`
+        * `AppData.signatureDigests` -> `AppData.signerDigests`
 * Consistent configuration Builder API functions
-  * `overrideXXX(s)` -> `XXXoverride(s)`
+    * `overrideXXX(s)` -> `XXXoverride(s)`
 
 ## Warden Supreme 0.9.1
+
 * First-Class support for remote provisioning checks on Android
 * API CHANGE: `CerfificateIssuer` Lambda now also has access to the full attestation result
 * FIX: [challenge validity checks](https://github.com/a-sit-plus/warden-supreme/issues/4)
@@ -43,6 +54,7 @@ this changelog also includes the original WARDEN changelog.
     * protobuf 4.33.0
 
 ## Warden Supreme 0.9.0
+
 * Breaking change: `AttestationResult` hierarchy has been amended by a `Verified` subinterface
 * Export Apple App Attest Validation library as API dependency
 * Attach more context to Android exceptions
@@ -55,6 +67,7 @@ this changelog also includes the original WARDEN changelog.
     * Replace `kotlinx.datetime` with `kotlin.time`
 
 ### WARDEN 2.0.0
+
 Breaking changes ahead!
 
 - Parsing of iOS Build numbers in addition to OS Versions
@@ -70,6 +83,7 @@ Breaking changes ahead!
 - Gradle 8.5
 
 ### 2.4.2
+
 * Update to latest WARDEN-roboto, bringing Google's PKI cert path validator to guard against cert path validations
 * Per-App trust anchor overrides
 * BEHAVIOURAL CHANGE:
@@ -84,13 +98,15 @@ Breaking changes ahead!
 * Signum 3.16.3
 * Ktor 3.2.0
 
-
 ### 2.4.1
+
 - Update to warden-roboto 1.8.1, allowing for ignoring Android attestation statement creation time
 - Force specifying whether to ignore proxy settings for replaying debug attestation statements.
 
 ### 2.4.0 (Breaking binary configuration changes!)
-- Update to WARDEN-roboto 1.8.0, which changes the Android configuration format to use `Long` instead of `Int` for temporal units in seconds
+
+- Update to WARDEN-roboto 1.8.0, which changes the Android configuration format to use `Long` instead of `Int` for
+  temporal units in seconds
 - To match WARDEN-roboto, the `attestationStatementValiditySeconds` iOS config has also been changed to `Long`
 - Ability to record debug infos, serialize, deserialize and replay them
 - Re-structure high-level attestation checks
@@ -99,14 +115,15 @@ Breaking changes ahead!
     * Kotlinx-Serialization 1.8.0
     * Ktor 3.0.3
 
-
 ### 2.3.3
-- include latest WARDEN-roboto to work around upstream bug [#77](https://github.com/google/android-key-attestation/issues/77)
+
+- include latest WARDEN-roboto to work around upstream
+  bug [#77](https://github.com/google/android-key-attestation/issues/77)
 - Dependency Updates:
     - Ktor 3.0.3
 
-
 ### 2.3.2
+
 * Fix documentation issue (Android version was missing a zero in all docs)
 * Dependency Updates
     * WARDEN-roboto 1.7.1 (also fixing the same documentation issue)
@@ -115,31 +132,41 @@ Breaking changes ahead!
     * Bouncy Castle 1.79
 
 ### 2.3.1
+
 * Fix wrong dependency
 
 ### 2.3.0: Behavioural Changes!
+
 - Update to WARDEN-roboto 1.7.0
-    - Android attestation statements (for SW, HW, but not Hybrid Nougat Attestation) do now verify attestation creation time!
+    - Android attestation statements (for SW, HW, but not Hybrid Nougat Attestation) do now verify attestation creation
+      time!
     - Refer to the [WARDEN-roboto changelog](https://github.com/a-sit-plus/warden-roboto/blob/main/CHANGELOG.md#170)!
 - Change Android verification offset calculation:  
   It is now the sum of the toplevel offset and the Android-specific offset
 - Change the reason for iOS attestation statement temporal invalidity:
-    - It is now `AttestationException.Content.iOS(cause = IosAttestationException(…, reason = IosAttestationException.Reason.STATEMENT_TIME))`
+    - It is now
+      `AttestationException.Content.iOS(cause = IosAttestationException(…, reason = IosAttestationException.Reason.STATEMENT_TIME))`
         - This reason was newly introduced in this release, making it binary and source incompatible!
     - iOS attestations are now also rejected if their validity starts in the future
-    - The validity time can now be configured in the same way as for Android, using the `attestationStatementValiditySeconds` property
-    - Any configured `verificationTimeOffset` is NOT automatically compensated for any more. This means if you have previously used a five minutes offset, you now have to manually increase the `attestationStatementValiditySeconds` to `10 * 60`!
+    - The validity time can now be configured in the same way as for Android, using the
+      `attestationStatementValiditySeconds` property
+    - Any configured `verificationTimeOffset` is NOT automatically compensated for any more. This means if you have
+      previously used a five minutes offset, you now have to manually increase the `attestationStatementValiditySeconds`
+      to `10 * 60`!
 
 ### 2.2.0
+
 - Introduce new attestation format
 
 ### 2.1.3
+
 - Fix Parsing of iOS Build Numbers
 - Dependency Updates:
     - Kotlin 2.0.20
     - Serialization 1.7.2
 
 ### 2.1.2
+
 - Rely on [Signum](https://github.com/a-sit-plus/signum) to transcode public keys
 - Add working `hashCode` and `equals` to `AttestationResult` and `KeyAttestation`
 - Rework key attestation key comparison
@@ -147,11 +174,13 @@ Breaking changes ahead!
     - Throw exception with very detailed message when key attestation runs into a logical error
 
 ### 2.1.0
+
 - Rebrand to WARDEN
 - Dependency Updates
     - Update android-attestation 1.5.2 to WARDEN-roboto 1.6.0
 
 ### 2.0.2
+
 - Dependency Updates:
     - Android-Attestation 1.5.2 with HTTP Proxy support for fetching revocation info
     - Java 17
@@ -169,10 +198,12 @@ Breaking changes ahead!
     - serialization: 1.7.1
 
 ### 2.0.1
+
 - Fix publishing
 - Gradle 8.7
 
 ## WARDEN 1.0.0
+
 This release introduces breaking changes as it allows multiple apps to be attested and introduces multi-stage
 attestation on Android, please re-read the readme!
 
@@ -180,98 +211,122 @@ attestation on Android, please re-read the readme!
 - Bouncy Castle 1.76
 - Android-Attestation 1.0.0
 
-###  1.5.0
+### 1.5.0
+
 - better iOS-specific exception handling and enumerable error cases
 - Kotlin 1.9.22
 - Various dependency updates including BC
 
-####  1.4.5
+#### 1.4.5
+
 - make fold function of KeyAttestation inline
 
-####  1.4.4
+#### 1.4.4
+
 - update android-attestation
 - update gradle conventions
 
-####  1.4.3
+#### 1.4.3
+
 - update android-attestation
 
-####  1.4.2
+#### 1.4.2
+
 - fix temporal iOS receipt validation error not being propagated as such
 
-####  1.4.1
+#### 1.4.1
+
 - make all config classes data classes
 - update to android attestation 1.2.1
 
-###  1.4.0
+### 1.4.0
+
 - Discriminate between temporal certificate validation errors and trust-related ones
 
-###  1.3.0
+### 1.3.0
+
 - Documentation updates
 - Update to android-attestation 1.2.0
 - Refactor exceptions
 
-###  1.2.0
+### 1.2.0
+
 - introduce builder for AppData
 - Introduce ByteArray.parseToPublicKey which takes ANSI X9.63 and DER-encoded byte arrays
   (only P-256 is supported for ANSI)
 - Update android-attestation to 1.1.0
 
-###  1.1.0
+### 1.1.0
+
 - remove verifyAttestation
 - introduce verifyKeyAttestation taking an encoded public key as a byte array
 
 ## WARDEN 0.5.0
+
 - Group OS-specific interfaces
 - Align exception types between iOS and Android
 
-###  0.5.6
+### 0.5.6
+
 - android-attestation 0.9.3
 - better java interop
 
-###  0.5.5 (java-interop impaired)
+### 0.5.5 (java-interop impaired)
+
 - android-attestation (0.9.2)
 
-###  0.5.4 (broken!)
+### 0.5.4 (broken!)
+
 - fix dependency on wrong android-attestation version
 
-###  0.5.3 (broken!)
+### 0.5.3 (broken!)
+
 - android-attestation updated
 - use A-SIT Plus gradle conventions plugin
 - Kotlin 1.9
 - BC 1.75
 
-###  0.5.2
+### 0.5.2
+
 - Kotlin 1.8.21
 - Gradle 8.1.1
 - depend on android-attestation 0.8.4 to support custom Android trust anchors and testing against software-created
   attestations.
 
-###  0.5.1
+### 0.5.1
+
 - depend on android-attestation 0.8.3 (MR Jar)
 
 ## WARDEN 0.4
+
 - ability to ignore timely validity of leaf cert for Android key attestation
 
-###  0.4.1
+### 0.4.1
+
 - bugfix: NOOP attestation service actually being a NOOP
 
 ## WARDEN 0.3
+
 Explicit verifyKeyAttestation function for both mobile platforms
 
-###  0.3.3
+### 0.3.3
+
 - update upstream google code
 
-###  0.3.2
+### 0.3.2
+
 - fixed iOS leeway calculation
 
-###  0.3.1
+### 0.3.1
+
 - More Java-friendly API
 - More detailed toplevel exception messages on certificate verification error (Android)
 - Kotlin 1.8.0
 
-
 ## WARDEN 0.2
+
 Reworked API and workflow to enable emulation of key attestation on iOS
 
 ## WARDEN 0.1
+
 Initial Release

@@ -7,7 +7,6 @@ import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import java.time.YearMonth
 import java.time.ZoneOffset
@@ -37,7 +36,7 @@ val FakeAttestationTests by testSuite {
             AndroidAttestationConfiguration(
                 AndroidAttestationConfiguration.AppData(
                     packageName = packageName,
-                    signatureDigests = listOf(signatureDigest),
+                    signerDigests = listOf(signatureDigest),
                     appVersion = appVersion
                 ),
                 androidVersion = androidVersion,
@@ -63,7 +62,7 @@ val FakeAttestationTests by testSuite {
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
-                        signatureDigests = listOf(signatureDigest),
+                        signerDigests = listOf(signatureDigest),
                         appVersion = appVersion
                     ),
                     androidVersion = androidVersion,
@@ -113,7 +112,7 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerDigests = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -146,7 +145,7 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerDigests = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -167,7 +166,7 @@ val FakeAttestationTests by testSuite {
                         AndroidAttestationConfiguration(
                             AndroidAttestationConfiguration.AppData(
                                 packageName = packageName,
-                                signatureDigests = listOf(signatureDigest),
+                                signerDigests = listOf(signatureDigest),
                                 appVersion = appVersion
                             ),
                             androidVersion = androidVersion,
@@ -203,7 +202,7 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerDigests = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -237,7 +236,7 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerDigests = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -263,7 +262,7 @@ val FakeAttestationTests by testSuite {
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
-                        signatureDigests = listOf(signatureDigest),
+                        signerDigests = listOf(signatureDigest),
                         appVersion = appVersion
                     ),
                     androidVersion = androidVersion,
@@ -333,7 +332,7 @@ val FakeAttestationTests by testSuite {
                     applications = listOf(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerDigests = listOf(signatureDigest),
                             appVersion = appVersion,
                         )
                     ),

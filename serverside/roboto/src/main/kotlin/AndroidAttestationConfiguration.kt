@@ -354,7 +354,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     /**
      * Whether to ignore the timely validity of the leaf certificate
      */
-    val ignoreLeafValidity: Boolean = false,
+    val ignoreLeafValidity: Boolean = true,
     /**
      *  Tolerance in seconds added to verification date
      */
@@ -940,7 +940,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * Specifies a to-be attested app
      *
      * @param packageName Android app package name (e.g. `at.asitplus.demo`)
-     * @param signatureDigests SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing
+     * @param signerDigests SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing
      * certificate for production play store releases. Being able to specify multiple digests makes it easy to use development
      * builds and production builds in parallel.
      * @param appVersion optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -956,7 +956,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        val signatureDigests: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
+        val signerDigests: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
 
         /**
          * optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -1041,7 +1041,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         )
 
         init {
-            if (signatureDigests.isEmpty()) throw object :
+            if (signerDigests.isEmpty()) throw object :
                 AndroidAttestationException("No signature digests specified", null) {}
         }
 
@@ -1158,7 +1158,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         override fun toString(): String {
             return "AppData(" +
                     "packageName='$packageName', " +
-                    "signatureDigests=${signatureDigests.joinToString { it.encodeBase64() }}, " +
+                    "signatureDigests=${signerDigests.joinToString { it.encodeBase64() }}, " +
                     "appVersion=$appVersion, " +
                     "androidVersionOverride=$androidVersionOverride, " +
                     "patchLevelOverride=$patchLevelOverride, " +
@@ -1175,9 +1175,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             if (osPatchLevel != other.osPatchLevel) return false
             if (packageName != other.packageName) return false
 
-            if (signatureDigests.size != other.signatureDigests.size) return false
-            signatureDigests.forEachIndexed { index, byteArray ->
-                if (!other.signatureDigests[index].contentEquals(
+            if (signerDigests.size != other.signerDigests.size) return false
+            signerDigests.forEachIndexed { index, byteArray ->
+                if (!other.signerDigests[index].contentEquals(
                         byteArray
                     )
                 ) return false
@@ -1195,7 +1195,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + (androidVersionOverride ?: 0)
             result = 31 * result + (osPatchLevel ?: 0)
             result = 31 * result + packageName.hashCode()
-            result = 31 * result + signatureDigests.hashCode()
+            result = 31 * result + signerDigests.hashCode()
             result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
             result = 31 * result + trustedRootOverrides.hashCode()
             result = 31 * result + requireRemoteKeyProvisioningOverride.hashCode()

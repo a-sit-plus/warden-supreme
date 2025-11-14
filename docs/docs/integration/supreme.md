@@ -94,9 +94,11 @@ The following snippet shows an MWE:
 --8<-- "Readme-Config-min.kt:8"
 ```
 
-1. At least one Android application needs to be configured.
-2. You will want to ignore the validity of Android leaf certificates, as many vendors mess this up. **Be sure to ensure freshness through other means!**
-3. At least one iOS application needs to be configured.
+1. At least package identifier and a single signer digest need to be configured for an Android application to be attested.
+    * The combination of package identifier and signature digest fully identify an Android application and make it possible to attest its authenticity.
+    * For production apps distributed through the Google Play Store, this is the digest of a Google cloud signing certificate.
+2. An iOS application is uniquely identified by a bundle identifier and a team ID.  
+This combination makes it possible to attest its authenticity.
 
 !!! info "With great power comes great responsibility!"
     The above really is an MWE!  

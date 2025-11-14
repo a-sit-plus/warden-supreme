@@ -36,7 +36,7 @@ import java.security.interfaces.ECPublicKey
 import kotlin.time.*
 import kotlin.time.Duration.Companion.seconds
 
-typealias Makoto = Warden
+typealias Warden = Makoto
 
 /**
  * Default, functional Android and Apple App and Key Attestation in all its glory.
@@ -52,7 +52,7 @@ typealias Makoto = Warden
  * validity checks); can be negative.
  */
 @OptIn(ExperimentalTime::class)
-class Warden(
+class Makoto(
     private val androidAttestationConfiguration: AndroidAttestationConfiguration,
     private val iosAttestationConfiguration: IosAttestationConfiguration,
     val clock: Clock = Clock.System,
@@ -499,7 +499,7 @@ class Warden(
      * @param assertionData optional assertion data containing `clientData` and an [assertion](https://developer.apple.com/documentation/devicecheck/validating_apps_that_connect_to_your_server#3576644)
      * @param counter highest expected value of the signature counter before the assertion was created (if present). Defaults to 0
      *
-     * @return [AttestationResult.IOS.Verified] on success when using the [Warden] ([AttestationResult.IOS]
+     * @return [AttestationResult.IOS.Verified] on success when using the [Makoto] ([AttestationResult.IOS]
      * when using [NoopAttestationService]) and [AttestationResult.Error] when attestation fails.
      *
      */

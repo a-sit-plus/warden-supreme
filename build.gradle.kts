@@ -35,15 +35,9 @@ tasks.register<Copy>("copyChangelog") {
     from("CHANGELOG.md")
 }
 
-tasks.register<Copy>("copySamples") {
-    into(rootDir.resolve("docs/docs/samples"))
-    from("supreme/verifier/src/commonTest/kotlin/examples")
-}
-
 tasks.register<Copy>("mkDocsPrepare") {
     dependsOn("dokkaHtmlMultiModule")
     dependsOn("copyChangelog")
-    dependsOn("copySamples")
     into(rootDir.resolve("docs/docs/dokka"))
     from("${rootDir}/dokka")
 }

@@ -4,7 +4,7 @@ import at.asitplus.attestation.APPLE_DEFAULT_TRUSTED_ROOTS
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.IosAttestationConfiguration.OsVersions
-import at.asitplus.attestation.Warden
+import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
 import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11
@@ -18,17 +18,17 @@ val myCustomRoots = APPLE_DEFAULT_TRUSTED_ROOTS
 
 
 //make sure to start at line 20!
-val warden = Warden(
+val warden = Makoto(
     androidAttestationConfiguration = AndroidAttestationConfiguration(
         applications = listOf(   // REQUIRED: add applications to be attested
          /*(1)*/   AndroidAttestationConfiguration.AppData(
                 packageName = "at.asitplus.attestation_client",
-                signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
+                signerDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
                 appVersion = 5
             ),
             AndroidAttestationConfiguration.AppData(
                 packageName ="at.asitplus.attestation_client-tiramisu",
-                signatureDigests =listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
+                signerDigests =listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
                 appVersion = 2,
                 androidVersionOverride = 130000,
                 patchLevelOverride = PatchLevel(
