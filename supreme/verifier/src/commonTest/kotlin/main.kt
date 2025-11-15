@@ -53,7 +53,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
 
         var running = true
 
-        val attestationValidator = AttestationValidator(
+        val attestationValidator = AttestationVerifier(
             AndroidAttestationConfiguration.Builder(
                 AndroidAttestationConfiguration.AppData(
                     "at.asitplus.attestation.supreme.client.test", //automated tests
@@ -72,7 +72,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                                 "-----END PUBLIC KEY-----"
                     ).getOrThrow().toJcaPublicKey().getOrThrow()
                 )
-            ).ingoreLeafValidity()
+            )
                 .attestationStatementValiditySeconds(STMT_VALIDITY.inWholeSeconds)
                 .build(),
             IosAttestationConfiguration(
@@ -109,7 +109,6 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                                 timeZone = TimeZone.currentSystemDefault(),
                                 ENDPOINT_ATTEST,
                                 timeOffset = -5.minutes,
-                                keyConstraints = KeyConstraints(AlgorithmParameters.EC(ECCurve.SECP_256_R_1))
                             )
                         ), contentType = ContentType.Application.Json
                     )

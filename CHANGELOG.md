@@ -21,6 +21,7 @@ key and app attestation**, pinning down the last unnecessarily moving parts.
     * Rename `HardwareAttestationChecker` -> `HardwareAttestationVerifier` (and introduce typealias, but marked as deprecated) 
     * Rename `NougatHybridAttestationChecker` -> `NougatHybridAttestationVerifier` (and introduce typealias, but marked as deprecated) 
     * Rename `SoftwareAttestationChecker` -> `SoftwareAttestationVerifier` (and introduce typealias, but marked as deprecated)
+* Rename `AttestationValidator` -> `AttestationVerifier` to align with wording (and introduce typealias, but marked as deprecated)
 * Per-App StrongboxOverride
 * Ship a default OID to identify the attestation proof.
 * Transmit device names inside CSR on a best-effort basis.

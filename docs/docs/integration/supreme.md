@@ -67,28 +67,34 @@ While the actual API is unified for Android and iOS (both for verifying attestat
 attestation statements), configuration needs to deal with each platform separately.
 
 ### Warden Supreme MWE
-Warden Supreme integrates server-side and client side logic into a lean interface. To get going, the following steps are required:
+Warden Supreme integrates server-side and client side logic into a lean interface.
 
-* Decide on HTTPS endpoints and on an OID to convey the Attestation proof from app to backend (inside a signed CSR).
+This section illustrates a complete end-to-end setup assuming a Ktor server on the backend and a CMP app.
+To get going, the following steps are required:
+
+* Decide on HTTPS endpoints to issue challenges and verify attestation statements,
+  and record the Apps identifiers and signer digests (Android) / team ID (iOS)
 * Backend:
-     1. Add the dependencies (client in the app, verifier on the backend)
-     2. Configure a `Warden` instance on the back-end. This defines which devices and apps will be considered trustworthy
-     3. Create an `AttestationVerifier` based on
-         * the configured `Warden` instance
-         * the HTTPS endpoints
-         * the OID
-    4. Start an HTTP server to expose the endpoints
+     1. Configure a `Makoto` instance based on your policy and app identifiers.
+     2. Create an `AttestationVerifier` based on the configured `Makoto` instance, your CA certificate, and signing keys
+     3. Wire HTTPS endpoints to the `AttestationVerifier` and start an HTTP server
 * Mobile App
     1. Wire the verifier to the HTTPS endpoints to an `AttestationClient`
     2. Call into the Endpoints
     3. Store the received certificate chain after a successful attestation
 
----
+Naturally, clients and back-end need to agree on HTTPS endpoints. Hence, it makes sense to set them inside
+a shared common module. Throughout this MWE setup, the following constants are assumed:
+
+```kotlin
+val ENDPOINT_CHALLENGE = "/api/v1/challenge"
+val ENDPOINT_ATTEST = "/api/v1/attest"
+```
 
 !!! tip inline end "Migration Info"
     Warden Supreme 0.10.0 revamped trust anchor management and thus changed configuration parameters.
 
-### Back-End Configuration
+#### Attestation Policy Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
 The following snippet shows an MWE that also accounts for a minute of clock drift:
 
@@ -158,58 +164,48 @@ The full details on the configuration can be found in the [API documentation](..
 
 
 
-#### A Note on Android Attestation
-This library allows combining different flavours of Android attestation, ranging from full hardware attestation
-to (rather useless in practice) software-only attestation, which can be useful for testing using an Android emulator.
-Hardware attestation is enabled by default, while hybrid and software-only attestation needs to be explicitly enabled.
-Doing so will chain the corresponding
-`AndroidAttestationChecker`s from the strictest (hardware) to the least strict (software-only).
-Naturally, hardware attestation can also be disabled by setting `disableHardwareAttestation = true`, although there is probably
-no real use case for such a configuration **except for testing**.
+??? note "A Note on Android Attestation"
+    This library allows combining different flavours of Android attestation, ranging from full hardware attestation
+    to (rather useless in practice) software-only attestation, which can be useful for testing using an Android emulator.
+    Hardware attestation is enabled by default, while hybrid and software-only attestation needs to be explicitly enabled.
+    Doing so will chain the corresponding
+    `AndroidAttestationChecker`s from the strictest (hardware) to the least strict (software-only).
+    Naturally, hardware attestation can also be disabled by setting `disableHardwareAttestation = true`, although there is probably
+    no real use case for such a configuration **except for testing**.
 
-### Example Usage
-A verifier expects the following parameters to be configured:
+#### Attestation Verifier Setup
 
-1. Either:
-    * a preconfigured `Warden` instance, or
-    * pass all Warden configuration properties directly
-2. an OID (globally unique, usually UUID-based) of the CSR attribute to carry the attestation statement (see also [Data Model](datamodel.md))
-3. a lambda specifying how the validity of challenges is verified (and how used challenges are invalidated)
+??? tip inline end
+    Instead of passing a `Makoto` instance, it is also possible to directly use bare configuration parameters directly, as if configuring Makoto, to cut out the middle-man in code.
 
-Naturally, clients and back-end need to agree on these parameters. Hence, it makes sense to set them inside
-a common module that is shared by back-end and clients. This leads to the following shared constants:
+First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
+
+??? info inline end "Important Nonce Info"
+    Under the hoot, the attestation verifier needs a source to generate attestation challenges, track them, invalidate, and match them against incoming attestation requests.
+    Warden Supreme provides a secure nonce generation service and uses an in-memory challenge cache by default, which is fine for small to medium load but not for larger production deployments.
+    In such scenarios, roll your own, backed by a RDBMS!
 
 ```kotlin
-val ENDPOINT_CHALLENGE = "/api/v1/challenge"
-val ENDPOINT_ATTEST = "/api/v1/attest"
-val PROOF_OID = ObjectIdentifier(Uuid.parse("c893b702-28f6-4c50-8578-d1d7a1580729"))
+--8<-- "Readme-Verifier-min.kt:3"
 ```
 
-#### Back-End Setup
-In addition to the parameters described above, the back-end also needs a source to generate attestation challenges, track them, and match them against incoming attestation requests.
-As Warden Supreme's verifier component aims to integrate with any service, it simply expects a lambda that matches an incoming attestation statement against the expected nonce.
-Session management is out of scope, as it is provided by frameworks such as Ktor or Spring.
-In the end, a verifier instance is created as follows:
+1. Yes, it really is that simple 99% of the time!
 
-```kotlin
-val attestationValidator = AttestationValidator(
-    warden, /* the configured instance as per Back-End Configuration section */
-    attestationProofOID = PROOF_OID
-) {
-    /*
-    Your nonce validation logic here:
-    Usually, you'll want to check
-      * whether the challenge you got is one you issued before
-      * and whether it is still fresh enough
-    and then remove it from whatever challenge-cache you are using.
+??? example "Comprehensive example of all options"
+    ```kotlin
+    --8<-- "Readme-Verifier.kt:18"
+    ```
     
-    Since you receive the challenge in the logic attached to the HTTP endpoint accepting attestation
-    statements, you'll be matching it against the active session there anyway.
-    */
-}
-```
-
-As mentioned, it is also possible to pass the configuration parameters directly.
+    1. We want Warden Supreme to conveys the attestation proof inside the CSR using a custom OID.
+    2. We don't care about device IDs
+    3. We explicitly speficy the key we want to have created on the client.  
+    The values shown here correspond to the defaults, as this is supported by Android and iOS.
+    4. We require user authentication to use the private key:
+        * Protected by biometric auth
+        * Usable for 30 seconds withouth reauthentication
+        * Enrolling new biometric factors will invalidate the key
+    5. We want extra long nonces! (Default: 64 bytes)
+    6. Checking and invalidating challenges is handled by an RDBMS (not shown here, roll your own!)
 
 ####  Handling Requests
 

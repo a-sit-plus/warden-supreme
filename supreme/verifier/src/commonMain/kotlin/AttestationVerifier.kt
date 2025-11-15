@@ -18,6 +18,9 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
+@Deprecated("Misnomer; to be removed in 1.0.0", replaceWith = ReplaceWith("AttestationVerifier"))
+typealias AttestationValidator = AttestationVerifier
+
 /**
  * Verifies attestation statements and issues certificates on success.
  * Expects a preconfigured [Makoto] instance defining which apps and devices are considered trustworthy.
@@ -26,21 +29,21 @@ import kotlin.time.ExperimentalTime
  * When [defaultKeyConstraints] is specified, all issued challenges will automatically convey this, unless overridden.
  * **Note that key constraints cannot be reliably enforced** due to technical client limitations. Not all platforms can restrict key usage and properties!
  *
+ * [includeGenericDeviceName] indicates whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16") with the attestation proof.
+ * On its own, this is **not the device's nickname and therefore cannot identify a person in its own**.
+ * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
+ *
+ *
  * If your app relies on Warden Supreme, they will be respected, though, but there is no cryptography-backed enforcement.
  * Also requires a [challengeValidator], checking challenges validity and invalidating it once used.
  */
-class AttestationValidator(
-    private val warden: Makoto,
+class AttestationVerifier(
+    private val makoto: Makoto,
     val attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
-    /**
-     * Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
-     * On its own this is **not the device's nickname and therefore cannot identify a person in its own**.
-     * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
-     */
     val includeGenericDeviceName: Boolean = true,
-    val defaultKeyConstraints: KeyConstraints? = null,
-    private val nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
-    private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(warden.clock)
+    val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+    private val nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
+    private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(makoto.clock)
 ) {
     /**
      *
@@ -50,7 +53,7 @@ class AttestationValidator(
      * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
      * @param attestationProofOID specifies the OID be used in a CSR to convey an attestation statement. Can be overridden. It defaults to [WardenDefaults.OIDs.ATTESTATION_PROOF].
      * @param includeGenericDeviceName specifies Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
-     * On its own this is **not the device's nickname and therefore cannot identify a person in its own**.
+     * On its own, this is **not the device's nickname and therefore cannot identify a person in its own**.
      * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
      * @param clock a clock to set the time of verification (used for certificate validity checks)
      * @param verificationTimeOffset allows for fine-grained clock drift compensation (this duration is added to the certificate
@@ -79,9 +82,10 @@ class AttestationValidator(
     )
 
     /**
-     * Alias for [warden]
+     * Alias for [makoto]
      */
-    val makoto: Makoto get() = warden
+    @Deprecated("Misnomer; to be removed in 1.0.0", replaceWith = ReplaceWith("makoto"))
+    val warden: Makoto get() = makoto
 
     /**
      * Issues a new attestation challenge, using [nonce], valid for a duration of [validity], expecting an CSR containing an attestation statement to be `HTTP POST`ed to [postEndpoint].
@@ -99,7 +103,7 @@ class AttestationValidator(
         keyConstraints: KeyConstraints? = this.defaultKeyConstraints
     ) =
         AttestationChallenge(
-            issuedAt = warden.clock.now() + timeOffset,
+            issuedAt = makoto.clock.now() + timeOffset,
             validity,
             timeZone,
             nonceGenerator(),
@@ -113,7 +117,7 @@ class AttestationValidator(
      * Verifies the received CSR:
      * * Validates nonce contained in the [csr] against the [challengeValidator]
      * * extracts the attestation statement from the [csr]
-     * * calls upon [warden] for key attestation based on the extracted attestation statement
+     * * calls upon [makoto] for key attestation based on the extracted attestation statement
      * * verifies the [csr] signature against the contained public key
      *
      * Iff all verifications succeed, [certificateIssuer] is invoked and the resulting certificate chain
@@ -179,12 +183,12 @@ class AttestationValidator(
                 )
             }
 
-        val result = warden.verifyKeyAttestation(attestationStatement, nonce)
+        val result = makoto.verifyKeyAttestation(attestationStatement, nonce)
         return result.fold(
             onError = {
                 val explanation = catchingUnwrapped {
                     it.onAttestationError(
-                        warden.collectDebugInfo(
+                        makoto.collectDebugInfo(
                             attestationStatement,
                             nonce
                         )
@@ -215,7 +219,7 @@ class AttestationValidator(
                     if (signature.verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)) {
                         val explanation = catchingUnwrapped {
                             AttestationResult.Error("CSR signature verification failed")
-                                .onAttestationError(warden.collectDebugInfo(attestationStatement, nonce))
+                                .onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
                         }.getOrNull()
                         return Failure(
                             Failure.Type.TRUST,
@@ -257,7 +261,7 @@ class AttestationValidator(
 }
 
 /**
- * Invoked from [AttestationValidator.verifyKeyAttestation]. Useful to match against in-transit attestation processes.
+ * Invoked from [AttestationVerifier.verifyKeyAttestation]. Useful to match against in-transit attestation processes.
  * Most probably, this will check against a nonce cache and evict any matched nonce from the cache.
  * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
  * matching, ensuring freshness!

@@ -3,6 +3,7 @@ package docs.config.minimal
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.supreme.AttestationVerifier
 import kotlin.time.Duration.Companion.minutes
 
 
