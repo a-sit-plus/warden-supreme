@@ -52,5 +52,7 @@ val EndToEndTest by testSuite {
         test("shutdown") {
             HttpClient().get(ENDPOINT_SHUTDOWN)
         }
+    } else test("NOOP") {
+
     }
 }
