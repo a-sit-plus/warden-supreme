@@ -3,9 +3,7 @@ package at.asitplus.attestation.supreme
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
@@ -88,9 +86,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
 
 
         val server = embeddedServer(Netty, port = 8080) {
-            install(ContentNegotiation) {
-                json()
-            }
+            install(ContentNegotiation) { json() }
 
             routing {
                 get("/shutdown") {
@@ -102,15 +98,13 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                 get(ENDPOINT_CHALLENGE) {
 
                     println("Issuing Challenge")
-                    call.respondText(
-                        Json.encodeToString(
-                            attestationValidator.issueChallenge(
-                                STMT_VALIDITY,
-                                timeZone = TimeZone.currentSystemDefault(),
-                                ENDPOINT_ATTEST,
-                                timeOffset = -5.minutes,
-                            )
-                        ), contentType = ContentType.Application.Json
+                    call.respond(
+                        attestationValidator.issueChallenge(
+                            ENDPOINT_ATTEST,
+                            STMT_VALIDITY,
+                            timeZone = TimeZone.currentSystemDefault(),
+                            timeOffset = -5.minutes,
+                        )
                     )
                 }
                 post(PATH_ATTEST) {
@@ -136,7 +130,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                                 signer.sign(
                                     TbsCertificate(
                                         serialNumber = Random.nextBytes(32),
-                                        publicKey = signer.publicKey,
+                                        publicKey = csr.tbsCsr.publicKey,
                                         signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
                                             .getOrThrow(),
                                         validFrom = Asn1Time(Clock.System.now()),
@@ -152,10 +146,10 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                                         ),
                                         subjectName = csr.tbsCsr.subjectName,
                                     )
-                                ).map { listOf(it) }
+                                ).map { listOf(it) }.getOrThrow()
                             }
                         }
-                    call.respondText(Json.encodeToString(resp), contentType = ContentType.Application.Json)
+                    call.respond(resp)
                 }
             }
         }.start(wait = false)

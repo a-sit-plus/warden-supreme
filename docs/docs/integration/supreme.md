@@ -83,14 +83,6 @@ To get going, the following steps are required:
     2. Call into the Endpoints
     3. Store the received certificate chain after a successful attestation
 
-Naturally, clients and back-end need to agree on HTTPS endpoints. Hence, it makes sense to set them inside
-a shared common module. Throughout this MWE setup, the following constants are assumed:
-
-```kotlin
-val ENDPOINT_CHALLENGE = "/api/v1/challenge"
-val ENDPOINT_ATTEST = "/api/v1/attest"
-```
-
 !!! tip inline end "Migration Info"
     Warden Supreme 0.10.0 revamped trust anchor management and thus changed configuration parameters.
 
@@ -208,59 +200,26 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
     6. Checking and invalidating challenges is handled by an RDBMS (not shown here, roll your own!)
 
 ####  Handling Requests
-
-<h6> <code>ENDPOINT_CHALLENGE</code> is expected to return an <code>AttestationChallenge</code></h6>
-
-The encoding of the challenge is not fixed, but can be serialized using `kotlinx.serialization`
-
-`AttestationChallenge`, contains the following properties:
-1. `nonce: ByteArray`: The actual challenge value; usually a cryptographic nonce, based on true randomness
-2. `validity: Duration`: This is used to communicate the validity duration of a challenge to the client
-3. `timeZone: TimeZone`: Optional information about the TimeZone set on the backend
-4. `postEndpoint: String`: This property conveys the endpoint to post the attestation statement to. This will typically be `<service url>/$ENDPOINT_ATTEST`.
-5. `timeOffset: Duration`: This property is used to inform the client about the maximum tolerated time offset for temporal validations.
-
-A fresh challenge is prepared as follows:
+This example assumes Ktor. Since this is an example environment, TLS is omitted for brevity.
 
 ```kotlin
-val challenge= attestationValidator.issueChallenge(
-    TODO("Your nonce obtaining code here"),
-    TODO("Your Challenge validity duration here"), //optional
-    timeZone = TimeZone.currentSystemDefault(), //optional
-    ENDPOINT_ATTEST,
-    timeOffset = TODO("Communicate your server-side clock offset here"), //optional
-)
+--8<-- "Readme-Backend.kt:54"
 ```
 
-<h6> <code>ENDPOINT_ATTEST</code> expects a CSR created by the Supreme Client, after it obtained a challenge from <code>ENDPOINT_CHALLENGE</code></h6>
-
-Hence, the back-end is expected to decode the received body into a CSR, verify the contained attestation statement and
-(if everything checks out) issue a binding certificate and respond with the full certificate chain. When using Ktor,
-this typically works as follows:
-
-```kotlin
-post(ENDPOINT_ATTEST) {
-    val src = call.receive<ByteArray>()
-    val resp =
-        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(src)) { csr, _ ->
-        
-        /* certificateSigner is assumed to be a `Signer` instance configured to use the CA key for signing */
-        certificateSigner.sign(
-            TbsCertificate(
-                serialNumber = YOUR_SERIAL_HERE,
-                publicKey = csr.publicKey, // use the CSR's subject public key
-                signatureAlgorithm = certificateSigner.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
-                validFrom = Asn1Time(Clock.System.now()),
-                validUntil = Asn1Time(Clock.System.now() + CERT_VALIDITY),
-                issuerName = YOUR_ISSUER_NAME_HERE,
-                subjectName = YOUR_SUBJECT_NAME_HERE,
-            )
-        ).map { listOf(it) }
-    }
-        
-    call.respondText(Json.encodeToString(resp), contentType = ContentType.Application.Json)
-}
-```
+1. We're using JSON to transmit the challenge and the final response.
+2. Endpoint to serve challenges to clients
+3. It does nothing but issuing challenges
+4. The full URL to post the attestation proof to
+5. Endpoint expecting CSRs containing attestation proofs
+6. Read the raw CSR from the HTTP body
+7. Here, inside the `verifyAttestation` lambda, we already have a verified attestation according to the configured `makoto` instance.
+8. Signing a `TbsCertificate` automatically creates an X.509 certificate
+9. The contents of your leaf certificate are up to you! What follows is just an example.
+10. Remember: The key from the CSR is already attested here!
+11. Build the full certificate chain
+12. Finally, respond with the result:
+    * On success, the certificate chain produced above will be returned.
+    * On failure, an explanation about what failed will be returned.
 
 #### Client Integration
 

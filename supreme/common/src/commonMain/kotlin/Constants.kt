@@ -3,6 +3,8 @@ package at.asitplus.attestation.supreme
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import org.kotlincrypto.random.CryptoRand
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -27,6 +29,11 @@ object WardenDefaults {
      * Default, secure random nonce generator
      */
     val nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) }
+
+    /**
+     * Sane default according to Apple and experience from the field
+     */
+    val nonceValidity: Duration = 5.minutes
 
     object KeyConstraints {
         val p256Signer = at.asitplus.attestation.supreme.KeyConstraints(

@@ -7,24 +7,27 @@ this changelog also includes the original WARDEN changelog.
 ## NEXT
 
 This release introduces breaking changes to the integrated ("Supreme") components to deliver **truly, fully integrated
-key and app attestation**, pinning down the last unnecessarily moving parts.
+key and app attestation**, pinning down the last unnecessarily moving parts:
+
+* Rename `AttestationValidator` -> `AttestationVerifier` to align with wording (and introduce typealias, but marked as deprecated)
+* Allow `CertificateIssuer` to throw instead of returning a KmmResult
+* Ship a default OID to identify the attestation proof.
+* Add defaults for keyConstraints and nonce validity duration.
+* Transmit device names inside CSR on a best-effort basis.
 
 **It also includes behavioural changes to the Android and iOS attestation defaults:**
+
 * Ignore Android leaf cert validity by default, because Warden Supreme, by default, uses random cryptographic nonces.
     * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is not a deprecated NOOP to be removed.
     * `enforceLeafValidity()` (without typo!) function was introduced
 * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
-
 * Rename `Warden` -> `Makoto` to more clearly distinguish individual components by name
     * A `typealias Warden = Makoto` is present, but marked as deprecated for
 * Rename `AndroidAttestationChecker` -> `Roboto` to more clearly distinguish individual components by name
     * Rename `HardwareAttestationChecker` -> `HardwareAttestationVerifier` (and introduce typealias, but marked as deprecated) 
     * Rename `NougatHybridAttestationChecker` -> `NougatHybridAttestationVerifier` (and introduce typealias, but marked as deprecated) 
     * Rename `SoftwareAttestationChecker` -> `SoftwareAttestationVerifier` (and introduce typealias, but marked as deprecated)
-* Rename `AttestationValidator` -> `AttestationVerifier` to align with wording (and introduce typealias, but marked as deprecated)
 * Per-App StrongboxOverride
-* Ship a default OID to identify the attestation proof.
-* Transmit device names inside CSR on a best-effort basis.
 * Rework Trust Anchor Management:
     * Introduce `TrustedRoot` interface to represent trust anchors
         * `TrustedRoot.Certificate` for certificates

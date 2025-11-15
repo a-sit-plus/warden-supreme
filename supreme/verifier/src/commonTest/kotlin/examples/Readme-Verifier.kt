@@ -10,6 +10,7 @@ import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.nativeDigest
 import docs.config.minimal.makoto
 import org.kotlincrypto.random.CryptoRand
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 val rdbmsBacked: ChallengeValidator = TODO()
@@ -33,6 +34,7 @@ val verifier = AttestationVerifier(
             allowNewBiometricFactors = false
         )
     ),
+    defaultNonceValidity = 5.minutes, //DEFAULT
     nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(5)!*/128)) },
  /*(6)!*/challengeValidator = rdbmsBacked
 )
