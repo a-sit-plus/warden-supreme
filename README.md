@@ -25,7 +25,7 @@ It now lives on as [Warden makoto](serverside/makoto) and continues to be publis
 
 
 > [!WARNING]  
-> **Warden Supreme 0.10.0 introduces behavioural changes to the Android attestation defaults:**
+> **Warden Supreme 0.9.99 introduces behavioural changes to the Android attestation defaults:**
 > * Ignore Android leaf cert validity by default, because Warden Supreme, by default, uses random cryptographic nonces.
 >    * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is not a deprecated NOOP to be removed.
 >    * `enforceLeafValidity()` (without typo!) function was introduced

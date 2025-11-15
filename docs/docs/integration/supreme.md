@@ -87,7 +87,7 @@ To get going, the following steps are required:
     3. Store the received certificate chain after a successful attestation
 
 !!! tip inline end "Migration Info"
-    Warden Supreme 0.10.0 revamped trust anchor management and thus changed configuration parameters.
+    Warden Supreme 0.9.99 revamped trust anchor management and thus changed configuration parameters.
 
 ### Attestation Policy Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
