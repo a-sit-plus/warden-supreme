@@ -22,6 +22,8 @@ key and app attestation**, pinning down the last unnecessarily moving parts.
     * Rename `NougatHybridAttestationChecker` -> `NougatHybridAttestationVerifier` (and introduce typealias, but marked as deprecated) 
     * Rename `SoftwareAttestationChecker` -> `SoftwareAttestationVerifier` (and introduce typealias, but marked as deprecated)
 * Per-App StrongboxOverride
+* Ship a default OID to identify the attestation proof.
+* Transmit device names inside CSR on a best-effort basis.
 * Rework Trust Anchor Management:
     * Introduce `TrustedRoot` interface to represent trust anchors
         * `TrustedRoot.Certificate` for certificates

@@ -20,8 +20,9 @@ import kotlin.time.ExperimentalTime
 
 /**
  * Verifies attestation statements and issues certificates on success.
- * Expects a preconfigured [Makoto] instance and an [attestationProofOID] to be used in a CSR to convey an attestation statement.
+ * Expects a preconfigured [Makoto] instance defining which apps and devices are considered trustworthy.
  *
+ * The [attestationProofOID] to be used in a CSR to convey an attestation statement. Can be overridden. It defaults to [WardenDefaults.OIDs.ATTESTATION_PROOF]
  * When [defaultKeyConstraints] is specified, all issued challenges will automatically convey this, unless overridden.
  * **Note that key constraints cannot be reliably enforced** due to technical client limitations. Not all platforms can restrict key usage and properties!
  *
@@ -30,7 +31,13 @@ import kotlin.time.ExperimentalTime
  */
 class AttestationValidator(
     private val warden: Makoto,
-    val attestationProofOID: ObjectIdentifier,
+    val attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
+    /**
+     * Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
+     * On its own this is **not the device's nickname and therefore cannot identify a person in its own**.
+     * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
+     */
+    val includeGenericDeviceName: Boolean = true,
     val defaultKeyConstraints: KeyConstraints? = null,
     private val nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
     private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(warden.clock)
@@ -41,6 +48,10 @@ class AttestationValidator(
      * See [AndroidAttestationConfiguration]
      * for details.
      * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
+     * @param attestationProofOID specifies the OID be used in a CSR to convey an attestation statement. Can be overridden. It defaults to [WardenDefaults.OIDs.ATTESTATION_PROOF].
+     * @param includeGenericDeviceName specifies Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
+     * On its own this is **not the device's nickname and therefore cannot identify a person in its own**.
+     * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
      * @param clock a clock to set the time of verification (used for certificate validity checks)
      * @param verificationTimeOffset allows for fine-grained clock drift compensation (this duration is added to the certificate
      * @param defaultKeyConstraints allows for specifying key constraints to the client. Not all platforms can restrict key usage and properties!
@@ -51,7 +62,8 @@ class AttestationValidator(
     constructor(
         androidAttestationConfiguration: AndroidAttestationConfiguration,
         iosAttestationConfiguration: IosAttestationConfiguration,
-        attestationProofOID: ObjectIdentifier,
+        attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
+        includeGenericDeviceName: Boolean = true,
         clock: Clock = Clock.System,
         verificationTimeOffset: Duration = Duration.ZERO,
         defaultKeyConstraints: KeyConstraints? = null,
@@ -60,6 +72,7 @@ class AttestationValidator(
     ) : this(
         Makoto(androidAttestationConfiguration, iosAttestationConfiguration, clock, verificationTimeOffset),
         attestationProofOID,
+        includeGenericDeviceName,
         defaultKeyConstraints,
         nonceGenerator,
         challengeValidator,
@@ -92,6 +105,7 @@ class AttestationValidator(
             nonceGenerator(),
             postEndpoint,
             attestationProofOID,
+            includeGenericDeviceName,
             keyConstraints
         ).also { challengeValidator.store(it) }
 

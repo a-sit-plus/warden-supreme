@@ -8,7 +8,6 @@ import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
@@ -21,7 +20,6 @@ import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
 import de.infix.testBalloon.framework.core.testSuite
-import de.infix.testBalloon.framework.shared.TestRegistering
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -38,7 +36,6 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
 val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 20.minutes)) {
@@ -53,7 +50,6 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
         val ENDPOINT_CHALLENGE = "/api/v1/challenge"
         val PATH_ATTEST = "/api/v1/attest"
         val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
-        val PROOF_OID = ObjectIdentifier(Uuid.parse("c893b702-28f6-4c50-8578-d1d7a1580729"))
 
         var running = true
 
@@ -87,8 +83,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                 ),
                 attestationStatementValiditySeconds = STMT_VALIDITY.inWholeSeconds
             ),
-            attestationProofOID = PROOF_OID,
-            Clock.System, verificationTimeOffset = VERIFICATION_OFFSET,
+            verificationTimeOffset = VERIFICATION_OFFSET,
         )
 
 
@@ -133,6 +128,8 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                                 println(stmt.serializeCompact())
                                 stmt.serializeCompact()
                             }) { csr, _ ->
+
+                            println("Got an attestation statement from device ${csr.deviceName}")
 
                             Signer.Ephemeral {
                                 ec { }

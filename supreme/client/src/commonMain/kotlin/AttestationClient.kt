@@ -80,7 +80,7 @@ suspend fun AttestationChallenge.createAttestationProof(
      * The alias to assign to the newly created signer. Must not exist!
      */
     alias: String,
-    ): KmmResult<Pkcs10CertificationRequest> {
+): KmmResult<Pkcs10CertificationRequest> {
 
 
     val params = keyConstraints?.algorithmParameters
@@ -126,8 +126,13 @@ suspend fun AttestationChallenge.createAttestationProof(
             }
         }
     }.getOrThrow()
-
-    return signer.createCsr(this)
+    val additionalAttributes = if (includeGenericDeviceName) listOf(
+        Pkcs10CertificationRequestAttribute(
+            WardenDefaults.OIDs.DEVICE_NAME,
+            Asn1String.UTF8(getDeviceName()).encodeToTlv()
+        )
+    ) else listOf()
+    return signer.createCsr(this, additionalAttributes = additionalAttributes)
 }
 
 /**
@@ -142,7 +147,7 @@ suspend fun Signer.Attestable<*>.createCsr(
      * The subject name, if required.
      * Usually, you'll want to use pass [AlternativeNames] into [additionalExtensions], not a subject name!
      * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [challenge].
-     * Hence, the valued passed to this parameter MUST NOT contain a [KnownOIDs.serialNumber].
+     * Hence, the valued passed to this parameter containing a [KnownOIDs.serialNumber] will be overwritten.
      */
     subjectName: List<RelativeDistinguishedName> = listOf(),
 
@@ -176,3 +181,4 @@ suspend fun Signer.Attestable<*>.createCsr(
  */
 val AttestationChallenge.attestationEndpointUrl: Url get() = Url(attestationEndpoint);
 
+expect internal fun getDeviceName(): String

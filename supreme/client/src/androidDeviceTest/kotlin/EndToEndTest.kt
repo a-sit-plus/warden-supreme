@@ -1,6 +1,3 @@
-package at.asitplus.attestation.test
-
-import android.os.StrictMode
 import at.asitplus.attestation.supreme.*
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import de.infix.testBalloon.framework.core.testSuite
@@ -19,17 +16,8 @@ val EndToEndTest by testSuite {
 
 
     test("endToEnd") {
-        StrictMode.setThreadPolicy(
-            StrictMode.ThreadPolicy.Builder()
-                .permitAll()
-                .build()
-        )
-        StrictMode.setVmPolicy(
-            StrictMode.VmPolicy.Builder()
-                .build()
-        )
         PlatformSigningProvider.deleteSigningKey(alias)
-        val client: AttestationClient = AttestationClient(HttpClient())
+        val client = AttestationClient(HttpClient())
         val resp = client.getChallenge(Url(ENDPOINT_CHALLENGE))
         resp.isSuccess shouldBe true
         val attestationChallenge: AttestationChallenge = resp.getOrThrow()

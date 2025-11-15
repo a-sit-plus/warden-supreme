@@ -5,10 +5,11 @@ import at.asitplus.catching
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.asn1.*
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToString
+import at.asitplus.signum.indispensable.asn1.encoding.decodeToUtf8String
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
+import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
 import kotlinx.serialization.Serializable
@@ -63,6 +64,13 @@ private constructor(
     val proofOID: ObjectIdentifier,
 
     /**
+     * Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
+     * On its own this is **not the device's nickname and therefore cannot identify a person in its own**.
+     * Defaults to `false`.
+     */
+    val includeGenericDeviceName: Boolean = false,
+
+    /**
      * Indicates the wire format version
      */
     val version: Int? = null,
@@ -84,6 +92,7 @@ private constructor(
         nonce: ByteArray,
         attestationEndpoint: String,
         proofOID: ObjectIdentifier,
+        includeGenericDeviceName: Boolean = false,
         keyConstraints: KeyConstraints? = null,
     ) : this(
         issuedAt,
@@ -92,6 +101,7 @@ private constructor(
         nonce,
         attestationEndpoint,
         proofOID,
+        includeGenericDeviceName,
         version = 1,
         keyConstraints,
     )
@@ -107,6 +117,7 @@ private constructor(
         nonce: ByteArray,
         attestationEndpoint: String,
         proofOID: ObjectIdentifier,
+        includeGenericDeviceName: Boolean = false,
         keyConstrains: KeyConstraints? = null,
     ) : this(
         issuedAt,
@@ -115,6 +126,7 @@ private constructor(
         nonce,
         attestationEndpoint,
         proofOID,
+        includeGenericDeviceName,
         version = 1,
         keyConstrains
     )
@@ -185,3 +197,17 @@ val TbsCertificationRequest.challenge: KmmResult<ByteArray>
         else if (noncesRecovered.size != 1) throw Asn1StructuralException("More than one nonce present!")
         noncesRecovered.first().value.asPrimitive().decodeToString().hexToByteArray()
     }
+
+/**
+ * Tries to extract a device name from a TBS CSR's attribute with OID [WardenDefaults.OIDs.DEVICE_NAME].
+ */
+val TbsCertificationRequest.deviceName: String?
+    get() = catching {
+        attributes.find { it.oid == WardenDefaults.OIDs.DEVICE_NAME }?.value?.singleOrNull()?.asPrimitive()
+            ?.decodeToUtf8String()?.value
+    }.getOrNull()
+
+/**
+ * @see TbsCertificationRequest.deviceName
+ */
+val Pkcs10CertificationRequest.deviceName: String? get() = tbsCsr.deviceName
