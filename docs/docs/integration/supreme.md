@@ -68,27 +68,29 @@ attestation statements), configuration needs to deal with each platform separate
 
 ### Warden Supreme MWE
 Warden Supreme integrates server-side and client side logic into a lean interface. To get going, the following steps are required:
+
 * Decide on HTTPS endpoints and on an OID to convey the Attestation proof from app to backend (inside a signed CSR).
 * Backend:
-   1. Add the dependencies (client in the app, verifier on the backend)
-   2. Configure a `Warden` instance on the back-end. This defines which devices and apps will be considered trustworthy
-   3. Create an `AttestationVerifier` based on
-       * the configured `Warden` instance
-       * the HTTPS endpoints
-       * the OID
-   4. Start an HTTP server to expose the endpoints
+     1. Add the dependencies (client in the app, verifier on the backend)
+     2. Configure a `Warden` instance on the back-end. This defines which devices and apps will be considered trustworthy
+     3. Create an `AttestationVerifier` based on
+         * the configured `Warden` instance
+         * the HTTPS endpoints
+         * the OID
+    4. Start an HTTP server to expose the endpoints
 * Mobile App
-  1. Wire the verifier to the HTTPS endpoints to an `AttestationClient`
-  2. Call into the Endpoints
-  3. Store the received certificate chain after a successful attestation
+    1. Wire the verifier to the HTTPS endpoints to an `AttestationClient`
+    2. Call into the Endpoints
+    3. Store the received certificate chain after a successful attestation
+
+---
+
+!!! tip inline end "Migration Info"
+    Warden Supreme 0.10.0 revamped trust anchor management and thus changed configuration parameters.
 
 ### Back-End Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
-The following snippet shows an MWE:
-
-!!! tip "Migration Info"
-    Warden Supreme 0.10.0 revamped trust anchor management and thus changed configuration parameters.
-    The old signatures still exist but will be removed in 1.0.0!
+The following snippet shows an MWE that also accounts for a minute of clock drift:
 
 ```kotlin
 --8<-- "Readme-Config-min.kt:8"
@@ -99,8 +101,10 @@ The following snippet shows an MWE:
     * For production apps distributed through the Google Play Store, this is the digest of a Google cloud signing certificate.
 2. An iOS application is uniquely identified by a bundle identifier and a team ID.  
 This combination makes it possible to attest its authenticity.
+3. Clock drifts are a pain to debug. For that reason, no component of warden automatically accounts for clock drift, and time offsets need to be configured manually!  
+**In particular, this means that setting a positive offset globally means that the iOS-specific `attestationStatementValiditySeconds` also needs to be increased!
 
-!!! info "With great power comes great responsibility!"
+!!! warning "With great power comes great responsibility!"
     The above really is an MWE!  
     Many more configuration properties exist, and it is recommended to explicitly set **all those that are relevant to your specific scenario**,
     as the value of every single one should very much be the result of careful consideration.
@@ -112,7 +116,7 @@ This combination makes it possible to attest its authenticity.
 The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-warden/index.html) and a comprehensive example can be expanded below.
 
 
-??? example "Click to expand"
+??? example "Comprehensive example of all config options"
     The below config illustrates configuring two different Android apps: a regular one for the masses and a second one
     with much tighter security constraints. This makes no sense when Warden Supreme is integrated into a back-end.
     If, however, a dedicated attestation service is deployed that is then used to issue certificates for apps used by different services, this can be legitimate. 

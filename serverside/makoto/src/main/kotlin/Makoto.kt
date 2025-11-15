@@ -533,7 +533,7 @@ class Makoto(
                     }
                 }
                 //else we NOOP through the rest of the configured validators (and thus through configured trust anchors)
-                //if a trust anchors mismatched, the above if clause is tried with the next validator in line
+                //if a trust anchor mismatched, the above if clause is tried with the next validator in line
             }
             //and app to result, so we get the one successful result (if any)
             app to res

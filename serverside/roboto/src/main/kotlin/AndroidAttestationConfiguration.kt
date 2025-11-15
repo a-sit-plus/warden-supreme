@@ -1293,8 +1293,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         fun requireRollbackResistance() = apply { rollbackResitanceRequired = true }
 
         /**
-         * @see AndroidAttestationConfiguration.ignoreLeafValidity
+         * set [AndroidAttestationConfiguration.ignoreLeafValidity] to false
          */
+        fun enforceLeafValidity() = apply { ignoreLeafValidity = false }
+
+        @Deprecated("This is not a NOOP. as the defaults have changed. To be removed in 1.0.0")
         fun ingoreLeafValidity() = apply { ignoreLeafValidity = true }
 
         /**

@@ -23,6 +23,16 @@ The original server-side-only key and app attestation library is still available
 of the pillars supporting Warden Supreme.
 It now lives on as [Warden makoto](serverside/makoto) and continues to be published to Maven Central.
 
+
+> [!WARNING]  
+> **Warden Supreme 0.10.0 introduces behavioural changes to the Android attestation defaults:**
+> * Ignore Android leaf cert validity by default, because Warden Supreme, by default, uses random cryptographic nonces.
+>    * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is not a deprecated NOOP to be removed.
+>    * `enforceLeafValidity()` (without typo!) function was introduced
+> * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
+> 
+> **Ignoring these changes can result in a total security failure if you do not ensure freshness through means of feeding random cryptographic nonces into attestation statement creation and properly checking them!**
+
 ## 0. About this Document
 This README focuses on the technical aspects and is aimed at informed developers who are familiar with the general concepts, limitations,
 and benefits of key and app attestation.

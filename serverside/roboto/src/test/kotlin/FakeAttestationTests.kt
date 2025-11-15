@@ -340,7 +340,8 @@ val FakeAttestationTests by testSuite {
                     patchLevel = patchLevel,
                     requireStrongBox = false,
                     allowBootloaderUnlock = false,
-                    ignoreLeafValidity = false
+                    ignoreLeafValidity = false,
+                    attestationStatementValiditySeconds = 300,
                 )
             )
             shouldThrow<CertificateInvalidException> {

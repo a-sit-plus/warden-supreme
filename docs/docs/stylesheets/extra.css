@@ -45,13 +45,13 @@
 
 [data-md-color-scheme="asp-dark"] .md-typeset .md-annotate__index::before,
 [data-md-color-scheme="asp-dark"] .md-typeset .md-annotation__index::before {
-    margin-top: 0.2rem;
+    margin-top: 0.1rem;
     background: #fff;
 }
 
 [data-md-color-scheme="asp-dark"] .md-typeset .md-annotate__index::after,
 [data-md-color-scheme="asp-dark"] .md-typeset .md-annotation__index::after {
-    margin-top: 0.2rem;
+    margin-top: 0.1rem;
 }
 
 @font-face {

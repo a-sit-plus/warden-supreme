@@ -128,7 +128,6 @@ public class JavaInteropTest {
         ));
         AndroidAttestationConfiguration config = new AndroidAttestationConfiguration.Builder(apps)
                 .androidVersion(11000)
-                .ingoreLeafValidity()
                 .patchLevel(new PatchLevel(2023, 03))
                 .verificationSecondsOffset(-500) //we to account for time drift
                 .build();
