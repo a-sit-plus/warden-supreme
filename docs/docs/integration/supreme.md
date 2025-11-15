@@ -30,7 +30,7 @@ It now lives on as [Warden makoto](https://github.com/a-sit-plus/warden-supreme/
 
 Warden Supreme targets Android and iOS clients and JVM-based back-ends.
 Warden Supreme currently only supports HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
-The backend, however, can also use [Spring](https://spring.io/) or any other HTTP framework of your choice.
+The back-end, however, can also use [Spring](https://spring.io/) or any other HTTP framework of your choice.
 
 * On the back-end, add the `verifier` dependency:
   ```kotlin
@@ -72,12 +72,12 @@ attestation statements), configuration needs to deal with each platform separate
 ## Warden Supreme Step-by-Step Guide
 Warden Supreme integrates server-side and client-side logic into a lean interface.
 
-This section illustrates a complete end-to-end setup assuming a Ktor server on the backend and a CMP client app.
+This section illustrates a complete end-to-end setup assuming a Ktor server on the back-end and a CMP client app.
 To get going, the following steps are required:
 
 * Decide on HTTPS endpoints to issue challenges and verify attestation statements,
   and record the Apps identifiers and signer digests (Android) / team ID (iOS)
-* Backend:
+* back-end:
      1. Configure a `Makoto` instance based on your policy and app identifiers.
      2. Create an `AttestationVerifier` based on the configured `Makoto` instance, your CA certificate, and signing keys
      3. Wire HTTPS endpoints to the `AttestationVerifier` and start an HTTP server

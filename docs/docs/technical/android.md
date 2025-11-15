@@ -70,7 +70,7 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
     - **Leaf certificate** embeds the **attestation extension** (`KeyDescription`) with `RootOfTrust`,
       `AttestedApplication`, and **AuthorizationLists**.
     - Intermediates up to a **Google Attestation Root** (for hardware attestation on certified devices).
-4. App sends **{certChain, challenge, metadata}** to your backend.
+4. App sends **{certChain, challenge, metadata}** to your back-end.
 
 ### Server-side verification pipeline (normative checklist)
 

@@ -59,7 +59,7 @@ to circumvent attestation (see [Threat Model&nbsp;C](#threat-model-c-targeted-at
 The second class of attackers has malicious intent and tries to harm legitimate users at scale. They do not have access
 to their victims' devices and thus cannot modify the operating system.
 Hence, these attackers are limited to modifying the actual application they distribute, and any invasive changes to a device
-or the operating system are irrelevant for such scenarios. **If you backend enforces and properly checks attestation, your users are safe**,
+or the operating system are irrelevant for such scenarios. **If you back-end enforces and properly checks attestation, your users are safe**,
 because sophisticated means to circumvent attestation require physical access to a victim's device
 (see [Threat Model&nbsp;C](#threat-model-c-targeted-attackers-with-physical-device-access)).
 
@@ -83,7 +83,7 @@ which explores patching attempts against the Austrian _Digitales Amt_ app.
 **Why this fails under proper attestation:**
 
 - App identity binding (Android): The attestation record includes the package name and signing‑certificate digest(s).
-  Any repackaged build must be signed with a different key; its signer digest won’t match the backend allowlist and is
+  Any repackaged build must be signed with a different key; its signer digest won’t match the back-end allowlist and is
   rejected.
 - Hardware root of trust: Attestation is produced by secure hardware (TEE/StrongBox), which cannot be forged by a
   modified client. Software‑only attestations are rejected by policy.
@@ -93,7 +93,7 @@ which explores patching attempts against the Austrian _Digitales Amt_ app.
   levels, further blocks devices where low‑level hooks or instrumentation would typically be installed.
 
 !!! tip "Takeaway"
-    Even if client‑side protections (e.g., root checks) are patched out, a backend enforcing hardware‑backed
+    Even if client‑side protections (e.g., root checks) are patched out, a back-end enforcing hardware‑backed
     attestation with an app‑identity allowlist rejects repackaged apps by construction.
 
 ## Threat Model B — Bot Farms, Sybil Attacks, and Large‑Scale Emulator Abuse

@@ -17,7 +17,7 @@ It explains
 Mobile attestation systems fall into two categories:
 
 * **Evidence-based** attestation returns cryptographic statements you verify yourself. This favors data minimization,
-  explainability, and local policy control because your backend decides based on attested fields rather than third-party
+  explainability, and local policy control because your back-end decides based on attested fields rather than third-party
   verdicts.
 * **Verdict-based** services return labels (for example, “meets device integrity”) computed by a provider from telemetry you
   send them. This is convenient for anti-abuse but introduces per-request data flows to that provider, couples access
@@ -51,8 +51,8 @@ fields.
 
 | From         | To                                   | Data / Action                                                                                                                                                          |
 |--------------|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| App          | Your backend  (per&nbsp;attestation) | Attestation certificate chain (leaf, intermediates, root), echoed challenge, app binding, boot- and patch-level claims, key metadata                                   |
-| Your backend | Google servers (periodic)            | Download revocation lists and cache them privately. No per-request contact with Google occurs during verification. |
+| App          | Your back-end  (per&nbsp;attestation) | Attestation certificate chain (leaf, intermediates, root), echoed challenge, app binding, boot- and patch-level claims, key metadata                                   |
+| Your back-end | Google servers (periodic)            | Download revocation lists and cache them privately. No per-request contact with Google occurs during verification. |
 
 !!! info "Privacy posture"
     Per-request device and app details flow only between your client and your server. Google does not **observe individual
@@ -60,7 +60,7 @@ fields.
 
 ### Policy and Governance
 
-Because verification and policy live on your backend, you define and transparently enforce:
+Because verification and policy live on your back-end, you define and transparently enforce:
 
 * Boot integrity: require verified boot and a locked bootloader
 * Minimum platform state: reject OS versions or patch levels below a floor you set (for example, year-month)
@@ -106,10 +106,10 @@ having the server verify that binding.
 | From | To                                  | Data / Action                                                                                                             |
 |------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
 | App  | Apple (per&nbsp;attestation)        | Device contacts Apple to obtain or refresh attestation artifacts. Apple learns that an attestation occurred for your app. |
-| App  | Your backend (per&nbsp;attestation) | Apple-signed attestation and assertion artifacts are evaluated. No revocation checks towards Apple are needed.            |
+| App  | Your back-end (per&nbsp;attestation) | Apple-signed attestation and assertion artifacts are evaluated. No revocation checks towards Apple are needed.            |
 
 !!! info "Privacy posture"
-    Apple is in the hot path by design. Your backend still makes the pass/fail decision from signed evidence, but Apple
+    Apple is in the hot path by design. Your back-end still makes the pass/fail decision from signed evidence, but Apple
     learns about each attestation or assertion event.
 
 ### Operational Characteristics and Privacy Considerations
@@ -117,7 +117,7 @@ having the server verify that binding.
 * Online requirement: design retry/queuing for temporary network issues and service availability; use Apple’s sandbox
   flag
   during development to keep test events separate from production metrics.
-* Policy remains on your backend; the attestation service and its telemetry are Apple-hosted.
+* Policy remains on your back-end; the attestation service and its telemetry are Apple-hosted.
 * Firmware trust is Apple-controlled; there is no notion of accepting custom firmware trust roots.
 
 ## Google Play Integrity (Google-Hosted Verdict Service)
@@ -131,7 +131,7 @@ labels such as
 * Account or licensing context (ties the verdict to the signed-in Play account)
 * Optional environment signals (for example, Play Protect status, screen-overlay risk, device-recall flags)
 
-Your app must go online, obtain a token from Google, and then hand that token to your backend, which can do **nothing
+Your app must go online, obtain a token from Google, and then hand that token to your back-end, which can do **nothing
 more** than trust the embedded labels and apply hard-coded gating logic.
 
 ### Data Flow (Who Learns What)
@@ -139,7 +139,7 @@ more** than trust the embedded labels and apply hard-coded gating logic.
 | From | To                              | Data / Action                                                                                                                                  |
 |------|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
 | App  | Google (per&nbsp;request)       | Sends nonce or request-hash inputs, app metadata, device-integrity information, and account/licensing signals so Google can compute a verdict. |
-| App  | Your backend (per&nbsp;request) | Passes the resulting token; your backend validates and interprets it, then applies policy.                                                     |
+| App  | Your back-end (per&nbsp;request) | Passes the resulting token; your back-end validates and interprets it, then applies policy.                                                     |
 
 !!! info "Privacy posture"
     Google sees per-request signals each time you evaluate integrity. Avoid including sensitive raw identifiers in nonce
@@ -167,7 +167,7 @@ With remote attestation you receive a *cryptographically verifiable* statement t
 independently of the platform vendor.  
 You decide which boot state, patch level or package signature is acceptable—and you can prove that decision later.
 
-Play Integrity, by contrast, offers **no raw evidence**. Google’s backend hides the actual attestation chain, performs
+Play Integrity, by contrast, offers **no raw evidence**. Google’s back-end hides the actual attestation chain, performs
 the
 evaluation on its own servers, and sends back a single token that merely says *pass* or *fail* according to **Google’s
 undocumented and changeable policy**.  
@@ -190,19 +190,19 @@ Moreover, the service runs in Google’s hot path **for every request**:
 | Policy ownership                 | You (field-level rules)                  | You (verify evidence; service is Apple-hosted) | Google (definitions behind labels)            |
 | Custom AVB roots or trusted ROMs | Allowed (you can admit your keys)        | Not applicable                                 | Not allowed (OEM-certified firmware required) |
 | Distribution coupling            | None                                     | None (service dependency on Apple)             | Tight to Play ecosystem or licensing          |
-| Availability and quotas          | Your backend; cacheable roots and CRLs   | Apple in the hot path                          | Google in the hot path; quotas                |
+| Availability and quotas          | Your back-end; cacheable roots and CRLs   | Apple in the hot path                          | Google in the hot path; quotas                |
 | Data minimization                | Maximal                                  | Moderate                                       | Least                                         |
 
 ### Data-Flow Sketches (At a Glance)
 
 | System         | Channel                          | Data / Action                                 |
 |----------------|----------------------------------|-----------------------------------------------|
-| Android “pure” | App → Your backend               | Hardware-backed attestation evidence          |
-|                | Your backend → Android endpoints | Periodic download of public roots and CRLs    |
+| Android “pure” | App → Your back-end               | Hardware-backed attestation evidence          |
+|                | Your back-end → Android endpoints | Periodic download of public roots and CRLs    |
 | iOS App Attest | App ↔ Apple                      | Attestation creation and assertion refresh    |
-|                | App → Your backend               | Apple-signed attestation / assertion evidence |
+|                | App → Your back-end               | Apple-signed attestation / assertion evidence |
 | Play Integrity | App ↔ Google                     | Per-request exchange to obtain a verdict      |
-|                | App → Your backend               | Google-signed verdict token                   |
+|                | App → Your back-end               | Google-signed verdict token                   |
 
 ---
 

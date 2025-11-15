@@ -48,7 +48,7 @@ class AttestationValueException(
         APP_SIGNER_DIGEST,
 
         /**
-         * Indicates that "this is not the app you are looking for" (i.e. an unauthorized client is connecting to your backend)
+         * Indicates that "this is not the app you are looking for" (i.e. an unauthorized client is connecting to your back-end)
          */
         PACKAGE_NAME,
 

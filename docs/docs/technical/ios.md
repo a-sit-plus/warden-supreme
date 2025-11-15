@@ -40,7 +40,7 @@ Attestation is the initial step to establish a device's and an app's integrity, 
     - App obtains a **one-time server challenge** and then calls `attestKey(keyId, clientDataHash)`.
     - Apple returns an **attestation object** proving that the key belongs to a legitimate instance of your app, and a *
       *certificate chain** rooted in **Apple’s App Attest CA**.
-    - App sends `{attestationObject, keyId, challenge}` to your backend.
+    - App sends `{attestationObject, keyId, challenge}` to your back-end.
 
 2. **Ongoing use (Assertion)**
     - For each privileged request, your server issues a fresh **challenge**.
@@ -74,13 +74,13 @@ From a high-level point of view, both flows involve the same entities, as shown 
 <figcaption>Figure&nbsp;1: Apple App Attest Flows</figcaption>
 </figure>
 
-Signum Supreme, relies on attestation, but also generates a separate public/private key pair inside the Secure Enclave,
+Warden Supreme, relies on attestation, but also generates a separate public/private key pair inside the Secure Enclave,
 and feeds the public key's hash into `clientDataHash`, to bind the public key to the attestation.
 Since Apple platforms do not allow for attesting keys (the hardware-backed keys used for attestation cannot be used), this
 way of binding a usable key to an attestation is used to emulate key attestation (see [Emulating Key Attestation](#emulating-key-attestation)).
 
-Signum Supreme does not natively support assertion (for reasons explained [below](#assertion-wrap-up)) and relies on attestation, and emulating key attestation to replicate
-Android's behaviour for a consistend UX across both platforms.
+Warden Supreme does not natively support assertion (for reasons explained [below](#assertion-wrap-up)) and relies on attestation, and emulating key attestation to replicate
+Android's behaviour for a consistent UX across both platforms.
 
 ## Attestation Validation
 
@@ -125,7 +125,7 @@ App Attest natively attests **the app instance** (App ID) and the Apple‑manage
 4. This binds Apple’s attestation to your application key, yielding **verifiable linkage** similar to Android key
    attestation.
 
-Signum Supreme provides emulated key attestation out of the box, automating this whole process, and
+Signum Supreme (and therefore Warden Supreme) provides emulated key attestation out of the box, automating this whole process, and
 streamlining back-end checks by relying on Vincent Haupert's excellent [DeviceCheck / AppAttest library](https://github.com/veehaitch/devicecheck-appattest).
 Hence, no custom logic is required on clients and on the back-end.
 
@@ -175,7 +175,7 @@ An assertion contains a counter value.
 ### Assertion Wrap-Up
 
 Using assertions as “re-attestation” has two notable downsides:
-- Backend state management burden
+- Back-end state management burden
     - You must persist per-device key state (keyId, highest seen counter, environment), enforce strict counter monotonicity,
       handle resets/rollbacks (e.g., device restores), and design recovery paths (counter desync, key rotation, multi-device users). 
       This adds storage, concurrency control, migration, and incident-handling complexity.
@@ -191,6 +191,32 @@ Using assertions as “re-attestation” has two notable downsides:
 For these reasons, Warden Supreme does not natively support it, but rather relies on attestation with emulated key attestation
 to mimic the simple, but powerful model Android uses. In the end, re-attestation using fresh attestations rather than asserting
 a state before a critical section is much more decoupled from specific user actions.
+
+### Receipts
+A third concept not discussed so far is the _receipt_ and its dual purpose. On the one hand, it is an integral part of the attestation
+structure sent from an iOS device to the back-end. It contains, for example, the bundle identifier, the attestation certificate and
+a validity period.  
+
+On the other hand, it is possible to save this receipt on the back-end after a successful attestation and send it to Apple's
+servers at a later point in time, for additional risk assessment. In return, you'll receive a new receipt with a risk metric.
+This is where things get somewhat fuzzy. [According to Apple](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk?language=objc#Interpret-the-metric),
+it _indicates the number of attested keys associated with a given device over the past 30 days_ and one should
+_look for this value to be a low number_ (for whatever that means).
+
+The main issue with sending receipts to Apple servers has less to do with vague claims about an opaque service, but rather
+with privacy: While Apple already learns quite a bit through AppAttest, it is only possible to send receipts to Apple's
+servers after registering to receive an authentication token and in the end, your back-end will directly communicate with
+infrastructure operated by Apple.
+
+!!! note inline end
+    For critical services and a real risk of a single rogue device being used to create hundreds or thousands of attestations
+    by proxy, it **can** be viable to utilise Apple's service to assess fraud risk. Use at your own discretion.
+
+In summary, Apple is able to provide a risk metric that is highly dependent on user behaviour with no clear guidance
+on how to interpret the metric at a substantially privacy cost. For these reasons, Warden Supreme considers this out of scope.
+However, Warden Supreme provides a `ValidatedAttestation` object at teh end of a successful attestation verification and this
+object contains the receipt that can be extracted, stored, and sent to Apple for risk assessment, if desired.
+
 
 ## Operational guidance
 

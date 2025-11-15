@@ -62,7 +62,7 @@ This glossary centralizes terms used across the documentation. Each entry is con
     - iOS does not have any revocation information associated with the certificate chain used for attestation.
 - **Replay Protection** - Enforced by challenge/nonce binding and (on iOS) increasing counters.
 - **Freshness Window** - Time window during which an attestation/statement is considered valid (e.g., 300s).
-- **Time Drift** - Difference between client and backend clocks. May cause temporal validation error to trip attestation checks. Needs to be compensated for.
+- **Time Drift** - Difference between client and back-end clocks. May cause temporal validation error to trip attestation checks. Needs to be compensated for.
 - **Rate Limiting (iOS)** - Apple may throttle excessive attestation/assertion use; cache receipts and avoid per-launch attestation. (see [Preparing to use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service))
 
 ## Warden and Ecosystem
