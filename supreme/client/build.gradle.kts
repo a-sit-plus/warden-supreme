@@ -152,7 +152,7 @@ val startVerifier = tasks.register<DefaultTask>("startVerifier") {
             }.getOrElse { logger.lifecycle("Verifier not running"); it.printStackTrace() }
 
         }
-        thread(start = true, isDaemon = false) {
+        val verifier= thread(start = true, isDaemon = false) {
             exec {
                 workingDir = rootDir
                 executable = "./gradlew"
@@ -166,6 +166,7 @@ val startVerifier = tasks.register<DefaultTask>("startVerifier") {
             logger.lifecycle("Waiting for Verifier to start")
         }
         logger.lifecycle("Verifier started")
+        verifier.join()
     }
 }
 
