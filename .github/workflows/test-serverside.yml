@@ -1,7 +1,7 @@
 name: Test makoto + roboto
 on: [push]
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -12,7 +12,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Build jar
+      - name: Run Tests
         run: ./gradlew :makoto:test :roboto:test
       - name: Test Report
         uses: dorny/test-reporter@v2
