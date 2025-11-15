@@ -7,48 +7,116 @@
 
 Warden Supreme is a comprehensive solution for remote attestation on mobile platforms.
 It provides a unified framework to verify the integrity of Android and iOS client applications and the devices the are running on,
-ensuring that only authentic, untampered apps can access a service. This project consolidates
+ensuring that only authentic, untampered apps can access a service in three simple steps:
+
+1. 📜 Define a policy on the backend
+2. 🧩 Wire the Warden Supreme Verifier to two HTTPS endpoints
+3. ✨ Create attested keys **and** have a certificate for them issued using five lines of code!
+
+This project consolidates
 [WARDEN](https://github.com/a-sit-plus/warden) and [WARDEN‑roboto](https://github.com/a-sit-plus/warden-roboto),
 integrating them with [Signum](https://a-sit-plus.github.io/signum/), a Kotlin Multiplatform crypto/PKI library,
 to deliver a streamlined attestation format and developer experience.
-**It condenses the actual creation of an attestable, hardware-backed key down to a single line of code on the client**
+**It condenses the actual creation of an attestable, hardware-backed key down to a single line of code on the client!**
 
-!!! tip
-    Already familiar with attestation? **[Jump to the Integration Guide](integration/supreme.md)**.
+!!! tip inline end "Familiar with attestation?"
+    **[Jump to the integration guide!](integration/supreme.md)**
 
-This documentation goes beyond Warden Supreme specifics and provides a structured overview of remote attestation,
+This documentation goes beyond Warden Supreme specifics.
+It is intended as a living document that will be continuously expanded.
+It already provides a structured overview of remote attestation,
 from concepts to hands‑on integration:
 
-* **Background**
-    * What is Remote Attestation? A security mechanism where a device proves its integrity to a remote server by producing a signed statement about its hardware, OS state, and app identity.  
-      → See [Remote Attestation Primer](bg/primer.md).
-    * Why attestation beats heuristics (e.g., simple “root checks”), plus threat models and risks.  
-      → See [Threat Models and Risks](bg/threatmodels.md).
-    * “Pure” Attestation vs. proprietary services (Google Play Integrity, Apple App Attest), privacy, data protection, and digital sovereignty.  
-      → See [Privacy and Data Protection](bg/privacy.md).
-
-* **Technical Details**
-    * Android key attestation: proving hardware‑backed keys and embedding app identity in the attestation record.  
-      → See [Technical Deep Dive: Android](technical/android.md).
-    * iOS App Attest: verifying app integrity and emulating key attestation semantics.  
-      → See [Technical Deep Dive: iOS](technical/ios.md).
-    * Pitfalls, quirks, and workarounds requiring careful evaluation.  
-      → See [Technical Deep Dive: Quirks and Hints](technical/quirks.md).
-
-* **Integrating Warden Supreme**  
-  Warden Supreme includes the battle‑tested, formerly stand‑alone WARDEN library that has attested millions of devices in production.
-  Using Warden Supreme reduces integration pitfalls and complexity, enabling you to:
-    - ✅ Verify device and app integrity using hardware‑backed proofs
-    - ✅ Support Android Key Attestation (see [Android Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation))
-    - ✅ Support Apple App Attest (see [DeviceCheck / App Attest](https://developer.apple.com/documentation/devicecheck)) with key attestation emulation
-    - ✅ Use a unified server API for both platforms
-    - ✅ Use a unified client API for both platforms
-
-<span style="margin-left: 1.85em">→ See the [Integration Guide](integration/supreme.md).</span>
-  
-* **Glossary**  
-  A comprehensive glossary covering terminology across the attestation domain.  
-  → See the [Glossary](glossary.md).
+<ul class="emoji-list">
+  <li>
+    <span class="bullet">📚 </span><strong>Background</strong>
+    <ul class="emoji-list">
+      <li>
+        <span class="bullet">🧠</span>
+        What is Remote Attestation? A security mechanism where a device proves its integrity to a remote server by producing a signed statement about its hardware, OS state, and app identity.
+        <br>&rarr; See <a href="bg/primer">Remote Attestation Primer</a>.
+      </li>
+      <li>
+        <span class="bullet">⚠️</span>
+        Threat models, risks, and why attestation beats heuristics (e.g., simple root checks).
+        <br>&rarr; See <a href="bg/threatmodels">Threat Models and Risks</a>.
+      </li>
+      <li>
+        <span class="bullet">🛡️</span>
+        "Pure" Attestation vs. proprietary services (Google Play Integrity, Apple App Attest), privacy, data protection, and digital sovereignty.
+        <br>&rarr; See <a href="bg/privacy">Privacy and Data Protection</a>.
+      </li>
+    </ul>
+  </li>
+ <li>
+    <span class="bullet">🔬</span><strong>Technical Details</strong>
+    <ul class="emoji-list">
+      <li>
+        <span class="bullet">🤖</span>
+        Android key attestation: proving hardware-backed keys and embedding app identity in the attestation record.
+        <br>&rarr; See <a href="technical/android">Technical Deep Dive: Android</a>.
+      </li>
+      <li>
+        <span class="bullet">🍎</span>
+        iOS App Attest: verifying app integrity and emulating key attestation semantics.
+        <br>&rarr; See <a href="technical/ios">Technical Deep Dive: iOS</a>.
+      </li>
+      <li>
+        <span class="bullet">🚧</span>
+        Pitfalls, quirks, and workarounds requiring careful evaluation.
+        <br>&rarr; See <a href="technical/quirks">Technical Deep Dive: Quirks and Hints</a>.
+      </li>
+    </ul>
+  </li>
+  <li>
+    <span class="bullet">
+      <img src="assets/images/icon.svg" alt="Warden Supreme" class="inline-icon">
+    </span>
+    <strong>Integrating Warden Supreme</strong>
+    <p>
+      Warden Supreme includes the battle-tested, formerly stand-alone WARDEN library that has attested millions of devices in production.
+    </p>
+    <p>
+      Using Warden Supreme reduces integration pitfalls and complexity, enabling you to:
+    </p>
+    <ul class="emoji-list">
+      <li>
+        <span class="bullet">✅</span>
+        Verify device and app integrity using hardware-backed proofs
+      </li>
+      <li>
+        <span class="bullet">✅</span>
+        Support Android Key Attestation (see
+        <a href="https://source.android.com/docs/security/features/keystore/attestation" target="_blank">
+          Android Key &amp; ID Attestation
+        </a>)
+      </li>
+      <li>
+        <span class="bullet">✅</span>
+        Support Apple App Attest (see
+        <a href="https://developer.apple.com/documentation/devicecheck" target="_blank">
+          DeviceCheck / App Attest
+        </a>)
+        with key attestation emulation
+      </li>
+      <li>
+        <span class="bullet">✅</span>
+        Use a unified server API
+      </li>
+      <li>
+        <span class="bullet">✅</span>
+        Use a unified client API for iOS and Android
+      </li>
+    </ul>
+    &rarr; See the <a href="integration/supreme">Integration Guide</a>.
+  </li>
+ <li>
+    <span class="bullet">📖</span>
+    <strong>Glossary</strong><br>
+    A comprehensive glossary covering terminology across the attestation domain.<br>
+    &rarr; See the <a href="glossary">Glossary</a>.
+  </li>
+</ul>
 
 
 !!! info "Help Wanted"

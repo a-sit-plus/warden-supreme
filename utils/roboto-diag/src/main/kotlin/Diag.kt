@@ -7,12 +7,13 @@ import com.google.gson.*
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security
 import java.security.interfaces.ECPublicKey
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
     Security.addProvider(BouncyCastleProvider())
     if (args.isEmpty()) {
         System.err.println("Certificate neither specified in a file (-f <path to PEM/Base64 cert>) nor as parameter <Base64 cert>!")
-        System.exit(1)
+        exitProcess(1)
     }
     val certB64 = if (args[0] == "-f") java.io.File(args[1]).readText() else args[0]
 
