@@ -131,8 +131,9 @@ This combination makes it possible to attest its authenticity.
 
 
 The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-warden/index.html) and a comprehensive example can be expanded below.  
-**Be sure to read up on [Clock drift issues](../technical/quirks.md#clock-drifts-and-temporal-validity) before tweaking properties!**
+**Be sure to read up on [Clock drift issues](../technical/quirks.md#clock-drifts-and-temporal-validity) before tweaking properties!** 
 
+<div id="config-options-example"></div>
 
 ??? example "Comprehensive example of all config options"
     The below config illustrates configuring two different Android apps: a regular one for the masses and a second one
@@ -173,7 +174,6 @@ The full details on the configuration can be found in the [API documentation](..
     20. This is simply Apple's recommendation plus a five minute offset
     21. Eplicitly set production trusted roots as default
     22. Account for clock drift!
-
 
 
 ??? note "A Note on Android Attestation"

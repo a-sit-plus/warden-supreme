@@ -17,7 +17,7 @@ Warden Supreme enforces unified flows and a unified data model. Migration primar
 - Use the consolidated back‑end configuration (trust anchors, identities, policies).
 - Retain functionality via the integrated modules; legacy artifacts exist under new names — see [Project Structure](structure.md).
 
-See also the authoritative configuration in [Integrating Warden Supreme](supreme.md#back-end-configuration), that hasn't changed.
+See also the authoritative configuration example in the [Warden Supreme integration guide](supreme.md#config-options-example).
 
 !!! info "Need more migration depth?"
     If you require a step‑by‑step migration playbook or have edge cases not covered here, please [file an issue](https://github.com/a-sit-plus/warden-supreme/issues/new)

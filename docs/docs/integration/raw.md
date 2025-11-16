@@ -16,9 +16,9 @@
     live on as modules inside Warden Supreme. These projects are now integrated into Warden Supreme and continue to be
     maintained and published to Maven Central. See [Project Structure](structure.md).
 
-While Warden Supreme aims to make remote attestation across Android and iOS as smooth and consistent as possible via
-Kotlin Multiplatform, it is clear that not every iOS app will be written in Kotlin, and not every Android application
-will want to pull in Signum as dependency.
+Warden Supreme aims to make remote attestation across Android and iOS as smooth and consistent as possible via
+Kotlin Multiplatform. Ath the same time, it is clear that not every iOS app will be written in Kotlin, and not every Android application
+will want to pull in Signum as a dependency.
 
 In addition, legacy deployments that cannot yet transition to the new integrated Warden Supreme attestation flows are
 still and will remain operational. Until a migration is possible (see [migration notes](migration.md)), this page serves
