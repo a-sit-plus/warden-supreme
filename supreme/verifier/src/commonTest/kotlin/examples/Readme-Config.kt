@@ -59,7 +59,7 @@ val makoto = Makoto(
             )
         ),
      /*(19)!*/iosVersion = OsVersions("17", "21A36"),
-     /*(20)!*/attestationStatementValiditySeconds = 600, //Apple's requirement + verificationTimeOffset
+     /*(20)!*/attestationStatementValiditySeconds = 600, //DEFAULT
      /*(21)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS
     ),
     clock = Clock.System, //DEFAULT

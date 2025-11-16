@@ -109,7 +109,7 @@ To get going, the following steps are required:
 
 ### Attestation Policy Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
-The following snippet shows an MWE that also accounts for a minute of clock drift:
+The following snippet shows an MWE that also accounts for five minutes of clock drift:
 
 ```kotlin
 --8<-- "Readme-Config-min.kt:8"
@@ -171,7 +171,7 @@ The full details on the configuration can be found in the [API documentation](..
     17. Uses the test stage
     18. Custom trusted root is set, to enable generating iOS attestation proofs in software for evaluation purposes.
     19. This could already be a production value, in preparation for the real iOS app
-    20. This is simply Apple's recommendation plus a five minute offset
+    20. This is simply Apple's recommendation plus five minutes offset
     21. Eplicitly set production trusted roots as default
     22. Account for clock drift!
 
