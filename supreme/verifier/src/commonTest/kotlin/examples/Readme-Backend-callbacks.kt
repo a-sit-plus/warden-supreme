@@ -2,12 +2,7 @@ package docs.service.callbacks
 
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.supreme.PreAttestationError
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
-import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.supreme.sign.Signer
 import docs.config.minimal.verifier
 
 val csr: Pkcs10CertificationRequest = TODO()

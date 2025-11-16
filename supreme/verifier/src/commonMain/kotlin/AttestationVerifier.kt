@@ -138,14 +138,19 @@ class AttestationVerifier(
         keyConstraints
     ).also { challengeValidator.store(it) }
 
-    @Deprecated("Misnomer; to be removed in 1.0.0", replaceWith = ReplaceWith("verifyAttestation"))
+    @Deprecated(
+        "Misnomer; to be removed in 1.0.0",
+        replaceWith = ReplaceWith("verifyAttestation(csr, onPreAttestationError, onAttestationError, onAttestationSuccess,          certificateIssuer)")
+    )
     suspend fun verifyKeyAttestation(
         csr: Pkcs10CertificationRequest,
         onPreAttestationError: PreAttestationError.() -> String? = { null },
         onAttestationError: AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
         onAttestationSuccess: AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
-        certificateIssuer: CertificateIssuer,
-    ) = verifyAttestation(csr, onPreAttestationError, onAttestationError, onAttestationSuccess, certificateIssuer)
+        certificateIssuer: suspend (Pkcs10CertificationRequest, AttestationResult.Verified) -> CertificateChain,
+    ) = verifyAttestation(csr, onPreAttestationError, onAttestationError, onAttestationSuccess) { csr ->
+        certificateIssuer(csr, this)
+    }
 
     /**
      * Verifies the received CSR:
