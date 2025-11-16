@@ -10,58 +10,42 @@ import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.supreme.sign.Signer
 import docs.config.minimal.verifier
 
-val PATH_CHALLENGE = "/api/v1/challenge"
-val PATH_ATTEST = "/api/v1/attest"
-
-val publicEndpoint: String = ""
-val signer = Signer.Ephemeral {
-    ec { }
-}.getOrThrow()
-
-var issuerName = listOf(
-    RelativeDistinguishedName(
-        AttributeTypeAndValue.CommonName(
-            Asn1String.UTF8("Supreme Verifier")
-        )
-    )
-)
-var subjectName = listOf(
-    RelativeDistinguishedName(
-        AttributeTypeAndValue.CommonName(
-            Asn1String.UTF8("Supreme Client")
-        )
-    )
-)
-
-val caCert: X509Certificate = TODO()
 val csr: Pkcs10CertificationRequest = TODO()
 
 
 suspend fun foo() {
-    val result = verifier.verifyAttestation(
-        /*(1)!*/csr = csr,
-        onPreAttestationError = {
-            /*(2)!*/when (this) {
+
+
+
+
+val result = verifier.verifyAttestation(
+ /*(1)!*/csr = csr,
+ /*(2)!*/onPreAttestationError = {
+        when (this) {
             is PreAttestationError.AttestationStatementExtraction -> TODO()
             is PreAttestationError.ChallengeExtraction -> TODO()
             is PreAttestationError.ChallengeVerification -> TODO()
             is PreAttestationError.OperationalError -> TODO()
         }
-            /*(3)!*/null
-        },
-        onAttestationError = { debugStatement ->
-            val attestationException = cause
-            val reason = explanation
-            null
-        },
-        onAttestationSuccess = { attestedKey ->
-            when (this) {
-                is AttestationResult.Android.Verified -> TODO()
-                is AttestationResult.IOS.Verified -> TODO()
-            }
-
+     /*(3)!*/null
+    },
+ /*(4)!*/onAttestationError = { debugStatement ->
+        val attestationException = cause
+        val reason = explanation
+     /*(4)!*/null
+    },
+ /*(5)!*/onAttestationSuccess = { attestedKey ->
+        when (this) {
+            is AttestationResult.Android.Verified -> TODO()
+            is AttestationResult.IOS.Verified -> TODO()
         }
-    ) { csr, attestationResult ->
-        TODO("Certificate issuing logic")
+
     }
+)/*(6)!*/{ csr ->
+    when (this) {
+        is AttestationResult.Android.Verified -> TODO()
+        is AttestationResult.IOS.Verified -> TODO()
+    }
+    TODO("Certificate issuing logic")
+}
 }

@@ -59,7 +59,7 @@ val server = embeddedServer(Netty, port = 8080) {
     }
  /*(5)!*/post(PATH_ATTEST) {
      /*(6)!*/val csr = Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())
-        val result = verifier.verifyAttestation(csr) { csr, _ ->
+        val result = verifier.verifyAttestation(csr) { csr ->
      /*(7)!*/val leafCertificate = signer.sign(
        /*(8)!*/TbsCertificate(
          /*(9)!*/serialNumber = Random.nextBytes(32),

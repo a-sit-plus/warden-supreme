@@ -270,7 +270,7 @@ class AttestationVerifier(
                     )
                 }
 
-                catchingUnwrapped { certificateIssuer.invoke(csr, details) }.fold(
+                catchingUnwrapped { details.certificateIssuer(csr) }.fold(
                     onSuccess = {
                         catchingUnwrapped {
                             details.onAttestationSuccess(
@@ -326,7 +326,7 @@ sealed class ChallengeValidationResult {
  * Hence, a certificate can be issued and the whole certificate chain (from newly issued certificate up to the CA)
  * shall be returned.
  */
-typealias CertificateIssuer = suspend (Pkcs10CertificationRequest, AttestationResult.Verified) -> CertificateChain
+typealias CertificateIssuer = suspend AttestationResult.Verified.(Pkcs10CertificationRequest) -> CertificateChain
 
 sealed class PreAttestationError {
     abstract val throwable: Throwable?
