@@ -89,65 +89,68 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
 
             routing {
                 get("/shutdown") {
-                    test("Received shutdown request") { call.respondText("Bye!") }
+                    test("Received shutdown request") {}
+                    call.respondText("Bye!")
                     running = false
                 }
 
                 get(ENDPOINT_CHALLENGE) {
-
-                    "Issuing Challenge" {
-                        call.respond(
-                            attestationValidator.issueChallenge(
-                                ENDPOINT_ATTEST,
-                                timeZone = TimeZone.currentSystemDefault(),
-                            )
+                    test("Issuing Challenge") {}
+                    call.respond(
+                        attestationValidator.issueChallenge(
+                            ENDPOINT_ATTEST,
+                            timeZone = TimeZone.currentSystemDefault(),
                         )
-                    }
+                    )
+
+
                 }
                 post(PATH_ATTEST) {
-                    test("Got an attestation statement") {
-                        val src = call.receive<ByteArray>()
-                        val resp =
-                            attestationValidator.verifyKeyAttestation(
-                                Pkcs10CertificationRequest.decodeFromDer(src),
-                                onPreAttestationError = {
-                                    val msg = throwable?.message ?: ""
-                                    println(msg)
-                                    msg
-                                },
-                                onAttestationError = { stmt ->
-                                    println(stmt.serializeCompact())
-                                    stmt.serializeCompact()
-                                }) { csr, _ ->
-                                println("Successfully attested device ${csr.deviceName}")
-                                Signer.Ephemeral {
-                                    ec { }
-                                }.getOrThrow().let { signer ->
-                                    signer.sign(
-                                        TbsCertificate(
-                                            serialNumber = Random.nextBytes(32),
-                                            publicKey = csr.tbsCsr.publicKey,
-                                            signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
-                                                .getOrThrow(),
-                                            validFrom = Asn1Time(Clock.System.now()),
-                                            validUntil = Asn1Time(Clock.System.now() + 10.days),
-                                            issuerName = listOf(
-                                                RelativeDistinguishedName(
-                                                    AttributeTypeAndValue.CommonName(
-                                                        Asn1String.UTF8(
-                                                            "WARDEN Supreme"
-                                                        )
+                    val src = call.receive<ByteArray>()
+                    test("Got Challenge") {}
+
+
+                    val resp =
+                        attestationValidator.verifyAttestation(
+                            Pkcs10CertificationRequest.decodeFromDer(src),
+                            onPreAttestationError = {
+                                val msg = throwable?.message ?: ""
+                                println(msg)
+                                msg
+                            },
+                            onAttestationError = { stmt ->
+                                println(stmt.serializeCompact())
+                                stmt.serializeCompact()
+                            }) { csr, _ ->
+                            println("Successfully attested device ${csr.deviceName}")
+                            Signer.Ephemeral {
+                                ec { }
+                            }.getOrThrow().let { signer ->
+                                signer.sign(
+                                    TbsCertificate(
+                                        serialNumber = Random.nextBytes(32),
+                                        publicKey = csr.tbsCsr.publicKey,
+                                        signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
+                                            .getOrThrow(),
+                                        validFrom = Asn1Time(Clock.System.now()),
+                                        validUntil = Asn1Time(Clock.System.now() + 10.days),
+                                        issuerName = listOf(
+                                            RelativeDistinguishedName(
+                                                AttributeTypeAndValue.CommonName(
+                                                    Asn1String.UTF8(
+                                                        "WARDEN Supreme"
                                                     )
                                                 )
-                                            ),
-                                            subjectName = csr.tbsCsr.subjectName,
-                                        )
-                                    ).map { listOf(it) }.getOrThrow()
-                                }
+                                            )
+                                        ),
+                                        subjectName = csr.tbsCsr.subjectName,
+                                    )
+                                ).map { listOf(it) }.getOrThrow()
                             }
-                        call.respond(resp)
-                    }
+                        }
+                    call.respond(resp)
                 }
+
             }
         }.start(wait = false)
 

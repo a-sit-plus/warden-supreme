@@ -135,7 +135,7 @@ The full details on the configuration can be found in the [API documentation](..
 
 <div id="config-options-example"></div>
 
-??? example "Comprehensive example of all config options"
+??? example "Comprehensive example of Makoto config options"
     The below config illustrates configuring two different Android apps: a regular one for the masses and a second one
     with much tighter security constraints. This makes no sense when Warden Supreme is integrated into a back-end.
     If, however, a dedicated attestation service is deployed that is then used to issue certificates for apps used by different services, this can be legitimate. 
@@ -203,7 +203,7 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
 
 1. Yes, it really is that simple 99% of the time!
 
-??? example "Comprehensive example of all options"
+??? example "Comprehensive list of Verifier options"
     ```kotlin
     --8<-- "Readme-Verifier.kt:18"
     ```
@@ -223,7 +223,7 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
 This example assumes Ktor. Since this is an example environment, TLS is omitted for brevity.
 
 ```kotlin
---8<-- "Readme-Backend.kt:54"
+--8<-- "Readme-Backend.kt:50"
 ```
 
 1. We're using JSON to transmit the challenge and the final response.

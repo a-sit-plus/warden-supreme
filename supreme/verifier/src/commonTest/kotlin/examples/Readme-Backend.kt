@@ -1,6 +1,5 @@
 package docs.service
 
-import at.asitplus.attestation.supreme.deviceName
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
@@ -12,7 +11,6 @@ import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import docs.config.minimal.verifier
-import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -21,7 +19,6 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -62,7 +59,7 @@ val server = embeddedServer(Netty, port = 8080) {
     }
  /*(5)!*/post(PATH_ATTEST) {
      /*(6)!*/val csr = Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())
-        val result = verifier.verifyKeyAttestation(csr) { csr, _ ->
+        val result = verifier.verifyAttestation(csr) { csr, _ ->
      /*(7)!*/val leafCertificate = signer.sign(
        /*(8)!*/TbsCertificate(
          /*(9)!*/serialNumber = Random.nextBytes(32),

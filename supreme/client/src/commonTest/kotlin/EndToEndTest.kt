@@ -25,6 +25,7 @@ val EndToEndTest by testSuite {
             val client = AttestationClient(HttpClient())
             val resp = client.getChallenge(Url(ENDPOINT_CHALLENGE))
             withClue("Fetch Challenge") {
+                resp.exceptionOrNull()?.printStackTrace()
                 resp.isSuccess shouldBe true
             }
             val attestationChallenge: AttestationChallenge = resp.getOrThrow()

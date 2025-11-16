@@ -10,6 +10,7 @@ This release introduces breaking changes to the integrated ("Supreme") component
 key and app attestation**, pinning down the last unnecessarily moving parts:
 
 * Rename `AttestationValidator` -> `AttestationVerifier` to align with wording (and introduce typealias, but marked as deprecated)
+* Rename `verifyKeyAttestation` -> `verifyAttestation` (and introduce delegate, but marked as deprecated)
 * Allow `CertificateIssuer` to throw instead of returning a KmmResult
 * Ship a default OID to identify the attestation proof.
 * Add defaults for keyConstraints and nonce validity duration.

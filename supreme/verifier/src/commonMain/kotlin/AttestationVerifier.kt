@@ -138,11 +138,20 @@ class AttestationVerifier(
         keyConstraints
     ).also { challengeValidator.store(it) }
 
+    @Deprecated("Misnomer; to be removed in 1.0.0", replaceWith = ReplaceWith("verifyAttestation"))
+    suspend fun verifyKeyAttestation(
+        csr: Pkcs10CertificationRequest,
+        onPreAttestationError: PreAttestationError.() -> String? = { null },
+        onAttestationError: AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
+        onAttestationSuccess: AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
+        certificateIssuer: CertificateIssuer,
+    ) = verifyAttestation(csr, onPreAttestationError, onAttestationError, onAttestationSuccess, certificateIssuer)
+
     /**
      * Verifies the received CSR:
      * * Validates nonce contained in the [csr] against the [challengeValidator]
      * * extracts the attestation statement from the [csr]
-     * * calls upon [makoto] for key attestation based on the extracted attestation statement
+     * * calls upon [makoto] for key and app attestation based on the extracted attestation statement
      * * verifies the [csr] signature against the contained public key
      *
      * Iff all verifications succeed, [certificateIssuer] is invoked and the resulting certificate chain
@@ -166,7 +175,7 @@ class AttestationVerifier(
      * Should any verification step fail, an [AttestationResponse.Failure] is returned.
      */
     @OptIn(ExperimentalStdlibApi::class)
-    suspend fun verifyKeyAttestation(
+    suspend fun verifyAttestation(
         csr: Pkcs10CertificationRequest,
         onPreAttestationError: PreAttestationError.() -> String? = { null },
         onAttestationError: AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
@@ -286,7 +295,7 @@ class AttestationVerifier(
 }
 
 /**
- * Invoked from [AttestationVerifier.verifyKeyAttestation]. Useful to match against in-transit attestation processes.
+ * Invoked from [AttestationVerifier.verifyAttestation]. Useful to match against in-transit attestation processes.
  * Most probably, this will check against a nonce cache and evict any matched nonce from the cache.
  * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
  * matching, ensuring freshness!
