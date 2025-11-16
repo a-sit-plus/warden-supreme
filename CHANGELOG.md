@@ -14,9 +14,6 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
     * `CertificateIssuer` now has `AttestationResult.Verified` as receiver for the new function.
     * The deprecated function stays as it is.
 * Allow `CertificateIssuer` to throw instead of returning a KmmResult
-* Ship a default OID to identify the attestation proof.
-* Add defaults for keyConstraints and nonce validity duration.
-* Transmit device names inside CSR on a best-effort basis
 * Constrain challenge issuing wrt. validity duration: No more params can be specified, but informational adding of time zone is still allowed.
 
 **It also includes behavioural changes to the Android and iOS attestation defaults:**
@@ -37,6 +34,9 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
 
 **New features:**
 
+* Ship a default OID to identify the attestation proof.
+* Add defaults for keyConstraints and nonce validity duration. -> Fully integrated key and attestation generation
+* Transmit device names inside CSR on a best-effort basis
 * Per-App StrongboxOverride
 * Expose Makoto `verificationTimeOffset` and `clock`
 * Rework Trust Anchor Management:
