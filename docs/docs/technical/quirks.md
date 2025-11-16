@@ -1,13 +1,13 @@
-# Quirks, bugs, workarounds, and hints
+# Quirks, Bugs, Workarounds, and Hints
 
-Warden Supreme's unified Android and iOS attestation core, _Warden_, has been used in production for years and attested millions of clients.
+Warden Supreme's unified Android and iOS attestation core, _Makoto_ (formerly _WARDEN_), has been used in production for years and attested millions of clients.
 Naturally, this caused hiccups but also enabled the collection of these hiccups' causes.
 Due to the diversity of its device landscape, Android is most affected by this. iOS, however, is also not without flaws.
 
 This page lists known quirks and bugs, and discusses how to deal with them.
 First, however, some general hints that apply regardlessly are discussed.
 
-## General hints
+## General Hints
 Using attestation to strongly enforce policies and to remotely establish trust in mobile clients is rooted in cryptographic
 mechanisms and PKI procedures.
 Hence, timeliness is of the essence, freshness windows and temporal checks are crucial.
@@ -20,57 +20,68 @@ at the start of an attestation procedure.
 However, cryptographic operations are performed in hardware and are thus not controlled by the application that receives
 the attestation challenge.
 A timezone offset and a time drift will therefore result in a certificate chain carrying attestation statements that will
-error out due to temporal offsets. There are two generic ways to cope with this, as discussed in the following subsections.
+error out due to temporal offsets (see below).
 
-### Increasing temporal leeway
+### Clock Drifts and Temporal Validity
+!!! danger "Time is relative (literally)!"
+    Three components require a time source (irrespective of Warden Supreme's implementation):
+        
+    * iOS attestation verification
+    * Android attestation verification
+    * The component ensuring freshness guarding both of the previous
+    
+    Of course, this still leaves two entities with system clocks that are isolated from each other:
+    
+    * The back-end, verifying attestation proofs
+    * Mobile clients, issuing those proofs to begin with
+    
+    **Theis complexity is inherent** and nothing can be done to simplify this situation on a conceptual level, but
+    Warden Supreme provides sane defaults that have proven to work well in practice.  
+    This means that for 99% of all deployments, this complexity is hidden away, but if you need to change the defaults
+    **you will need to get your hands dirty and entertain thoughts about this mess!**
+
 Warden's Supreme verifier allows for setting a global verification clock offset through the parameter `verificationTimeOffset`.
-**You will always want to set this, because even one millisecond of clock drift can cause otherwise perfectly valid attestations to error out!**  
-In addition, there are two parameters (one for iOS, and one for Android-specific configuration), both called `attestationStatementValiditySeconds`,
-and both defaulting to five minutes.
+
+* **This defaults to five minutes, because even one millisecond of clock drift can cause otherwise perfectly valid attestations to error out!**
+* Those five minutes are added to Apple's recommended default lifetime of an iOS attestation, effectively increasing the
+  maximum age of an attestation that is still considered valid by five minutes.
+
 
 !!! danger "The two Sources of Attestation Creation Time"
+    (Yes, things get even more complex!)  
     iOS and Android attestation statements come with two kinds of temporal validity:
 
     1. The (leaf) certificates `notBefore` and `notAfter` validity period
     2. An attestation creation time, encoded into the attestation data (this is true for iOS and Android)
     
-    Both values need to be temporally valid for an attestation to verify!
+    These values need to be temporally valid for an attestation to verify **in addition to nonce validity**!
 
-Given the criticality of these parameters and the need to override them naturally raises the question of why there's no sane default.
-The answer is twofold: On the one hand, Apple recommends certain validity durations, and setting an offset will require overriding the default five minutes
-with a longer value. This, however, then results in a freshness window that might go against Apple's recommendation.
-The second part of the answer relates to Android, or rather, bugs in the Keystore, vendor-specific code paths, and firmware.
-
-### Partially Ignoring Temporal Checks
 iOS's attestation implementation is mostly sane, with proper certificate validity and an always present attestation creation time.
 The diversity of Android implementations, however, leads to a form of anarchy
 that undermines some requirements for attestation checks.
-This means that setting a global verification clock offset, and increasing the iOS-specific `attestationStatementValiditySeconds` by said offset is usually enough to pacify
-Warden's iOS attestation checking routines, but Android requires more tweaking.
+In fact, many Android devices mess up a correctly encoded certificate validity, or the
+attestation statement validity, **or both**.
 
-In fact, if you want to ensure that as many Android devices as possible will pass attestation checks, you need to set
-the following configuration parameters:
+Luckily, this can be worked around **iff challenges issued by the back-end expire after a couple of minutes, and iff they are rooted in a truly random value only used once,
+that is invalidated once used!**
 
-* `AndroidAttestationConfiguration.ignoreLeafValidity = true`
-* `verificationTimeOffset = 5.minutes`
-* `AndroidAttestationConfiguration.attestationStatementValiditySeconds = null`
+!!! note "Warden Supreme Default Behaviour"
+    Warden supreme also ships with a default nonce generation service and a challenge validation component that follows this strategy.
+    Hence, Warden Supreme behave as follows by default:
+    
+    * Adding a five minute verification time offset
+    * Using the recommended default validity of iOS attestation statements **plus that five minute offset**
+    * Generating truly random nonces that expire after this very same iOS validity
+    * Completely disabling the validity checks on the leaf certificate and the encoded attestation proof validity period on Android.
 
-If you assume that this completely disables temporal validity checks on Android attestation statements, you'd be correct.
-On its own, this configuration will result in an infinite freshness window, effectively removing crucial freshness guarantees, which
-can make it significantly easier to mount certain targeted attacks. Of course, nobody wants that.
+The Warden Supreme defaults do not have any adverse impact on security that matters in practice
+because Warden Supreme checks the validity of challenges **before an attestation proof is even parsed**.
+In addition, Warden Supreme communicates nonce validity periods to clients.
+The validity period encoded into challenges is shifted by the inverse verification time offset, as the clients have an inverse view on relative clock drifts between back-end and themselves.
+Communicating this information to clients has the inherent benefit that large clock drifts can be caught right away and communicated to the user.
 
-!!! note inline end
-    Warden Supreme does not supply a component issuing, checking, and invalidating challenges, and some deployments
-    require rather elaborate nonce handling.
-
-Luckily, freshness is not solely tied to synchronized clocks, but each attestation statement must include a challenge issued
-by the service. **Hence, if your challenge is an unpredictable cryptographic nonce based in true randomness**, you can get
-away with ignoring all temporal characteristics of the leaf certificate containing the Android attestation data –
-**Iff you make your challenges expire after a couple of minutes, ensure that a nonce truly is a value only used once,
-and that they are invalidated once used!**
-
-This closes the circle on the question of why integrators are required to manually specify all this: Care must be taken, 
-and constraints on the challenge must be fulfilled before fiddling with temporal validity checks.
+??? warning "Changing Defaults"
+    It is perfectly possible to tweak this behaviour, if desired, but do keep all the above complexity in mind and **do not turn this into a footgun** by making changes lightly!
 
 ## Android
 
@@ -87,7 +98,7 @@ Android bugs fall into three categories:
 
 ### Encoding Flaws
 
-#### Creation Time issues
+#### Creation Time Issues
 Some (especially older) Android devices do not encode an attestation creation time, and always encode zero seconds since
 the epoch into the leaf certificate's `notBefore` **and** `notAfter`. This is partially by design, but some devices
 continue to do this, even though they should very much not.
@@ -95,9 +106,9 @@ continue to do this, even though they should very much not.
 #### ASN.1 Time Bugs
 Some vendors encode **UTC Time vs. GeneralizedTime** incorrectly leading to years of temporal offset.
 Only the vendor can fix this though updates. However, relying on a tight freshness window based on a cryptographic nonce
-sourced from true randomness is recommended anyway (see [Partially Ignoring Temporal Checks](#partially-ignoring-temporal-checks)).
+sourced from true randomness is recommended anyway (see [Clock Drifts and Temporal Validity](#clock-drifts-and-temporal-validity)).
 
-### Vendor Patch level misencoding
+### Vendor Patch Level Misencoding
 Many **Android 15** devices (even emulator images) and some Samsung devices do not conform to the ASN.1 schema for attestation data wrt. patch level encoding.
 This concerns the vendor patch level field, not the OS patch level, and requires monkey-patching Google's upstream parser code to prevent it from glitching out.
 **Warden Supreme already applies the necessary band-aids**, but enforcing vendor patch levels is generally discouraged in favour of OS patch levels.
@@ -128,7 +139,7 @@ Warden Supreme allows for specifying an HTTP proxy URL, to facilitate setups beh
 As mentioned in [Partially Ignoring Temporal Checks](#partially-ignoring-temporal-checks), many older Android devices do not encode a sensible validity into the leaf certificate carrying
 attestation information. This was a deliberate choice by Google, that has since been reversed. Some vendors still adhere to this practice, though.
 
-#### Remote provisioning
+#### Remote Provisioning
 Newer Android devices support remote key provisioning and even require key rollover. Hence, offline devices can **exhaust key pools**, causing transient attestation failures. Taking devices online fixes this issue.
 The issue manifests itself **on the client device** as `r#ERROR_PENDING_INTERNET_CONNECTIVITY 2: Error::Rc(r#OUT_OF_KEYS_PENDING_INTERNET_CONNECTIVITY)) (public error code: 16 internal Keystore code: 24)`
 when trying to create an attestation statement.

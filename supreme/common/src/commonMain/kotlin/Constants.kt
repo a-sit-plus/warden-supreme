@@ -26,14 +26,9 @@ object WardenDefaults {
     }
 
     /**
-     * Default, secure random nonce generator
+     * Default, secure random 64-byte nonce generator
      */
     val nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) }
-
-    /**
-     * Sane default according to Apple and experience from the field
-     */
-    val nonceValidity: Duration = 5.minutes
 
     object KeyConstraints {
         val p256Signer = at.asitplus.attestation.supreme.KeyConstraints(

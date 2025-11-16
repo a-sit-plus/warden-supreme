@@ -13,7 +13,8 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
 * Allow `CertificateIssuer` to throw instead of returning a KmmResult
 * Ship a default OID to identify the attestation proof.
 * Add defaults for keyConstraints and nonce validity duration.
-* Transmit device names inside CSR on a best-effort basis.
+* Transmit device names inside CSR on a best-effort basis
+* Constrain challenge issuing wrt. validity duration: No more params can be specified, but informational adding of time zone is still allowed.
 
 **It also includes behavioural changes to the Android and iOS attestation defaults:**
 
@@ -21,13 +22,20 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
     * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is not a deprecated NOOP to be removed.
     * `enforceLeafValidity()` (without typo!) function was introduced
 * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
+* iOS clock verification time offset defaults to five minutes, which are added to the attestation statement validity by default.
 * Rename `Warden` -> `Makoto` to more clearly distinguish individual components by name
     * A `typealias Warden = Makoto` is present, but marked as deprecated for
 * Rename `AndroidAttestationChecker` -> `Roboto` to more clearly distinguish individual components by name
     * Rename `HardwareAttestationChecker` -> `HardwareAttestationVerifier` (and introduce typealias, but marked as deprecated) 
     * Rename `NougatHybridAttestationChecker` -> `NougatHybridAttestationVerifier` (and introduce typealias, but marked as deprecated) 
     * Rename `SoftwareAttestationChecker` -> `SoftwareAttestationVerifier` (and introduce typealias, but marked as deprecated)
+* Android total validity offset is now more lenient and simply checked for overflows
+* **If all parameters are configured explicitly, nothing changes, except for some renames**
+
+**New features:**
+
 * Per-App StrongboxOverride
+* Expose Makoto `verificationTimeOffset` and `clock`
 * Rework Trust Anchor Management:
     * Introduce `TrustedRoot` interface to represent trust anchors
         * `TrustedRoot.Certificate` for certificates

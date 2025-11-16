@@ -127,7 +127,6 @@ private constructor(
         attestationEndpoint,
         proofOID,
         includeGenericDeviceName,
-        version = 1,
         keyConstrains
     )
 

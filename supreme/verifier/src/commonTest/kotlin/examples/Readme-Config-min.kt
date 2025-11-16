@@ -19,6 +19,5 @@ val makoto = Makoto(
             teamIdentifier = "9CYHJNG644",
             bundleIdentifier = "at.asitplus.attestation-client",
         )
-    ),
- /*(3)!*/verificationTimeOffset = 1.minutes //OPTIONAL, defaults to zero
+    )
 )

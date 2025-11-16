@@ -120,11 +120,9 @@ The following snippet shows an MWE that also accounts for a minute of clock drif
     * For production apps distributed through the Google Play Store, this is the digest of a Google cloud signing certificate.
 2. An iOS application is uniquely identified by a bundle identifier and a team ID.  
 This combination makes it possible to attest its authenticity.
-3. Clock drifts are a pain to debug. For that reason, no component of warden automatically accounts for clock drift, and time offsets need to be configured manually!  
-**In particular, this means that setting a positive offset globally means that the iOS-specific `attestationStatementValiditySeconds` also needs to be increased!
 
 !!! warning "With great power comes great responsibility!"
-    The above really is an MWE!  
+    The above really is a minimum working example! 
     Many more configuration properties exist, and it is recommended to explicitly set **all those that are relevant to your specific scenario**,
     as the value of every single one should very much be the result of careful consideration.
     In the end, a strongly informed decision about every property is required to reflect the intended audience and the required security properties.
@@ -132,7 +130,8 @@ This combination makes it possible to attest its authenticity.
     **Warden Supreme, by definition, cannot take these decisions from you!**
 
 
-The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-warden/index.html) and a comprehensive example can be expanded below.
+The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-warden/index.html) and a comprehensive example can be expanded below.  
+**Be sure to read up on [Clock drift issues](../technical/quirks.md#clock-drifts-and-temporal-validity) before tweaking properties!**
 
 
 ??? example "Comprehensive example of all config options"
@@ -166,7 +165,7 @@ The full details on the configuration can be found in the [API documentation](..
     Their app attestation claims are only software-atested!
     14. Warden Supreme does not need to enforce this, because cryptographic nonces are used to ensure freshness.  
     It is not recommended to set this value, because many OEMs mess this up!
-    15. REquired if you run Warden behind a proxy to fetch revocation information from Google servers!
+    15. Required if you run Warden behind a proxy to fetch revocation information from Google servers!
     16. A single iOS app for evaluation purposes.
     17. Uses the test stage
     18. Custom trusted root is set, to enable generating iOS attestation proofs in software for evaluation purposes.

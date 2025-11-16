@@ -6,6 +6,7 @@ import ch.veehait.devicecheck.appattest.receipt.ReceiptValidator
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.swiftzer.semver.SemVer
+import kotlin.time.toKotlinDuration
 
 @Deprecated("Legacy name", replaceWith = ReplaceWith("IosAttestationConfiguration"))
 typealias IOSAttestationConfiguration = IosAttestationConfiguration
@@ -30,9 +31,9 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
     val iosVersion: OsVersions? = null,
 
     /**
-     * The maximum age an attestation statement is considered valid.
+     * The maximum age an attestation statement is considered valid. Defaults to [ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE] + [Makoto.DEFAULT_TIME_OFFSET]
      */
-    val attestationStatementValiditySeconds: Long = 5 * 60,
+    val attestationStatementValiditySeconds: Long = (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET).inWholeSeconds,
 
     /**
      * Manually specify the trust anchors.
@@ -49,7 +50,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
     constructor(
         singleApp: AppData,
         iosVersion: OsVersions? = null,
-        attestationStatementValiditySeconds: Long = 5 * 60,
+        attestationStatementValiditySeconds: Long = (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET).inWholeSeconds,
         trustedRoots: Set<TrustedRootPair>
         = APPLE_DEFAULT_TRUSTED_ROOTS,
     ) : this(listOf(singleApp), iosVersion, attestationStatementValiditySeconds, trustedRoots)
@@ -353,6 +354,7 @@ val TrustedRootPair.receiptRoot get() = second
  * - The root certificate used for Apple receipt validation (`APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR`).
  *
  */
-val APPLE_DEFAULT_TRUSTED_ROOTS:Set<TrustedRootPair> = linkedSetOf(
+val APPLE_DEFAULT_TRUSTED_ROOTS: Set<TrustedRootPair> = linkedSetOf(
     TrustedRoot.Certificate(AttestationValidator.APPLE_APP_ATTEST_ROOT_CA_BUILTIN_TRUST_ANCHOR.trustedCert) to
-            TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert))
+            TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert)
+)

@@ -34,7 +34,10 @@ import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import java.security.interfaces.ECPublicKey
 import kotlin.time.*
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+
+
 
 @Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("Makoto"))
 typealias Warden = Makoto
@@ -49,15 +52,15 @@ typealias Warden = Makoto
  * for details.
  * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
  * @param clock a clock to set the time of verification (used for certificate validity checks)
- * @param verificationTimeOffset allows for fine-grained clock drift compensation (this duration is added to the certificate
- * validity checks); can be negative.
+ * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
  */
 @OptIn(ExperimentalTime::class)
 class Makoto(
-    private val androidAttestationConfiguration: AndroidAttestationConfiguration,
-    private val iosAttestationConfiguration: IosAttestationConfiguration,
+    //TODO post 1.0.0: make it possible to configure only Android or only iOS
+    val androidAttestationConfiguration: AndroidAttestationConfiguration,
+    val iosAttestationConfiguration: IosAttestationConfiguration,
     val clock: Clock = Clock.System,
-    private val verificationTimeOffset: Duration = Duration.ZERO
+    val verificationTimeOffset: Duration = Duration.ZERO
 ) : AttestationService() {
 
     /**
@@ -86,18 +89,20 @@ class Makoto(
 
     private val log = LoggerFactory.getLogger(this.javaClass)
 
-    private val androidAttestationVerifiers = mutableListOf<Roboto>().apply {
 
-        if (verificationTimeOffset.inWholeSeconds > Int.MAX_VALUE) throw AttestationException.Configuration(
-            Platform.ANDROID,
-            "Offset too large!",
-            cause = NumberFormatException()
-        )
-        if (verificationTimeOffset.inWholeSeconds < Int.MIN_VALUE) throw AttestationException.Configuration(
-            Platform.ANDROID,
-            "Offset too large!",
-            cause = NumberFormatException()
-        )
+    private val androidAttestationVerifiers = mutableListOf<Roboto>().apply {
+        catchingUnwrapped {
+            Math.addExact(
+                verificationTimeOffset.inWholeSeconds,
+                androidAttestationConfiguration.verificationSecondsOffset
+            )
+        }.onFailure {
+            throw AttestationException.Configuration(
+                Platform.ANDROID,
+                "Offset too large!",
+                cause = it
+            )
+        }
 
         val androidOffset =
             (verificationTimeOffset + androidAttestationConfiguration.verificationSecondsOffset.seconds).inWholeSeconds
@@ -128,7 +133,6 @@ class Makoto(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
     }
-
 
     private val iosApps =
         iosAttestationConfiguration.applications.associateWith { appData ->
@@ -737,6 +741,13 @@ class Makoto(
                 reason = IosAttestationException.Reason.APP_UNEXPECTED
             )
         )
+    }
+
+    companion object {
+        /**
+         * Sane default to account for clock drifts seen in practice
+         */
+        val DEFAULT_TIME_OFFSET = 5.minutes
     }
 }
 

@@ -13,8 +13,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import org.kotlincrypto.random.CryptoRand
+import java.lang.Long.max
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @Deprecated("Misnomer; to be removed in 1.0.0", replaceWith = ReplaceWith("AttestationVerifier"))
@@ -27,23 +29,34 @@ typealias AttestationValidator = AttestationVerifier
  * The [attestationProofOID] to be used in a CSR to convey an attestation statement. Can be overridden. It defaults to [WardenDefaults.OIDs.ATTESTATION_PROOF]
  * When [defaultKeyConstraints] is specified, all issued challenges will automatically convey this, unless overridden.
  * **Note that key constraints cannot be reliably enforced** due to technical client limitations. Not all platforms can restrict key usage and properties!
+ * Still, Warden Supreme's client will respect the key constraints and create keys as specified.
  *
  * [includeGenericDeviceName] indicates whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16") with the attestation proof.
  * On its own, this is **not the device's nickname and therefore cannot identify a person in its own**.
  * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
  *
+ * The [nonceGenerator]'s responsibility is to generate nonces to ensure freshness of issues challenges. Defaults to [WardenDefaults.nonceGenerator],
+ * which generates secure, random 64-byte nonces
  *
- * If your app relies on Warden Supreme, they will be respected, though, but there is no cryptography-backed enforcement.
- * Also requires a [challengeValidator], checking challenges validity and invalidating it once used.
+ * [nonceValidity] indicates how long issued nonces remain valid. This defaults to the maximum of the passed [makoto]'s
+ * [IosAttestationConfiguration.attestationStatementValiditySeconds] and [AndroidAttestationConfiguration.attestationStatementValiditySeconds].
+ *
  */
 class AttestationVerifier(
     private val makoto: Makoto,
     val attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
     val includeGenericDeviceName: Boolean = true,
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
-    val defaultNonceValidity: Duration = WardenDefaults.nonceValidity,
+    val nonceValidity: Duration = makoto.iosAttestationConfiguration.attestationStatementValiditySeconds.let { ios ->
+        val android = makoto.androidAttestationConfiguration.attestationStatementValiditySeconds
+        if (android == null) ios.seconds
+        else max(android, ios).seconds
+    },
     private val nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
-    private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(makoto.clock)
+    private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
+        makoto.clock,
+        -makoto.verificationTimeOffset
+    )
 ) {
     /**
      *
@@ -56,8 +69,12 @@ class AttestationVerifier(
      * On its own, this is **not the device's nickname and therefore cannot identify a person in its own**.
      * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
      * @param clock a clock to set the time of verification (used for certificate validity checks)
-     * @param verificationTimeOffset allows for fine-grained clock drift compensation (this duration is added to the certificate
+     * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
      * @param defaultKeyConstraints allows for specifying key constraints to the client. Not all platforms can restrict key usage and properties!
+     * @param nonceValidity indicates how long issued nonces remain valid. This defaults to the maximum of the passed
+     * [IosAttestationConfiguration.attestationStatementValiditySeconds] and [AndroidAttestationConfiguration.attestationStatementValiditySeconds].
+     * @param nonceGenerator responsible for generating nonces to ensure freshness of issues challenges. Defaults to [WardenDefaults.nonceGenerator],
+     *  which generates secure, random 64-byte nonces
      * @param challengeValidator lambda checking challenges validity and invalidating it once used
      * validity checks); can be negative.
      */
@@ -70,15 +87,19 @@ class AttestationVerifier(
         clock: Clock = Clock.System,
         verificationTimeOffset: Duration = Duration.ZERO,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
-        defaultNonceValidity: Duration = WardenDefaults.nonceValidity,
+        nonceValidity: Duration = iosAttestationConfiguration.attestationStatementValiditySeconds.let { ios ->
+            val android = androidAttestationConfiguration.attestationStatementValiditySeconds
+            if (android == null) ios.seconds
+            else max(android, ios).seconds
+        },
         nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
-        challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock)
+        challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock, verificationTimeOffset)
     ) : this(
         Makoto(androidAttestationConfiguration, iosAttestationConfiguration, clock, verificationTimeOffset),
         attestationProofOID,
         includeGenericDeviceName,
         defaultKeyConstraints,
-        defaultNonceValidity,
+        nonceValidity,
         nonceGenerator,
         challengeValidator,
     )
@@ -90,30 +111,32 @@ class AttestationVerifier(
     val warden: Makoto get() = makoto
 
     /**
-     * Issues a new attestation challenge, using a nonce generated by [nonceGenerator], valid for a duration of [validity], expecting an CSR containing an attestation statement to be `HTTP POST`ed to [postEndpoint].
-     * It is recommended, to pass a [timeZone].
+     * Issues a new attestation challenge, using a nonce generated by [nonceGenerator], valid for a duration of [nonceValidity], expecting an CSR containing an attestation statement to be `HTTP POST`ed to [postEndpoint].
+     * It is possible, to pass a [timeZone], but this is purely informational and is not fed into validity checks.
      *
      * Specify [keyConstraints] to communicate to the type of key and its properties to the client, for automatic key creation. Defaults to [defaultKeyConstraints].
      *
-     * It is possible to pass [timeZone] info and a [timeOffset] to account for an incorrect server clock. This value is added to the returned [AttestationChallenge.issuedAt] and accounted for when calculating [AttestationChallenge.validUntil].
+     * Note that the inverse of [Makoto.verificationTimeOffset] is added to the nonce validity period to account for clock drift between clients and server.
+     * Why the inverse? Because clients check validity against their local clocks, reversing their relative view of the server time offset.
+     *
+     * **Note that the [challengeValidator] needs to account for this inverse view! The default [InMemoryChallengeCache] already does that.**
+     *
+     *
      */
     suspend fun issueChallenge(
         postEndpoint: String,
-        validity: Duration = defaultNonceValidity,
         timeZone: TimeZone? = null,
-        timeOffset: Duration = Duration.ZERO,
         keyConstraints: KeyConstraints? = defaultKeyConstraints
-    ) =
-        AttestationChallenge(
-            issuedAt = makoto.clock.now() + timeOffset,
-            validity,
-            timeZone,
-            nonceGenerator(),
-            postEndpoint,
-            attestationProofOID,
-            includeGenericDeviceName,
-            keyConstraints
-        ).also { challengeValidator.store(it) }
+    ) = AttestationChallenge(
+        issuedAt = makoto.clock.now() - makoto.verificationTimeOffset,
+        nonceValidity,
+        timeZone,
+        nonceGenerator(),
+        postEndpoint,
+        attestationProofOID,
+        includeGenericDeviceName,
+        keyConstraints
+    ).also { challengeValidator.store(it) }
 
     /**
      * Verifies the received CSR:
@@ -267,6 +290,10 @@ class AttestationVerifier(
  * Most probably, this will check against a nonce cache and evict any matched nonce from the cache.
  * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
  * matching, ensuring freshness!
+ *
+ * **BEWARE OF CLOCK DRIFT AND CONFIGURED OFFSETS WRT VALIDITY DURATION!**
+ *
+ * @see InMemoryChallengeCache for a sane default logic to account for clock drift
  */
 interface ChallengeValidator {
     suspend fun store(challenge: AttestationChallenge)
@@ -307,7 +334,13 @@ sealed class PreAttestationError {
     class OperationalError(override val throwable: Throwable) : PreAttestationError()
 }
 
-class InMemoryChallengeCache(private val clock: Clock) : ChallengeValidator {
+
+/**
+ * Caches issued challenges in memory in a coroutine-safe way. Requires a [clock] and an [offset].
+ * The [AttestationVerifier] passes [Makoto]'s clock and the inverse of [Makoto.verificationTimeOffset], since these two values
+ * are also encoded into issues challenges.
+ */
+class InMemoryChallengeCache(private val clock: Clock, private val offset: Duration) : ChallengeValidator {
 
     private val mutex = Mutex()
     private val challengeList = mutableListOf<AttestationChallenge>()
@@ -331,7 +364,7 @@ class InMemoryChallengeCache(private val clock: Clock) : ChallengeValidator {
 
     private fun pruneExpiredEntries() {
         for (i in challengeList.indices.reversed()) {
-            if (challengeList[i].validUntil <= clock.now()) {
+            if (challengeList[i].validUntil <= (clock.now() + offset)) {
                 challengeList.removeAt(i)
             }
         }

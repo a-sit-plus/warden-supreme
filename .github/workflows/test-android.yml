@@ -22,15 +22,15 @@ jobs:
       - name: Compile
         run: ./gradlew :supreme-client:pixelAVDSetup :supreme-verifier:jvmTestClasses
       - name: Start Verifier
-        run: ./gradlew startVerifier &
-      - name: Connected Check
+        run: ./gradlew :supreme-verifier:jvmTest &
+      - name: Start Client Check
         run: ./gradlew pixelAVDAndroidDeviceTest --info
       - name: Test Report
         uses: dorny/test-reporter@v2
         if: success() || failure()
         with:
           name: Warden Supreme Android Device Tests
-          path: supreme/client/build/outputs/androidTest-results/managedDevice/**/pixelAVD/TEST*.xml
+          path: supreme/client/build/outputs/androidTest-results/managedDevice/**/pixelAVD/TEST*.xml,supreme/**/build/test-results/**/TEST*.xml
           list-suites: failed
           list-tests: failed
           reporter: java-junit

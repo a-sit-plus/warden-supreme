@@ -29,7 +29,7 @@ In particular, the following requirements must be met:
 
 Once everything is set up, App Attest can be used in your app.
 
-## End-to-end flow (high level)
+## End-to-End Flow (High-Level)
 
 Apple platforms support _attestation_ and _assertion_, aimed at different use cases.
 Attestation is the initial step to establish a device's and an app's integrity, while assertion can be used to
@@ -84,13 +84,13 @@ Android's behaviour for a consistent UX across both platforms.
 
 ## Attestation Validation
 
-### Parse & verify the certificate chain
+### Parse & Verify the Certificate Chain
 
 - Extract `attStmt.x5c` and build a chain to Apple’s **App Attest intermediate** and **root**; verify signatures, Basic
   Constraints, key usages, and time validity.
 - Pin trust to **Apple’s App Attest roots**; do **not** rely on a general-purpose system trust store.
 
-### Recompute and verify the nonce
+### Recompute and Verify the Nonce
 
 Apple defines the **nonce** as the SHA‑256 hash of `authenticatorData || SHA256(challengeBytes)` (concatenation of raw
 bytes). it is calculated as follows:
@@ -99,7 +99,7 @@ bytes). it is calculated as follows:
 2. Concatenate `authenticatorData || clientDataHash`, then compute `nonce = SHA256(...)`.
 3. Compare `nonce` to the value in the **leaf attestation certificate extension** as specified by Apple’s guide.
 
-### Validate `authenticatorData` semantics
+### Validate `authenticatorData` Semantics
 
 !!! note inline end "Limitations"
     Unlike Android, iOS does not allow binding arbitrary app keys to system-enforced user authentication with configurable timeouts, nor can such user-auth requirements be attested for those keys.
@@ -125,7 +125,7 @@ App Attest natively attests **the app instance** (App ID) and the Apple‑manage
 4. This binds Apple’s attestation to your application key, yielding **verifiable linkage** similar to Android key
    attestation.
 
-Signum Supreme (and therefore Warden Supreme) provides emulated key attestation out of the box, automating this whole process, and
+Warden Supreme provides emulated key attestation out of the box, automating this whole process, and
 streamlining back-end checks by relying on Vincent Haupert's excellent [DeviceCheck / AppAttest library](https://github.com/veehaitch/devicecheck-appattest).
 Hence, no custom logic is required on clients and on the back-end.
 
@@ -218,7 +218,7 @@ However, Warden Supreme provides a `ValidatedAttestation` object at teh end of a
 object contains the receipt that can be extracted, stored, and sent to Apple for risk assessment, if desired.
 
 
-## Operational guidance
+## Operational Guidance
 
 - **Online dependency**: App Attest requires a **live connection to Apple** for attestation and assertions. Implement
   retries/queuing and clear UX.
@@ -229,7 +229,7 @@ object contains the receipt that can be extracted, stored, and sent to Apple for
   mix across stages.
 - **Privacy**: Apple observes attestation/assertion events.
 
-## Verification pitfalls to avoid
+## Verification Pitfalls to Avoid
 
 These mostly apply when rolling your own, since Signum Supreme takes care of most of these. Still, for the sake of
 completeness, this section lists general common pitfalls.
@@ -241,12 +241,14 @@ completeness, this section lists general common pitfalls.
 - **Skipping counter checks**: The **monotonic counter** is your continuity signal; enforce strictly increasing values.
 - **Leaking key material**: Never transmit or store private keys. Persist only the **public key** and minimal metadata.
 - **Time Drift**: Out-of-sync clocks between clients and server can cause the PKIX validation part to fail.
+See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-temporal-validity).
 
-## References & useful libraries
+## References and Useful Libraries
 
 - [Apple — DeviceCheck (App Attest landing)](https://developer.apple.com/documentation/devicecheck)
 - [Apple — Validating apps that connect to your server (with diagrams)](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)
 - [Apple — Attestation Object Validation Guide (validation details)](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)
 - [Apple — Establishing your app’s integrity (client-side)](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity)
 - [Server validation library (Kotlin)](https://github.com/veehaitch/devicecheck-appattest)
+- [Warden Supreme integration guide](../integration/supreme.md)
 

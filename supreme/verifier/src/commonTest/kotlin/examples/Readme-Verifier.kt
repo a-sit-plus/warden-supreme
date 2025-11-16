@@ -34,7 +34,7 @@ val verifier = AttestationVerifier(
             allowNewBiometricFactors = false
         )
     ),
-    defaultNonceValidity = 5.minutes, //DEFAULT
+    nonceValidity = 5.minutes, //DEFAULT
     nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(5)!*/128)) },
  /*(6)!*/challengeValidator = rdbmsBacked
 )

@@ -10,7 +10,7 @@ It provides a unified framework to verify the integrity of Android and iOS clien
 ensuring that only authentic, untampered apps can access a service in three simple steps:
 
 1. 📜 Define a policy on the back-end
-2. 🧩 Wire the Warden Supreme Verifier to two HTTPS endpoints
+2. 🔌 Plug the Warden Supreme Verifier into two HTTPS endpoints
 3. ✨ Create attested keys **and** have a certificate for them issued using five lines of code!
 
 This project consolidates

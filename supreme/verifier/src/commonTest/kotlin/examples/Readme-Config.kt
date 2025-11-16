@@ -43,7 +43,7 @@ val makoto = Makoto(
      /*(12)!*/disableHardwareAttestation = false,
         enableSoftwareAttestation = false, //DEFAULTS
      /*(13)!*/enableNougatAttestation = false,
-     /*(14)!*/attestationStatementValiditySeconds = 300,
+     /*(14)!*/attestationStatementValiditySeconds = null,
      /*(15)!*/httpProxy = null,
         requireRemoteKeyProvisioning = false
 
@@ -59,9 +59,9 @@ val makoto = Makoto(
             )
         ),
      /*(19)!*/iosVersion = OsVersions("17", "21A36"),
-     /*(20)!*/attestationStatementValiditySeconds = 600, //Twice Apple's requirement
+     /*(20)!*/attestationStatementValiditySeconds = 600, //Apple's requirement + verificationTimeOffset
      /*(21)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS
     ),
     clock = Clock.System, //DEFAULT
- /*(22)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults to zero
+ /*(22)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults shown
 )

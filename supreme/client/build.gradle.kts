@@ -137,38 +137,6 @@ tasks.whenObjectAdded {
         dependsOn(resignTestApk)
 }
 
-val startVerifier = tasks.register<DefaultTask>("startVerifier") {
-    group = "verification"
-    doLast {
-        if (!kotlin.runCatching { Socket("localhost", 8080) }.fold(onSuccess = { true }, onFailure = { false }))
-            logger.lifecycle("Starting Verifier")
-        else {
-            logger.lifecycle("Shutting down Verifier")
-            runCatching {
-                HttpClients.createDefault().let { client ->
-                    logger.lifecycle("Verifier response: ${client.execute(HttpGet("http://localhost:8080/shutdown")).statusLine.statusCode}")
-                }
-            }.getOrElse { logger.lifecycle("Verifier not running"); it.printStackTrace() }
-
-        }
-        val verifier= thread(start = true, isDaemon = false) {
-            exec {
-                workingDir = rootDir
-                executable = "./gradlew"
-                args = listOf(":supreme-verifier:jvmTest")
-            }
-        }
-
-        logger.lifecycle("Waiting for Verifier to start")
-        while (kotlin.runCatching { Socket("localhost", 8080) }.fold(onSuccess = { true }, onFailure = { false })) {
-            Thread.sleep(1000)
-            logger.lifecycle("Waiting for Verifier to start")
-        }
-        logger.lifecycle("Verifier started")
-        verifier.join()
-    }
-}
-
 val javadocJar = setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/",
     multiModuleDoc = true

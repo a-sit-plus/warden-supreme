@@ -15,10 +15,10 @@ import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.testballoon.invoke
+import at.asitplus.testballoon.minus
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
 import de.infix.testBalloon.framework.core.testSuite
-import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -28,7 +28,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.TimeZone
-import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -44,12 +43,12 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
     val VERIFICATION_OFFSET = 3.minutes
 
 
-    "startServer" {
+    "Verifier" - {
         val ENDPOINT_CHALLENGE = "/api/v1/challenge"
         val PATH_ATTEST = "/api/v1/attest"
         val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
 
-        var running = true
+        var running: Boolean? = true
 
         val attestationValidator = AttestationVerifier(
             AndroidAttestationConfiguration.Builder(
@@ -90,76 +89,77 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
 
             routing {
                 get("/shutdown") {
-                    println("Shutting down...")
-                    call.respondText("Bye!")
+                    test("Received shutdown request") { call.respondText("Bye!") }
                     running = false
                 }
 
                 get(ENDPOINT_CHALLENGE) {
 
-                    println("Issuing Challenge")
-                    call.respond(
-                        attestationValidator.issueChallenge(
-                            ENDPOINT_ATTEST,
-                            STMT_VALIDITY,
-                            timeZone = TimeZone.currentSystemDefault(),
-                            timeOffset = -5.minutes,
+                    "Issuing Challenge" {
+                        call.respond(
+                            attestationValidator.issueChallenge(
+                                ENDPOINT_ATTEST,
+                                timeZone = TimeZone.currentSystemDefault(),
+                            )
                         )
-                    )
+                    }
                 }
                 post(PATH_ATTEST) {
-                    val src = call.receive<ByteArray>()
-                    val resp =
-                        attestationValidator.verifyKeyAttestation(
-                            Pkcs10CertificationRequest.decodeFromDer(src),
-                            onPreAttestationError = {
-                                val msg = this.throwable?.message ?: ""
-                                println(msg)
-                                msg
-                            },
-                            onAttestationError = { stmt ->
-                                println(stmt.serializeCompact())
-                                stmt.serializeCompact()
-                            }) { csr, _ ->
-
-                            println("Got an attestation statement from device ${csr.deviceName}")
-
-                            Signer.Ephemeral {
-                                ec { }
-                            }.getOrThrow().let { signer ->
-                                signer.sign(
-                                    TbsCertificate(
-                                        serialNumber = Random.nextBytes(32),
-                                        publicKey = csr.tbsCsr.publicKey,
-                                        signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
-                                            .getOrThrow(),
-                                        validFrom = Asn1Time(Clock.System.now()),
-                                        validUntil = Asn1Time(Clock.System.now() + 10.days),
-                                        issuerName = listOf(
-                                            RelativeDistinguishedName(
-                                                AttributeTypeAndValue.CommonName(
-                                                    Asn1String.UTF8(
-                                                        "WARDEN Supreme"
+                    test("Got an attestation statement") {
+                        val src = call.receive<ByteArray>()
+                        val resp =
+                            attestationValidator.verifyKeyAttestation(
+                                Pkcs10CertificationRequest.decodeFromDer(src),
+                                onPreAttestationError = {
+                                    val msg = throwable?.message ?: ""
+                                    println(msg)
+                                    msg
+                                },
+                                onAttestationError = { stmt ->
+                                    println(stmt.serializeCompact())
+                                    stmt.serializeCompact()
+                                }) { csr, _ ->
+                                println("Successfully attested device ${csr.deviceName}")
+                                Signer.Ephemeral {
+                                    ec { }
+                                }.getOrThrow().let { signer ->
+                                    signer.sign(
+                                        TbsCertificate(
+                                            serialNumber = Random.nextBytes(32),
+                                            publicKey = csr.tbsCsr.publicKey,
+                                            signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
+                                                .getOrThrow(),
+                                            validFrom = Asn1Time(Clock.System.now()),
+                                            validUntil = Asn1Time(Clock.System.now() + 10.days),
+                                            issuerName = listOf(
+                                                RelativeDistinguishedName(
+                                                    AttributeTypeAndValue.CommonName(
+                                                        Asn1String.UTF8(
+                                                            "WARDEN Supreme"
+                                                        )
                                                     )
                                                 )
-                                            )
-                                        ),
-                                        subjectName = csr.tbsCsr.subjectName,
-                                    )
-                                ).map { listOf(it) }.getOrThrow()
+                                            ),
+                                            subjectName = csr.tbsCsr.subjectName,
+                                        )
+                                    ).map { listOf(it) }.getOrThrow()
+                                }
                             }
-                        }
-                    call.respond(resp)
+                        call.respond(resp)
+                    }
                 }
             }
         }.start(wait = false)
+
+        var timeout = 5.minutes
         println("KTOR server started!")
+        println("   Waiting $timeout before auto-shutdown!")
         val before = Clock.System.now()
 
-        while (running) {
+        while (running == true) {
             Thread.sleep(1000)
-            if (Clock.System.now() - before > 5.minutes) running = false
+            if (Clock.System.now() - before > timeout) running = null
         }
-        server.stop()
+        (if (running == null) "Automatically Shutting down after timeout" else "Obeying shutdown request") { server.stop() }
     }
 }
