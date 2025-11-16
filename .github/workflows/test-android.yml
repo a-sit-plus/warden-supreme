@@ -22,7 +22,7 @@ jobs:
       - name: Compile
         run: ./gradlew :supreme-client:pixelAVDSetup :supreme-verifier:jvmTestClasses
       - name: Start Verifier
-        run: ./gradlew :supreme-verifier:jvmTest &
+        run: ./gradlew -Dwarden.verifier.runserver=true :supreme-verifier:jvmTest &
       - name: Start Client Check
         run: ./gradlew pixelAVDAndroidDeviceTest --info
       - name: Test Report

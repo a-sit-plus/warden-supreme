@@ -37,13 +37,15 @@ import kotlin.uuid.ExperimentalUuidApi
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
 val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 20.minutes)) {
 
+    val runServer = System.getProperty("warden.verifier.runserver", "false")!!.toBoolean()
+
+
     //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
     //fail at runtime
     val STMT_VALIDITY = 15.minutes
     val VERIFICATION_OFFSET = 3.minutes
 
-
-    "Verifier" - {
+    if (runServer) "Verifier" - {
         val ENDPOINT_CHALLENGE = "/api/v1/challenge"
         val PATH_ATTEST = "/api/v1/attest"
         val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
@@ -121,7 +123,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                             onAttestationError = { stmt ->
                                 println(stmt.serializeCompact())
                                 stmt.serializeCompact()
-                            }) { csr, _ ->
+                            }) { csr ->
                             println("Successfully attested device ${csr.deviceName}")
                             Signer.Ephemeral {
                                 ec { }
@@ -164,5 +166,5 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
             if (Clock.System.now() - before > timeout) running = null
         }
         (if (running == null) "Automatically Shutting down after timeout" else "Obeying shutdown request") { server.stop() }
-    }
+    } else test("Skipped"){}
 }

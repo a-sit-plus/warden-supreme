@@ -148,20 +148,33 @@ private constructor(
         if (this === other) return true
         if (other !is AttestationChallenge) return false
 
+        if (includeGenericDeviceName != other.includeGenericDeviceName) return false
+        if (version != other.version) return false
         if (issuedAt != other.issuedAt) return false
         if (validity != other.validity) return false
+        if (timeZone != other.timeZone) return false
         if (!nonce.contentEquals(other.nonce)) return false
+        if (attestationEndpoint != other.attestationEndpoint) return false
+        if (proofOID != other.proofOID) return false
+        if (keyConstraints != other.keyConstraints) return false
+        if (validUntil != other.validUntil) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = issuedAt.hashCode()
+        var result = includeGenericDeviceName.hashCode()
+        result = 31 * result + (version ?: 0)
+        result = 31 * result + issuedAt.hashCode()
         result = 31 * result + validity.hashCode()
+        result = 31 * result + (timeZone?.hashCode() ?: 0)
         result = 31 * result + nonce.contentHashCode()
+        result = 31 * result + attestationEndpoint.hashCode()
+        result = 31 * result + proofOID.hashCode()
+        result = 31 * result + (keyConstraints?.hashCode() ?: 0)
+        result = 31 * result + validUntil.hashCode()
         return result
     }
-
 }
 
 /**

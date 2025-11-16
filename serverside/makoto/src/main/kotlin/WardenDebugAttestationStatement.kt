@@ -137,7 +137,7 @@ internal constructor(
     }
 }
 
-class FixedTimeClock(private val epochMilliseconds: Long) : Clock {
+class FixedTimeClock(private var epochMilliseconds: Long) : Clock {
     constructor(instant: Instant) : this(instant.toEpochMilliseconds())
     constructor(yyyy: UInt, mm: UInt, dd: UInt) : this(
         Instant.parse(
@@ -149,5 +149,8 @@ class FixedTimeClock(private val epochMilliseconds: Long) : Clock {
         )
     )
 
+    fun offsetBy(duration: Duration) {
+        epochMilliseconds += duration.inWholeMilliseconds
+    }
     override fun now() = Instant.fromEpochMilliseconds(epochMilliseconds)
 }

@@ -310,7 +310,17 @@ class AttestationVerifier(
  * @see InMemoryChallengeCache for a sane default logic to account for clock drift
  */
 interface ChallengeValidator {
+    /**
+     * The contract of this function is that it stores challenges regardless of their contents and performs no sanity checks.
+     * Reason: Strong cryptographic nonces are assumed, making collisions unrealistic
+     */
     suspend fun store(challenge: AttestationChallenge)
+
+    /**
+     * The contract of this function is that it returns a [ChallengeValidationResult.Success] iff a single still valid challenge matching the passend [nonce] is found.
+     * In all other cases, it must return a [ChallengeValidationResult.Failure].
+     * In addition, it **should** also remove all expired nonces, to keep stale nonces from inflating memory/storage.
+     */
     suspend fun validate(nonce: ByteArray): ChallengeValidationResult
 }
 
@@ -369,11 +379,24 @@ class InMemoryChallengeCache(private val clock: Clock, private val offset: Durat
     override suspend fun validate(nonce: ByteArray): ChallengeValidationResult {
         mutex.withLock {
             pruneExpiredEntries()
-            val ind = challengeList.indexOfFirst { it.nonce.contentEquals(nonce) }
-            return if (ind == -1) ChallengeValidationResult.Failure(IllegalStateException("No challenge found"))
-            else ChallengeValidationResult.Success(challengeList.removeAt(ind))
-
+            return find(nonce)
         }
+    }
+
+    private fun find(nonce: ByteArray): ChallengeValidationResult {
+        val removed = mutableListOf<AttestationChallenge>()
+        for (i in challengeList.indices.reversed()) {
+            if (challengeList[i].nonce.contentEquals(nonce)) {
+                removed.add(challengeList.removeAt(i))
+            }
+        }
+
+        return when (removed.size) {
+            0 -> ChallengeValidationResult.Failure(IllegalStateException("No challenge found"))
+            1 -> ChallengeValidationResult.Success(removed.first())
+            else -> ChallengeValidationResult.Failure(IllegalStateException("Multiple challenges for nonce ${nonce.toHexString()} found"))
+        }
+
     }
 
     private fun pruneExpiredEntries() {

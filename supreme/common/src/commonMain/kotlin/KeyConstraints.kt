@@ -42,7 +42,31 @@ data class KeyConstraints(
             override val digests: Set<Digest> = setOf(Digest.SHA256),
             override val allowSigning: Boolean = true,
             val allowDecrypting: Boolean = false,
-        ) : AlgorithmParameters()
+        ) : AlgorithmParameters() {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is RSA) return false
+                if (!super.equals(other)) return false
+
+                if (allowSigning != other.allowSigning) return false
+                if (allowDecrypting != other.allowDecrypting) return false
+                if (keySize != other.keySize) return false
+                if (paddings != other.paddings) return false
+                if (digests != other.digests) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = super.hashCode()
+                result = 31 * result + allowSigning.hashCode()
+                result = 31 * result + allowDecrypting.hashCode()
+                result = 31 * result + keySize.hashCode()
+                result = 31 * result + paddings.hashCode()
+                result = 31 * result + digests.hashCode()
+                return result
+            }
+        }
 
         @Serializable
         class EC(
@@ -51,7 +75,45 @@ data class KeyConstraints(
             override val digests: Set<@Serializable(with = DigestSerializer::class) Digest> = setOf(curve.nativeDigest),
             override val allowSigning: Boolean = true,
             val allowKeyAgreement: Boolean = false,
-        ) : AlgorithmParameters()
+        ) : AlgorithmParameters() {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is EC) return false
+                if (!super.equals(other)) return false
+
+                if (allowSigning != other.allowSigning) return false
+                if (allowKeyAgreement != other.allowKeyAgreement) return false
+                if (curve != other.curve) return false
+                if (digests != other.digests) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = super.hashCode()
+                result = 31 * result + allowSigning.hashCode()
+                result = 31 * result + allowKeyAgreement.hashCode()
+                result = 31 * result + curve.hashCode()
+                result = 31 * result + digests.hashCode()
+                return result
+            }
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is AlgorithmParameters) return false
+
+            if (allowSigning != other.allowSigning) return false
+            if (digests != other.digests) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = allowSigning.hashCode()
+            result = 31 * result + digests.hashCode()
+            return result
+        }
     }
 
     @Serializable
@@ -60,6 +122,42 @@ data class KeyConstraints(
         val deviceLock: Boolean? = null,
         val biometry: Boolean? = null,
         val allowNewBiometricFactors: Boolean? = null,
-    )
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is KeyProtection) return false
+
+            if (deviceLock != other.deviceLock) return false
+            if (biometry != other.biometry) return false
+            if (allowNewBiometricFactors != other.allowNewBiometricFactors) return false
+            if (timeout != other.timeout) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = deviceLock?.hashCode() ?: 0
+            result = 31 * result + (biometry?.hashCode() ?: 0)
+            result = 31 * result + (allowNewBiometricFactors?.hashCode() ?: 0)
+            result = 31 * result + (timeout?.hashCode() ?: 0)
+            return result
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is KeyConstraints) return false
+
+        if (algorithmParameters != other.algorithmParameters) return false
+        if (keyProtection != other.keyProtection) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = algorithmParameters.hashCode()
+        result = 31 * result + (keyProtection?.hashCode() ?: 0)
+        return result
+    }
 
 }
