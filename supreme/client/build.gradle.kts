@@ -25,7 +25,6 @@ group = groupId
 version = artifactVersion
 
 kotlin {
-    jvm()
     iosArm64()
     iosSimulatorArm64()
     iosX64()

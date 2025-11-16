@@ -58,11 +58,29 @@ An attestation flow works as follows, in accordance with Figure&nbsp;1:
     * In case the attestation does not verify, the back-end records the reason for this failure.
 5. The back-end responds either with the full certificate chain (success) or a detailed error reason (failure).
 
-
 <figure>
-    <img src="../../assets/images/flow.png" alt="Remotely establishing trust in mobile clients">
-    <figcaption>Figure&nbsp;1: Remotely establishing trust in mobile clients</figcaption>
+<picture>
+    <!-- Dark-mode asset -->
+    <source
+        media="(prefers-color-scheme: dark)"
+        srcset="../../assets/images/flow-dark.png" />
+
+    <!-- Light-mode asset -->
+    <source
+        media="(prefers-color-scheme: light)"
+        srcset="../../assets/images/flow.png" />
+
+    <!-- Fallback (srcset for browsers that don’t support `prefers-color-scheme`) -->
+    <img
+        src="../../assets/images/flow.png"
+        alt="Apple App Attest Flows"
+        style="width:100%;height:auto;" />
+
+</picture>
+
+<figcaption>Figure&nbsp;1: Remotely establishing trust in mobile clients</figcaption>
 </figure>
+
 
 
 As shown in Figure&nbsp;1, the back-end needs to be configured before being able to assert the trustworthiness of a client.

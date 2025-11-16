@@ -12,7 +12,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Build jar
+      - name: Build artefacts + Run Tests
         run: ./gradlew allTests assemble
       - name: Test Report
         uses: dorny/test-reporter@v2
