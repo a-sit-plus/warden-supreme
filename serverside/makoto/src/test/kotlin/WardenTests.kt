@@ -24,6 +24,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import java.security.KeyPairGenerator
 import java.security.spec.ECGenParameterSpec
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -702,13 +703,14 @@ val WardenTest by testSuite {
                                             ANDROID_SIGNATURE_DIGESTS
                                         )
                                     ),
-attestationStatementValiditySeconds = 300,
+                                    attestationStatementValiditySeconds = 300,
                                     disableHardwareAttestation = true,
                                     enableSoftwareAttestation = true,
                                     ignoreLeafValidity = true
                                 ),
                                 DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock
+                                clock = clock,
+                                verificationTimeOffset = Duration.ZERO
                             ).apply {
                                 verifyAttestation(
                                     recordedAttestation.attestationProof,
@@ -741,10 +743,11 @@ attestationStatementValiditySeconds = 300,
                                     ),
                                     disableHardwareAttestation = true,
                                     enableNougatAttestation = true,
-attestationStatementValiditySeconds = 300,
+                                    attestationStatementValiditySeconds = 300,
                                 ),
                                 DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock
+                                clock = clock,
+                                verificationTimeOffset = Duration.ZERO
                             ).apply {
                                 verifyAttestation(
                                     recordedAttestation.attestationProof,
@@ -780,7 +783,8 @@ attestationStatementValiditySeconds = 300,
                                     attestationStatementValiditySeconds = 300,
                                 ),
                                 DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock
+                                clock = clock,
+                                verificationTimeOffset = Duration.ZERO
                             ).apply {
                                 verifyAttestation(
                                     recordedAttestation.attestationProof,
@@ -1136,7 +1140,8 @@ attestationStatementValiditySeconds = 300,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             attestationProof,
@@ -1172,7 +1177,8 @@ attestationStatementValiditySeconds = 300,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             attestationProof,
@@ -1210,7 +1216,8 @@ attestationStatementValiditySeconds = 300,
                                 attestationStatementValiditySeconds = 10 * 60
                             ),
                             DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock
+                            clock = clock,
+                            verificationTimeOffset = Duration.ZERO
                         ).apply {
                             verifyAttestation(
                                 attestationProof,
@@ -1246,7 +1253,8 @@ attestationStatementValiditySeconds = 300,
                                 attestationStatementValiditySeconds = 10 * 60
                             ),
                             DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock
+                            clock = clock,
+                            verificationTimeOffset = Duration.ZERO
                         ).apply {
                             verifyAttestation(
                                 attestationProof,
@@ -1281,7 +1289,8 @@ attestationStatementValiditySeconds = 300,
                                 attestationStatementValiditySeconds = 10 * 60
                             ),
                             DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock
+                            clock = clock,
+                            verificationTimeOffset = Duration.ZERO
                         ).apply {
                             verifyAttestation(
                                 attestationProof,
@@ -1338,7 +1347,8 @@ attestationStatementValiditySeconds = 300,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             data.attestationProof,
@@ -1382,7 +1392,8 @@ attestationStatementValiditySeconds = 300,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             data.attestationProof,
@@ -1425,7 +1436,8 @@ attestationStatementValiditySeconds = 300,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             data.attestationProof,
@@ -1469,7 +1481,8 @@ attestationStatementValiditySeconds = 300,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             data.attestationProof,
@@ -1511,7 +1524,8 @@ attestationStatementValiditySeconds = 300,
                         ignoreLeafValidity = true
                     ),
                     DEFAULT_IOS_ATTESTATION_CFG,
-                    clock = clock
+                    clock = clock,
+                    verificationTimeOffset = Duration.ZERO
                 ).apply {
                     verifyAttestation(
                         data.attestationProof,
@@ -1548,7 +1562,8 @@ attestationStatementValiditySeconds = 300,
                         ignoreLeafValidity = true
                     ),
                     DEFAULT_IOS_ATTESTATION_CFG,
-                    clock = clock
+                    clock = clock,
+                    verificationTimeOffset = Duration.ZERO
                 ).apply {
                     verifyAttestation(
                         data.attestationProof,
@@ -1586,7 +1601,8 @@ attestationStatementValiditySeconds = 300,
                         ignoreLeafValidity = true
                     ),
                     DEFAULT_IOS_ATTESTATION_CFG,
-                    clock = clock
+                    clock = clock,
+                    verificationTimeOffset = Duration.ZERO
                 ).apply {
                     verifyAttestation(
                         data.attestationProof,

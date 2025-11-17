@@ -2,6 +2,7 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.testballoon.invoke
+import at.asitplus.testballoon.minus
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
 import de.infix.testBalloon.framework.core.testSuite
@@ -20,7 +21,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-val ChallengeVerifierTest by testSuite {
+val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 10.minutes)) {
 
     "once" {
         val nonce = Random.nextBytes(16)
@@ -169,36 +170,40 @@ val ChallengeVerifierTest by testSuite {
         }
     }
 
-    "stresstest" (testConfig = TestConfig.testScope(isEnabled = true, timeout = 10.minutes)){
+    "stresstest" - {
         val numberOfNonces = 100_000
         val clock = FixedTimeClock(Random.nextLong())
         val cache = InMemoryChallengeCache(clock, Duration.ZERO)
         val recorded = Channel<AttestationChallenge>(numberOfNonces)
-        repeat(numberOfNonces) {
-            launch {
-                val nonce = WardenDefaults.nonceGenerator()
-                val challenge = AttestationChallenge(
-                    clock.now(),
-                    1.seconds,
-                    null,
-                    nonce,
-                    "",
-                    WardenDefaults.OIDs.ATTESTATION_PROOF
-                )
-                recorded.send(challenge)
-                cache.store(challenge)
+        "Creation" {
+            repeat(numberOfNonces) {
+                launch {
+                    val nonce = WardenDefaults.nonceGenerator()
+                    val challenge = AttestationChallenge(
+                        clock.now(),
+                        1.seconds,
+                        null,
+                        nonce,
+                        "",
+                        WardenDefaults.OIDs.ATTESTATION_PROOF
+                    )
+                    recorded.send(challenge)
+                    cache.store(challenge)
+                }
             }
         }
-        val checkers = Stack<Job>()
-        repeat(numberOfNonces) {
-            checkers += launch {
-                val challenge = recorded.receive()
-                val result = cache.validate(challenge.nonce)
-                result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
-                result.validatedChallenge.nonce shouldBe challenge.nonce
+        "Validation" {
+            val checkers = Stack<Job>()
+            repeat(numberOfNonces) {
+                checkers += launch {
+                    val challenge = recorded.receive()
+                    val result = cache.validate(challenge.nonce)
+                    result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
+                    result.validatedChallenge.nonce shouldBe challenge.nonce
+                }
             }
-        }
 
-        checkers.joinAll()
+            checkers.joinAll()
+        }
     }
 }

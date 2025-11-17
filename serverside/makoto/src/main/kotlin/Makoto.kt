@@ -60,7 +60,7 @@ class Makoto(
     private val androidAttestationConfiguration: AndroidAttestationConfiguration,
     private val iosAttestationConfiguration: IosAttestationConfiguration,
     val clock: Clock = Clock.System,
-    val verificationTimeOffset: Duration = Duration.ZERO
+    val verificationTimeOffset: Duration = DEFAULT_TIME_OFFSET
 ) : AttestationService() {
 
     /**
@@ -78,7 +78,7 @@ class Makoto(
     constructor(
         androidAttestationConfigurationJ: AndroidAttestationConfiguration,
         iosAttestationConfigurationJ: IosAttestationConfiguration,
-        verificationTimeOffsetJ: java.time.Duration = java.time.Duration.ZERO,
+        verificationTimeOffsetJ: java.time.Duration = DEFAULT_TIME_OFFSET.toJavaDuration(),
         javaClock: java.time.Clock = java.time.Clock.systemUTC()
     ) : this(
         androidAttestationConfigurationJ,
