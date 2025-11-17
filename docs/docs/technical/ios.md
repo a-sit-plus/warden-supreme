@@ -214,7 +214,7 @@ infrastructure operated by Apple.
 
 In summary, Apple is able to provide a risk metric that is highly dependent on user behaviour with no clear guidance
 on how to interpret the metric at a substantially privacy cost. For these reasons, Warden Supreme considers this out of scope.
-However, Warden Supreme provides a `ValidatedAttestation` object at teh end of a successful attestation verification and this
+However, Warden Supreme provides a `ValidatedAttestation` object at the end of a successful attestation verification and this
 object contains the receipt that can be extracted, stored, and sent to Apple for risk assessment, if desired.
 
 
