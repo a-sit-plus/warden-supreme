@@ -1,13 +1,24 @@
 # Using _Warden makoto_ / _Warden roboto_<br>without Integrated Clients
 
+!!! danger "Warden Supreme 0.9.99 Changed Defaults"
+    
+    * Android leaf cert validity is ignored by default, because Warden Supreme (by default) uses random cryptographic nonces.
+        * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is now a deprecated NOOP to be removed.
+        * `enforceLeafValidity()` (without typo!) function was introduced
+    * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
+    * Attestation verification time offset now defaults to five minutes to account for clock drift
+    * iOS attestation validity is increased by said five minutes
+    
+    **Ignoring these changes coming from legacy deployments can result in a total security failure if you do not ensure freshness through means of feeding random cryptographic nonces into attestation statement creation and properly checking them!**
+
 !!! tip inline end
     Both [WARDEN](https://github.com/a-sit-plus/warden) and [WARDEN-roboto](https://github.com/a-sit-plus/warden-roboto)
     live on as modules inside Warden Supreme. These projects are now integrated into Warden Supreme and continue to be
     maintained and published to Maven Central. See [Project Structure](structure.md).
 
-While Warden Supreme aims to make remote attestation across Android and iOS as smooth and consistent as possible via
-Kotlin Multiplatform, it is clear that not every iOS app will be written in Kotlin, and not every Android application
-will want to pull in Signum as dependency.
+Warden Supreme aims to make remote attestation across Android and iOS as smooth and consistent as possible via
+Kotlin Multiplatform. Ath the same time, it is clear that not every iOS app will be written in Kotlin, and not every Android application
+will want to pull in Signum as a dependency.
 
 In addition, legacy deployments that cannot yet transition to the new integrated Warden Supreme attestation flows are
 still and will remain operational. Until a migration is possible (see [migration notes](migration.md)), this page serves
@@ -24,7 +35,7 @@ as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (pr
 - Choose Warden makoto if you need both Android and iOS support or want a single, streamlined back-end interface.
 - Choose Warden roboto if you truly only need Android and want minimal dependencies.
 
-In both cases, refer Warden Supreme's [Back-End Configuration](supreme.md#back-end-configuration) guide, as it lists and explains
+In both cases, refer Warden Supreme's [Back-End Configuration](supreme.md#warden-supreme-step-by-step-guide) guide, as it lists and explains
 configuration properties for iOS and Android. This page focuses on behavior, inputs/outputs, and expected client responsibilities.
 
 
@@ -82,11 +93,11 @@ Warden makoto is the modernized variant of legacy WARDEN, sharing the same API:
 
 !!! tip Platform Specifics
     Like legacy WARDEN, Warden makoto also exposes OS-specific endpoints for more fine-grained app attestation on iOS,
-    and a more low-level API for Android targets. Refer to the respective platform-sepcific APIs, both of which are exposed by the
-    [`Warden`](../dokka/makoto/at.asitplus.attestation/-warden/index.html):
+    and a more low-level API for Android targets. Refer to the respective platform-sepcific APIs, both of which are exposed by
+    [`Makoto`](../dokka/makoto/at.asitplus.attestation/-makoto/index.html):
     
-    * [iOS](../dokka/makoto/at.asitplus.attestation/-warden/ios.html)
-    * [Android](../dokka/makoto/at.asitplus.attestation/-warden/android.html)
+    * [iOS](../dokka/makoto/at.asitplus.attestation/-makoto/ios.html)
+    * [Android](../dokka/makoto/at.asitplus.attestation/-makoto/android.html)
 
 
 Recommended endpoints:
@@ -129,4 +140,3 @@ Client duties (Android):
 - Background and platform deep dives: see Technical sections
   for [Android](../technical/android.md), [iOS](../technical/ios.md), and [Quirks](../technical/quirks.md).
 - End-to-end integration: see the [Integration Guide](supreme.md).
-- Configuration (authoritative): see [supreme.md#back-end_configuration](supreme.md#back-end-configuration).

@@ -1,7 +1,6 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
-import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.X509Certificate
@@ -16,6 +15,7 @@ import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
 import java.util.*
 import kotlin.math.absoluteValue
+import kotlin.text.HexFormat
 
 /**
  * Represents a Patch level configuration property.
@@ -59,6 +59,27 @@ data class PatchLevel @JvmOverloads constructor(
 }
 
 
+val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate(
+    X509Certificate.decodeFromPem(
+        """
+            -----BEGIN CERTIFICATE-----
+            MIICIjCCAaigAwIBAgIRAISp0Cl7DrWK5/8OgN52BgUwCgYIKoZIzj0EAwMwUjEc
+            MBoGA1UEAwwTS2V5IEF0dGVzdGF0aW9uIENBMTEQMA4GA1UECwwHQW5kcm9pZDET
+            MBEGA1UECgwKR29vZ2xlIExMQzELMAkGA1UEBhMCVVMwHhcNMjUwNzE3MjIzMjE4
+            WhcNMzUwNzE1MjIzMjE4WjBSMRwwGgYDVQQDDBNLZXkgQXR0ZXN0YXRpb24gQ0Ex
+            MRAwDgYDVQQLDAdBbmRyb2lkMRMwEQYDVQQKDApHb29nbGUgTExDMQswCQYDVQQG
+            EwJVUzB2MBAGByqGSM49AgEGBSuBBAAiA2IABCPaI3FO3z5bBQo8cuiEas4HjqCt
+            G/mLFfRT0MsIssPBEEU5Cfbt6sH5yOAxqEi5QagpU1yX4HwnGb7OtBYpDTB57uH5
+            Eczm34A5FNijV3s0/f0UPl7zbJcTx6xwqMIRq6NCMEAwDwYDVR0TAQH/BAUwAwEB
+            /zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFFIyuyz7RkOb3NaBqQ5lZuA0QepA
+            MAoGCCqGSM49BAMDA2gAMGUCMETfjPO/HwqReR2CS7p0ZWoD/LHs6hDi422opifH
+            EUaYLxwGlT9SLdjkVpz0UUOR5wIxAIoGyxGKRHVTpqpGRFiJtQEOOTp/+s1GcxeY
+            uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
+            -----END CERTIFICATE-----
+            """.trimIndent()
+    ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+)
+
 /**
  * Default trust anchors used to verify hardware attestation
  */
@@ -101,26 +122,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
         ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
     ),
     //new Google EC Root
-    TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
-            """
-            -----BEGIN CERTIFICATE-----
-            MIICIjCCAaigAwIBAgIRAISp0Cl7DrWK5/8OgN52BgUwCgYIKoZIzj0EAwMwUjEc
-            MBoGA1UEAwwTS2V5IEF0dGVzdGF0aW9uIENBMTEQMA4GA1UECwwHQW5kcm9pZDET
-            MBEGA1UECgwKR29vZ2xlIExMQzELMAkGA1UEBhMCVVMwHhcNMjUwNzE3MjIzMjE4
-            WhcNMzUwNzE1MjIzMjE4WjBSMRwwGgYDVQQDDBNLZXkgQXR0ZXN0YXRpb24gQ0Ex
-            MRAwDgYDVQQLDAdBbmRyb2lkMRMwEQYDVQQKDApHb29nbGUgTExDMQswCQYDVQQG
-            EwJVUzB2MBAGByqGSM49AgEGBSuBBAAiA2IABCPaI3FO3z5bBQo8cuiEas4HjqCt
-            G/mLFfRT0MsIssPBEEU5Cfbt6sH5yOAxqEi5QagpU1yX4HwnGb7OtBYpDTB57uH5
-            Eczm34A5FNijV3s0/f0UPl7zbJcTx6xwqMIRq6NCMEAwDwYDVR0TAQH/BAUwAwEB
-            /zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFFIyuyz7RkOb3NaBqQ5lZuA0QepA
-            MAoGCCqGSM49BAMDA2gAMGUCMETfjPO/HwqReR2CS7p0ZWoD/LHs6hDi422opifH
-            EUaYLxwGlT9SLdjkVpz0UUOR5wIxAIoGyxGKRHVTpqpGRFiJtQEOOTp/+s1GcxeY
-            uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
-            -----END CERTIFICATE-----
-            """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
-    ),
+    GOOGLE_RKP_EC_ROOT,
     //Old, but as of 2025 still valid root certificate. Will expire in 2026
     TrustedRoot.Certificate(
         X509Certificate.decodeFromPem(
@@ -260,12 +262,12 @@ val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
 val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("EC")
         .generatePublic(
-            X509EncodedKeySpec(Base64.getDecoder().decode(SoftwareAttestationChecker.GOOGLE_SOFTWARE_EC_ROOT))
+            X509EncodedKeySpec(Base64.getDecoder().decode(SoftwareAttestationVerifier.GOOGLE_SOFTWARE_EC_ROOT))
         ),
     KeyFactory.getInstance("RSA")
         .generatePublic(
             X509EncodedKeySpec(
-                Base64.getDecoder().decode(SoftwareAttestationChecker.GOOGLE_SOFTWARE_RSA_ROOT)
+                Base64.getDecoder().decode(SoftwareAttestationVerifier.GOOGLE_SOFTWARE_RSA_ROOT)
             )
         )
 )
@@ -299,18 +301,18 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11: Set<TrustedRoot> =
  * @param softwareTrustedRoots Manually specify the trust anchor for SW-attested certificate chains.
  * Defaults to google SW attestation keys. Overriding this set is useful for automated end-to-end tests, for example.
  * The default trust anchors are accessible through [DEFAULT_SOFTWARE_TRUST_ANCHORS]
- * @param disableHardwareAttestation Entirely disable creation of a [HardwareAttestationChecker].
+ * @param disableHardwareAttestation Entirely disable creation of a [HardwareAttestationVerifier].
  * Only change this flag, if you **really** know what you are doing!
  * @param enableNougatAttestation Enables hybrid attestation.
- * [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+ * [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
  * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
  * devices only support hardware-backed key attestation, but provide no indication about the OS state.
  * Hence, app-attestation cannot be trusted, but key attestation still can.
  * @param enableSoftwareAttestation Enables software attestation.
- * A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+ * A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
  * Only change this flag, if you **really** know what you are doing!
  * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
- * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+ * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
  */
 @Serializable
 data class AndroidAttestationConfiguration @JvmOverloads constructor(
@@ -335,14 +337,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Set to `true` if *StrongBox* security level should be required.
-     * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+     * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
      */
     val requireStrongBox: Boolean = false,
 
     /**
      * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
      * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-     * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+     * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
      */
     val allowBootloaderUnlock: Boolean = false,
 
@@ -354,7 +356,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     /**
      * Whether to ignore the timely validity of the leaf certificate
      */
-    val ignoreLeafValidity: Boolean = false,
+    val ignoreLeafValidity: Boolean = true,
     /**
      *  Tolerance in seconds added to verification date
      */
@@ -364,7 +366,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * Validity of the attestation statement in seconds. This is not the certificate validity!
      * An attestation statement has a creation time. This value indicates how far in the past the creation time might be.
      *
-     * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
+     * **Defaults be set to `null` to ignore attestation statement validity checking.**
+     * Hence, even a faulty attestation statement lacking a creation time will verify, but Warden Supreme, by default ensures freshness through random cryptographic nonces
      */
     val attestationStatementValiditySeconds: Long? = 5 * 60,
 
@@ -384,14 +387,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
 
     /**
-     * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+     * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
      * you are doing!
      * @see enableSoftwareAttestation
      */
     val disableHardwareAttestation: Boolean = false,
 
     /**
-     * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+     * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
      * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
      * devices only support hardware-backed key attestation, but provide no indication about the OS state.
      * Hence, app-attestation cannot be trusted, but key attestation still can.
@@ -399,10 +402,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val enableNougatAttestation: Boolean = false,
 
     /**
-     * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+     * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
      * Only change this flag, if you **really** know what you are doing!
      * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-     * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+     * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
      */
     val enableSoftwareAttestation: Boolean = false,
     /**
@@ -443,14 +446,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -462,7 +465,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Whether to ignore the timely validity of the leaf certificate
          */
-        ignoreLeafValidity: Boolean = false,
+        ignoreLeafValidity: Boolean = true,
 
         /**
          * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
@@ -491,17 +494,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          *
          * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
          */
-        attestationStatementValiditySeconds: Long? = 5 * 60,
+        attestationStatementValiditySeconds: Long? = null,
 
         /**
-         * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+         * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
          * you are doing!
          * @see enableSoftwareAttestation
          */
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
          * devices only support hardware-backed key attestation, but provide no indication about the OS state.
          * Hence, app-attestation cannot be trusted, but key attestation still can.
@@ -509,10 +512,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableNougatAttestation: Boolean = false,
 
         /**
-         * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you **really** know what you are doing!
          * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-         * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+         * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
          */
         enableSoftwareAttestation: Boolean = false,
 
@@ -573,14 +576,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -592,7 +595,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Whether to ignore the timely validity of the leaf certificate
          */
-        ignoreLeafValidity: Boolean = false,
+        ignoreLeafValidity: Boolean = true,
 
         /**
          * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
@@ -621,17 +624,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          *
          * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
          */
-        attestationStatementValiditySeconds: Long? = 5 * 60,
+        attestationStatementValiditySeconds: Long? = null,
 
         /**
-         * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+         * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
          * you are doing!
          * @see enableSoftwareAttestation
          */
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
          * devices only support hardware-backed key attestation, but provide no indication about the OS state.
          * Hence, app-attestation cannot be trusted, but key attestation still can.
@@ -639,10 +642,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableNougatAttestation: Boolean = false,
 
         /**
-         * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you **really** know what you are doing!
          * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-         * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+         * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
          */
         enableSoftwareAttestation: Boolean = false,
 
@@ -699,14 +702,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -718,7 +721,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Whether to ignore the timely validity of the leaf certificate
          */
-        ignoreLeafValidity: Boolean = false,
+        ignoreLeafValidity: Boolean = true,
 
         /**
          *  Tolerance in seconds added to verification date
@@ -731,7 +734,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          *
          * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
          */
-        attestationStatementValiditySeconds: Long? = 5 * 60,
+        attestationStatementValiditySeconds: Long? = null,
 
         /**
          * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
@@ -749,14 +752,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
 
         /**
-         * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+         * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
          * you are doing!
          * @see enableSoftwareAttestation
          */
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
          * devices only support hardware-backed key attestation, but provide no indication about the OS state.
          * Hence, app-attestation cannot be trusted, but key attestation still can.
@@ -764,10 +767,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableNougatAttestation: Boolean = false,
 
         /**
-         * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you **really** know what you are doing!
          * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-         * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+         * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
          */
         enableSoftwareAttestation: Boolean = false,
 
@@ -819,14 +822,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationChecker] of [SoftwareAttestationChecker] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -838,7 +841,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Whether to ignore the timely validity of the leaf certificate
          */
-        ignoreLeafValidity: Boolean = false,
+        ignoreLeafValidity: Boolean = true,
 
 
         /**
@@ -852,10 +855,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          *
          * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
          */
-        attestationStatementValiditySeconds: Long? = 5 * 60,
+        attestationStatementValiditySeconds: Long? = null,
 
         /**
-         * Entirely disable creation of a [HardwareAttestationChecker]. Only change this flag, if you **really** know what
+         * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
          * you are doing!
          * @see enableSoftwareAttestation
          */
@@ -863,7 +866,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables hybrid attestation. A [NougatHybridAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
          * devices only support hardware-backed key attestation, but provide no indication about the OS state.
          * Hence, app-attestation cannot be trusted, but key attestation still can.
@@ -871,10 +874,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableNougatAttestation: Boolean = false,
 
         /**
-         * Enables software attestation. A [SoftwareAttestationChecker] can only be instantiated if this flag is set to true.
+         * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you **really** know what you are doing!
          * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-         * [HardwareAttestationChecker] and a [SoftwareAttestationChecker].
+         * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
          */
         enableSoftwareAttestation: Boolean = false,
 
@@ -940,7 +943,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * Specifies a to-be attested app
      *
      * @param packageName Android app package name (e.g. `at.asitplus.demo`)
-     * @param signatureDigests SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing
+     * @param signerFingerprints SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing
      * certificate for production play store releases. Being able to specify multiple digests makes it easy to use development
      * builds and production builds in parallel.
      * @param appVersion optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -956,7 +959,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        val signatureDigests: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
+        val signerFingerprints: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
 
         /**
          * optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -985,6 +988,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
          */
         val trustedRootOverrides: Set<TrustedRoot>? = null,
+
+        /**
+         * optional parameter. If set, this app will require StrongBox security level
+         */
+        val requireStrongBoxOverride: Boolean? = null,
 
         ) {
 
@@ -1030,6 +1038,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
              */
             requireRemoteKeyProvisioningOverride: Boolean? = null,
 
+            /**
+             * optional parameter. If set, this app will require StrongBox security level
+             */
+            requireStrongBoxOverride: Boolean? = null,
+
             ) : this(
             packageName,
             signatureDigests,
@@ -1038,10 +1051,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             patchLevelOverride,
             requireRemoteKeyProvisioningOverride,
             trustAnchorOverrides?.map { TrustedRoot.PublicKey(it) }?.toSet(),
+            requireStrongBoxOverride,
         )
 
         init {
-            if (signatureDigests.isEmpty()) throw object :
+            if (signerFingerprints.isEmpty()) throw object :
                 AndroidAttestationException("No signature digests specified", null) {}
         }
 
@@ -1077,7 +1091,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
             private var trustedRootOverrides: Set<TrustedRoot>? = null
 
-            var requireRemoteKeyProvisioningOverride: Boolean? = null
+            private var requireRemoteKeyProvisioningOverride: Boolean? = null
+
+            private var requireStrongBoxOverride: Boolean? = null
 
             /**
              * @see AppData.appVersion
@@ -1143,6 +1159,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             fun requireRemoteProvisioningOverride(required: Boolean) =
                 apply { requireRemoteKeyProvisioningOverride = required }
 
+            /**
+             * optional parameter. If set, this app will require StrongBox security level
+             */
+            fun requireStrongBoxOverride(required: Boolean) = apply { requireStrongBoxOverride = required }
+
             fun build() =
                 AppData(
                     packageName,
@@ -1152,13 +1173,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                     patchLevelOverride,
                     requireRemoteKeyProvisioningOverride,
                     trustedRootOverrides,
+                    requireStrongBoxOverride,
                 )
         }
 
         override fun toString(): String {
             return "AppData(" +
                     "packageName='$packageName', " +
-                    "signatureDigests=${signatureDigests.joinToString { it.encodeBase64() }}, " +
+                    "signatureDigests=${signerFingerprints.joinToString { it.encodeBase64() }}, " +
                     "appVersion=$appVersion, " +
                     "androidVersionOverride=$androidVersionOverride, " +
                     "patchLevelOverride=$patchLevelOverride, " +
@@ -1175,9 +1197,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             if (osPatchLevel != other.osPatchLevel) return false
             if (packageName != other.packageName) return false
 
-            if (signatureDigests.size != other.signatureDigests.size) return false
-            signatureDigests.forEachIndexed { index, byteArray ->
-                if (!other.signatureDigests[index].contentEquals(
+            if (signerFingerprints.size != other.signerFingerprints.size) return false
+            signerFingerprints.forEachIndexed { index, byteArray ->
+                if (!other.signerFingerprints[index].contentEquals(
                         byteArray
                     )
                 ) return false
@@ -1195,7 +1217,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + (androidVersionOverride ?: 0)
             result = 31 * result + (osPatchLevel ?: 0)
             result = 31 * result + packageName.hashCode()
-            result = 31 * result + signatureDigests.hashCode()
+            result = 31 * result + signerFingerprints.hashCode()
             result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
             result = 31 * result + trustedRootOverrides.hashCode()
             result = 31 * result + requireRemoteKeyProvisioningOverride.hashCode()
@@ -1213,6 +1235,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             throw object : AndroidAttestationException(
                 "Neither hardware, nor hybrid, nor software attestation enabled", null
             ) {}
+        attestationStatementValiditySeconds?.let {
+            if (it < 0) throw object :
+                AndroidAttestationException("Attestation statement validity must not be negative", null) {}
+        }
     }
 
     /**
@@ -1231,13 +1257,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var requireStrongBox: Boolean = false
         private var bootloaderUnlockAllowed: Boolean = false
         private var rollbackResitanceRequired: Boolean = false
-        private var ignoreLeafValidity: Boolean = false
+        private var ignoreLeafValidity: Boolean = true
         private var hardwareTrustedRoots =
             mutableSetOf<TrustedRoot>(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.toTypedArray())
         private var softwareTrustedRoots =
             mutableSetOf<TrustedRoot>(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.toTypedArray())
         private var verificationSecondsOffset = 0L
-        private var attestationStatementValiditySeconds: Long? = 5 * 60
+        private var attestationStatementValiditySeconds: Long? = null
         private var disableHwAttestation: Boolean = false
         private var enableSwAttestation: Boolean = false
         private var enableNougatAttestation: Boolean = false
@@ -1271,8 +1297,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         fun requireRollbackResistance() = apply { rollbackResitanceRequired = true }
 
         /**
-         * @see AndroidAttestationConfiguration.ignoreLeafValidity
+         * set [AndroidAttestationConfiguration.ignoreLeafValidity] to false
          */
+        fun enforceLeafValidity() = apply { ignoreLeafValidity = false }
+
+        @Deprecated("This is not a NOOP. as the defaults have changed. To be removed in 1.0.0")
         fun ingoreLeafValidity() = apply { ignoreLeafValidity = true }
 
         /**
@@ -1461,13 +1490,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     }
 }
 
-private fun ByteArray.parsePublicKey() =
-    catchingUnwrapped {
-        KeyFactory.getInstance("EC").generatePublic(X509EncodedKeySpec(this))
-    }.getOrElse {
-        catchingUnwrapped {
-            KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(this))
-        }.getOrElse {
-            throw object : AndroidAttestationException("Not a valid public key: ${this.encodeBase64()}", null) {}
-        }
-    }
+/**
+ * Leniently (ignore case, and whitespace) parse hex to bytes
+ */
+fun String.parseHex(): ByteArray = this.filterNot { it.isWhitespace() }.lowercase().hexToByteArray(HexFormat.Default)

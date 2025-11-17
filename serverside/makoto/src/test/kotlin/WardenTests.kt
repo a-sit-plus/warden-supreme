@@ -24,12 +24,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import java.security.KeyPairGenerator
 import java.security.spec.ECGenParameterSpec
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.toKotlinInstant
-
 
 @OptIn(ExperimentalStdlibApi::class)
 val WardenTest by testSuite {
@@ -120,13 +120,16 @@ val WardenTest by testSuite {
             pubKeyB64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFT1XwEeF8NftY84GfnqTFBoxHNkdG7wZHcOkLKwT4W6333Jqmga1XkKySq/ApnslBPNZE1Os363SAv8X85ZIrQ=="
         )
 
-        Warden(
+        Makoto(
             AndroidAttestationConfiguration.Builder(
                 AndroidAttestationConfiguration.AppData(
                     "foo",
                     listOf(byteArrayOf())
                 )
-            ).build(),
+            )
+                .enforceLeafValidity()
+                .attestationStatementValiditySeconds(300)
+                .build(),
             IosAttestationConfiguration(
                 IosAttestationConfiguration.AppData(
                     "9CYHJNG644",
@@ -692,7 +695,7 @@ val WardenTest by testSuite {
                         val clock =
                             FixedTimeClock(recordedAttestation.verificationDate.toInstant().toKotlinInstant())
                         "Software-Only" {
-                            Warden(
+                            Makoto(
                                 androidAttestationConfiguration = AndroidAttestationConfiguration(
                                     listOf(
                                         AndroidAttestationConfiguration.AppData(
@@ -700,12 +703,14 @@ val WardenTest by testSuite {
                                             ANDROID_SIGNATURE_DIGESTS
                                         )
                                     ),
+                                    attestationStatementValiditySeconds = 300,
                                     disableHardwareAttestation = true,
                                     enableSoftwareAttestation = true,
                                     ignoreLeafValidity = true
                                 ),
                                 DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock
+                                clock = clock,
+                                verificationTimeOffset = Duration.ZERO
                             ).apply {
                                 verifyAttestation(
                                     recordedAttestation.attestationProof,
@@ -728,7 +733,7 @@ val WardenTest by testSuite {
                         }
 
                         "Nougat attestation" {
-                            Warden(
+                            Makoto(
                                 androidAttestationConfiguration = AndroidAttestationConfiguration(
                                     listOf(
                                         AndroidAttestationConfiguration.AppData(
@@ -738,10 +743,11 @@ val WardenTest by testSuite {
                                     ),
                                     disableHardwareAttestation = true,
                                     enableNougatAttestation = true,
-                                    ignoreLeafValidity = true
+                                    attestationStatementValiditySeconds = 300,
                                 ),
                                 DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock
+                                clock = clock,
+                                verificationTimeOffset = Duration.ZERO
                             ).apply {
                                 verifyAttestation(
                                     recordedAttestation.attestationProof,
@@ -763,7 +769,7 @@ val WardenTest by testSuite {
                             }
                         }
                         "Software + Nougat attestation" {
-                            Warden(
+                            Makoto(
                                 androidAttestationConfiguration = AndroidAttestationConfiguration(
                                     listOf(
                                         AndroidAttestationConfiguration.AppData(
@@ -774,10 +780,11 @@ val WardenTest by testSuite {
                                     disableHardwareAttestation = true,
                                     enableNougatAttestation = true,
                                     enableSoftwareAttestation = true,
-                                    ignoreLeafValidity = true
+                                    attestationStatementValiditySeconds = 300,
                                 ),
                                 DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock
+                                clock = clock,
+                                verificationTimeOffset = Duration.ZERO
                             ).apply {
                                 verifyAttestation(
                                     recordedAttestation.attestationProof,
@@ -1119,7 +1126,7 @@ val WardenTest by testSuite {
                 }
 
                 "Nougat Hybrid attestation should fail" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1127,12 +1134,14 @@ val WardenTest by testSuite {
                                     ANDROID_SIGNATURE_DIGESTS
                                 )
                             ),
+                            attestationStatementValiditySeconds = 300,
                             disableHardwareAttestation = true,
                             enableNougatAttestation = true,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             attestationProof,
@@ -1155,7 +1164,7 @@ val WardenTest by testSuite {
                 }
 
                 "HW Attestation and Nougat Hybrid attestation combined should fail" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1163,11 +1172,13 @@ val WardenTest by testSuite {
                                     ANDROID_SIGNATURE_DIGESTS
                                 )
                             ),
+                            attestationStatementValiditySeconds = 300,
                             enableNougatAttestation = true,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             attestationProof,
@@ -1191,7 +1202,7 @@ val WardenTest by testSuite {
                 "Software attestation should work" - {
 
                     "stand-alone" {
-                        Warden(
+                        Makoto(
                             androidAttestationConfiguration = AndroidAttestationConfiguration(
                                 listOf(
                                     AndroidAttestationConfiguration.AppData(
@@ -1205,7 +1216,8 @@ val WardenTest by testSuite {
                                 attestationStatementValiditySeconds = 10 * 60
                             ),
                             DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock
+                            clock = clock,
+                            verificationTimeOffset = Duration.ZERO
                         ).apply {
                             verifyAttestation(
                                 attestationProof,
@@ -1226,7 +1238,7 @@ val WardenTest by testSuite {
                     }
 
                     "with Nougat attestation" {
-                        Warden(
+                        Makoto(
                             androidAttestationConfiguration = AndroidAttestationConfiguration(
                                 listOf(
                                     AndroidAttestationConfiguration.AppData(
@@ -1241,7 +1253,8 @@ val WardenTest by testSuite {
                                 attestationStatementValiditySeconds = 10 * 60
                             ),
                             DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock
+                            clock = clock,
+                            verificationTimeOffset = Duration.ZERO
                         ).apply {
                             verifyAttestation(
                                 attestationProof,
@@ -1262,7 +1275,7 @@ val WardenTest by testSuite {
                     }
 
                     "with Nougat and HW attestation" {
-                        Warden(
+                        Makoto(
                             androidAttestationConfiguration = AndroidAttestationConfiguration(
                                 listOf(
                                     AndroidAttestationConfiguration.AppData(
@@ -1276,7 +1289,8 @@ val WardenTest by testSuite {
                                 attestationStatementValiditySeconds = 10 * 60
                             ),
                             DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock
+                            clock = clock,
+                            verificationTimeOffset = Duration.ZERO
                         ).apply {
                             verifyAttestation(
                                 attestationProof,
@@ -1319,7 +1333,7 @@ val WardenTest by testSuite {
 
             "Nougat Hybrid attestation should work" - {
                 "stand-alone" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1329,10 +1343,12 @@ val WardenTest by testSuite {
                             ),
                             disableHardwareAttestation = true,
                             enableNougatAttestation = true,
+                            attestationStatementValiditySeconds = 300,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             data.attestationProof,
@@ -1363,7 +1379,7 @@ val WardenTest by testSuite {
 
 
                 "with Hardware attestation" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1372,10 +1388,12 @@ val WardenTest by testSuite {
                                 )
                             ),
                             enableNougatAttestation = true,
+                            attestationStatementValiditySeconds = 300,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             data.attestationProof,
@@ -1404,7 +1422,7 @@ val WardenTest by testSuite {
                 }
 
                 "with Hardware + Sowftware Attestation " {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1412,12 +1430,14 @@ val WardenTest by testSuite {
                                     signatureDigests
                                 )
                             ),
+                            attestationStatementValiditySeconds = 300,
                             enableSoftwareAttestation = true,
                             enableNougatAttestation = true,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             data.attestationProof,
@@ -1446,7 +1466,7 @@ val WardenTest by testSuite {
                 }
 
                 "with Software Attestation" {
-                    Warden(
+                    Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -1454,13 +1474,15 @@ val WardenTest by testSuite {
                                     signatureDigests
                                 )
                             ),
+                            attestationStatementValiditySeconds = 300,
                             disableHardwareAttestation = true,
                             enableSoftwareAttestation = true,
                             enableNougatAttestation = true,
                             ignoreLeafValidity = true
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
                     ).apply {
                         verifyAttestation(
                             data.attestationProof,
@@ -1490,7 +1512,7 @@ val WardenTest by testSuite {
             }
 
             "Hardware attestation should fail" {
-                Warden(
+                Makoto(
                     androidAttestationConfiguration = AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -1498,10 +1520,12 @@ val WardenTest by testSuite {
                                 signatureDigests
                             )
                         ),
+                        attestationStatementValiditySeconds = 300,
                         ignoreLeafValidity = true
                     ),
                     DEFAULT_IOS_ATTESTATION_CFG,
-                    clock = clock
+                    clock = clock,
+                    verificationTimeOffset = Duration.ZERO
                 ).apply {
                     verifyAttestation(
                         data.attestationProof,
@@ -1525,7 +1549,7 @@ val WardenTest by testSuite {
             }
 
             "Hardware + SW attestation should fail" {
-                Warden(
+                Makoto(
                     androidAttestationConfiguration = AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -1533,11 +1557,13 @@ val WardenTest by testSuite {
                                 signatureDigests
                             )
                         ),
+                        attestationStatementValiditySeconds = 300,
                         enableSoftwareAttestation = true,
                         ignoreLeafValidity = true
                     ),
                     DEFAULT_IOS_ATTESTATION_CFG,
-                    clock = clock
+                    clock = clock,
+                    verificationTimeOffset = Duration.ZERO
                 ).apply {
                     verifyAttestation(
                         data.attestationProof,
@@ -1561,7 +1587,7 @@ val WardenTest by testSuite {
             }
 
             "SW attestation should fail" {
-                Warden(
+                Makoto(
                     androidAttestationConfiguration = AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -1569,12 +1595,14 @@ val WardenTest by testSuite {
                                 signatureDigests
                             )
                         ),
+                        attestationStatementValiditySeconds = 300,
                         disableHardwareAttestation = true,
                         enableSoftwareAttestation = true,
                         ignoreLeafValidity = true
                     ),
                     DEFAULT_IOS_ATTESTATION_CFG,
-                    clock = clock
+                    clock = clock,
+                    verificationTimeOffset = Duration.ZERO
                 ).apply {
                     verifyAttestation(
                         data.attestationProof,
@@ -1613,13 +1641,16 @@ val WardenTest by testSuite {
             )
         )
         withData(ios, android) {
-            Warden(
+            Makoto(
                 AndroidAttestationConfiguration.Builder(
                     AndroidAttestationConfiguration.AppData(
                         "at.asitplus.cryptotest.androidApp",
                         androidSigDigests
                     )
-                ).build(),
+                )
+                    .enforceLeafValidity()
+                    .attestationStatementValiditySeconds(300)
+                    .build(),
                 IosAttestationConfiguration(
                     IosAttestationConfiguration.AppData(
                         "9CYHJNG644",
@@ -1631,15 +1662,15 @@ val WardenTest by testSuite {
                 verificationTimeOffset = 12.hours + 45.minutes
 
             ).apply {
-                withClue("should pass") {
+                val dbg = collectDebugInfo(
+                    it.second,
+                    it.first.hexToByteArray(HexFormat.UpperCase),
+                ).serializeCompact()
+                withClue("$dbg should pass") {
                     verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
                         isSuccess.shouldBeTrue()
                     }
 
-                    val dbg = collectDebugInfo(
-                        it.second,
-                        it.first.hexToByteArray(HexFormat.UpperCase),
-                    ).serializeCompact()
                     val replayKeyAttestation =
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
                             .replayKeyAttestation(ignoreProxy = false)
@@ -1649,7 +1680,7 @@ val WardenTest by testSuite {
 
                 }
 
-                withClue("challenge fail pass") {
+                withClue("challenge fail") {
                     verifyKeyAttestation(it.second, it.first.reversed().hexToByteArray(HexFormat.UpperCase)).apply {
                         isSuccess.shouldBeFalse()
                     }
@@ -1666,13 +1697,16 @@ val WardenTest by testSuite {
             }
 
             withClue("Invalid App ID") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "borked",
                             androidSigDigests
                         )
-                    ).build(),
+                    )
+                        .enforceLeafValidity()
+                        .attestationStatementValiditySeconds(300)
+                        .build(),
                     IosAttestationConfiguration(
                         IosAttestationConfiguration.AppData(
                             "9CYHJNG644",
@@ -1697,13 +1731,16 @@ val WardenTest by testSuite {
             }
 
             withClue("Attestation created in the future") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",
                             androidSigDigests
-                        )
-                    ).build(),
+                        ),
+                    )
+                        .enforceLeafValidity()
+                        .attestationStatementValiditySeconds(300)
+                        .build(),
                     IosAttestationConfiguration(
                         IosAttestationConfiguration.AppData(
                             "9CYHJNG644",
@@ -1712,10 +1749,10 @@ val WardenTest by testSuite {
                         )
                     ),
                     FixedTimeClock(2024u, 10u, 1u),
-                    verificationTimeOffset = 0.hours + 45.minutes
+                    verificationTimeOffset = 0.hours + 45.minutes,
 
-                ).apply {
-                    withClue("should pass") {
+                    ).apply {
+                    withClue("should not pass") {
                         verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
                             isSuccess.shouldBeFalse()
                         }
@@ -1730,7 +1767,7 @@ val WardenTest by testSuite {
                         replayKeyAttestation.isSuccess.shouldBeFalse()
                     }
 
-                    withClue("challenge fail pass") {
+                    withClue("challenge fail") {
                         verifyKeyAttestation(
                             it.second,
                             it.first.reversed().hexToByteArray(HexFormat.UpperCase)
@@ -1751,13 +1788,17 @@ val WardenTest by testSuite {
             }
 
             withClue("Verification Clock too far in the future (i.e. statement too old)") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",
                             androidSigDigests
                         )
-                    ).build(),
+                    )
+                        .enforceLeafValidity()
+                        .attestationStatementValiditySeconds(300)
+
+                        .build(),
                     IosAttestationConfiguration(
                         IosAttestationConfiguration.AppData(
                             "9CYHJNG644",
@@ -1769,14 +1810,14 @@ val WardenTest by testSuite {
                     verificationTimeOffset = 14.hours + 45.minutes
 
                 ).apply {
-                    withClue("should pass") {
+                    val dbg = collectDebugInfo(
+                        it.second,
+                        it.first.hexToByteArray(HexFormat.UpperCase),
+                    ).serializeCompact()
+                    withClue("$dbg should not pass") {
                         verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
                             isSuccess.shouldBeFalse()
                         }
-                        val dbg = collectDebugInfo(
-                            it.second,
-                            it.first.hexToByteArray(HexFormat.UpperCase),
-                        ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
                             .replayKeyAttestation(ignoreProxy = false)
                         replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
@@ -1805,7 +1846,7 @@ val WardenTest by testSuite {
             }
 
             withClue("Invalid Signature / Team ID") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",
@@ -1815,7 +1856,10 @@ val WardenTest by testSuite {
                                 )
                             )
                         )
-                    ).build(),
+                    )
+                        .enforceLeafValidity()
+                        .attestationStatementValiditySeconds(300)
+                        .build(),
                     IosAttestationConfiguration(
                         IosAttestationConfiguration.AppData(
                             "borked1337",
@@ -1841,13 +1885,16 @@ val WardenTest by testSuite {
             }
 
             withClue("Timewarp") {
-                Warden(
+                Makoto(
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",
                             androidSigDigests
                         )
-                    ).build(),
+                    )
+                        .enforceLeafValidity()
+                        .attestationStatementValiditySeconds(300)
+                        .build(),
                     IosAttestationConfiguration(
                         IosAttestationConfiguration.AppData(
                             "9CYHJNG644",

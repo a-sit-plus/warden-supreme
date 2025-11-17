@@ -49,11 +49,14 @@ import kotlin.jvm.optionals.getOrNull
  */
 const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
 
-abstract class AndroidAttestationChecker(
+@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("Roboto"))
+typealias AndroidAttestationChecker = Roboto
+
+abstract class Roboto(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
     private val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
 ) {
-    companion object {
+    companion object Companion {
         init {
             Security.addProvider(KeyAttestationProvider())
         }
@@ -210,7 +213,7 @@ abstract class AndroidAttestationChecker(
     protected abstract val trustAnchors: Collection<TrustedRoot>
 
     protected open fun ParsedAttestationRecord.verifyAttestationTime(verificationDate: Instant) {
-        var checkTime = verificationDate.plusSeconds(attestationConfiguration.verificationSecondsOffset.toLong())
+        val checkTime = verificationDate.plusSeconds(attestationConfiguration.verificationSecondsOffset)
         if (attestationConfiguration.attestationStatementValiditySeconds == null) return //no validity, no checks!
         val createdAt =
             teeEnforced().creationDateTime().getOrNull() ?: softwareEnforced().creationDateTime().getOrNull()
@@ -273,12 +276,12 @@ abstract class AndroidAttestationChecker(
             }
 
             if (!softwareEnforced().attestationApplicationId().get().signatureDigests().any { fromAttestation ->
-                    application.signatureDigests.any { it.contentEquals(fromAttestation.toByteArray()) }
+                    application.signerFingerprints.any { it.contentEquals(fromAttestation.toByteArray()) }
                 }) {
                 throw AttestationValueException(
                     "Invalid Application Signature Digest",
                     reason = AttestationValueException.Reason.APP_SIGNER_DIGEST,
-                    expectedValue = application.signatureDigests,
+                    expectedValue = application.signerFingerprints,
                     actualValue = softwareEnforced().attestationApplicationId().get().signatureDigests()
                         .map { it.toByteArray() }
                 )
@@ -485,7 +488,7 @@ abstract class AndroidAttestationChecker(
     }
 
     @Throws(AttestationValueException::class)
-    protected abstract fun ParsedAttestationRecord.verifySecurityLevel()
+    protected abstract fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean? = null)
 
     /**
      * taken and adapted from [com.google.android.attestation.CertificateRevocationStatus] to separate downloading and checking
@@ -499,7 +502,7 @@ abstract class AndroidAttestationChecker(
             return entries[serialNumberNormalised] != null //any entry is a red flag!
         }
 
-        companion object {
+        companion object Companion {
             @JvmStatic
             private val client by lazy { HttpClient(CIO) { setup(null) } }
 

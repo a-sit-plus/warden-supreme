@@ -59,7 +59,10 @@ val BuildNumberTest by testSuite {
             }
         }
 
-        withData(testVectors.dropLast(1).mapIndexed { index, s -> index to s }) {
+        withData(
+            testVectors.dropLast(1).mapIndexed { index, s -> index to s },
+            compact = true
+        ) {
             BuildNumber(it.second) shouldBeLessThan BuildNumber(testVectors[it.first + 1])
         }
     }

@@ -14,7 +14,8 @@ An Android attestation statement is an X.509 certificate chain. The leaf certifi
 * whether user authentication is required (fingerprint / password) to use the key
 * various other information about the device and OS state (e.g., bootloader lock state, verified boot state)
 
-Privacy note: Verification happens entirely on your backend; devices do not contact Google per attestation. Your backend validates the certificate chain to Google’s Hardware Attestation Root and evaluates attestation fields. You must periodically fetch Google’s revocation information on the server. See [Background → Privacy](./privacy.md) for detailed data flows and trade-offs.
+Privacy note: Verification happens entirely on your back-end; devices do not contact Google per attestation.
+Your back-end validates the certificate chain to Google’s Hardware Attestation Root and evaluates attestation fields. You must periodically fetch Google’s revocation information on the server. See [Background → Privacy](./privacy.md) for detailed data flows and trade-offs.
 
 !!! warning inline end
     **Never** use a custom trust anchor or Google's software root of trust in production! Doing so renders all attestation checks moot.
@@ -41,7 +42,7 @@ Hence, there is only a single code path to validate an attestation statement rec
 The actual device, OS, and software integrity checks are performed by a service operated by Apple. Hence, the device communicates with Apple infrastructure, and a proprietary Apple service analyses the device's
 state with the help of the Secure Enclave on the device and determines whether the device (and its OS) is trustworthy using undocumented heuristics.
 This fact needs to be observed in data protection and privacy discussions!
-On the backend, however, no contact with Apple services is required, since no revocation checks are possible, as the attestation itself is freshly provided by Apple.
+On the back-end, however, no contact with Apple services is required, since no revocation checks are possible, as the attestation itself is freshly provided by Apple.
 
 Moreover, the hardware-bound key used to create an attestation statement cannot be used by the app for any cryptographic operations.
 Hence, there is no key attestation on iOS, but it can be emulated by creating a fresh keypair inside the Secure Enclave and feeding its public part into the data sent to Apple for attestation.
@@ -51,7 +52,7 @@ If a valid attestation statement is revived that is bound to the key in this mat
 * authentic OS
 * an unmodified app published by the app's legitimate developer
 
-Signum Supreme supports this procedure out of the box.
+Warden Supreme supports this procedure out of the box.
 
 !!! warning inline end
     Since iOS only supports hardware attestation, it is impossible to use attestation on a simulator. Trying to do so will cause exceptions to be thrown or even cause app hangs or crashes! The same is true for biometric auth.

@@ -307,12 +307,12 @@ fun attestationService(
     androidAttestationStatementValidity: Duration = 10.minutes,
     iosAttestationStatementValidity: Duration = 10.minutes,
 ) =
-    Warden(
+    Makoto(
         AndroidAttestationConfiguration(
             listOf(
                 AndroidAttestationConfiguration.AppData(
                     packageName = androidPackageName,
-                    signatureDigests = androidAppSignatureDigest,
+                    signerFingerprints = androidAppSignatureDigest,
                     appVersion = androidAppVersion
                 )
             ),

@@ -13,7 +13,7 @@ that statement against **trusted roots** and **policy**.
 - **Lower fraud risk** and **tight policy enforcement** (e.g., “only unmodified devices with the latest security updates
   applied may access resource _X_”).
 - **Privacy aspects**: On Android, verification uses Google roots but **doesn’t require the device to talk to Google
-  during attestation**; only *your* server sees the data. While your backend must check Google’s revocation list, this
+  during attestation**; only *your* server sees the data. While your back-end must check Google’s revocation list, this
   doesn't expose any data traceable to users to third-party services or Google's infrastructure.
   (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)).<br>
   On iOS, the story is a bit different, and, sadly, client devices will need to contact Apple servers to create an
@@ -25,7 +25,7 @@ that statement against **trusted roots** and **policy**.
 !!! warning inline end "Performance Impact"
     * **iOS** requires live communication with Apple’s App Attest servers each time an attestation is generated. If network
     conditions are poor, this round-trip can add noticeable latency.  
-    * **Android** produces the attestation statement entirely offline; only your backend needs to fetch Google’s public
+    * **Android** produces the attestation statement entirely offline; only your back-end needs to fetch Google’s public
     revocation list asynchronously. Therefore, attestation adds virtually **no runtime performance impact** for the user.
 
 **Platform Differences** (high level):
@@ -43,10 +43,10 @@ that statement against **trusted roots** and **policy**.
 ## High-Level Attestation Flow
 
 1. **Initial Trust Establishment (Initial Attestation)**  
-   The very first time an app starts, it performs an attestation ceremony with your backend:
+   The very first time an app starts, it performs an attestation ceremony with your back-end:
     * The client generates a key inside secure hardware.
     * The platform signs an **attestation statement** that binds this key to reliable device- & app-state data.
-    * Your backend validates the statement against trusted roots and stores the resulting device-key identity as
+    * Your back-end validates the statement against trusted roots and stores the resulting device-key identity as
       “trusted”.
 
 2. **Normal Operation**

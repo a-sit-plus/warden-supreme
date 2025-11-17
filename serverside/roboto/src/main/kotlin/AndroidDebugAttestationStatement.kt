@@ -1,16 +1,8 @@
 package at.asitplus.attestation.android
 
-import at.asitplus.signum.indispensable.*
-import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
-import at.asitplus.signum.indispensable.io.TransformingSerializerTemplate
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import java.security.cert.X509Certificate
-import java.text.SimpleDateFormat
 import java.util.*
 
 private val jsonDebug = kotlinx.serialization.json.Json {
@@ -28,16 +20,16 @@ class AndroidDebugAttestationStatement(
 ) {
 
     constructor(
-        checker: AndroidAttestationChecker,
+        verifier: Roboto,
         configuration: AndroidAttestationConfiguration,
         verificationTime: Date,
         challenge: ByteArray,
         attestationStatement: List<X509Certificate>
     ) : this(
-        when (checker) {
-            is HardwareAttestationChecker -> Type.HARDWARE
-            is SoftwareAttestationChecker -> Type.SOFTWARE
-            is NougatHybridAttestationChecker -> Type.NOUGAT_HYBRID
+        when (verifier) {
+            is HardwareAttestationVerifier -> Type.HARDWARE
+            is SoftwareAttestationVerifier -> Type.SOFTWARE
+            is NougatHybridAttestationVerifier -> Type.NOUGAT_HYBRID
             else -> throw IllegalArgumentException("Unknown checker type")
         },
         configuration,
@@ -47,11 +39,11 @@ class AndroidDebugAttestationStatement(
 
     )
 
-    fun checkerFromConfig(): AndroidAttestationChecker =
+    fun checkerFromConfig(): Roboto =
         when (kind) {
-            Type.HARDWARE -> HardwareAttestationChecker(configuration)
-            Type.SOFTWARE -> SoftwareAttestationChecker(configuration)
-            Type.NOUGAT_HYBRID -> NougatHybridAttestationChecker(configuration)
+            Type.HARDWARE -> HardwareAttestationVerifier(configuration)
+            Type.SOFTWARE -> SoftwareAttestationVerifier(configuration)
+            Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(configuration)
         }
 
     fun replay() = checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)

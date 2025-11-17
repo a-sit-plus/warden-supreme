@@ -5,10 +5,14 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import com.google.android.attestation.ParsedAttestationRecord
 import java.util.*
 
-class SoftwareAttestationChecker @JvmOverloads constructor(
+
+@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("SoftwareAttestationVerifier"))
+typealias SoftwareAttestationChecker = SoftwareAttestationVerifier
+
+class SoftwareAttestationVerifier @JvmOverloads constructor(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
-) : AndroidAttestationChecker(attestationConfiguration, verifyChallenge) {
+) : Roboto(attestationConfiguration, verifyChallenge) {
     init {
         if (!attestationConfiguration.enableSoftwareAttestation) throw object :
             AndroidAttestationException("Software attestation is disabled!", null) {}
@@ -16,7 +20,7 @@ class SoftwareAttestationChecker @JvmOverloads constructor(
             AndroidAttestationException("No software attestation trust anchors configured", null) {}
     }
 
-    companion object {
+    companion object Companion {
         const val GOOGLE_SOFTWARE_EC_ROOT =
             "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
                     "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
@@ -28,7 +32,7 @@ class SoftwareAttestationChecker @JvmOverloads constructor(
     }
 
     @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifySecurityLevel() {
+    override fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean?/*ignored*/) {
         if (attestationSecurityLevel() != ParsedAttestationRecord.SecurityLevel.SOFTWARE) throw AttestationValueException(
             "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
             expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
@@ -36,7 +40,7 @@ class SoftwareAttestationChecker @JvmOverloads constructor(
         )
         if (keymasterSecurityLevel() != ParsedAttestationRecord.SecurityLevel.SOFTWARE) throw AttestationValueException(
             "Keymaster security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-            expectedValue =  ParsedAttestationRecord.SecurityLevel.SOFTWARE,
+            expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
             actualValue = keymasterSecurityLevel()
         )
     }
@@ -44,7 +48,11 @@ class SoftwareAttestationChecker @JvmOverloads constructor(
     override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
 
     @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyAndroidVersion(versionOverride: Int?, osPatchLevel: PatchLevel?, verificationDate: Date) =
+    override fun ParsedAttestationRecord.verifyAndroidVersion(
+        versionOverride: Int?,
+        osPatchLevel: PatchLevel?,
+        verificationDate: Date
+    ) =
         softwareEnforced().verifyAndroidVersion(versionOverride, osPatchLevel, verificationDate)
 
     @Throws(AttestationValueException::class)

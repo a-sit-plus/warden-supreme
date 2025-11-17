@@ -7,18 +7,13 @@ import com.zkdcloud.proxy.http.handler.client.ExceptionDuplexHandler
 import com.zkdcloud.proxy.http.handler.client.JudgeTypeInboundHandler
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
-import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.engine.mock.*
-import io.ktor.client.plugins.cache.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.util.date.*
 import io.ktor.utils.io.*
 import io.netty.bootstrap.ServerBootstrap
@@ -71,7 +66,7 @@ val RevocationTestFromGoogleSources by testSuite {
 
         "load Test Serial" {
 
-            AndroidAttestationChecker.RevocationList.from(File(TEST_STATUS_LIST_PATH).inputStream())
+            Roboto.RevocationList.from(File(TEST_STATUS_LIST_PATH).inputStream())
                 .isRevoked(serialNumber).shouldBeTrue()
         }
 
@@ -85,7 +80,7 @@ val RevocationTestFromGoogleSources by testSuite {
                 }.setup(null)
                 val times = 1000
                 repeat(times) {
-                    AndroidAttestationChecker.RevocationList.fromGoogleServer(client)
+                    Roboto.RevocationList.fromGoogleServer(client)
                 }
                 requestCounter shouldBe times
             }
@@ -98,7 +93,7 @@ val RevocationTestFromGoogleSources by testSuite {
                 }.setup(null)
                 val times = 1000
                 repeat(times) {
-                    AndroidAttestationChecker.RevocationList.fromGoogleServer(client)
+                    Roboto.RevocationList.fromGoogleServer(client)
                 }
                 requestCounter shouldBe 1
             }
@@ -107,15 +102,15 @@ val RevocationTestFromGoogleSources by testSuite {
         "Test HTTP local proxy" {
             val client = HttpClient(CIO) { setup("http://localhost:1081") }
             shouldThrow<ConnectException> {
-                AndroidAttestationChecker.RevocationList.fromGoogleServer(client)
+                Roboto.RevocationList.fromGoogleServer(client)
             }
             startProxy()
-            AndroidAttestationChecker.RevocationList.fromGoogleServer(client)
+            Roboto.RevocationList.fromGoogleServer(client)
                 .isRevoked(BigInteger("6681152659205225093", 16)) shouldBe true
         }
 
         "load Bad Serial" {
-            AndroidAttestationChecker.RevocationList.from(File(TEST_STATUS_LIST_PATH).inputStream()).isRevoked(
+            Roboto.RevocationList.from(File(TEST_STATUS_LIST_PATH).inputStream()).isRevoked(
                 BigInteger.valueOf(0xbadbeef)
             ).shouldBeFalse()
         }

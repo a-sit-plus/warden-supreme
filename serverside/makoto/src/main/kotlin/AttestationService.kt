@@ -3,7 +3,6 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.AttestationException
-import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
@@ -14,7 +13,6 @@ import com.google.android.attestation.ParsedAttestationRecord
 import org.slf4j.LoggerFactory
 import java.security.PublicKey
 import java.security.cert.X509Certificate
-import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.ExperimentalTime
 import at.asitplus.attestation.AttestationException as AttException
@@ -292,7 +290,7 @@ sealed class AttestationResult {
     /**
      * Successful iOS attestation. If [AttestationService.verifyKeyAttestation] returned this, [clientData] contains the
      * encoded attested public key.
-     * The [Warden], returns [IOS.Verified], also setting [IOS.Verified.attestation].
+     * The [Makoto], returns [IOS.Verified], also setting [IOS.Verified.attestation].
      * The [NoopAttestationService] returns [IOS.NOOP] (which is useful to as it enables skipping any
      * and all attestation checks for unit testing, when used with dependency injection, for example).
      */

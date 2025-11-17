@@ -3,7 +3,6 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.jsonCompact
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
@@ -49,10 +48,10 @@ internal constructor(
     }
 
     /**
-     * Creates a new [Warden] instance based on recorded debug data.
+     * Creates a new [Makoto] instance based on recorded debug data.
      * @param ignoreProxy enables direct connection to HTTP endpoints. Helpful for replaying attestations in a network setup that differs from the one where a debug statement was recorded.
      */
-    fun createWarden(ignoreProxy: Boolean): Warden = Warden(
+    fun createWarden(ignoreProxy: Boolean): Makoto = Makoto(
         if (ignoreProxy) androidAttestationConfiguration.copy(httpProxy = null) else androidAttestationConfiguration,
         iosAttestationConfiguration,
         FixedTimeClock(verificationTime),
@@ -138,7 +137,7 @@ internal constructor(
     }
 }
 
-class FixedTimeClock(private val epochMilliseconds: Long) : Clock {
+class FixedTimeClock(private var epochMilliseconds: Long) : Clock {
     constructor(instant: Instant) : this(instant.toEpochMilliseconds())
     constructor(yyyy: UInt, mm: UInt, dd: UInt) : this(
         Instant.parse(
@@ -150,5 +149,8 @@ class FixedTimeClock(private val epochMilliseconds: Long) : Clock {
         )
     )
 
+    fun offsetBy(duration: Duration) {
+        epochMilliseconds += duration.inWholeMilliseconds
+    }
     override fun now() = Instant.fromEpochMilliseconds(epochMilliseconds)
 }
