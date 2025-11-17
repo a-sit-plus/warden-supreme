@@ -66,6 +66,9 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
 
         if (applications.isEmpty())
             throw AttestationException.Configuration(Platform.IOS, "No apps configured", IllegalArgumentException())
+
+        if(attestationStatementValiditySeconds <0)
+            throw AttestationException.Configuration(Platform.IOS, "Attestation statement validity must not be negative", IllegalArgumentException())
     }
 
     /**

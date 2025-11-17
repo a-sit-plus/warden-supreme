@@ -18,6 +18,7 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
 
 **It also includes behavioural changes to the Android and iOS attestation defaults:**
 
+* Don't allow negative validity durations
 * Ignore Android leaf cert validity by default, because Warden Supreme, by default, uses random cryptographic nonces.
     * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is not a deprecated NOOP to be removed.
     * `enforceLeafValidity()` (without typo!) function was introduced

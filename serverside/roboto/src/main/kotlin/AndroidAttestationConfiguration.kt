@@ -1235,6 +1235,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             throw object : AndroidAttestationException(
                 "Neither hardware, nor hybrid, nor software attestation enabled", null
             ) {}
+        attestationStatementValiditySeconds?.let {
+            if (it < 0) throw object :
+                AndroidAttestationException("Attestation statement validity must not be negative", null) {}
+        }
     }
 
     /**
