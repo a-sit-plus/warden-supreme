@@ -7,7 +7,6 @@ import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import java.time.YearMonth
 import java.time.ZoneOffset
@@ -33,11 +32,11 @@ val FakeAttestationTests by testSuite {
             androidPatchLevel = patchLevel.asSingleInt,
         )
 
-        val checker = HardwareAttestationChecker(
+        val checker = HardwareAttestationVerifier(
             AndroidAttestationConfiguration(
                 AndroidAttestationConfiguration.AppData(
                     packageName = packageName,
-                    signatureDigests = listOf(signatureDigest),
+                    signerFingerprints = listOf(signatureDigest),
                     appVersion = appVersion
                 ),
                 androidVersion = androidVersion,
@@ -59,11 +58,11 @@ val FakeAttestationTests by testSuite {
                 vendorPatchLevel = 0,
             )
 
-            HardwareAttestationChecker(
+            HardwareAttestationVerifier(
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
-                        signatureDigests = listOf(signatureDigest),
+                        signerFingerprints = listOf(signatureDigest),
                         appVersion = appVersion
                     ),
                     androidVersion = androidVersion,
@@ -109,11 +108,11 @@ val FakeAttestationTests by testSuite {
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationChecker(
+                HardwareAttestationVerifier(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -142,11 +141,11 @@ val FakeAttestationTests by testSuite {
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationChecker(
+                HardwareAttestationVerifier(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -163,11 +162,11 @@ val FakeAttestationTests by testSuite {
                 )
 
                 shouldThrow<AttestationValueException> {
-                    HardwareAttestationChecker(
+                    HardwareAttestationVerifier(
                         AndroidAttestationConfiguration(
                             AndroidAttestationConfiguration.AppData(
                                 packageName = packageName,
-                                signatureDigests = listOf(signatureDigest),
+                                signerFingerprints = listOf(signatureDigest),
                                 appVersion = appVersion
                             ),
                             androidVersion = androidVersion,
@@ -199,11 +198,11 @@ val FakeAttestationTests by testSuite {
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationChecker(
+                HardwareAttestationVerifier(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -233,11 +232,11 @@ val FakeAttestationTests by testSuite {
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationChecker(
+                HardwareAttestationVerifier(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -259,11 +258,11 @@ val FakeAttestationTests by testSuite {
 
         "but not with a real cert from a real device" - {
 
-            val checker = HardwareAttestationChecker(
+            val checker = HardwareAttestationVerifier(
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
-                        signatureDigests = listOf(signatureDigest),
+                        signerFingerprints = listOf(signatureDigest),
                         appVersion = appVersion
                     ),
                     androidVersion = androidVersion,
@@ -279,7 +278,7 @@ val FakeAttestationTests by testSuite {
             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
             "unless overridden" {
-                val checker = HardwareAttestationChecker(
+                val checker = HardwareAttestationVerifier(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -305,7 +304,7 @@ val FakeAttestationTests by testSuite {
             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
             "but never without trust anchors" {
-                val checker = HardwareAttestationChecker(
+                val checker = HardwareAttestationVerifier(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -328,12 +327,12 @@ val FakeAttestationTests by testSuite {
         }
 
         "and the fake attestation must not verify against the google root key" {
-            val trustedChecker = HardwareAttestationChecker(
+            val trustedChecker = HardwareAttestationVerifier(
                 AndroidAttestationConfiguration(
                     applications = listOf(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion,
                         )
                     ),
@@ -341,7 +340,8 @@ val FakeAttestationTests by testSuite {
                     patchLevel = patchLevel,
                     requireStrongBox = false,
                     allowBootloaderUnlock = false,
-                    ignoreLeafValidity = false
+                    ignoreLeafValidity = false,
+                    attestationStatementValiditySeconds = 300,
                 )
             )
             shouldThrow<CertificateInvalidException> {

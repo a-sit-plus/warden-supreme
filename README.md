@@ -23,14 +23,23 @@ The original server-side-only key and app attestation library is still available
 of the pillars supporting Warden Supreme.
 It now lives on as [Warden makoto](serverside/makoto) and continues to be published to Maven Central.
 
-## 0. About this Document
-This README focuses on the technical aspects and is aimed at informed developers who are familiar with the general concepts, limitations,
-and benefits of key and app attestation.
 
-**Warden Supreme's [extensive documentation hub](https://a-sit-plus.github.io/warden-supreme) is a comprehensive one-stop shop covering
+> [!WARNING]  
+> **Warden Supreme 0.9.99 introduces behavioural changes to attestation defaults:**
+> * Ignore Android leaf cert validity by default, because Warden Supreme, by default, uses random cryptographic nonces.
+>    * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is now a deprecated NOOP to be removed.
+>    * `enforceLeafValidity()` (without typo!) function was introduced
+> * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
+> * Attestation verification time offset now defaults to five minutes to account for clock drift
+> * iOS attestation validity is increased by said five minutes
+> 
+> **Ignoring these changes can result in a total security failure if you do not ensure freshness through means of feeding random cryptographic nonces into attestation statement creation and properly checking them!**
+
+## 0. About this Document
+This README provides just a brief overview. **Warden Supreme's [extensive documentation hub](https://a-sit-plus.github.io/warden-supreme) is a comprehensive one-stop shop covering
 all topics regarding key and app attestation.**
 
-It provides an overview of the basic concepts, how to apply them, and
+The documentation hub explains basic concepts, how to apply them, and it provides
 a detailed write-up on how Android and iOS implement them.
 The full documentation also lays out a foundation for a risk analysis for anyone
 considering attestation as part of a more comprehensive security model.
@@ -53,6 +62,11 @@ Warden Supreme targets Android and iOS clients and JVM-based back-ends.
   ```kotlin
   implementation("at.asitplus.warden:supreme-client:$version")
   ```
+
+> [!TIP]
+> Check out **Warden Supreme's [integration guide](https://a-sit-plus.github.io/warden-supreme/integration/supreme)** for a step-by-step
+> integration tutorial, setting up a minimum-working example! The guide includes code samples, minimum and exhaustive configuration examples!
+
 
 Warden Supreme currently only supports HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
 The back-end, however, can also use [Spring](https://spring.io/), for example.
@@ -82,241 +96,6 @@ Figure&nbsp;1: Remotely establishing trust in mobile clients
 As shown in Figure&nbsp;1, the back-end needs to be configured before being able to assert the trustworthiness of a client.
 While the actual API is unified for Android and iOS (both for verifying attestation statements and on the mobile clients creating
 attestation statements), configuration needs to deal with each platform separately.
-
-### 1.1 Back-End Configuration
-Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
-The following snippet lists all configuration values (migration notes are shown in parentheses):
-
-```kotlin
-val warden = Warden(
-  androidAttestationConfiguration = AndroidAttestationConfiguration(
-    applications = listOf(   // REQUIRED: add applications to be attested
-        AndroidAttestationConfiguration.AppData(
-          packageName = "at.asitplus.attestation_client",
-          signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
-          appVersion = 5
-        ),
-        AndroidAttestationConfiguration.AppData( // dedicated app for the latest Android version
-          packageName = "at.asitplus.attestation_client-tiramisu",
-          signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
-          appVersion = 2, // with a different versioning scheme
-          androidVersionOverride = 130000, // so we need to override this
-          patchLevelOverride = PatchLevel(2023, 6, maxFuturePatchLevelMonths = 2), // also override patch level and
-                                                               // consider patch levels from 2 months in the future
-                                                               // as valid 
-                                                               // maxFuturePatchLevelMonths defaults to 1
-                                                               // null means any future patch level is OK
-                
-   /*(1)*/trustedRootOverrides = setOf(myCustomRoot),  // require a custom root as the trust anchor
-                                                       // for the attestation certificate chain
-
-          requireRemoteProvisioningOverride = true // require a remotely-provisioned attestation
-                                                   // certificate for extra security
-        )
-    ),
-    androidVersion = 110000,                  // OPTIONAL, null by default
-    patchLevel = PatchLevel(2022, 12),        // OPTIONAL, null by default; maxFuturePatchLevelMonths defaults to 1
-    requireStrongBox = false,                 // OPTIONAL, defaults to false
-    allowBootloaderUnlock = false,            // OPTIONAL, defaults to false
-    requireRollbackResistance = false,        // OPTIONAL, defaults to false
-    ignoreLeafValidity = false,               // OPTIONAL, defaults to false
-/*(2)*/hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS,   // OPTIONAL, defaults shown here
-/*(3)*/softwareTrustedRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11, // OPTIONAL, defaults shown here
-    verificationSecondsOffset = -300,         // OPTIONAL, defaults to 0
-    disableHardwareAttestation = false,       // OPTIONAL, defaults to false; set true to disable HW attestation
-    enableNougatAttestation = false,          // OPTIONAL, defaults to false; set true to enable hybrid attestation
-    enableSoftwareAttestation = false,        // OPTIONAL, defaults to false; set true to enable SW attestation
-    attestationStatementValiditySeconds = 300,// OPTIONAL, defaults to 300s
-    httpProxy = null,                         //OPTIONAL HTTP proxy url, such as http://proxy.domain:12345, defaults to null for no proxy
-    requireRemoteKeyProvisioning = false      //OPTIONAL, whether to require a remotely provisioned attestation certificate
-  ),
-  iosAttestationConfiguration = IosAttestationConfiguration(
-    applications = listOf(
-      IosAttestationConfiguration.AppData(
-        teamIdentifier = "9CYHJNG644",
-        bundleIdentifier = "at.asitplus.attestation-client",
-        iosVersionOverride = "16.0",     // OPTIONAL, null by default
-        sandbox = false,                 // OPTIONAL, defaults to false
- /*(4)*/trustedRootOverrides = setOf(myCustomRoots) //require a custom trusted root
-      )
-    ),
-    iosVersion = 14,                                             // OPTIONAL, null by default
-    attestationStatementValiditySeconds = 300                    // OPTIONAL, defaults to 300s
-  ),
-  clock = FixedTimeClock(Instant.parse("2023-04-13T00:00:00Z")),   // OPTIONAL, system clock by default
-  verificationTimeOffset = Duration.ZERO,                          // OPTIONAL, defaults to zero
-/*(5)*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS                  // OPTIONAL, defaults shown here
-)
-```
-> [!TIP]
-> 1. Pre 0.10.0-migration note: This used to be called `trustAnchorOverrides`.  
->    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-> 2. Pre 0.10.0-migration note: this used to be `hardwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_HARDWARE_TRUST_ANCHORS)`.  
->    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-> 3. Pre 0.10.0-migration note: this used to be `softwareAttestationTrustAnchors = linkedSetOf(*DEFAULT_SOFTWARE_TRUST_ANCHORS)`.  
->    **Note:** the old parameter is still present for compatibility but will be removed in v1.0.0!
-> 4. New since version 0.10.0!
-> 5. New since version 0.10.0!
-
-The (nullable) properties like patch level, iOS version, or Android app version essentially allow for excluding outdated devices.
-Defining custom logic to verify the attestation challenge for Android is unsupported by design, considering iOS constraints and inconsistencies between platforms resulting from such a customisation.
-More details on the configuration can be found in the API documentation.
-
-#### 1.1.1 A Note on Android Attestation
-This library allows combining different flavours of Android attestation, ranging from full hardware attestation
-to (rather useless in practice) software-only attestation, which can be useful for testing using an Android emulator.
-Hardware attestation is enabled by default, while hybrid and software-only attestation need to be explicitly enabled
-through `enableNougatAttestation` and `enableSoftwareAttestation`, respectively. Doing so will chain the corresponding
-`AndroidAttestationChecker`s from the strictest (hardware) to the least strict (software-only).
-Naturally, hardware attestation can also be disabled by setting `disableHardwareAttestation = true`, although there is probably
-no real use case for such a configuration except for testing.
-
-### 1.2 Example Usage
-A verifier expects the following parameters to be configured:
-1. Either:
-    * a preconfigured `Warden` instance, or
-    * pass all Warden configuration properties directly
-2. an OID (globally unique, usually UUID-based) of the CSR attribute to carry the attestation statement (see Section&nbsp;1, Item&nbsp;3)
-3. a lambda specifying how the validity of challenges is verified (and how used challenges are invalidated)
-
-Naturally, clients and back-end need to agree on these parameters. Hence, it makes sense to set them inside
-a common module that is shared by back-end and clients. This leads to the following shared constants:
-
-```kotlin
-val ENDPOINT_CHALLENGE = "/api/v1/challenge"
-val ENDPOINT_ATTEST = "/api/v1/attest"
-val PROOF_OID = ObjectIdentifier(Uuid.parse("c893b702-28f6-4c50-8578-d1d7a1580729"))
-```
-
-#### 1.2.1 Back-End Setup
-In addition to the parameters described above, the back-end also needs a source to generate attestation challenges, track them, and match them against incoming attestation requests.
-As Warden Supreme's verifier component aims to integrate with any service, it simply expects a lambda that matches an incoming attestation statement against the expected nonce.
-Session management is out of scope, as it is provided by frameworks such as Ktor or Spring.
-In the end, a verifier instance is created as follows:
-
-```kotlin
-val attestationValidator = AttestationValidator(
-    warden, /* the configured instance as per Section 1.1 */
-    attestationProofOID = PROOF_OID /* as per Section 1.2 */
-) {
-    /*
-    Your nonce validation logic here:
-    Usually, you'll want to check
-      * whether the challenge you got is one you issued before
-      * and whether it is still fresh enough
-    and then remove it from whatever challenge-cache you are using.
-    
-    Since you receive the challenge in the logic attached to the HTTP endpoint accepting attestation
-    statements, you'll be matching it against the active session there anyway.
-    */
-}
-```
-
-As mentioned, it is also possible to pass the configuration parameters laid out in Section&nbsp;1.1 directly.
-
-#### 1.2.2 Handling Requests
-As per Section&nbsp;1.2, `ENDPOINT_CHALLENGE` and `ENDPOINT_ATTEST` need to be wired.
-
-##### `ENDPOINT_CHALLENGE`  expected to return an `AttestationChallenge`
-The encoding of the challenge is not fixed, but can be serialized using `kotlinx.serialization`
-
-`AttestationChallenge`, contains:
-1. `nonce: ByteArray`: The actual challenge value; usually a cryptographic nonce, based on true randomness
-2. `validity: Duration`: This is used to communicate the validity duration of a challenge to the client
-3. `timeZone: TimeZone`: Optional information about the TimeZone set on the backend
-4. `postEndpoint: String`: This property conveys the endpoint to post the attestation statement to. This will typically be `<service url>/$ENDPOINT_ATTEST`.
-5. `timeOffset: Duration`: This property is used to inform the client about the maximum tolerated time offset for temporal validations.
-
-A fresh challenge is prepared as follows:
-
-```kotlin
-val challenge= attestationValidator.issueChallenge(
-    TODO("Your nonce obtaining code here"),
-    TODO("Your Challenge validity duration here"), //optional
-    timeZone = TimeZone.currentSystemDefault(), //optional
-    ENDPOINT_ATTEST,
-    timeOffset = TODO("Communicate your server-side clock offset here"), //optional
-)
-```
-
-##### `ENDPOINT_ATTEST` expects a CSR created by the Supreme Client, after it obtained a challenge from `ENDPOINT_CHALLENGE`
-
-Hence, the back-end is expected to decode the received body into a CSR, verify the contained attestation statement and
-(if everything checks out) issue a binding certificate and respond with the full certificate chain. When using Ktor,
-this typically works as follows:
-
-```kotlin
-post(ENDPOINT_ATTEST) {
-    val src = call.receive<ByteArray>()
-    val resp =
-        attestationValidator.verifyKeyAttestation(Pkcs10CertificationRequest.decodeFromDer(src)) { csr ->
-        
-        /* certificateSigner is assumed to be a `Signer` instance configured to use the CA key for signing */
-        certificateSigner.sign(
-            TbsCertificate(
-                serialNumber = YOUR_SERIAL_HERE,
-                publicKey = csr.publicKey, // use the CSR's subject public key
-                signatureAlgorithm = certificateSigner.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
-                validFrom = Asn1Time(Clock.System.now()),
-                validUntil = Asn1Time(Clock.System.now() + CERT_VALIDITY),
-                issuerName = YOUR_ISSUER_NAME_HERE,
-                subjectName = YOUR_SUBJECT_NAME_HERE,
-            )
-        ).map { listOf(it) }
-    }
-        
-    call.respondText(Json.encodeToString(resp), contentType = ContentType.Application.Json)
-}
-```
-
-#### 1.2.3 Client Integration
-
-On the client, Warden Supreme is even easier to integrate, assuming you are using
-Signum's [_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/):
-
-```kotlin
-// Create a Supreme attestation client
-val client = AttestationClient(HttpClient())
-
-// Fetch a challenge
-val challenge = client.getChallenge(Url(ENDPOINT_CHALLENGE)).getOrThrow()
-
-// Init the signer with a freshly created key and produce an attestation statement
-val signer = PlatformSigningProvider.createSigningKey(alias) {
-    ec {}
-    hardware {
-        attestation {
-            this.challenge = challenge.nonce
-        }
-    }
-}.getOrThrow()
-
-// Create and sign a CSR
-val csr = signer.createCsr(challenge).getOrThrow()
-
-// Have the back-end attest it
-val result = client.attest(csr, challenge.postEndpoint)
-
-// Get the certificate chain containing the binding certificate as leaf
-val certificateChain = when (result) {
-    is AttestationResponse.Failure -> TODO()
-    is AttestationResponse.Success -> result.certificateChain
-}
-```
-
-Again, more details can be found in **Warden Supreme's [full documentation](https://a-sit-plus.github.io/warden)**.
-
-### 1.3 Reacting to Attestation Results
-The Supreme attestation verifier only returns an enum indicating the reason for an error, with the option to attach a custom explanatory string.
-This is by design, as it is generally undesirable to expose the internals of a back-end to clients.
-
-On the back-end, however, attestation issues typically need to be analysed. Hence, the Supreme attestation validator provides
-three callbacks to analyse attestation errors and success (without side effects).
-1. `onPreAttestationError` is called in case of operational/internal errors, or if the attestation statement cannot
-   be extracted from a CSR, for example.
-2. `onAttestationError` is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
-3. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned with the fully parsed and verified attestation statement and the associated public key.
-   This can be useful for statistical analyses, for example.
 
 ## 2. Debugging, Recording, and Replaying Attestation Checks
 Whenever the actual attestation check fails (i.e., whenever `onAttestationError()` is called), a ready-made `WardenDebugAttestationStatement` is created and passed to this function.

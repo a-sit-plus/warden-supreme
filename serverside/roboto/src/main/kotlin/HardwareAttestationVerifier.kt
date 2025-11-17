@@ -5,10 +5,13 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import com.google.android.attestation.ParsedAttestationRecord
 import java.util.*
 
-class HardwareAttestationChecker @JvmOverloads constructor(
+@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("HardwareAttestationVerifier"))
+typealias HardwareAttestationChecker = HardwareAttestationVerifier
+
+class HardwareAttestationVerifier @JvmOverloads constructor(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
-) : AndroidAttestationChecker(attestationConfiguration, verifyChallenge) {
+) : Roboto(attestationConfiguration, verifyChallenge) {
 
     init {
         if (attestationConfiguration.disableHardwareAttestation) throw object :
@@ -18,8 +21,8 @@ class HardwareAttestationChecker @JvmOverloads constructor(
     }
 
     @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifySecurityLevel() {
-        if (attestationConfiguration.requireStrongBox) {
+    override fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean?) {
+        if (override ?: attestationConfiguration.requireStrongBox) {
             if (attestationSecurityLevel() != ParsedAttestationRecord.SecurityLevel.STRONG_BOX)
                 throw AttestationValueException(
                     "Attestation security level not StrongBox",
@@ -55,7 +58,11 @@ class HardwareAttestationChecker @JvmOverloads constructor(
     override val trustAnchors = attestationConfiguration.hardwareTrustedRoots
 
     @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyAndroidVersion(versionOverride: Int?, osPatchLevel: PatchLevel?, verificationDate: Date) =
+    override fun ParsedAttestationRecord.verifyAndroidVersion(
+        versionOverride: Int?,
+        osPatchLevel: PatchLevel?,
+        verificationDate: Date
+    ) =
         teeEnforced().verifyAndroidVersion(versionOverride, osPatchLevel, verificationDate)
 
     @Throws(AttestationValueException::class)

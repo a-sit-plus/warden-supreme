@@ -4,36 +4,29 @@ import at.asitplus.KmmResult
 import at.asitplus.catching
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.asn1.*
-import at.asitplus.signum.indispensable.asn1.encoding.asAsn1String
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToString
+import at.asitplus.signum.indispensable.asn1.encoding.decodeToUtf8String
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
+import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import io.matthewnelson.encoding.base16.Base16
-import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
-import io.matthewnelson.encoding.core.Encoder.Companion.encodeToString
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 /**
  * A generic representation of a challenge sent the server.
  */
+@ConsistentCopyVisibility
 @Serializable
 data class AttestationChallenge
 /**
  * @throws IllegalArgumentException in case the nonce is larger than 128 bytes
  */
 @Throws(IllegalArgumentException::class)
-constructor(
+private constructor(
     /**
      * The issuing time of the nonce. Useful to detect clock drifts and exit early.
      * This is not considered sensible information, as clocks must be in sync anyhow.
@@ -42,10 +35,10 @@ constructor(
     val issuedAt: Instant,
 
     /**
-     * How long this nonce is considered valid. Can be omitted, if the server does not want to disclose this information.
+     * How long this nonce is considered valid.
      */
     @Serializable(with = DurationWholeSecondsSerializer::class)
-    val validity: Duration? = null,
+    val validity: Duration,
     /**
      * The server timezone. Can be omitted if the server does not want to disclose this information
      */
@@ -59,7 +52,6 @@ constructor(
     @Serializable(with = ByteArrayBase64UrlSerializer::class)
     val nonce: ByteArray,
 
-
     /**
      * The endpoint to post the CSR containing the attestation proof to
      */
@@ -69,12 +61,51 @@ constructor(
      * The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
      */
     @Serializable(with = ObjectIdentifierStringSerializer::class)
-    val proofOID: ObjectIdentifier
+    val proofOID: ObjectIdentifier,
 
-) {
+    /**
+     * Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
+     * On its own this is **not the device's nickname and therefore cannot identify a person in its own**.
+     * Defaults to `false`.
+     */
+    val includeGenericDeviceName: Boolean = false,
+
+    /**
+     * Indicates the wire format version
+     */
+    val version: Int? = null,
+
+    /**
+     * Specified key constraints for the client
+     */
+    val keyConstraints: KeyConstraints? = null,
+
+    ) {
     init {
         if (nonce.size > 128) throw IllegalArgumentException("nonce too large! must be at most 128 bytes.")
     }
+
+    constructor(
+        issuedAt: Instant,
+        validity: Duration,
+        timeZone: TimeZone? = null,
+        nonce: ByteArray,
+        attestationEndpoint: String,
+        proofOID: ObjectIdentifier,
+        includeGenericDeviceName: Boolean = false,
+        keyConstraints: KeyConstraints? = null,
+    ) : this(
+        issuedAt,
+        validity,
+        timeZone,
+        nonce,
+        attestationEndpoint,
+        proofOID,
+        includeGenericDeviceName,
+        version = 1,
+        keyConstraints,
+    )
+
 
     /**
      * Convenience constructor to pass two instants instead of instant and duration
@@ -85,27 +116,31 @@ constructor(
         timeZone: TimeZone?,
         nonce: ByteArray,
         attestationEndpoint: String,
-        proofOID: ObjectIdentifier
+        proofOID: ObjectIdentifier,
+        includeGenericDeviceName: Boolean = false,
+        keyConstrains: KeyConstraints? = null,
     ) : this(
         issuedAt,
         validUntil - issuedAt,
         timeZone,
         nonce,
         attestationEndpoint,
-        proofOID
+        proofOID,
+        includeGenericDeviceName,
+        keyConstrains
     )
 
     /**
      * Lazily-evaluated property
      */
-    val validUntil: Instant? by lazy { validity?.let { issuedAt + it } }
+    val validUntil: Instant by lazy { issuedAt + validity }
 
     /**
      * Encapsulates the nonce encoded into a [KnownOIDs.serialNumber] RDN component for easier parsing
      */
     fun getRdnSerialNumber(): AttributeTypeAndValue = AttributeTypeAndValue.Other(
         KnownOIDs.serialNumber, Asn1String.Printable(
-            nonce.encodeToString(Base16)
+            nonce.toHexString(HexFormat.UpperCase)
         )
     )
 
@@ -113,28 +148,32 @@ constructor(
         if (this === other) return true
         if (other !is AttestationChallenge) return false
 
+        if (includeGenericDeviceName != other.includeGenericDeviceName) return false
+        if (version != other.version) return false
         if (issuedAt != other.issuedAt) return false
         if (validity != other.validity) return false
+        if (timeZone != other.timeZone) return false
         if (!nonce.contentEquals(other.nonce)) return false
+        if (attestationEndpoint != other.attestationEndpoint) return false
+        if (proofOID != other.proofOID) return false
+        if (keyConstraints != other.keyConstraints) return false
+        if (validUntil != other.validUntil) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = issuedAt.hashCode()
+        var result = includeGenericDeviceName.hashCode()
+        result = 31 * result + (version ?: 0)
+        result = 31 * result + issuedAt.hashCode()
         result = 31 * result + validity.hashCode()
+        result = 31 * result + (timeZone?.hashCode() ?: 0)
         result = 31 * result + nonce.contentHashCode()
+        result = 31 * result + attestationEndpoint.hashCode()
+        result = 31 * result + proofOID.hashCode()
+        result = 31 * result + (keyConstraints?.hashCode() ?: 0)
+        result = 31 * result + validUntil.hashCode()
         return result
-    }
-}
-
-object DurationWholeSecondsSerializer : KSerializer<Duration> {
-    override val descriptor = PrimitiveSerialDescriptor("DurationInWholeSeconds", PrimitiveKind.LONG)
-
-    override fun deserialize(decoder: Decoder): Duration = decoder.decodeLong().seconds
-
-    override fun serialize(encoder: Encoder, value: Duration) {
-        encoder.encodeLong(value.inWholeSeconds)
     }
 }
 
@@ -151,7 +190,10 @@ fun TbsCertificationRequest.attestationStatementForChallenge(challenge: Attestat
 fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): KmmResult<Attestation> =
     catching {
         attributes.find { it.oid == oid }?.value?.singleOrNull()
-            ?.let { Attestation.fromJSON(it.asPrimitive().asAsn1String().value) }
+            ?.let {
+                it.asPrimitive()
+                Attestation.fromJSON(Asn1String.decodeFromTlv(it.asPrimitive()).value)
+            }
             ?: throw Asn1StructuralException("Attestation statement not present")
     }
 
@@ -165,5 +207,19 @@ val TbsCertificationRequest.challenge: KmmResult<ByteArray>
             subjectName.mapNotNull { name -> name.attrsAndValues.find { attributeTypeAndValue -> attributeTypeAndValue.oid == KnownOIDs.serialNumber } }
         if (noncesRecovered.isEmpty()) throw Asn1StructuralException("No nonce present")
         else if (noncesRecovered.size != 1) throw Asn1StructuralException("More than one nonce present!")
-        noncesRecovered.first().value.asPrimitive().decodeToString().decodeToByteArray(Base16)
+        noncesRecovered.first().value.asPrimitive().decodeToString().hexToByteArray()
     }
+
+/**
+ * Tries to extract a device name from a TBS CSR's attribute with OID [WardenDefaults.OIDs.DEVICE_NAME].
+ */
+val TbsCertificationRequest.deviceName: String?
+    get() = catching {
+        attributes.find { it.oid == WardenDefaults.OIDs.DEVICE_NAME }?.value?.singleOrNull()?.asPrimitive()
+            ?.decodeToUtf8String()?.value
+    }.getOrNull()
+
+/**
+ * @see TbsCertificationRequest.deviceName
+ */
+val Pkcs10CertificationRequest.deviceName: String? get() = tbsCsr.deviceName

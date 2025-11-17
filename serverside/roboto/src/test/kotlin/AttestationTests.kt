@@ -94,7 +94,7 @@ val AttestationTests by testSuite {
             val signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray())
 
             "should fail with HardwareAttestationChecker" {
-                HardwareAttestationChecker(
+                HardwareAttestationVerifier(
                     AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -124,7 +124,7 @@ val AttestationTests by testSuite {
 
             "should fail with NougatHybridAttestationChecker" {
 
-                NougatHybridAttestationChecker(
+                NougatHybridAttestationVerifier(
                     AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -153,7 +153,7 @@ val AttestationTests by testSuite {
             }
 
             "should work with SoftwareAttestationChecker" {
-                SoftwareAttestationChecker(
+                SoftwareAttestationVerifier(
                     AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -206,7 +206,7 @@ val AttestationTests by testSuite {
         val packageName = "com.example.trustedapplication"
 
         "should fail with HardwareAttestationChecker" {
-            HardwareAttestationChecker(
+            HardwareAttestationVerifier(
                 AndroidAttestationConfiguration(
                     listOf(
                         AndroidAttestationConfiguration.AppData(
@@ -235,7 +235,7 @@ val AttestationTests by testSuite {
         }
 
         "should fail with SoftwareAttestationChecker" {
-            HardwareAttestationChecker(
+            HardwareAttestationVerifier(
                 AndroidAttestationConfiguration(
                     listOf(
                         AndroidAttestationConfiguration.AppData(
@@ -264,7 +264,7 @@ val AttestationTests by testSuite {
         }
 
         "should work with NougatHybridAttestationChecker" {
-            NougatHybridAttestationChecker(
+            NougatHybridAttestationVerifier(
                 AndroidAttestationConfiguration(
                     listOf(
                         AndroidAttestationConfiguration.AppData(
@@ -497,7 +497,7 @@ val AttestationTests by testSuite {
                 }
 
                 "Should fail with Nougat attestation" {
-                    NougatHybridAttestationChecker(
+                    NougatHybridAttestationVerifier(
                         AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -530,7 +530,7 @@ val AttestationTests by testSuite {
                 }
 
                 "Should fail with Software attestation" {
-                    SoftwareAttestationChecker(
+                    SoftwareAttestationVerifier(
                         AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -754,12 +754,12 @@ fun attestationService(
     attestationStatementValiditiy: Duration = 5.minutes,
     rkpRequired: Boolean = false,
     rkpAppRequired: Boolean? = null,
-) = HardwareAttestationChecker(
+) = HardwareAttestationVerifier(
     AndroidAttestationConfiguration(
         listOf(
             AndroidAttestationConfiguration.AppData(
                 packageName = androidPackageName,
-                signatureDigests = androidAppSignatureDigest,
+                signerFingerprints = androidAppSignatureDigest,
                 appVersion = androidAppVersion,
                 requireRemoteKeyProvisioningOverride = rkpAppRequired
             )

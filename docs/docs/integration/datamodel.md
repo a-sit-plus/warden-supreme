@@ -32,8 +32,8 @@ The chose data model achieves the following:
 - Server Response (Server → Client)  
 This is a simple either-class, branching as follows:
     - **Success** contains a single property: a `certificateChain` (X.509). This enables immediate consumption by the arbitrary applications (mTLS, signed requests), regardless of platform specifics.
-        - The leaf is a binding certificate issued for the attested key by the backend.
-        - The root is the root CA configured at the backend.
+        - The leaf is a binding certificate issued for the attested key by the back-end.
+        - The root is the root CA configured at the back-end.
     - **Failure** is a typed error with an optional explanation. Categories:
         - `TRUST`: trust or policy violations, such as:
             - Untrusted or mismatched root/intermediate (e.g., wrong environment or CA).
@@ -75,6 +75,6 @@ identified by proofOID, then validates:
 
 ## Operational Implications
 
-- Statefulness: backends persist per-app-instance identity (key IDs/public keys), but forego complex tracking mechanisms
+- Statefulness: back-ends persist per-app-instance identity (key IDs/public keys), but forego complex tracking mechanisms
   like those proposed by Apple's App Attest.
 - Privacy Controls: This strategy inimizes stored identifiers and prevents concrete user tracking.

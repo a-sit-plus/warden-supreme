@@ -33,10 +33,14 @@ import java.security.cert.CertPathValidatorException
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import java.security.interfaces.ECPublicKey
+import kotlin.math.min
 import kotlin.time.*
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-typealias Makoto = Warden
+
+@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("Makoto"))
+typealias Warden = Makoto
 
 /**
  * Default, functional Android and Apple App and Key Attestation in all its glory.
@@ -48,15 +52,15 @@ typealias Makoto = Warden
  * for details.
  * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
  * @param clock a clock to set the time of verification (used for certificate validity checks)
- * @param verificationTimeOffset allows for fine-grained clock drift compensation (this duration is added to the certificate
- * validity checks); can be negative.
+ * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
  */
 @OptIn(ExperimentalTime::class)
-class Warden(
+class Makoto(
+    //TODO post 1.0.0: make it possible to configure only Android or only iOS
     private val androidAttestationConfiguration: AndroidAttestationConfiguration,
     private val iosAttestationConfiguration: IosAttestationConfiguration,
-    private val clock: Clock = Clock.System,
-    private val verificationTimeOffset: Duration = Duration.ZERO
+    val clock: Clock = Clock.System,
+    val verificationTimeOffset: Duration = DEFAULT_TIME_OFFSET
 ) : AttestationService() {
 
     /**
@@ -74,7 +78,7 @@ class Warden(
     constructor(
         androidAttestationConfigurationJ: AndroidAttestationConfiguration,
         iosAttestationConfigurationJ: IosAttestationConfiguration,
-        verificationTimeOffsetJ: java.time.Duration = java.time.Duration.ZERO,
+        verificationTimeOffsetJ: java.time.Duration = DEFAULT_TIME_OFFSET.toJavaDuration(),
         javaClock: java.time.Clock = java.time.Clock.systemUTC()
     ) : this(
         androidAttestationConfigurationJ,
@@ -85,48 +89,47 @@ class Warden(
 
     private val log = LoggerFactory.getLogger(this.javaClass)
 
-    private val androidAttestationCheckers = mutableListOf<AndroidAttestationChecker>().apply {
 
-        if (verificationTimeOffset.inWholeSeconds > Int.MAX_VALUE) throw AttestationException.Configuration(
-            Platform.ANDROID,
-            "Offset too large!",
-            cause = NumberFormatException()
-        )
-        if (verificationTimeOffset.inWholeSeconds < Int.MIN_VALUE) throw AttestationException.Configuration(
-            Platform.ANDROID,
-            "Offset too large!",
-            cause = NumberFormatException()
-        )
-
-        val androidOffset =
-            (verificationTimeOffset + androidAttestationConfiguration.verificationSecondsOffset.seconds).inWholeSeconds
-        if (androidOffset > Int.MAX_VALUE) throw AttestationException.Configuration(
-            Platform.ANDROID,
-            "Calculated Android offset too large!",
-            cause = NumberFormatException()
-        )
-        if (androidOffset < Int.MIN_VALUE) throw AttestationException.Configuration(
-            Platform.ANDROID,
-            "Calculated Android offset too large!",
-            cause = NumberFormatException()
-        )
+    private val androidAttestationVerifiers = mutableListOf<Roboto>().apply {
+        val androidOffset = catchingUnwrapped {
+            Math.addExact(
+                verificationTimeOffset.inWholeSeconds,
+                androidAttestationConfiguration.verificationSecondsOffset
+            )
+        }.getOrElse {
+            throw AttestationException.Configuration(
+                Platform.ANDROID,
+                "Offset too large!",
+                cause = it
+            )
+        }
 
         val correctlyOffsetAndroidConfig =
             androidAttestationConfiguration.copy(verificationSecondsOffset = androidOffset)
 
         if (!correctlyOffsetAndroidConfig.disableHardwareAttestation) add(
-            HardwareAttestationChecker(
+            HardwareAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
         if (correctlyOffsetAndroidConfig.enableNougatAttestation) add(
-            NougatHybridAttestationChecker(
+            NougatHybridAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
         if (correctlyOffsetAndroidConfig.enableSoftwareAttestation) add(
-            SoftwareAttestationChecker(
+            SoftwareAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
     }
+
+
+    /**
+     * The shortest attestation validity duration over Android and iOS configuration.
+     * Useful to get the longest sensible nonce validity duration
+     */
+    val shortestValidityDuration: Duration = shortestDuration(
+        iosAttestationConfiguration.attestationStatementValiditySeconds,
+        androidAttestationConfiguration.attestationStatementValiditySeconds
+    )
 
 
     private val iosApps =
@@ -425,7 +428,7 @@ class Warden(
             return AttestationResult.Error("Could not parse Android attestation certificate chain")
 
         //throws exception on fail
-        val results = androidAttestationCheckers.map {
+        val results = androidAttestationVerifiers.map {
             runCatching {
                 it.verifyAttestation(
                     certificates,
@@ -434,7 +437,7 @@ class Warden(
                 )
             }
         }
-        if (results.filter { it.isFailure }.size == androidAttestationCheckers.size) {
+        if (results.filter { it.isFailure }.size == androidAttestationVerifiers.size) {
             //if time is off, then we need to treat is separately
             results.firstOrNull {
                 (it.exceptionOrNull() is CertificateInvalidException &&
@@ -499,7 +502,7 @@ class Warden(
      * @param assertionData optional assertion data containing `clientData` and an [assertion](https://developer.apple.com/documentation/devicecheck/validating_apps_that_connect_to_your_server#3576644)
      * @param counter highest expected value of the signature counter before the assertion was created (if present). Defaults to 0
      *
-     * @return [AttestationResult.IOS.Verified] on success when using the [Warden] ([AttestationResult.IOS]
+     * @return [AttestationResult.IOS.Verified] on success when using the [Makoto] ([AttestationResult.IOS]
      * when using [NoopAttestationService]) and [AttestationResult.Error] when attestation fails.
      *
      */
@@ -532,7 +535,7 @@ class Warden(
                     }
                 }
                 //else we NOOP through the rest of the configured validators (and thus through configured trust anchors)
-                //if a trust anchors mismatched, the above if clause is tried with the next validator in line
+                //if a trust anchor mismatched, the above if clause is tried with the next validator in line
             }
             //and app to result, so we get the one successful result (if any)
             app to res
@@ -737,6 +740,22 @@ class Warden(
             )
         )
     }
+
+    companion object {
+        /**
+         * Sane default to account for clock drifts seen in practice
+         */
+        val DEFAULT_TIME_OFFSET = 5.minutes
+
+        /**
+         * Nomen est omen; takes two durations in seconds (with the second one nullable) and returns the shorter on
+         * as [Duration]
+         */
+        fun shortestDuration(firstInSeconds: Long, secondInSeconds: Long?): Duration =
+            if (secondInSeconds == null) firstInSeconds.seconds
+            else min(secondInSeconds, firstInSeconds).seconds
+    }
+
 }
 
 

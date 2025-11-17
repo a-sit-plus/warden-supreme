@@ -11,6 +11,7 @@ import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 val GeneratedAttestationTests by testSuite {
@@ -29,12 +30,12 @@ val GeneratedAttestationTests by testSuite {
         androidVersion
     )
 
-    val attestationService = Warden(
+    val attestationService = Makoto(
         androidAttestationConfiguration = AndroidAttestationConfiguration(
             applications = listOf(
                 AndroidAttestationConfiguration.AppData(
                     packageName = packageName,
-                    signatureDigests = listOf(signatureDigest),
+                    signerFingerprints = listOf(signatureDigest),
                     appVersion = appVersion
                 )
             ),
@@ -52,7 +53,8 @@ val GeneratedAttestationTests by testSuite {
                     bundleIdentifier = "at.asitplus.attestation-client"
                 )
             )
-        )
+        ),
+        verificationTimeOffset = Duration.ZERO
     )
 
     "Generated Attestation Test" {

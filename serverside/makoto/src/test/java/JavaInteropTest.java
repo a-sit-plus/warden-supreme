@@ -1,10 +1,10 @@
 import at.asitplus.attestation.AttestationService;
-import at.asitplus.attestation.Warden;
+import at.asitplus.attestation.Makoto;
 import at.asitplus.attestation.IosAttestationConfiguration;
 import at.asitplus.attestation.KeyAttestation;
-import at.asitplus.attestation.android.AndroidAttestationChecker;
+import at.asitplus.attestation.android.Roboto;
 import at.asitplus.attestation.android.AndroidAttestationConfiguration;
-import at.asitplus.attestation.android.HardwareAttestationChecker;
+import at.asitplus.attestation.android.HardwareAttestationVerifier;
 import at.asitplus.attestation.android.PatchLevel;
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException;
 import at.asitplus.attestation.android.exceptions.AttestationValueException;
@@ -26,7 +26,7 @@ public class JavaInteropTest {
 
     public static void testDefaults() {
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
-                    new Warden(
+                    new Makoto(
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData(
                                     "at.asitplus.attestation-example", Collections.emptyList())).build(),
                             new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
@@ -36,7 +36,7 @@ public class JavaInteropTest {
                 "No signature digests specified");
 
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
-                    new Warden(
+                    new Makoto(
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
                                     new ArrayList<>()
                             )).build(),
@@ -48,7 +48,7 @@ public class JavaInteropTest {
                 "No signature digests specified");
 
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
-                    new Warden(
+                    new Makoto(
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
                                     new ArrayList<>(),
                                     10)
@@ -61,7 +61,7 @@ public class JavaInteropTest {
                 "No signature digests specified");
 
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
-                    new Warden(
+                    new Makoto(
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
                                     new ArrayList<>(),
                                     10,
@@ -76,7 +76,7 @@ public class JavaInteropTest {
                 "No signature digests specified");
 
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
-                    new Warden(
+                    new Makoto(
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
                                     new ArrayList<>()
                             )).build(),
@@ -91,7 +91,7 @@ public class JavaInteropTest {
     }
 
     public static void testAttestationCallsJavaFriendliness() throws NoSuchAlgorithmException {
-        AttestationService service = new Warden(
+        AttestationService service = new Makoto(
                 new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
                         Arrays.asList(new byte[][]{new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}}))
                 ).build(),
@@ -128,12 +128,11 @@ public class JavaInteropTest {
         ));
         AndroidAttestationConfiguration config = new AndroidAttestationConfiguration.Builder(apps)
                 .androidVersion(11000)
-                .ingoreLeafValidity()
                 .patchLevel(new PatchLevel(2023, 03))
                 .verificationSecondsOffset(-500) //we to account for time drift
                 .build();
 
-        AndroidAttestationChecker checker = new HardwareAttestationChecker(config);
+        Roboto checker = new HardwareAttestationVerifier(config);
         try {
             ParsedAttestationRecord attestationRecord = checker.verifyAttestation(certificateChain, new Date(), challenge);
             //all good
