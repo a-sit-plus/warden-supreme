@@ -93,11 +93,11 @@ Warden makoto is the modernized variant of legacy WARDEN, sharing the same API:
 
 !!! tip Platform Specifics
     Like legacy WARDEN, Warden makoto also exposes OS-specific endpoints for more fine-grained app attestation on iOS,
-    and a more low-level API for Android targets. Refer to the respective platform-sepcific APIs, both of which are exposed by the
-    [`Warden`](../dokka/makoto/at.asitplus.attestation/-warden/index.html):
+    and a more low-level API for Android targets. Refer to the respective platform-sepcific APIs, both of which are exposed by
+    [`Makoto`](../dokka/makoto/at.asitplus.attestation/-makoto/index.html):
     
-    * [iOS](../dokka/makoto/at.asitplus.attestation/-warden/ios.html)
-    * [Android](../dokka/makoto/at.asitplus.attestation/-warden/android.html)
+    * [iOS](../dokka/makoto/at.asitplus.attestation/-makoto/ios.html)
+    * [Android](../dokka/makoto/at.asitplus.attestation/-makoto/android.html)
 
 
 Recommended endpoints:
