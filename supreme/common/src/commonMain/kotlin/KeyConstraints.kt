@@ -8,6 +8,7 @@ import at.asitplus.signum.indispensable.RSAPadding
 import at.asitplus.signum.indispensable.SignatureAlgorithm
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.nativeDigest
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
 
@@ -36,6 +37,7 @@ data class KeyConstraints(
         abstract val digests: Set<Digest>
 
         @Serializable
+        @SerialName("RSA")
         class RSA(
             val keySize: @Serializable(with = BitLengthSerializer::class) BitLength,
             val paddings: Set<RSAPadding> = setOf(RSAPadding.PSS),
@@ -69,6 +71,7 @@ data class KeyConstraints(
         }
 
         @Serializable
+        @SerialName("EC")
         class EC(
             @Serializable(with = ECCurveSerializer::class)
             val curve: ECCurve = ECCurve.SECP_256_R_1,
