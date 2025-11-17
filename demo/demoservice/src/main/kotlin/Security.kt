@@ -1,6 +1,9 @@
-package at.asitplus
+package at.asitplus.warden
 
-import at.asitplus.pki.KeySigner
+import at.asitplus.signum.indispensable.toJcaCertificate
+import at.asitplus.signum.indispensable.toKmpCertificate
+import at.asitplus.signum.supreme.os.JKSProvider
+import at.asitplus.signum.supreme.sign.Signer
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.crypto.ECDSAVerifier
 import com.nimbusds.jose.util.X509CertChainUtils
@@ -8,7 +11,12 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import kotlinx.coroutines.runBlocking
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.slf4j.Logger
+import java.io.FileInputStream
+import java.security.KeyStore
+import java.security.Security
 import java.security.cert.*
 import java.security.interfaces.ECKey
 import java.time.Duration
@@ -19,6 +27,7 @@ import kotlin.time.toJavaDuration
 
 fun Application.configureSecurity() {
     val logger = log
+    val caCert = CA_CERT
     authentication {
         bearer("jwt") { //we are doing custom JWT auth for demonstration purposes
 
@@ -35,18 +44,22 @@ fun Application.configureSecurity() {
                     SignedJWT.parse(tokenCredential.token)?.let { jwt ->
 
                         //now we verify it cryptographically, check its validity and extract the leaf cert's subject,
-                        verifyJWTAndExtractSignerSubject(jwt, offset, logger)?.let {
+                        caCert.verifyJWTAndExtractSignerSubject(jwt, offset, logger)?.let {
                             //since we use the extracted subject to identify the client
                             UserIdPrincipal(it)
                         }
                     }
-                }.getOrElse { it.printStackTrace();null }
+                }.getOrElse { it.printStackTrace(); null }
             }
         }
     }
 }
 
-private fun verifyJWTAndExtractSignerSubject(jwt: SignedJWT, offset: Duration, logger: Logger): String? = runCatching {
+private suspend fun at.asitplus.signum.indispensable.pki.X509Certificate.verifyJWTAndExtractSignerSubject(
+    jwt: SignedJWT,
+    offset: Duration,
+    logger: Logger
+): String? = runCatching {
 
 
     //PARSE JWT
@@ -66,7 +79,7 @@ private fun verifyJWTAndExtractSignerSubject(jwt: SignedJWT, offset: Duration, l
         }"
     )
     //Verify that the root corresponds to our singing cert
-    if (!x509CertChain.last().encoded.contentEquals(KeySigner.rootCert.encoded)) throw SecurityException("Signed by wrong root")
+    if (!x509CertChain.last().encoded.contentEquals(this.encodeToDer())) throw SecurityException("Signed by wrong root")
 
     logger.info("root cert is ours")
 
@@ -106,7 +119,7 @@ private fun verifyJWTAndExtractSignerSubject(jwt: SignedJWT, offset: Duration, l
     val path = cf.generateCertPath(x509CertChain)
     val validator = CertPathValidator.getInstance("PKIX")
 
-    val params = PKIXParameters(setOf(TrustAnchor(KeySigner.rootCert, null))).apply {
+    val params = PKIXParameters(setOf(TrustAnchor(this.toJcaCertificate().getOrThrow(), null))).apply {
         isRevocationEnabled = false //🎶 We don't need no revocation! 🎶
     }
     val r = validator.validate(path, params) as PKIXCertPathValidatorResult
@@ -114,3 +127,25 @@ private fun verifyJWTAndExtractSignerSubject(jwt: SignedJWT, offset: Duration, l
 
     bindingCert.subjectDN.name
 }.getOrElse { it.printStackTrace(); null }
+
+
+private lateinit var _caCert: at.asitplus.signum.indispensable.pki.X509Certificate
+private lateinit var _signer: Signer
+fun Application.loadKeyStore() {
+    Security.addProvider(BouncyCastleProvider())
+    val ks = FileInputStream("ca.p12").use { fin ->
+        KeyStore.getInstance("PKCS12").also { it.load(fin, "changeit".toCharArray()) }
+    }
+
+    _caCert = (ks.getCertificate("ca") as X509Certificate).toKmpCertificate().getOrThrow()
+
+    _signer =
+        runBlocking {
+            JKSProvider { withBackingObject { store = ks } }.getOrThrow().getSignerForKey("ca") {
+                privateKeyPassword = "changeit".toCharArray()
+            }.getOrThrow()
+        }
+}
+
+val Application.CA_CERT get() = _caCert
+val Application.SIGNER get() = _signer
