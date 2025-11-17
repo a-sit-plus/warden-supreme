@@ -180,6 +180,17 @@ publishing {
         mavenLocal {
             signing.isRequired = false
         }
+        maven {
+            url = uri(rootProject.layout.projectDirectory.dir("repo"))
+            this.name = "local"
+            if (System.getenv("SIGN_LOCAL_REPO_ARTEFACTS")?.ifBlank { "false" } != "true") {
+                logger.lifecycle("  > NOT signing locally published maven artefacts!")
+                signing {
+                    isRequired = false
+                }
+            }else
+                logger.lifecycle("  > Signing locally published maven artefacts!")
+        }
     }
 }
 
