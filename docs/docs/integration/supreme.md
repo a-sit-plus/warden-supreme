@@ -161,8 +161,8 @@ The full details on the configuration can be found in the [API documentation](..
     This concerns the first app, since the second one overrides these values.
     10. This is hardly used in practice and shows the default
     11. This is rather optimistic, but the majority of devices running Android 13 should not screw this up.
-    12. Usully, you will always want hardware attestation, so you'd need to explicityl disable it
-    13. This is for devices launched with Android 7.0 who have not received an upgraded KeyMaster. Such devices are onyl capable of key attestation.  
+    12. Usually, you will always want hardware attestation, so you'd need to explicitly disable it
+    13. This is for devices launched with Android 7.0 who have not received an upgraded KeyMaster. Such devices are only capable of key attestation.  
     Their app attestation claims are only software-atested!
     14. Warden Supreme does not need to enforce this, because cryptographic nonces are used to ensure freshness.  
     It is not recommended to set this value, because many OEMs mess this up!
@@ -193,7 +193,7 @@ The full details on the configuration can be found in the [API documentation](..
 First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
 
 ??? info inline end "Important Nonce Info"
-    Under the hoot, the attestation verifier needs a source to generate attestation challenges, track them, invalidate, and match them against incoming attestation requests.
+    Under the hood, the attestation verifier needs a source to generate attestation challenges, track them, invalidate, and match them against incoming attestation requests.
     Warden Supreme provides a secure nonce generation service and uses an in-memory challenge cache by default, which is fine for small to medium load but not for larger production deployments.
     In such scenarios, roll your own, backed by a RDBMS!
 
@@ -208,7 +208,7 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
     --8<-- "Readme-Verifier.kt:18"
     ```
     
-    1. We want Warden Supreme to conveys the attestation proof inside the CSR using a custom OID.
+    1. We want Warden Supreme to convey the attestation proof inside the CSR using a custom OID.
     2. We don't care about device IDs
     3. We explicitly speficy the key we want to have created on the client.  
     The values shown here correspond to the defaults, as this is supported by Android and iOS.
@@ -293,7 +293,7 @@ three callbacks to analyse attestation errors and success (without side effects)
 --8<-- "Readme-Backend-callbacks.kt:15:45"
 ```
 
-1. This is simply the CSR from the client, as in th MWE
+1. This is simply the CSR from the client, as in the minimal example
 2. `onPreAttestationError` is called in case of operational/internal errors, or if the attestation statement cannot
    be extracted from a CSR. Different side-effect-free handling strategies can be employed based on error type.
 3. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).

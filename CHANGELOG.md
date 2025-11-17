@@ -13,7 +13,7 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
 * Rename `verifyKeyAttestation` -> `verifyAttestation` (and introduce delegate, but marked as deprecated)
     * `CertificateIssuer` now has `AttestationResult.Verified` as receiver for the new function.
     * The deprecated function stays as it is.
-* Allow `CertificateIssuer` to throw instead of returning a KmmResult
+* Allow `CertificateIssuer` to throw instead of returning a `KmmResult`
 * Constrain challenge issuing wrt. validity duration: No more params can be specified, but informational adding of time zone is still allowed.
 
 **It also includes behavioural changes to the Android and iOS attestation defaults:**
@@ -25,7 +25,7 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
 * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
 * iOS clock verification time offset defaults to five minutes, which are added to the attestation statement validity by default.
 * Rename `Warden` -> `Makoto` to more clearly distinguish individual components by name
-    * A `typealias Warden = Makoto` is present, but marked as deprecated for
+    * A `typealias Warden = Makoto` is present, but marked as deprecated
 * Rename `AndroidAttestationChecker` -> `Roboto` to more clearly distinguish individual components by name
     * Rename `HardwareAttestationChecker` -> `HardwareAttestationVerifier` (and introduce typealias, but marked as deprecated) 
     * Rename `NougatHybridAttestationChecker` -> `NougatHybridAttestationVerifier` (and introduce typealias, but marked as deprecated) 
@@ -36,7 +36,7 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
 **New features:**
 
 * Ship a default OID to identify the attestation proof.
-* Add defaults for keyConstraints and nonce validity duration. -> Fully integrated key and attestation generation
+* Add defaults for keyConstraints and nonce validity duration &rarr; Fully integrated key and attestation generation
 * Transmit device names inside CSR on a best-effort basis
 * Per-App StrongboxOverride
 * Expose Makoto `verificationTimeOffset` and `clock`, `shortestValidityDuration`
