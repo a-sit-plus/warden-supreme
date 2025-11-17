@@ -38,7 +38,7 @@ import kotlin.uuid.ExperimentalUuidApi
 val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 20.minutes)) {
 
 test("verifier") {}
-/*
+
     //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
     //fail at runtime
     val STMT_VALIDITY = 15.minutes
@@ -165,5 +165,5 @@ test("verifier") {}
             if (Clock.System.now() - before > timeout) running = null
         }
         (if (running == null) "Automatically Shutting down after timeout" else "Obeying shutdown request") { server.stop() }
-    }*/
+    }
 }

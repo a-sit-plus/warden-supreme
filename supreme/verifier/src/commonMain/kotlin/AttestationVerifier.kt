@@ -399,6 +399,4 @@ class InMemoryChallengeCache(private val clock: Clock, private val offset: Durat
             }
         }
     }
-
-
 }
