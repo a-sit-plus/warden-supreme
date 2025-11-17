@@ -79,7 +79,7 @@ class AttestationVerifier(
         attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
         includeGenericDeviceName: Boolean = true,
         clock: Clock = Clock.System,
-        verificationTimeOffset: Duration = Duration.ZERO,
+        verificationTimeOffset: Duration = Makoto.DEFAULT_TIME_OFFSET,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
         nonceValidity: Duration = Makoto.shortestDuration(
             iosAttestationConfiguration.attestationStatementValiditySeconds,

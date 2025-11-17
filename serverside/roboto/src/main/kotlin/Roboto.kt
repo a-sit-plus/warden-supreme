@@ -213,7 +213,7 @@ abstract class Roboto(
     protected abstract val trustAnchors: Collection<TrustedRoot>
 
     protected open fun ParsedAttestationRecord.verifyAttestationTime(verificationDate: Instant) {
-        var checkTime = verificationDate.plusSeconds(attestationConfiguration.verificationSecondsOffset.toLong())
+        val checkTime = verificationDate.plusSeconds(attestationConfiguration.verificationSecondsOffset)
         if (attestationConfiguration.attestationStatementValiditySeconds == null) return //no validity, no checks!
         val createdAt =
             teeEnforced().creationDateTime().getOrNull() ?: softwareEnforced().creationDateTime().getOrNull()

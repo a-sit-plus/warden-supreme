@@ -104,17 +104,6 @@ class Makoto(
             )
         }
 
-        if (androidOffset > Int.MAX_VALUE) throw AttestationException.Configuration(
-            Platform.ANDROID,
-            "Calculated Android offset too large!",
-            cause = NumberFormatException()
-        )
-        if (androidOffset < Int.MIN_VALUE) throw AttestationException.Configuration(
-            Platform.ANDROID,
-            "Calculated Android offset too large!",
-            cause = NumberFormatException()
-        )
-
         val correctlyOffsetAndroidConfig =
             androidAttestationConfiguration.copy(verificationSecondsOffset = androidOffset)
 
