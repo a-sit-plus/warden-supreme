@@ -19,7 +19,7 @@ Approach: Introduce a test app identity that is cryptographically distinct from 
     - A different `packageName`
     - A deliberately obvious, non‑production signing certificate digest
     - An `androidVersionOverride` that is clearly out of band (e.g., very high) for easy detection
-- Stand up a test PKI:
+- Set up a test PKI:
     - A root whose public key is registered as a `trustAnchorOverride`
     - An intermediate that issues short‑lived leaves (because the attestation certificate chain used by Android is always at least three certificates long)
     - A leaf certificate generated on the fly by the test client so validity is always fresh
