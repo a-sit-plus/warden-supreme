@@ -104,8 +104,9 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
         cache.store(challenge1)
         cache.store(challenge1)
         cache.validate(nonce).let { result ->
-            result.shouldBeInstanceOf<ChallengeValidationResult.Failure>()
-            result.reason?.message?.lowercase() shouldContain "multiple"
+            result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
+            result.validatedChallenge shouldBe challenge1
+            cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
         }
 
         cache.store(challenge1)

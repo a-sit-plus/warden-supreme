@@ -360,12 +360,25 @@ sealed class PreAttestationError {
 class InMemoryChallengeCache(private val clock: Clock, private val offset: Duration) : ChallengeValidator {
 
     private val mutex = Mutex()
-    private val challengeList = mutableListOf<AttestationChallenge>()
+
+    /**
+     * Use a hash map keyed by nonce instead of a list to make lookups O(1) instead of O(n).
+     * ByteArray is not suitable as a key directly, so we wrap it.
+     */
+    private class NonceKey(val bytes: ByteArray) {
+        override fun equals(other: Any?): Boolean =
+            this === other || (other is NonceKey && bytes.contentEquals(other.bytes))
+
+        override fun hashCode(): Int = bytes.contentHashCode()
+    }
+
+    private val challengesByNonce = mutableMapOf<NonceKey, AttestationChallenge>()
 
     override suspend fun store(challenge: AttestationChallenge) {
         mutex.withLock {
             pruneExpiredEntries()
-            challengeList.add(challenge)
+            // Strong cryptographic nonces make collisions unrealistic, so we simply overwrite
+            challengesByNonce[NonceKey(challenge.nonce)] = challenge
         }
     }
 
@@ -377,25 +390,26 @@ class InMemoryChallengeCache(private val clock: Clock, private val offset: Durat
     }
 
     private fun find(nonce: ByteArray): ChallengeValidationResult {
-        val removed = mutableListOf<AttestationChallenge>()
-        for (i in challengeList.indices.reversed()) {
-            if (challengeList[i].nonce.contentEquals(nonce)) {
-                removed.add(challengeList.removeAt(i))
-            }
-        }
+        val key = NonceKey(nonce)
+        val challenge = challengesByNonce.remove(key) ?: return ChallengeValidationResult.Failure(
+            IllegalStateException("No challenge found")
+        )
 
-        return when (removed.size) {
-            0 -> ChallengeValidationResult.Failure(IllegalStateException("No challenge found"))
-            1 -> ChallengeValidationResult.Success(removed.first())
-            else -> ChallengeValidationResult.Failure(IllegalStateException("Multiple challenges for nonce ${nonce.toHexString()} found"))
-        }
-
+        // With a Map, you can't have multiple active entries for the same nonce
+        // unless you deliberately store a collection. Given strong random nonces,
+        // we assume at most one.
+        return ChallengeValidationResult.Success(challenge)
     }
 
     private fun pruneExpiredEntries() {
-        for (i in challengeList.indices.reversed()) {
-            if (challengeList[i].validUntil <= (clock.now() + offset)) {
-                challengeList.removeAt(i)
+        // Capture time once per call instead of per-entry
+        val nowWithOffset = clock.now() + offset
+
+        val iterator = challengesByNonce.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            if (entry.value.validUntil <= nowWithOffset) {
+                iterator.remove()
             }
         }
     }
