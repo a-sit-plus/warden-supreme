@@ -136,7 +136,7 @@ The certificate chains created by Android use neither CRL nor OCSP, but a custom
 Warden Supreme allows for specifying an HTTP proxy URL, to facilitate setups behind a proxy.
 
 #### Temporally Invalid Leaf Certificates
-As mentioned in [Partially Ignoring Temporal Checks](#partially-ignoring-temporal-checks), many older Android devices do not encode a sensible validity into the leaf certificate carrying
+As mentioned in [Clock Drifts and Temporal Validity](#clock-drifts-and-temporal-validity), many older Android devices do not encode a sensible validity into the leaf certificate carrying
 attestation information. This was a deliberate choice by Google, that has since been reversed. Some vendors still adhere to this practice, though.
 
 #### Remote Provisioning

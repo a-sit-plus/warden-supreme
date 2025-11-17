@@ -35,7 +35,7 @@ as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (pr
 - Choose Warden makoto if you need both Android and iOS support or want a single, streamlined back-end interface.
 - Choose Warden roboto if you truly only need Android and want minimal dependencies.
 
-In both cases, refer Warden Supreme's [Back-End Configuration](supreme.md#back-end-configuration) guide, as it lists and explains
+In both cases, refer Warden Supreme's [Back-End Configuration](supreme.md#warden-supreme-step-by-step-guide) guide, as it lists and explains
 configuration properties for iOS and Android. This page focuses on behavior, inputs/outputs, and expected client responsibilities.
 
 
@@ -140,4 +140,3 @@ Client duties (Android):
 - Background and platform deep dives: see Technical sections
   for [Android](../technical/android.md), [iOS](../technical/ios.md), and [Quirks](../technical/quirks.md).
 - End-to-end integration: see the [Integration Guide](supreme.md).
-- Configuration (authoritative): see [supreme.md#back-end_configuration](supreme.md#back-end-configuration).
