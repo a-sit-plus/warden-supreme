@@ -32,139 +32,137 @@ import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
 val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 20.minutes)) {
+    if (System.getenv("SUPREME_ENDTOENDTEST") == "true") {
+        //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
+        //fail at runtime
+        val STMT_VALIDITY = 15.minutes
+        val VERIFICATION_OFFSET = 3.minutes
 
-test("verifier") {}
+        "Verifier" - {
+            val ENDPOINT_CHALLENGE = "/api/v1/challenge"
+            val PATH_ATTEST = "/api/v1/attest"
+            val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
 
-    //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
-    //fail at runtime
-    val STMT_VALIDITY = 15.minutes
-    val VERIFICATION_OFFSET = 3.minutes
+            var running: Boolean? = true
 
-   "Verifier" - {
-        val ENDPOINT_CHALLENGE = "/api/v1/challenge"
-        val PATH_ATTEST = "/api/v1/attest"
-        val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
-
-        var running: Boolean? = true
-
-        val attestationValidator = AttestationVerifier(
-            AndroidAttestationConfiguration.Builder(
-                AndroidAttestationConfiguration.AppData(
-                    "at.asitplus.attestation.supreme.client.test", //automated tests
-                    listOf(
-                        "a3e55ba9457de2900fe86303a5d556c496b691afff2c0dd50488bed3e400cc6b".hexToByteArray(
-                            HexFormat.Default
+            val attestationValidator = AttestationVerifier(
+                AndroidAttestationConfiguration.Builder(
+                    AndroidAttestationConfiguration.AppData(
+                        "at.asitplus.attestation.supreme.client.test", //automated tests
+                        listOf(
+                            "a3e55ba9457de2900fe86303a5d556c496b691afff2c0dd50488bed3e400cc6b".hexToByteArray(
+                                HexFormat.Default
+                            )
                         )
                     )
+                ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(
+                    TrustedRoot.PublicKey(
+                        CryptoPublicKey.decodeFromPem(
+                            "-----BEGIN PUBLIC KEY-----\n" +
+                                    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
+                                    "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
+                                    "-----END PUBLIC KEY-----"
+                        ).getOrThrow().toJcaPublicKey().getOrThrow()
+                    )
                 )
-            ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(
-                TrustedRoot.PublicKey(
-                    CryptoPublicKey.decodeFromPem(
-                        "-----BEGIN PUBLIC KEY-----\n" +
-                                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
-                                "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
-                                "-----END PUBLIC KEY-----"
-                    ).getOrThrow().toJcaPublicKey().getOrThrow()
-                )
-            )
-                .attestationStatementValiditySeconds(STMT_VALIDITY.inWholeSeconds)
-                .build(),
-            IosAttestationConfiguration(
-                IosAttestationConfiguration.AppData(
-                    "9CYHJNG644",
-                    "at.asitplus.signumtest.iosApp", //to test with real app from ios
-                    sandbox = true
+                    .attestationStatementValiditySeconds(STMT_VALIDITY.inWholeSeconds)
+                    .build(),
+                IosAttestationConfiguration(
+                    IosAttestationConfiguration.AppData(
+                        "9CYHJNG644",
+                        "at.asitplus.signumtest.iosApp", //to test with real app from ios
+                        sandbox = true
+                    ),
+                    attestationStatementValiditySeconds = STMT_VALIDITY.inWholeSeconds
                 ),
-                attestationStatementValiditySeconds = STMT_VALIDITY.inWholeSeconds
-            ),
-            verificationTimeOffset = VERIFICATION_OFFSET,
-        )
+                verificationTimeOffset = VERIFICATION_OFFSET,
+            )
 
 
-        val server = embeddedServer(Netty, port = 8080) {
-            install(ContentNegotiation) { json() }
+            val server = embeddedServer(Netty, port = 8080) {
+                install(ContentNegotiation) { json() }
 
-            routing {
-                get("/shutdown") {
-                    test("Received shutdown request") {}
-                    call.respondText("Bye!")
-                    running = false
-                }
+                routing {
+                    get("/shutdown") {
+                        test("Received shutdown request") {}
+                        call.respondText("Bye!")
+                        running = false
+                    }
 
-                get(ENDPOINT_CHALLENGE) {
-                    test("Issuing Challenge") {}
-                    call.respond(
-                        attestationValidator.issueChallenge(
-                            ENDPOINT_ATTEST,
-                            timeZone = TimeZone.currentSystemDefault(),
+                    get(ENDPOINT_CHALLENGE) {
+                        test("Issuing Challenge") {}
+                        call.respond(
+                            attestationValidator.issueChallenge(
+                                ENDPOINT_ATTEST,
+                                timeZone = TimeZone.currentSystemDefault(),
+                            )
                         )
-                    )
 
 
-                }
-                post(PATH_ATTEST) {
-                    val src = call.receive<ByteArray>()
-                    test("Got Challenge") {}
+                    }
+                    post(PATH_ATTEST) {
+                        val src = call.receive<ByteArray>()
+                        test("Got Challenge") {}
 
 
-                    val resp =
-                        attestationValidator.verifyAttestation(
-                            Pkcs10CertificationRequest.decodeFromDer(src),
-                            onPreAttestationError = {
-                                val msg = throwable?.message ?: ""
-                                println(msg)
-                                msg
-                            },
-                            onAttestationError = { stmt ->
-                                println(stmt.serializeCompact())
-                                stmt.serializeCompact()
-                            }) { csr ->
-                            println("Successfully attested device ${csr.deviceName}")
-                            Signer.Ephemeral {
-                                ec { }
-                            }.getOrThrow().let { signer ->
-                                signer.sign(
-                                    TbsCertificate(
-                                        serialNumber = Random.nextBytes(32),
-                                        publicKey = csr.tbsCsr.publicKey,
-                                        signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
-                                            .getOrThrow(),
-                                        validFrom = Asn1Time(Clock.System.now()),
-                                        validUntil = Asn1Time(Clock.System.now() + 10.days),
-                                        issuerName = listOf(
-                                            RelativeDistinguishedName(
-                                                AttributeTypeAndValue.CommonName(
-                                                    Asn1String.UTF8(
-                                                        "WARDEN Supreme"
+                        val resp =
+                            attestationValidator.verifyAttestation(
+                                Pkcs10CertificationRequest.decodeFromDer(src),
+                                onPreAttestationError = {
+                                    val msg = throwable?.message ?: ""
+                                    println(msg)
+                                    msg
+                                },
+                                onAttestationError = { stmt ->
+                                    println(stmt.serializeCompact())
+                                    stmt.serializeCompact()
+                                }) { csr ->
+                                println("Successfully attested device ${csr.deviceName}")
+                                Signer.Ephemeral {
+                                    ec { }
+                                }.getOrThrow().let { signer ->
+                                    signer.sign(
+                                        TbsCertificate(
+                                            serialNumber = Random.nextBytes(32),
+                                            publicKey = csr.tbsCsr.publicKey,
+                                            signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
+                                                .getOrThrow(),
+                                            validFrom = Asn1Time(Clock.System.now()),
+                                            validUntil = Asn1Time(Clock.System.now() + 10.days),
+                                            issuerName = listOf(
+                                                RelativeDistinguishedName(
+                                                    AttributeTypeAndValue.CommonName(
+                                                        Asn1String.UTF8(
+                                                            "WARDEN Supreme"
+                                                        )
                                                     )
                                                 )
-                                            )
-                                        ),
-                                        subjectName = csr.tbsCsr.subjectName,
-                                    )
-                                ).map { listOf(it) }.getOrThrow()
+                                            ),
+                                            subjectName = csr.tbsCsr.subjectName,
+                                        )
+                                    ).map { listOf(it) }.getOrThrow()
+                                }
                             }
-                        }
-                    call.respond(resp)
+                        call.respond(resp)
+                    }
+
                 }
+            }.start(wait = false)
 
+            val timeout = 5.minutes
+            println("KTOR server started!")
+            println("   Waiting $timeout before auto-shutdown!")
+            val before = Clock.System.now()
+
+            while (running == true) {
+                Thread.sleep(1000)
+                if (Clock.System.now() - before > timeout) running = null
             }
-        }.start(wait = false)
-
-        var timeout = 5.minutes
-        println("KTOR server started!")
-        println("   Waiting $timeout before auto-shutdown!")
-        val before = Clock.System.now()
-
-        while (running == true) {
-            Thread.sleep(1000)
-            if (Clock.System.now() - before > timeout) running = null
+            (if (running == null) "Automatically Shutting down after timeout" else "Obeying shutdown request") { server.stop() }
         }
-        (if (running == null) "Automatically Shutting down after timeout" else "Obeying shutdown request") { server.stop() }
-    }
+    } else test("Skipping server test") {}
 }

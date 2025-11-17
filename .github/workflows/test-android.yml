@@ -22,7 +22,7 @@ jobs:
       - name: Compile
         run: ./gradlew :supreme-client:pixelAVDSetup :supreme-verifier:jvmTestClasses
       - name: Start Verifier
-        run: TESTBALLOON_INCLUDE_PATTERNS=*TestEnv* ./gradlew :supreme-verifier:jvmTest &
+        run: SUPREME_ENDTOENDTEST=true TESTBALLOON_INCLUDE_PATTERNS=at.asitplus.attestation.supreme.TestEnv* ./gradlew :supreme-verifier:jvmTest &
       - name: Start Client Check
         run: ./gradlew pixelAVDAndroidDeviceTest --info
       - name: Test Report

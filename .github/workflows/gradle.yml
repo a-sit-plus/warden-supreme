@@ -13,7 +13,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Build artefacts + Run Tests
-        run: ./gradlew allTests assemble
+        run: TESTBALLOON_EXCLUDE_PATTERNS=at.asitplus.attestation.supreme.TestEnv* ./gradlew allTests assemble
       - name: Test Report
         uses: dorny/test-reporter@v2
         if: success() || failure()
