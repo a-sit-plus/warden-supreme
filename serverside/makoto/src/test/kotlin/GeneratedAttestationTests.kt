@@ -35,7 +35,7 @@ val GeneratedAttestationTests by testSuite {
             applications = listOf(
                 AndroidAttestationConfiguration.AppData(
                     packageName = packageName,
-                    signerDigests = listOf(signatureDigest),
+                    signerFingerprints = listOf(signatureDigest),
                     appVersion = appVersion
                 )
             ),

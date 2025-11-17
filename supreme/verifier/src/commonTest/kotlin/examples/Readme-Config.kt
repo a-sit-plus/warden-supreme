@@ -6,7 +6,6 @@ import at.asitplus.attestation.IosAttestationConfiguration.OsVersions
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.*
 import kotlin.time.Clock
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 val customTestRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
@@ -18,11 +17,11 @@ val makoto = Makoto(
         applications = listOf(
          /*(1)!*/AndroidAttestationConfiguration.AppData(
                 packageName = "at.asitplus.attestation_client",
-                signerDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
+                signerFingerprints = listOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()),
             ),
          /*(2)!*/AndroidAttestationConfiguration.AppData(
              /*(3)!*/packageName = "at.asitplus.attestation_client-hardened",
-                signerDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray()),
+                signerFingerprints = listOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()),
                 appVersion = 2,
              /*(4)!*/androidVersionOverride = 160000,
                 patchLevelOverride = PatchLevel(year = 2025, month = 9,

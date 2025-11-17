@@ -276,12 +276,12 @@ abstract class Roboto(
             }
 
             if (!softwareEnforced().attestationApplicationId().get().signatureDigests().any { fromAttestation ->
-                    application.signerDigests.any { it.contentEquals(fromAttestation.toByteArray()) }
+                    application.signerFingerprints.any { it.contentEquals(fromAttestation.toByteArray()) }
                 }) {
                 throw AttestationValueException(
                     "Invalid Application Signature Digest",
                     reason = AttestationValueException.Reason.APP_SIGNER_DIGEST,
-                    expectedValue = application.signerDigests,
+                    expectedValue = application.signerFingerprints,
                     actualValue = softwareEnforced().attestationApplicationId().get().signatureDigests()
                         .map { it.toByteArray() }
                 )

@@ -63,7 +63,7 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
         * `softwareAttestationTrustAnchors` -> `softwareTrustedRoots`
         * `AppData.overrideTrustAnchors` -> `AppData.trustedRootOverrides`
         * `AppData.trustAnchorOverrides` -> `AppData.trustedRootOverrides`
-        * `AppData.signatureDigests` -> `AppData.signerDigests`
+        * `AppData.signatureDigests` -> `AppData.signerFingerprints`
 * Consistent configuration Builder API functions
     * `overrideXXX(s)` -> `XXXoverride(s)`
 

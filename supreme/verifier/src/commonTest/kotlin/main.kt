@@ -3,6 +3,7 @@ package at.asitplus.attestation.supreme
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.android.parseHex
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
@@ -54,9 +55,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                     AndroidAttestationConfiguration.AppData(
                         "at.asitplus.attestation.supreme.client.test", //automated tests
                         listOf(
-                            "a3e55ba9457de2900fe86303a5d556c496b691afff2c0dd50488bed3e400cc6b".hexToByteArray(
-                                HexFormat.Default
-                            )
+                            "a3 e5 5b a9 45 7d e2 90 0f e8 63 03 a5 d5 56 c4 96 b6 91 af ff 2c 0d d5 04 88 be d3 e4 00 cc 6b".parseHex()
                         )
                     )
                 ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(

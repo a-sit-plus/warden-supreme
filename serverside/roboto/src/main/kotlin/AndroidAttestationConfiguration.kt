@@ -1,7 +1,6 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
-import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.X509Certificate
@@ -16,6 +15,7 @@ import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
 import java.util.*
 import kotlin.math.absoluteValue
+import kotlin.text.HexFormat
 
 /**
  * Represents a Patch level configuration property.
@@ -943,7 +943,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * Specifies a to-be attested app
      *
      * @param packageName Android app package name (e.g. `at.asitplus.demo`)
-     * @param signerDigests SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing
+     * @param signerFingerprints SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing
      * certificate for production play store releases. Being able to specify multiple digests makes it easy to use development
      * builds and production builds in parallel.
      * @param appVersion optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -959,7 +959,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        val signerDigests: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
+        val signerFingerprints: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
 
         /**
          * optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -1055,7 +1055,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         )
 
         init {
-            if (signerDigests.isEmpty()) throw object :
+            if (signerFingerprints.isEmpty()) throw object :
                 AndroidAttestationException("No signature digests specified", null) {}
         }
 
@@ -1180,7 +1180,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         override fun toString(): String {
             return "AppData(" +
                     "packageName='$packageName', " +
-                    "signatureDigests=${signerDigests.joinToString { it.encodeBase64() }}, " +
+                    "signatureDigests=${signerFingerprints.joinToString { it.encodeBase64() }}, " +
                     "appVersion=$appVersion, " +
                     "androidVersionOverride=$androidVersionOverride, " +
                     "patchLevelOverride=$patchLevelOverride, " +
@@ -1197,9 +1197,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             if (osPatchLevel != other.osPatchLevel) return false
             if (packageName != other.packageName) return false
 
-            if (signerDigests.size != other.signerDigests.size) return false
-            signerDigests.forEachIndexed { index, byteArray ->
-                if (!other.signerDigests[index].contentEquals(
+            if (signerFingerprints.size != other.signerFingerprints.size) return false
+            signerFingerprints.forEachIndexed { index, byteArray ->
+                if (!other.signerFingerprints[index].contentEquals(
                         byteArray
                     )
                 ) return false
@@ -1217,7 +1217,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + (androidVersionOverride ?: 0)
             result = 31 * result + (osPatchLevel ?: 0)
             result = 31 * result + packageName.hashCode()
-            result = 31 * result + signerDigests.hashCode()
+            result = 31 * result + signerFingerprints.hashCode()
             result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
             result = 31 * result + trustedRootOverrides.hashCode()
             result = 31 * result + requireRemoteKeyProvisioningOverride.hashCode()
@@ -1490,13 +1490,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     }
 }
 
-private fun ByteArray.parsePublicKey() =
-    catchingUnwrapped {
-        KeyFactory.getInstance("EC").generatePublic(X509EncodedKeySpec(this))
-    }.getOrElse {
-        catchingUnwrapped {
-            KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(this))
-        }.getOrElse {
-            throw object : AndroidAttestationException("Not a valid public key: ${this.encodeBase64()}", null) {}
-        }
-    }
+/**
+ * Leniently (ignore case, and whitespace) parse hex to bytes
+ */
+fun String.parseHex(): ByteArray = this.filterNot { it.isWhitespace() }.lowercase().hexToByteArray(HexFormat.Default)

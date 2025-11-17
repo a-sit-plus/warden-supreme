@@ -36,7 +36,7 @@ val FakeAttestationTests by testSuite {
             AndroidAttestationConfiguration(
                 AndroidAttestationConfiguration.AppData(
                     packageName = packageName,
-                    signerDigests = listOf(signatureDigest),
+                    signerFingerprints = listOf(signatureDigest),
                     appVersion = appVersion
                 ),
                 androidVersion = androidVersion,
@@ -62,7 +62,7 @@ val FakeAttestationTests by testSuite {
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
-                        signerDigests = listOf(signatureDigest),
+                        signerFingerprints = listOf(signatureDigest),
                         appVersion = appVersion
                     ),
                     androidVersion = androidVersion,
@@ -112,7 +112,7 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signerDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -145,7 +145,7 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signerDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -166,7 +166,7 @@ val FakeAttestationTests by testSuite {
                         AndroidAttestationConfiguration(
                             AndroidAttestationConfiguration.AppData(
                                 packageName = packageName,
-                                signerDigests = listOf(signatureDigest),
+                                signerFingerprints = listOf(signatureDigest),
                                 appVersion = appVersion
                             ),
                             androidVersion = androidVersion,
@@ -202,7 +202,7 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signerDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -236,7 +236,7 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signerDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
@@ -262,7 +262,7 @@ val FakeAttestationTests by testSuite {
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
-                        signerDigests = listOf(signatureDigest),
+                        signerFingerprints = listOf(signatureDigest),
                         appVersion = appVersion
                     ),
                     androidVersion = androidVersion,
@@ -332,7 +332,7 @@ val FakeAttestationTests by testSuite {
                     applications = listOf(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signerDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion,
                         )
                     ),

@@ -3,15 +3,13 @@ package docs.config.minimal
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.supreme.AttestationVerifier
-import kotlin.time.Duration.Companion.minutes
 
 
 val makoto = Makoto(
     androidAttestationConfiguration = AndroidAttestationConfiguration(
      /*(1)!*/AndroidAttestationConfiguration.AppData(
             packageName = "at.asitplus.attestation_client",
-            signerDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7=".encodeToByteArray())
+            signerFingerprints = listOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".hexToByteArray())
         )
     ),
     iosAttestationConfiguration = IosAttestationConfiguration(
