@@ -33,10 +33,10 @@ import java.security.cert.CertPathValidatorException
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import java.security.interfaces.ECPublicKey
+import kotlin.math.min
 import kotlin.time.*
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-
 
 
 @Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("Makoto"))
@@ -57,8 +57,8 @@ typealias Warden = Makoto
 @OptIn(ExperimentalTime::class)
 class Makoto(
     //TODO post 1.0.0: make it possible to configure only Android or only iOS
-    val androidAttestationConfiguration: AndroidAttestationConfiguration,
-    val iosAttestationConfiguration: IosAttestationConfiguration,
+    private val androidAttestationConfiguration: AndroidAttestationConfiguration,
+    private val iosAttestationConfiguration: IosAttestationConfiguration,
     val clock: Clock = Clock.System,
     val verificationTimeOffset: Duration = Duration.ZERO
 ) : AttestationService() {
@@ -91,12 +91,12 @@ class Makoto(
 
 
     private val androidAttestationVerifiers = mutableListOf<Roboto>().apply {
-        catchingUnwrapped {
+        val androidOffset = catchingUnwrapped {
             Math.addExact(
                 verificationTimeOffset.inWholeSeconds,
                 androidAttestationConfiguration.verificationSecondsOffset
             )
-        }.onFailure {
+        }.getOrElse {
             throw AttestationException.Configuration(
                 Platform.ANDROID,
                 "Offset too large!",
@@ -104,8 +104,6 @@ class Makoto(
             )
         }
 
-        val androidOffset =
-            (verificationTimeOffset + androidAttestationConfiguration.verificationSecondsOffset.seconds).inWholeSeconds
         if (androidOffset > Int.MAX_VALUE) throw AttestationException.Configuration(
             Platform.ANDROID,
             "Calculated Android offset too large!",
@@ -133,6 +131,17 @@ class Makoto(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
     }
+
+
+    /**
+     * The shortest attestation validity duration over Android and iOS configuration.
+     * Useful to get the longest sensible nonce validity duration
+     */
+    val shortestValidityDuration: Duration = shortestDuration(
+        iosAttestationConfiguration.attestationStatementValiditySeconds,
+        androidAttestationConfiguration.attestationStatementValiditySeconds
+    )
+
 
     private val iosApps =
         iosAttestationConfiguration.applications.associateWith { appData ->
@@ -748,7 +757,16 @@ class Makoto(
          * Sane default to account for clock drifts seen in practice
          */
         val DEFAULT_TIME_OFFSET = 5.minutes
+
+        /**
+         * Nomen est omen; takes two durations in seconds (with the second one nullable) and returns the shorter on
+         * as [Duration]
+         */
+        fun shortestDuration(firstInSeconds: Long, secondInSeconds: Long?): Duration =
+            if (secondInSeconds == null) firstInSeconds.seconds
+            else min(secondInSeconds, firstInSeconds).seconds
     }
+
 }
 
 

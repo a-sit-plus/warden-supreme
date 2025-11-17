@@ -13,10 +13,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import org.kotlincrypto.random.CryptoRand
-import java.lang.Long.max
 import kotlin.time.Clock
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @Deprecated("Misnomer; to be removed in 1.0.0", replaceWith = ReplaceWith("AttestationVerifier"))
@@ -47,11 +45,7 @@ class AttestationVerifier(
     val attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
     val includeGenericDeviceName: Boolean = true,
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
-    val nonceValidity: Duration = makoto.iosAttestationConfiguration.attestationStatementValiditySeconds.let { ios ->
-        val android = makoto.androidAttestationConfiguration.attestationStatementValiditySeconds
-        if (android == null) ios.seconds
-        else max(android, ios).seconds
-    },
+    val nonceValidity: Duration = makoto.shortestValidityDuration,
     private val nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
     private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
         makoto.clock,
@@ -87,11 +81,10 @@ class AttestationVerifier(
         clock: Clock = Clock.System,
         verificationTimeOffset: Duration = Duration.ZERO,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
-        nonceValidity: Duration = iosAttestationConfiguration.attestationStatementValiditySeconds.let { ios ->
-            val android = androidAttestationConfiguration.attestationStatementValiditySeconds
-            if (android == null) ios.seconds
-            else max(android, ios).seconds
-        },
+        nonceValidity: Duration = Makoto.shortestDuration(
+            iosAttestationConfiguration.attestationStatementValiditySeconds,
+            androidAttestationConfiguration.attestationStatementValiditySeconds
+        ),
         nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
         challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock, verificationTimeOffset)
     ) : this(

@@ -38,7 +38,7 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
 * Add defaults for keyConstraints and nonce validity duration. -> Fully integrated key and attestation generation
 * Transmit device names inside CSR on a best-effort basis
 * Per-App StrongboxOverride
-* Expose Makoto `verificationTimeOffset` and `clock`
+* Expose Makoto `verificationTimeOffset` and `clock`, `shortestValidityDuration`
 * Rework Trust Anchor Management:
     * Introduce `TrustedRoot` interface to represent trust anchors
         * `TrustedRoot.Certificate` for certificates
