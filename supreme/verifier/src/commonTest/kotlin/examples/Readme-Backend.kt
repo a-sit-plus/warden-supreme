@@ -51,29 +51,29 @@ val caCert: X509Certificate = TODO()
 val server = embeddedServer(Netty, port = 8080) {
    /*(1)!*/install(ContentNegotiation) { json() }
 
-  routing {
- /*(2)!*/get(PATH_CHALLENGE) {
-      call.respond(
-      /*(3)!*/verifier.issueChallenge(/*(4)!*/"$publicEndpoint/$PATH_ATTEST")
-      )
+    routing {
+     /*(2)!*/get(PATH_CHALLENGE) {
+           call.respond(
+              /*(3)!*/verifier.issueChallenge(/*(4)!*/"$publicEndpoint/$PATH_ATTEST")
+            )
+        }
+     /*(5)!*/post(PATH_ATTEST) {
+         /*(6)!*/val decodedCSR = Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())
+            val result = verifier.verifyAttestation(decodedCSR) {
+             /*(7)!*/val leafCertificate = signer.sign(
+                 /*(8)!*/TbsCertificate(
+                      /*(9)!*/serialNumber = Random.nextBytes(32),
+                      /*(10)!*/publicKey = it.tbsCsr.publicKey,
+                         signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
+                         validFrom = Asn1Time(Clock.System.now()),
+                         validUntil = Asn1Time(Clock.System.now() + 10.days),
+                         issuerName = issuerName,
+                         subjectName = subjectName,
+                    )
+                ).getOrThrow()
+             /*(11)!*/listOf(leafCertificate, caCert)
+            }
+         /*(12)!*/call.respond(result)
+        }
     }
- /*(5)!*/post(PATH_ATTEST) {
-     /*(6)!*/val csr = Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())
-        val result = verifier.verifyAttestation(csr) { csr ->
-     /*(7)!*/val leafCertificate = signer.sign(
-       /*(8)!*/TbsCertificate(
-         /*(9)!*/serialNumber = Random.nextBytes(32),
-         /*(10)!*/publicKey = csr.tbsCsr.publicKey,
-            signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
-            validFrom = Asn1Time(Clock.System.now()),
-            validUntil = Asn1Time(Clock.System.now() + 10.days),
-            issuerName = issuerName,
-            subjectName = subjectName,
-          )
-        ).getOrThrow()
-     /*(11)!*/listOf(leafCertificate, caCert)
-      }
-   /*(12)!*/call.respond(result)
-    }
-  }
 }.start(wait = false)

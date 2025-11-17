@@ -13,12 +13,12 @@ import org.kotlincrypto.random.CryptoRand
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-val rdbmsBacked: ChallengeValidator = TODO()
-var serviceSpecificOID = WardenDefaults.OIDs.ATTESTATION_PROOF
+val redisBacked: ChallengeValidator = TODO()
+val serviceSpecificOID = WardenDefaults.OIDs.ATTESTATION_PROOF
 
 val verifier = AttestationVerifier(
     makoto = makoto,
- /*(1)!*/attestationProofOID = serviceSpecificOID, //DEFAULT
+ /*(1)!*/attestationProofOID = serviceSpecificOID, //override default
  /*(2)!*/includeGenericDeviceName = false, //true by default
  /*(3)!*/defaultKeyConstraints = KeyConstraints(
         algorithmParameters = AlgorithmParameters.EC(
@@ -36,5 +36,5 @@ val verifier = AttestationVerifier(
     ),
     nonceValidity = 5.minutes, //DEFAULT
     nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(5)!*/128)) },
- /*(6)!*/challengeValidator = rdbmsBacked
+ /*(6)!*/challengeValidator = redisBacked
 )

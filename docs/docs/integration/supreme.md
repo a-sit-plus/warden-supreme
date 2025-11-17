@@ -168,12 +168,13 @@ The full details on the configuration can be found in the [API documentation](..
     It is not recommended to set this value, because many OEMs mess this up!
     15. Required if you run Warden behind a proxy to fetch revocation information from Google servers!
     16. A single iOS app for evaluation purposes.
-    17. Uses the test stage
-    18. Custom trusted root is set, to enable generating iOS attestation proofs in software for evaluation purposes.
-    19. This could already be a production value, in preparation for the real iOS app
-    20. This is simply Apple's recommendation plus five minutes offset
-    21. Eplicitly set production trusted roots as default
-    22. Account for clock drift!
+    17. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
+    18. Uses the test stage
+    19. Custom trusted root is set, to enable generating iOS attestation proofs in software for evaluation purposes.
+    20. This could already be a production value, in preparation for the real iOS app
+    21. This is simply Apple's recommendation plus five minutes offset
+    22. Eplicitly set production trusted roots as default
+    23. Account for clock drift!
 
 
 ??? note "A Note on Android Attestation"
@@ -187,15 +188,12 @@ The full details on the configuration can be found in the [API documentation](..
 
 ### Attestation Verifier Setup
 
-??? tip inline end
-    Instead of passing a `Makoto` instance, it is also possible to directly use bare configuration parameters directly, as if configuring Makoto, to cut out the middle-man in code.
-
 First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
 
 ??? info inline end "Important Nonce Info"
     Under the hood, the attestation verifier needs a source to generate attestation challenges, track them, invalidate, and match them against incoming attestation requests.
     Warden Supreme provides a secure nonce generation service and uses an in-memory challenge cache by default, which is fine for small to medium load but not for larger production deployments.
-    In such scenarios, roll your own, backed by a RDBMS!
+    In such scenarios, roll your own (backed by Redis, for example)!
 
 ```kotlin
 --8<-- "Readme-Verifier-min.kt:3"
@@ -217,7 +215,10 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
         * Usable for 30 seconds withouth reauthentication
         * Enrolling new biometric factors will invalidate the key
     5. We want extra long nonces! (Default: 64 bytes)
-    6. Checking and invalidating challenges is handled by an RDBMS (not shown here, roll your own!)
+    6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here, roll your own!)
+    
+    Instead of passing a `Makoto` instance, it is also possible to directly use bare configuration parameters directly, as if configuring Makoto, to cut out the middle-man in code.
+
 
 ###  Handling Requests
 This example assumes Ktor. Since this is an example environment, TLS is omitted for brevity.
@@ -235,7 +236,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 7. Here, inside the `verifyAttestation` lambda, we already have a verified attestation according to the configured `makoto` instance.
 8. Signing a `TbsCertificate` automatically creates an X.509 certificate
 9. The contents of your leaf certificate are up to you! What follows is just an example.
-10. Remember: The key from the CSR is already attested here!
+10. `it` is the CSR. Remember: The key from the CSR is already attested here!
 11. Build the full certificate chain
 12. Finally, respond with the result:
     * On success, the certificate chain produced above will be returned.
@@ -244,7 +245,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 ### Client Integration
 
 !!! warning inline end "Key Management"
-    Warden Supreme does not check if a key for an alias exists. This is your responsibility!
+    Trying to create a key for an existing alias will cause an error! Key management is your responsibility!
 
 
 On the client, Warden Supreme is even easier to integrate. In contrast to the verifier, it is tailored around Ktor for its KMP goodness.
@@ -290,7 +291,7 @@ On the backend, however, attestation issues typically need to be analysed. Hence
 three callbacks to analyse attestation errors and success (without side effects):
 
 ```kotlin
---8<-- "Readme-Backend-callbacks.kt:15:45"
+--8<-- "Readme-Backend-callbacks.kt:15:48"
 ```
 
 1. This is simply the CSR from the client, as in the minimal example
@@ -298,16 +299,15 @@ three callbacks to analyse attestation errors and success (without side effects)
    be extracted from a CSR. Different side-effect-free handling strategies can be employed based on error type.
 3. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).
 4. `onAttestationError` is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
-5. Again, a custom error message can be sent to the client
-6. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
+5. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!**. See [debugging and replaying diagnostics](../testing.md#debugging-replay-and-diagnostics).
+6. Again, a custom error message can be sent to the client
+7. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
    This can be useful for statistical analyses, for example.
-7. This is the certificate signing lambda, also having a fully verified attestation result as receiver.
+8. This is the certificate signing lambda, also having a fully verified attestation result as receiver.
   In contrast to `onAttestationSuccess` it receives the fully verified CSR as a parameter.
 
 
-
-
-The [step-by-step guide](#warden-supreme-step-by-step-guide) will cover most use cases perfectly well.
+The step-by-step guide [above](#warden-supreme-step-by-step-guide) will cover most use cases perfectly well.
 While extensive configurations were also included alongside the basic ones, Warden Supreme is, in fact, more flexible:
 
 * Instead of always using the defaults, it is possible to specify challenge properties manually for each challenge issued
