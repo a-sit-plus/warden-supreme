@@ -163,7 +163,7 @@ The full details on the configuration can be found in the [API documentation](..
     11. This is rather optimistic, but the majority of devices running Android 13 should not screw this up.
     12. Usually, you will always want hardware attestation, so you'd need to explicitly disable it
     13. This is for devices launched with Android 7.0 who have not received an upgraded KeyMaster. Such devices are only capable of key attestation.  
-    Their app attestation claims are only software-atested!
+    Their app attestation claims are only software-attested!
     14. Warden Supreme does not need to enforce this, because cryptographic nonces are used to ensure freshness.  
     It is not recommended to set this value, because many OEMs mess this up!
     15. Required if you run Warden behind a proxy to fetch revocation information from Google servers!
@@ -173,7 +173,7 @@ The full details on the configuration can be found in the [API documentation](..
     19. Custom trusted root is set, to enable generating iOS attestation proofs in software for evaluation purposes.
     20. This could already be a production value, in preparation for the real iOS app
     21. This is simply Apple's recommendation plus five minutes offset
-    22. Eplicitly set production trusted roots as default
+    22. Explicitly set production trusted roots as default
     23. Account for clock drift!
 
 
@@ -208,11 +208,11 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
     
     1. We want Warden Supreme to convey the attestation proof inside the CSR using a custom OID.
     2. We don't care about device IDs
-    3. We explicitly speficy the key we want to have created on the client.  
+    3. We explicitly specify the key we want to have created on the client.  
     The values shown here correspond to the defaults, as this is supported by Android and iOS.
     4. We require user authentication to use the private key:
         * Protected by biometric auth
-        * Usable for 30 seconds withouth reauthentication
+        * Usable for 30 seconds without reauthentication
         * Enrolling new biometric factors will invalidate the key
     5. We want extra long nonces! (Default: 64 bytes)
     6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here, roll your own!)
@@ -312,7 +312,7 @@ While extensive configurations were also included alongside the basic ones, Ward
 
 * Instead of always using the defaults, it is possible to specify challenge properties manually for each challenge issued
 * Key constraints need not be specified. In that case, it is up to the client to create a key that as desired by the back-end and sign a CSR manually.  
-  (This is stilly very smooth, as can be seen in the [API docs](../dokka/supreme-client/at.asitplus.attestation.supreme/index.html#110236803%2FFunctions%2F-1347999820).)
+  (This is still very smooth, as can be seen in the [API docs](../dokka/supreme-client/at.asitplus.attestation.supreme/index.html#110236803%2FFunctions%2F-1347999820).)
 * By default, a device identifier is always encoded into the CSR, this can be toggled.
 
 For more details, refer to the API docs on the [verifier](../../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/) and on the [client](../../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/)!
