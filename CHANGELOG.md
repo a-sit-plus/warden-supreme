@@ -20,7 +20,7 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
 
 * Don't allow negative validity durations
 * Ignore Android leaf cert validity by default, because Warden Supreme, by default, uses random cryptographic nonces.
-    * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is not a deprecated NOOP to be removed.
+    * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is now a deprecated NOOP to be removed.
     * `enforceLeafValidity()` (without typo!) function was introduced
 * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
 * iOS clock verification time offset defaults to five minutes, which are added to the attestation statement validity by default.
