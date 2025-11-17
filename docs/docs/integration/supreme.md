@@ -157,7 +157,7 @@ The full details on the configuration can be found in the [API documentation](..
     6. Only remote key provisioning is considered trustworthy for this app
     7. Only the RKP trust anchor is considered trustworthy
     8. We want our app to have a dedicated HSM
-    9. By default, Android 13 with a somewhat will be required without enforcing the most recent security patches or StrongBox to reach a wider audience.
+    9. By default, Android 13 with a somewhat recent patch level will be required without enforcing the most recent security patches or StrongBox to reach a wider audience.
     This concerns the first app, since the second one overrides these values.
     10. This is hardly used in practice and shows the default
     11. This is rather optimistic, but the majority of devices running Android 13 should not screw this up.
