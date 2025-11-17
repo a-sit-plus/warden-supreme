@@ -63,6 +63,11 @@ Warden Supreme targets Android and iOS clients and JVM-based back-ends.
   implementation("at.asitplus.warden:supreme-client:$version")
   ```
 
+> [!TIP]
+> Check out **Warden Supreme's [integration guide](https://a-sit-plus.github.io/warden-supreme/integration/supreme)** for a step-by-step
+> integration tutorial, setting up a minimum-working example! The guide includes code samples, minimum and exhaustive configuration examples!
+
+
 Warden Supreme currently only supports HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
 The back-end, however, can also use [Spring](https://spring.io/), for example.
 An attestation flow works as follows:
@@ -91,8 +96,6 @@ Figure&nbsp;1: Remotely establishing trust in mobile clients
 As shown in Figure&nbsp;1, the back-end needs to be configured before being able to assert the trustworthiness of a client.
 While the actual API is unified for Android and iOS (both for verifying attestation statements and on the mobile clients creating
 attestation statements), configuration needs to deal with each platform separately.
-
-For a full integration guide, refer to **Warden Supreme's [full documentation](https://a-sit-plus.github.io/warden-supreme/integration/supreme)**.
 
 ## 2. Debugging, Recording, and Replaying Attestation Checks
 Whenever the actual attestation check fails (i.e., whenever `onAttestationError()` is called), a ready-made `WardenDebugAttestationStatement` is created and passed to this function.
