@@ -88,6 +88,9 @@ While the actual API is unified for Android and iOS (both for verifying attestat
 attestation statements), configuration needs to deal with each platform separately.
 
 ## Warden Supreme Step-by-Step Guide
+!!! note
+    The Warden Supreme verifier does not ship with a crypto provider! Still, this example assumes [Signum Supreme](https://a-sit-plus.github.io/signum/supreme/) for brevity.
+
 Warden Supreme integrates server-side and client-side logic into a lean interface.
 
 This section illustrates a complete end-to-end setup assuming a Ktor server on the back-end and a CMP client app.

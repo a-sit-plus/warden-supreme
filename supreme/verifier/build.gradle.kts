@@ -27,7 +27,6 @@ kotlin {
 
         commonMain.dependencies {
             api(project(":supreme-common"))
-            api(libs.supreme)
         }
 
         commonTest.dependencies {
