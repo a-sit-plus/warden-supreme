@@ -1,0 +1,20 @@
+<configuration>
+
+    <!-- Simple console appender -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger: set to TRACE or DEBUG for maximum verbosity -->
+    <root level="TRACE">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <!-- Optional: make Ktor & Netty logs verbose too -->
+    <logger name="io.ktor" level="TRACE" />
+    <logger name="io.netty" level="TRACE" />
+    <logger name="org.eclipse.jetty" level="TRACE" />
+
+</configuration>
