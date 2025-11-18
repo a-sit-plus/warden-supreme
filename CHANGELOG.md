@@ -4,6 +4,8 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
+## NEXT
+
 ## 0.9.99
 
 This release introduces breaking changes to the integrated ("Supreme") components to deliver **truly, fully integrated
