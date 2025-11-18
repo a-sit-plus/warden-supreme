@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SECURITY LEVEL VERIFIED // CERTIFICATE ISSUED</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #050517;
+      --panel-bg: #0b1020;
+      --panel-border: #6366f1;
+      --accent: #a855f7;
+      --success: #4ade80;
+      --text-main: #e5e7ff;
+      --text-muted: #9ca3c7;
+      --scan: rgba(129, 140, 248, 0.23);
+      --glow: 0 0 22px rgba(129, 140, 248, 0.45);
+      --accent-glow: 0 0 26px rgba(168, 85, 247, 0.65);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top, #312e81 0, #020617 60%),
+        repeating-linear-gradient(
+          135deg,
+          rgba(0, 0, 0, 0.32),
+          rgba(0, 0, 0, 0.32) 1px,
+          rgba(0, 0, 0, 0.7) 1px,
+          rgba(0, 0, 0, 0.7) 3px
+        );
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+      opacity: 0.65;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      width: min(900px, 100vw - 32px);
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: 20px;
+      padding: 24px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top, #111827 0, #020617 70%);
+      border: 1px solid rgba(129, 140, 248, 0.65);
+      box-shadow:
+        var(--glow),
+        0 28px 60px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        120deg,
+        rgba(129, 140, 248, 0.28),
+        transparent 30%,
+        transparent 60%,
+        rgba(168, 85, 247, 0.35)
+      );
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.95;
+    }
+
+    .left {
+      position: relative;
+      padding: 18px 18px 16px;
+      border-radius: 14px;
+      background: radial-gradient(circle at top, #111827 0, #030712 70%);
+      border: 1px solid rgba(129, 140, 248, 0.8);
+      box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.45);
+      overflow: hidden;
+    }
+
+    .left::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0,
+        transparent 6px,
+        rgba(129, 140, 248, 0.06) 7px
+      );
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+    }
+
+    .badge-strip {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: -6px -18px 10px;
+      padding: 6px 10px;
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          #020617,
+          #020617 8px,
+          #4f46e5 8px,
+          #4f46e5 16px
+        );
+      color: #e0e7ff;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-size: 10px;
+      text-shadow: 0 0 10px rgba(15, 23, 42, 0.95);
+      box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.9);
+    }
+
+    .badge-strip span {
+      background: #4f46e5;
+      padding: 2px 12px;
+      border-radius: 999px;
+      border: 1px solid #020617;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.9),
+        0 4px 10px rgba(0, 0, 0, 0.95);
+    }
+
+    .symbol-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding-top: 8px;
+      padding-bottom: 10px;
+    }
+
+    .symbol-aura {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      background:
+        radial-gradient(circle, rgba(129, 140, 248, 0.55) 0, transparent 70%);
+      opacity: 0.9;
+      filter: blur(3px);
+      top: 0;
+    }
+
+    .certificate {
+      position: relative;
+      width: 140px;
+      height: 120px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #020617, #0f172a);
+      border: 1px solid rgba(129, 140, 248, 0.9);
+      box-shadow:
+        var(--glow),
+        inset 0 0 18px rgba(15, 23, 42, 0.9);
+      overflow: hidden;
+    }
+
+    .certificate::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(129, 140, 248, 0.18), transparent 55%),
+        repeating-linear-gradient(
+          180deg,
+          rgba(55, 65, 81, 0.2),
+          rgba(55, 65, 81, 0.2) 1px,
+          transparent 1px,
+          transparent 6px
+        );
+      mix-blend-mode: screen;
+      opacity: 0.85;
+    }
+
+    .certificate-header {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      right: 10px;
+      height: 18px;
+      border-radius: 6px;
+      background: radial-gradient(circle at left, rgba(79, 70, 229, 0.9), rgba(129, 140, 248, 0.6));
+      box-shadow: 0 0 12px rgba(79, 70, 229, 0.85);
+    }
+
+    .certificate-header::before {
+      content: "";
+      position: absolute;
+      inset: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(219, 234, 254, 0.35);
+    }
+
+    .certificate-lines {
+      position: absolute;
+      top: 36px;
+      left: 14px;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .certificate-line {
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(148, 163, 184, 0.85), transparent);
+    }
+
+    .certificate-line:nth-child(2) {
+      width: 85%;
+      background: linear-gradient(90deg, rgba(196, 181, 253, 0.9), transparent);
+    }
+
+    .certificate-line:nth-child(3) {
+      width: 70%;
+      background: linear-gradient(90deg, rgba(129, 140, 248, 0.95), transparent);
+    }
+
+    .certificate-seal {
+      position: absolute;
+      right: 14px;
+      bottom: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #a855f7 0, #4f46e5 40%, #1e1b4b 100%);
+      box-shadow:
+        0 0 14px rgba(168, 85, 247, 0.9),
+        0 0 24px rgba(129, 140, 248, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .certificate-seal::before {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      border: 2px solid rgba(224, 231, 255, 0.85);
+    }
+
+    .certificate-seal::after {
+      content: "✓";
+      position: relative;
+      font-size: 20px;
+      color: #eef2ff;
+      text-shadow: 0 0 8px rgba(15, 23, 42, 0.9);
+    }
+
+    .certificate-ribbon {
+      position: absolute;
+      right: 22px;
+      bottom: -4px;
+      width: 22px;
+      height: 26px;
+      background: linear-gradient(180deg, #a855f7, #4c1d95);
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+      box-shadow: 0 0 8px rgba(76, 29, 149, 0.9);
+    }
+
+    .status-pill {
+      position: relative;
+      margin-top: 10px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(129, 140, 248, 0.95);
+      background: rgba(15, 23, 42, 0.98);
+      box-shadow: var(--accent-glow);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #c7d2fe;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.9);
+    }
+
+    .title-block {
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .title-main {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: #c4b5fd;
+      text-shadow:
+        0 0 10px rgba(15, 23, 42, 1),
+        var(--accent-glow);
+    }
+
+    .title-sub {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+    }
+
+    .info-box {
+      position: relative;
+      margin-top: 12px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(129, 140, 248, 0.65);
+      background: radial-gradient(circle at left, rgba(79, 70, 229, 0.18), transparent 70%);
+      font-size: 10px;
+      line-height: 1.5;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #e0e7ff;
+    }
+
+    .info-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #c4b5fd;
+    }
+
+    .info-label::before {
+      content: "★";
+      font-size: 11px;
+    }
+
+    .info-box p {
+      opacity: 0.96;
+    }
+
+    .footer-badge {
+      margin-top: 10px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(129, 140, 248, 0.6);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #c4b5fd;
+      text-align: center;
+    }
+
+    .footer-badge span {
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: radial-gradient(circle, rgba(55, 48, 163, 0.95), rgba(30, 64, 175, 0.95));
+      border: 1px solid rgba(191, 219, 254, 0.75);
+      box-shadow: var(--glow);
+    }
+
+    .right {
+      position: relative;
+      padding: 16px 18px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 20% 0, #020617, #020617 70%);
+      border: 1px solid rgba(129, 140, 248, 0.55);
+      box-shadow: inset 0 0 22px rgba(15, 23, 42, 1);
+      overflow: hidden;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 110px;
+      background: linear-gradient(
+        to bottom,
+        transparent 0,
+        var(--scan) 40%,
+        var(--scan) 60%,
+        transparent 100%
+      );
+      opacity: 0.75;
+      transform: translateY(-40px);
+      animation: scan 5s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0% {
+        transform: translateY(-110%);
+      }
+      100% {
+        transform: translateY(110%);
+      }
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .header-row h1 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-main);
+    }
+
+    .header-row h1 span {
+      color: var(--accent);
+    }
+
+    .tag {
+      font-size: 9px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(129, 140, 248, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #e0e7ff;
+      background: rgba(30, 64, 175, 0.85);
+      box-shadow: var(--glow);
+    }
+
+    .tag.secondary {
+      border-color: rgba(168, 85, 247, 0.8);
+      background: rgba(91, 33, 182, 0.9);
+      color: #f5f3ff;
+      box-shadow: var(--accent-glow);
+    }
+
+    .console {
+      position: relative;
+      margin-top: 4px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(129, 140, 248, 0.45);
+      background: radial-gradient(circle at top, #020617, #020617 70%);
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      font-size: 11px;
+      color: #e0e7ff;
+      overflow: hidden;
+    }
+
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    .console-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .console-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #394150;
+    }
+
+    .console-dot:nth-child(1) {
+      background: #22c55e;
+    }
+    .console-dot:nth-child(2) {
+      background: #a855f7;
+    }
+    .console-dot:nth-child(3) {
+      background: #38bdf8;
+    }
+
+    .console-body {
+      border-top: 1px solid rgba(129, 140, 248, 0.3);
+      padding-top: 6px;
+      max-height: 210px;
+      overflow: hidden;
+    }
+
+    .console-line {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
+
+    .console-line span.prompt {
+      color: #6366f1;
+    }
+
+    .console-line span.label {
+      color: #a5b4fc;
+    }
+
+    .console-line span.value {
+      color: #e5e7ff;
+    }
+
+    .console-line span.success {
+      color: #4ade80;
+    }
+
+    .console-line span.muted {
+      color: #6b7280;
+    }
+
+    .input-panel {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(129, 140, 248, 0.4);
+    }
+
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .field-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+    }
+
+    .pseudo-input {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(129, 140, 248, 0.8);
+      background: radial-gradient(circle at top, rgba(79, 70, 229, 0.3), #020617);
+      font-size: 11px;
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      color: #e0e7ff;
+    }
+
+    .pseudo-input span.icon {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .pseudo-input span.placeholder {
+      opacity: 0.96;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: none;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      cursor: pointer;
+      outline: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #a855f7);
+      color: #eef2ff;
+      box-shadow:
+        var(--accent-glow),
+        0 6px 18px rgba(0, 0, 0, 0.9);
+      border: 1px solid rgba(15, 23, 42, 0.9);
+    }
+
+    .btn-primary span.icon {
+      font-size: 12px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid rgba(129, 140, 248, 0.8);
+    }
+
+    .footer-hint {
+      margin-top: 8px;
+      font-size: 9px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-hint code {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      font-size: 9px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: #e5e7eb;
+    }
+
+    @media (max-width: 720px) {
+      .container {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .left {
+        order: 1; /* certificate visual on top */
+      }
+      .right {
+        order: 2; /* console below */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 16px;
+        border-radius: 14px;
+      }
+      .left,
+      .right {
+        padding: 12px 12px 12px;
+        border-radius: 12px;
+      }
+      .title-main {
+        font-size: 16px;
+        letter-spacing: 0.18em;
+      }
+      .header-row h1 {
+        font-size: 11px;
+        letter-spacing: 0.16em;
+      }
+      .footer-hint {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="container">
+    <!-- LEFT: Certificate visual -->
+    <section class="left" aria-label="Certificate issued">
+      <div class="badge-strip">
+        <span>SECURITY LEVEL VERIFIED · CERTIFICATE ISSUED</span>
+      </div>
+
+      <div class="symbol-wrapper">
+        <div class="symbol-aura"></div>
+
+        <div class="certificate" aria-hidden="true">
+          <div class="certificate-header"></div>
+          <div class="certificate-lines">
+            <div class="certificate-line"></div>
+            <div class="certificate-line"></div>
+            <div class="certificate-line"></div>
+          </div>
+          <div class="certificate-seal"></div>
+          <div class="certificate-ribbon"></div>
+        </div>
+
+        <div class="status-pill" aria-label="Certificate status">
+          <span class="status-dot"></span>
+          CERTIFICATE CHAIN COMPLETE
+        </div>
+
+        <div class="title-block">
+          <p class="title-main">TRUST ANCHOR ACCEPTED</p>
+          <p class="title-sub">END-ENTITY CERTIFICATE SUCCESSFULLY ISSUED</p>
+        </div>
+
+        <div class="info-box" role="status">
+          <div class="info-label">Issuance Summary</div>
+          <p>
+            Device and application attestation passed all policy checks.
+            A short-lived client certificate has been generated and bound
+            to this device's private key.
+          </p>
+        </div>
+
+        <div class="footer-badge">
+          <span>MTLS READY · CLIENT IDENTITY CRYPTOGRAPHICALLY PROVEN</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Console showing verification + issuance -->
+    <section class="right" aria-label="Issuance console">
+      <div class="scan-line"></div>
+
+      <header class="header-row">
+        <h1>CERT LIFECYCLE &raquo; <span>EMISSION PIPELINE</span></h1>
+        <div style="display:flex; gap:6px;">
+          <span class="tag">VERIFIED</span>
+          <span class="tag secondary">CERT ISSUED</span>
+        </div>
+      </header>
+
+      <div class="console" aria-label="Security console">
+        <div class="console-header">
+          <div class="console-dots">
+            <span class="console-dot"></span>
+            <span class="console-dot"></span>
+            <span class="console-dot"></span>
+          </div>
+          <div>CA ENGINE · PROFILE: ATTESTED-CLIENT / SHORT-LIVED</div>
+        </div>
+        <div class="console-body" aria-hidden="true">
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">ATTESTATION:</span>
+            <span class="success">PASSED · ANDROID/IOS POLICY SATISFIED</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">KEY BINDING:</span>
+            <span class="success">HARDWARE-BACKED KEY · NONCE VERIFIED</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">SUBJECT DN:</span>
+            <span class="value">CN=Attested Client, OU=Mobile, O=Your Service</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">CERT SERIAL:</span>
+            <span class="value">0x7F3A·A91C·B207·SIGMA9</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">CHAIN:</span>
+            <span class="success">END-ENTITY → INTERMEDIATE → ROOT OK</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">REVOCATION:</span>
+            <span class="value">CRL/OCSP STATUS: GOOD · CACHE FRESH</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">LIFETIME:</span>
+            <span class="value">SHORT-LIVED · EXPIRES &lt; 30 MIN</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">KEY USAGE:</span>
+            <span class="value">CLIENT AUTH, SIGN, ENC · LIMITED SCOPE</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">SESSION BIND:</span>
+            <span class="success">BOUND TO CURRENT CHANNEL / TOKEN</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">NOTE:</span>
+            <span class="muted">ROTATE CERTIFICATE BY RENEWING ATTESTATION</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-panel">
+        <div class="field-row">
+          <div class="field-label">Issued certificate fingerprint</div>
+          <div class="pseudo-input">
+            <span class="icon">🔏</span>
+            <span class="placeholder">SHA-256: 9E:AF:3D:...:C7:42 (BOUND TO DEVICE KEY)</span>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-label">Next action</div>
+          <div class="pseudo-input">
+            <span class="icon">🌐</span>
+            <span class="placeholder">SWITCH SESSION TO MTLS · USE ISSUED CERTIFICATE</span>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-primary" type="button">
+            <span class="icon">➜</span>
+            <span>CONTINUE TO SERVICE</span>
+          </button>
+          <button class="btn btn-secondary" type="button">
+            DOWNLOAD CERT CHAIN
+          </button>
+        </div>
+
+        <div class="footer-hint">
+          <span>
+            This certificate is valid only in combination with the attested private key.
+          </span>
+          <span>
+            Flow ref: <code>SEC/CERT/ATT-PIPELINE &raquo; ISSUE/SUCCESS</code>
+          </span>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

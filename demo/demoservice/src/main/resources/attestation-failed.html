@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ATTESTATION FAILED // ACCESS NOT ESTABLISHED</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #140805;
+      --panel-bg: #1a0f0b;
+      --panel-border: #f97316;
+      --accent: #fdba74;
+      --danger: #ea580c;
+      --text-main: #fee2c5;
+      --text-muted: #fed7aa;
+      --scan: rgba(249, 115, 22, 0.23);
+      --glow: 0 0 22px rgba(249, 115, 22, 0.45);
+      --danger-glow: 0 0 26px rgba(248, 113, 22, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top, #7c2d12 0, #1b0b05 40%, #020202 70%),
+        repeating-linear-gradient(
+          135deg,
+          rgba(0, 0, 0, 0.32),
+          rgba(0, 0, 0, 0.32) 1px,
+          rgba(0, 0, 0, 0.7) 1px,
+          rgba(0, 0, 0, 0.7) 3px
+        );
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+      opacity: 0.7;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      width: min(900px, 100vw - 32px);
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: 20px;
+      padding: 24px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top, #1f130c 0, #050305 70%);
+      border: 1px solid rgba(249, 115, 22, 0.7);
+      box-shadow:
+        var(--glow),
+        0 28px 60px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        120deg,
+        rgba(248, 113, 22, 0.35),
+        transparent 30%,
+        transparent 60%,
+        rgba(245, 158, 11, 0.35)
+      );
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.9;
+    }
+
+    .left {
+      position: relative;
+      padding: 18px 18px 16px;
+      border-radius: 14px;
+      background: radial-gradient(circle at top, #1f130c 0, #050305 70%);
+      border: 1px solid rgba(249, 115, 22, 0.8);
+      box-shadow: 0 0 0 1px rgba(248, 113, 22, 0.5);
+      overflow: hidden;
+    }
+
+    .left::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0,
+        transparent 6px,
+        rgba(248, 113, 22, 0.06) 7px
+      );
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+    }
+
+    .badge-strip {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: -6px -18px 10px;
+      padding: 6px 10px;
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          #111827,
+          #111827 8px,
+          #f97316 8px,
+          #f97316 16px
+        );
+      color: #020617;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-size: 10px;
+      text-shadow: none;
+      box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.9);
+    }
+
+    .badge-strip span {
+      background: #f97316;
+      padding: 2px 12px;
+      border-radius: 999px;
+      border: 1px solid #020617;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.9),
+        0 4px 10px rgba(0, 0, 0, 0.95);
+    }
+
+    .symbol-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding-top: 8px;
+      padding-bottom: 10px;
+    }
+
+    .symbol-aura {
+      position: absolute;
+      width: 190px;
+      height: 190px;
+      background:
+        radial-gradient(circle, rgba(249, 115, 22, 0.55) 0, transparent 70%);
+      opacity: 0.9;
+      filter: blur(3px);
+      top: 0;
+    }
+
+    .shield {
+      position: relative;
+      width: 120px;
+      height: 140px;
+      filter:
+        drop-shadow(0 0 18px rgba(249, 115, 22, 0.8))
+        drop-shadow(0 0 26px rgba(250, 204, 21, 0.5));
+    }
+
+    .shield::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 120px;
+      height: 140px;
+      background: linear-gradient(145deg, #1c1917, #7c2d12);
+      clip-path: polygon(50% 0, 100% 20%, 84% 92%, 50% 100%, 16% 92%, 0 20%);
+      border: 2px solid rgba(253, 186, 116, 0.9);
+      box-shadow:
+        0 0 16px rgba(248, 250, 252, 0.15),
+        0 0 26px rgba(249, 115, 22, 0.85);
+    }
+
+    .shield::after {
+      content: "";
+      position: absolute;
+      inset: 6px 8px;
+      background:
+        radial-gradient(circle at top, rgba(248, 250, 252, 0.15), transparent 65%),
+        linear-gradient(150deg, rgba(251, 146, 60, 0.4), rgba(30, 64, 175, 0.0));
+      clip-path: polygon(50% 0, 100% 20%, 84% 92%, 50% 100%, 16% 92%, 0 20%);
+      opacity: 0.9;
+    }
+
+    .shield-crack {
+      position: absolute;
+      inset: 20px 40px 18px 40px;
+      background:
+        linear-gradient(
+          160deg,
+          transparent 0,
+          transparent 40%,
+          rgba(252, 211, 77, 0.95) 45%,
+          rgba(248, 250, 252, 1) 50%,
+          rgba(252, 211, 77, 0.9) 55%,
+          transparent 60%,
+          transparent 100%
+        );
+      clip-path: polygon(48% 0, 54% 16%, 44% 32%, 54% 52%, 42% 72%, 56% 100%, 40% 84%, 48% 64%, 36% 44%, 46% 24%, 38% 8%);
+      opacity: 0.95;
+      filter: drop-shadow(0 0 10px rgba(252, 211, 77, 0.8));
+    }
+
+    .status-pill {
+      position: relative;
+      margin-top: 10px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 113, 22, 0.95);
+      background: rgba(24, 12, 6, 0.98);
+      box-shadow: var(--danger-glow);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #fed7aa;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--danger);
+      box-shadow: 0 0 10px rgba(248, 113, 22, 0.9);
+    }
+
+    .title-block {
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .title-main {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: #fed7aa;
+      text-shadow:
+        0 0 10px rgba(15, 23, 42, 1),
+        var(--danger-glow);
+    }
+
+    .title-sub {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+    }
+
+    .info-box {
+      position: relative;
+      margin-top: 12px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(248, 113, 22, 0.75);
+      background: radial-gradient(circle at left, rgba(248, 113, 22, 0.16), transparent 70%);
+      font-size: 10px;
+      line-height: 1.5;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #ffedd5;
+    }
+
+    .info-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #fed7aa;
+    }
+
+    .info-label::before {
+      content: "!";
+      font-size: 11px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f97316;
+      color: #1b0b05;
+    }
+
+    .info-box p {
+      opacity: 0.96;
+    }
+
+    .footer-badge {
+      margin-top: 10px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(248, 113, 22, 0.6);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #fed7aa;
+      text-align: center;
+    }
+
+    .footer-badge span {
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: radial-gradient(circle, rgba(120, 53, 15, 0.96), rgba(67, 20, 7, 0.96));
+      border: 1px solid rgba(248, 113, 22, 0.85);
+      box-shadow: var(--glow);
+    }
+
+    .right {
+      position: relative;
+      padding: 16px 18px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 20% 0, #020617, #020617 70%);
+      border: 1px solid rgba(248, 113, 22, 0.6);
+      box-shadow: inset 0 0 22px rgba(15, 23, 42, 1);
+      overflow: hidden;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 110px;
+      background: linear-gradient(
+        to bottom,
+        transparent 0,
+        var(--scan) 40%,
+        var(--scan) 60%,
+        transparent 100%
+      );
+      opacity: 0.75;
+      transform: translateY(-40px);
+      animation: scan 5s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0% {
+        transform: translateY(-110%);
+      }
+      100% {
+        transform: translateY(110%);
+      }
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .header-row h1 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-main);
+    }
+
+    .header-row h1 span {
+      color: var(--accent);
+    }
+
+    .tag {
+      font-size: 9px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 113, 22, 0.9);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #fed7aa;
+      background: rgba(67, 20, 7, 0.95);
+      box-shadow: var(--danger-glow);
+    }
+
+    .tag.muted {
+      border-color: rgba(148, 163, 184, 0.7);
+      color: #9ca3af;
+      background: rgba(15, 23, 42, 0.8);
+      box-shadow: none;
+    }
+
+    .console {
+      position: relative;
+      margin-top: 4px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(248, 113, 22, 0.45);
+      background: radial-gradient(circle at top, #020617, #020617 70%);
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      font-size: 11px;
+      color: #fef3c7;
+      overflow: hidden;
+    }
+
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 9px;
+      color: #9ca3af;
+    }
+
+    .console-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .console-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #374151;
+    }
+
+    .console-dot:nth-child(1) {
+      background: #f97316;
+    }
+    .console-dot:nth-child(2) {
+      background: #facc15;
+    }
+    .console-dot:nth-child(3) {
+      background: #22c55e;
+    }
+
+    .console-body {
+      border-top: 1px solid rgba(248, 113, 22, 0.3);
+      padding-top: 6px;
+      max-height: 210px;
+      overflow: hidden;
+    }
+
+    .console-line {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
+
+    .console-line span.prompt {
+      color: #f97316;
+    }
+
+    .console-line span.label {
+      color: #fed7aa;
+    }
+
+    .console-line span.value {
+      color: #e5e7eb;
+    }
+
+    .console-line span.error {
+      color: #fb923c;
+    }
+
+    .console-line span.strong {
+      color: #fed7aa;
+      font-weight: 600;
+    }
+
+    .console-line span.muted {
+      color: #6b7280;
+    }
+
+    .input-panel {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(248, 113, 22, 0.4);
+    }
+
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .field-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #9ca3af;
+    }
+
+    .pseudo-input {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background: radial-gradient(circle at top, rgba(30, 64, 175, 0.25), #020617);
+      font-size: 11px;
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      color: #e5e7eb;
+    }
+
+    .pseudo-input span.icon {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .pseudo-input span.placeholder {
+      opacity: 0.9;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: none;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      cursor: pointer;
+      outline: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #0f172a;
+      box-shadow:
+        var(--danger-glow),
+        0 6px 18px rgba(0, 0, 0, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.9);
+    }
+
+    .btn-primary span.icon {
+      font-size: 12px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #9ca3af;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+    }
+
+    .footer-hint {
+      margin-top: 8px;
+      font-size: 9px;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-hint code {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      font-size: 9px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: #e5e7eb;
+    }
+
+    @media (max-width: 720px) {
+      .container {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .left {
+        order: 1; /* shield visual on top */
+      }
+      .right {
+        order: 2; /* console below */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 16px;
+        border-radius: 14px;
+      }
+      .left,
+      .right {
+        padding: 12px 12px 12px;
+        border-radius: 12px;
+      }
+      .title-main {
+        font-size: 16px;
+        letter-spacing: 0.18em;
+      }
+      .header-row h1 {
+        font-size: 11px;
+        letter-spacing: 0.16em;
+      }
+      .footer-hint {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="container">
+    <!-- LEFT: Broken shield visual -->
+    <section class="left" aria-label="Attestation failed">
+      <div class="badge-strip">
+        <span>ATTESTATION FAILED · ACCESS NOT ESTABLISHED</span>
+      </div>
+
+      <div class="symbol-wrapper">
+        <div class="symbol-aura"></div>
+
+        <div class="shield" aria-hidden="true">
+          <div class="shield-crack"></div>
+        </div>
+
+        <div class="status-pill" aria-label="Attestation status">
+          <span class="status-dot"></span>
+          TRUST CHECKS DID NOT PASS
+        </div>
+
+        <div class="title-block">
+          <p class="title-main">ATTESTATION FAILED</p>
+          <p class="title-sub">NO CERTIFICATE HAS BEEN ISSUED</p>
+        </div>
+
+        <div class="info-box" role="status">
+          <div class="info-label">Summary</div>
+          <p>
+            The device or app could not be verified according to the configured
+            policy. No key material was promoted and no client identity was
+            accepted. Reason: %%%%%.
+          </p>
+        </div>
+
+        <div class="footer-badge">
+          <span>CHANNEL NOT TRUSTED · RETRY WITH A COMPLIANT CLIENT</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Console with failure diagnostics -->
+    <section class="right" aria-label="Attestation console">
+      <div class="scan-line"></div>
+
+      <header class="header-row">
+        <h1>ATTESTATION PIPELINE &raquo; <span>VERIFICATION STAGE</span></h1>
+        <div style="display:flex; gap:6px;">
+          <span class="tag">FAILED</span>
+          <span class="tag muted">NO CERT ISSUED</span>
+        </div>
+      </header>
+
+      <div class="console" aria-label="Security console">
+        <div class="console-header">
+          <div class="console-dots">
+            <span class="console-dot"></span>
+            <span class="console-dot"></span>
+            <span class="console-dot"></span>
+          </div>
+          <div>ENGINE DIAGNOSTICS · ATTESTATION / KEY BINDING</div>
+        </div>
+        <div class="console-body" aria-hidden="true">
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">REQUEST-ID:</span>
+            <span class="value">ATT-PIPE/FAIL/Ω-7C1E</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">NONCE:</span>
+            <span class="value">MISMATCHED OR REUSED CHALLENGE</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">DEVICE STATE:</span>
+            <span class="error">BOOTLOADER / INTEGRITY NOT IN REQUIRED STATE</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">APP ID:</span>
+            <span class="error">NOT IN ALLOWED PACKAGE / BUNDLE LIST</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">KEY ORIGIN:</span>
+            <span class="error">NOT HARDWARE-BACKED OR POLICY NON-COMPLIANT</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">Timestamps:</span>
+            <span class="value">OUTSIDE ALLOWED WINDOW · CLOCK DRIFT?</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">POLICY RESULT:</span>
+            <span class="error">ATTESTATION NOT SUFFICIENT FOR TRUST LEVEL</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">CERTIFICATE:</span>
+            <span class="strong">NOT ISSUED · PIPELINE TERMINATED EARLY</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">AUDIT:</span>
+            <span class="value">EVENT LOGGED WITH REDUCED DIAGNOSTICS</span>
+          </div>
+          <div class="console-line">
+            <span class="prompt">&gt;&gt;</span>
+            <span class="label">NOTE:</span>
+            <span class="muted">CLIENT SEES ONLY HIGH-LEVEL FAILURE REASON</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-panel">
+        <div class="field-row">
+          <div class="field-label">Suggested next step</div>
+          <div class="pseudo-input">
+            <span class="icon">🛠</span>
+            <span class="placeholder">CHECK DEVICE INTEGRITY, APP BUILD, AND TIME SOURCE</span>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-label">Retry conditions</div>
+          <div class="pseudo-input">
+            <span class="icon">🔁</span>
+            <span class="placeholder">OBTAIN A NEW CHALLENGE · RETRY WITH A COMPLIANT CLIENT</span>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-primary" type="button">
+            <span class="icon">⟳</span>
+            <span>REQUEST NEW CHALLENGE</span>
+          </button>
+          <button class="btn btn-secondary" type="button">
+            VIEW TROUBLESHOOTING GUIDE
+          </button>
+        </div>
+
+        <div class="footer-hint">
+          <span>
+            The server deliberately avoids returning low-level error details to the client.
+          </span>
+          <span>
+            Event ref: <code>SEC/ATT/PIPELINE &raquo; VERIFICATION/FAILED</code>
+          </span>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

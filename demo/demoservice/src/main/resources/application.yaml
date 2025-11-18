@@ -1,0 +1,17 @@
+ktor:
+  application:
+    modules:
+      - at.asitplus.warden.ApplicationKt.module
+  deployment:
+    port: 8080
+jwt:
+  drift-minutes: 5
+attestation:
+  android:
+    package-name: "at.asitplus.attestation_client"
+    signature-digests:
+      - "NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU="
+  ios:
+    team-identifier: "9CYHJNG644"
+    bundle-identifier: "at.asitplus.attestation-client"
+    sandbox: true
