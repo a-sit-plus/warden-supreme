@@ -70,34 +70,34 @@ class AttestationClient(client: HttpClient) {
             contentType(ContentType.Application.OctetStream)
             setBody(csr.encodeToDer())
         }.body<AttestationResponse>()
+}
 
-    /**
-     * Truly integrated attestation in a single call.
-     * @throws Throwable Various errors can occur irrespective of attestation:
-     * IO, accessing the platform crypto, not authenticating, etc…
-     *
-     * This is literally a shorthand for:
-     * ```
-     * val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
-     * val csr = challenge.createAttestationProof(alias).getOrThrow()
-     * return attest(csr, challenge.attestationEndpointUrl)
-     * ```
-     *
-     * It is possible to specify [authPromptMessage] and [authPromptCancelText] for when key usage (i.e. signing)
-     * requires authentication.
-     *
-     * Requires the verifier to pack [KeyConstraints] into the conveyed challenge.
-     */
-    @Throws(Throwable::class)
-    suspend fun performAttestationFlow(
-        alias: String, fetchChallengeEndpoint: Url,
-        authPromptMessage: String? = null,
-        authPromptCancelText: String? = null,
-    ): AttestationResponse {
-        val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
-        val csr = challenge.createAttestationProof(alias).getOrThrow()
-        return attest(csr, challenge.attestationEndpointUrl)
-    }
+/**
+ * Truly integrated attestation in a single call.
+ * @throws Throwable Various errors can occur irrespective of attestation:
+ * IO, accessing the platform crypto, not authenticating, etc…
+ *
+ * This is literally a shorthand for:
+ * ```
+ * val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
+ * val csr = challenge.createAttestationProof(alias).getOrThrow()
+ * return attest(csr, challenge.attestationEndpointUrl)
+ * ```
+ *
+ * It is possible to specify [authPromptMessage] and [authPromptCancelText] for when key usage (i.e. signing)
+ * requires authentication.
+ *
+ * Requires the verifier to pack [KeyConstraints] into the conveyed challenge.
+ */
+@Throws(Throwable::class)
+suspend fun AttestationClient.performAttestationFlow(
+    alias: String, fetchChallengeEndpoint: Url,
+    authPromptMessage: String? = null,
+    authPromptCancelText: String? = null,
+): AttestationResponse {
+    val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
+    val csr = challenge.createAttestationProof(alias).getOrThrow()
+    return attest(csr, challenge.attestationEndpointUrl)
 }
 
 /**
