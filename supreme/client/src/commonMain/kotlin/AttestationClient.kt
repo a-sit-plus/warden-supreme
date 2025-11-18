@@ -83,10 +83,17 @@ class AttestationClient(client: HttpClient) {
      * return attest(csr, challenge.attestationEndpointUrl)
      * ```
      *
+     * It is possible to specify [authPromptMessage] and [authPromptCancelText] for when key usage (i.e. signing)
+     * requires authentication.
+     *
      * Requires the verifier to pack [KeyConstraints] into the conveyed challenge.
      */
     @Throws(Throwable::class)
-    suspend fun performAttestationFlow(alias: String, fetchChallengeEndpoint: Url): AttestationResponse {
+    suspend fun performAttestationFlow(
+        alias: String, fetchChallengeEndpoint: Url,
+        authPromptMessage: String? = null,
+        authPromptCancelText: String? = null,
+    ): AttestationResponse {
         val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
         val csr = challenge.createAttestationProof(alias).getOrThrow()
         return attest(csr, challenge.attestationEndpointUrl)
@@ -97,6 +104,9 @@ class AttestationClient(client: HttpClient) {
  * Creates a signed CSR from a received [AttestationChallenge] according to [AttestationChallenge.keyConstraints].
  * Hence, if no constraints are set, this method will always fail!
  *
+ * It is possible to specify [authPromptMessage] and [authPromptCancelText] for when key usage (i.e. signing)
+ * requires authentication.
+ *
  * Encodes the challenge's nonce into a [KnownOIDs.serialNumber] subjectName
  * and the attestation statement into a Pkcs10CertificationRequestAttribute with [AttestationChallenge.proofOID].
  * Since this operation prepares and directly signs the CSR, it may require user authentication.
@@ -106,6 +116,8 @@ suspend fun AttestationChallenge.createAttestationProof(
      * The alias to assign to the newly created signer. Must not exist!
      */
     alias: String,
+    authPromptMessage: String? = null,
+    authPromptCancelText: String? = null,
 ): KmmResult<Pkcs10CertificationRequest> {
 
 
@@ -158,11 +170,9 @@ suspend fun AttestationChallenge.createAttestationProof(
         )
     ) else listOf()
     val signer = PlatformSigningProvider.getSignerForKey(alias) {
-        keyConstraints?.keyProtection?.authPrompt?.let {
-            unlockPrompt {
-                message = it.message
-                cancelText = it.cancelText
-            }
+        unlockPrompt {
+            authPromptMessage?.let { message = it }
+            authPromptCancelText?.let { cancelText = it }
         }
     }.getOrThrow()
     return signer.createCsr(this, additionalAttributes = additionalAttributes)

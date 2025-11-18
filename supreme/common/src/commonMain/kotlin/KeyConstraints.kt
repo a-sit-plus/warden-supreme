@@ -73,6 +73,7 @@ data class KeyConstraints(
             @Serializable(with = ECCurveSerializer::class)
             val curve: ECCurve = ECCurve.SECP_256_R_1,
             override val digests: Set<@Serializable(with = DigestSerializer::class) Digest> = setOf(curve.nativeDigest),
+            @Deprecated("Reserved for future use", level = DeprecationLevel.WARNING)
             override val allowSigning: Boolean = true,
             val allowKeyAgreement: Boolean = false,
         ) : AlgorithmParameters() {
@@ -117,12 +118,11 @@ data class KeyConstraints(
     }
 
     @Serializable
-    class KeyProtection(
+    data class KeyProtection(
         val timeout: Duration? = null,
         val deviceLock: Boolean? = null,
         val biometry: Boolean? = null,
         val allowNewBiometricFactors: Boolean? = null,
-        val authPrompt: AuthPrompt? = null,
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

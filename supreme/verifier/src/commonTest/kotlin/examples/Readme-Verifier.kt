@@ -4,6 +4,7 @@ import at.asitplus.attestation.supreme.AttestationVerifier
 import at.asitplus.attestation.supreme.ChallengeValidator
 import at.asitplus.attestation.supreme.KeyConstraints
 import at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters
+import at.asitplus.attestation.supreme.KeyConstraints.AuthPrompt
 import at.asitplus.attestation.supreme.KeyConstraints.KeyProtection
 import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.signum.indispensable.ECCurve
@@ -16,6 +17,11 @@ import kotlin.time.Duration.Companion.seconds
 val redisBacked: ChallengeValidator = TODO()
 val serviceSpecificOID = WardenDefaults.OIDs.ATTESTATION_PROOF
 
+
+
+
+
+
 val verifier = AttestationVerifier(
     makoto = makoto,
  /*(1)!*/attestationProofOID = serviceSpecificOID, //override default
@@ -24,17 +30,17 @@ val verifier = AttestationVerifier(
         algorithmParameters = AlgorithmParameters.EC(
             curve = ECCurve.SECP_256_R_1,
             digests = setOf(ECCurve.SECP_256_R_1.nativeDigest),
-            allowSigning = true, //DEFAULT
+         /*(4)!*/allowSigning = true, //DEFAULT; Reserved for future use
             allowKeyAgreement = false //DEFAULT
         ),
- /*(4)!*/keyProtection = KeyProtection(
+ /*(5)!*/keyProtection = KeyProtection(
             timeout = 30.seconds,
             deviceLock = false,
             biometry = true,
-            allowNewBiometricFactors = false
+            allowNewBiometricFactors = false,
         )
     ),
     nonceValidity = 5.minutes, //DEFAULT
-    nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(5)!*/128)) },
- /*(6)!*/challengeValidator = redisBacked
+    nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(6)!*/128)) },
+ /*(7)!*/challengeValidator = redisBacked
 )
