@@ -5,7 +5,13 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 ## NEXT
+* Quality of life improvements:
+    * Truly, fully integrated attestation flows in a single line of client code
+    * Ability to set an auth prompt text and cancel message for integrated flows
+    * Various documentation fixes
+* Force allow signing
 * Add Schemas to docs
+* Fix `supreme-commons` build setup
 
 ## 0.9.99
 

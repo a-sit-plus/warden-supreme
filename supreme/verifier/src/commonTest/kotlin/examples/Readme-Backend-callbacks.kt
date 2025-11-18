@@ -45,7 +45,7 @@ val result = verifier.verifyAttestation(
         is AttestationResult.Android.Verified -> TODO()
         is AttestationResult.IOS.Verified -> TODO()
     }
-    TODO("Refer to minimum example")
+    TODO("Refer to minimum example for certificate issuance")
 }
 
 

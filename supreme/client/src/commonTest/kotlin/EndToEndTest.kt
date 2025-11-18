@@ -23,17 +23,8 @@ val EndToEndTest by testSuite {
         test("endToEnd") {
             PlatformSigningProvider.deleteSigningKey(ALIAS)
             val client = AttestationClient(HttpClient())
-            val resp = client.getChallenge(Url(ENDPOINT_CHALLENGE))
-            withClue("Fetch Challenge") {
-                resp.exceptionOrNull()?.printStackTrace()
-                resp.isSuccess shouldBe true
-            }
-            val attestationChallenge: AttestationChallenge = resp.getOrThrow()
-            val csr = withClue("Create attested key and CSR") {
-                attestationChallenge.createAttestationProof(ALIAS).getOrThrow()
-            }
 
-            val result = client.attest(csr, attestationChallenge.attestationEndpointUrl)
+            val result = client.performAttestationFlow(ALIAS,Url(ENDPOINT_CHALLENGE))
             val clue =
                 if (result is AttestationResponse.Failure)
                     result.kind.name + ": " + (result.explanation ?: "FAIL")

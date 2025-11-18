@@ -202,11 +202,12 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
 --8<-- "Readme-Verifier-min.kt:3"
 ```
 
-1. Yes, it really is that simple 99% of the time!
+1. Yes, it really is that simple 99% of the time! Sane defaults are set, including instructions (`KeyConstraints`) for the client
+to create a hardware-backed P-256 key.
 
 ??? example "Comprehensive list of Verifier options"
     ```kotlin
-    --8<-- "Readme-Verifier.kt:18"
+    --8<-- "Readme-Verifier.kt:25"
     ```
     
     1. We want Warden Supreme to convey the attestation proof inside the CSR using a custom OID.
@@ -217,7 +218,7 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
         * Protected by biometric auth
         * Usable for 30 seconds without reauthentication
         * Enrolling new biometric factors will invalidate the key
-    5. We want extra long nonces! (Default: 64 bytes)
+    5. We want extra long nonces! (Default: 64 bytes. Max: 128 bytes)
     6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here, roll your own!)
     
     Instead of passing a `Makoto` instance, it is also possible to directly use bare configuration parameters directly, as if configuring Makoto, to cut out the middle-man in code.
@@ -252,20 +253,21 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 
 
 On the client, Warden Supreme is even easier to integrate. In contrast to the verifier, it is tailored around Ktor for its KMP goodness.
-Doing so allows for obtaining a certificate chain for an attested key are literally six short lines of code, if the challenge already
+Doing so allows for obtaining a certificate chain for an attested key are literally three short lines of code, if the challenge already
 specifies key constraints:
 
 ```kotlin
---8<-- "Readme-client.kt:19:35"
+--8<-- "Readme-client-min.kt:19:35"
 ```
 
 1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
-2. Fetch the attestation challenge
-3. Create a new hardware-backed key using the provided `ALIAS`, and attest it based on the key constraints contained inside the challenge.  
-If the challenge does not define what kind of key to create, this will fail!
-4. Post the CSR containing the attestation proof to the URL contained in the challenge.
-5. If everything worked out, store the received certificate chain using whatever means you decide on
-6. The kind of error tells you what went wrong. An `AttestationResponse.Failure` **may** also contain a string explaining further details.
+2. Perform the fully integrated attestation flow **iff key constraints are defined in the challenge** consisting of the following steps:
+    1. Fetches the challenge from `ENDPOINT_CHALLENGE` 
+    2. Automatically creates a key for `ALIAS` and an accompanying attestation proof. **Beware:** if a key for this alias exists, this will fail!
+    3. Creates and signs a CSR, feeding the challenge and attestation proof into it.
+    4. Sends it to the endpoint encodes into the received challenge.
+3. If everything worked out, store the received certificate chain using whatever means you decide on
+4. The kind of error tells you what went wrong. An `AttestationResponse.Failure` **may** also contain a string explaining further details.
 
 !!! tip inline end
     Warden Supreme does not check whether a device has biometrics enrolled. So if you choose to bind a to-be-attested key
@@ -294,7 +296,7 @@ On the backend, however, attestation issues typically need to be analysed. Hence
 three callbacks to analyse attestation errors and success (without side effects):
 
 ```kotlin
---8<-- "Readme-Backend-callbacks.kt:15:48"
+--8<-- "Readme-Backend-callbacks.kt:15:50"
 ```
 
 1. This is simply the CSR from the client, as in the minimal example
@@ -307,7 +309,8 @@ three callbacks to analyse attestation errors and success (without side effects)
 7. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
    This can be useful for statistical analyses, for example.
 8. This is the certificate signing lambda, also having a fully verified attestation result as receiver.
-  In contrast to `onAttestationSuccess` it receives the fully verified CSR as a parameter.
+  In contrast to `onAttestationSuccess` it is not side-effect-free, but is expected to return a certificate chain, whose
+  leaf certifies the attested key. As such, it receives the fully verified CSR as a parameter.
 
 
 The step-by-step guide [above](#warden-supreme-step-by-step-guide) will cover most use cases perfectly well.

@@ -1,6 +1,7 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
+import at.asitplus.attestation.supreme.AttestationChallenge.Companion.CURRENT_VERSION
 import at.asitplus.catching
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.KnownOIDs
@@ -38,6 +39,8 @@ class AttestationClient(client: HttpClient) {
      *  * [AttestationChallenge.validUntil] is earlier than the local system clock
      *  * [AttestationChallenge.issuedAt] is later than the local system clock
      *
+     *  This will also fail when a challenge of a newer version was received
+     *
      * The reason for the second constraint is the simple fact that if the back-end's clock lags behind the local system clock
      * (i.e., challenge issuing time is after [Clock.System.now]), certificate chain validation will fail, due to the
      * leaf certificate's `notBefore` being in the future from the back-end's point of view.
@@ -48,9 +51,12 @@ class AttestationClient(client: HttpClient) {
     suspend fun getChallenge(endpoint: Url): KmmResult<AttestationChallenge> = catching {
         client.get(endpoint).body<AttestationChallenge>().also {
             val now = Clock.System.now()
-            if (it.validUntil?.let { it < now } == true || it.issuedAt > now) throw IllegalStateException(
+            if (it.validUntil < now || it.issuedAt > now) throw IllegalStateException(
                 "System time off: issuedAt: ${it.issuedAt}, validUntil: ${it.validUntil}, local system time: $now"
             )
+            it.version?.let { ver ->
+                if (ver > CURRENT_VERSION) throw IllegalArgumentException("Received AttestationChallenge version ${it.version} is newer than locally supported version $CURRENT_VERSION")
+            }
         }
     }
 
@@ -66,10 +72,40 @@ class AttestationClient(client: HttpClient) {
         }.body<AttestationResponse>()
 }
 
+/**
+ * Truly integrated attestation in a single call.
+ * @throws Throwable Various errors can occur irrespective of attestation:
+ * IO, accessing the platform crypto, not authenticating, etc…
+ *
+ * This is literally a shorthand for:
+ * ```
+ * val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
+ * val csr = challenge.createAttestationProof(alias).getOrThrow()
+ * return attest(csr, challenge.attestationEndpointUrl)
+ * ```
+ *
+ * It is possible to specify [authPromptMessage] and [authPromptCancelText] for when key usage (i.e. signing)
+ * requires authentication.
+ *
+ * Requires the verifier to pack [KeyConstraints] into the conveyed challenge.
+ */
+@Throws(Throwable::class)
+suspend fun AttestationClient.performAttestationFlow(
+    alias: String, fetchChallengeEndpoint: Url,
+    authPromptMessage: String? = null,
+    authPromptCancelText: String? = null,
+): AttestationResponse {
+    val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
+    val csr = challenge.createAttestationProof(alias).getOrThrow()
+    return attest(csr, challenge.attestationEndpointUrl)
+}
 
 /**
  * Creates a signed CSR from a received [AttestationChallenge] according to [AttestationChallenge.keyConstraints].
  * Hence, if no constraints are set, this method will always fail!
+ *
+ * It is possible to specify [authPromptMessage] and [authPromptCancelText] for when key usage (i.e. signing)
+ * requires authentication.
  *
  * Encodes the challenge's nonce into a [KnownOIDs.serialNumber] subjectName
  * and the attestation statement into a Pkcs10CertificationRequestAttribute with [AttestationChallenge.proofOID].
@@ -80,14 +116,15 @@ suspend fun AttestationChallenge.createAttestationProof(
      * The alias to assign to the newly created signer. Must not exist!
      */
     alias: String,
+    authPromptMessage: String? = null,
+    authPromptCancelText: String? = null,
 ): KmmResult<Pkcs10CertificationRequest> {
 
 
     val params = keyConstraints?.algorithmParameters
         ?: throw IllegalArgumentException("No algorithm specified. Refusing to automatically create an attested key")
     val protectionParameters = keyConstraints?.keyProtection
-    val signer = PlatformSigningProvider.createSigningKey(alias) {
-
+    PlatformSigningProvider.createSigningKey(alias) {
         when (params) {
             is KeyConstraints.AlgorithmParameters.EC -> ec {
                 curve = params.curve
@@ -132,6 +169,12 @@ suspend fun AttestationChallenge.createAttestationProof(
             Asn1String.UTF8(getDeviceName()).encodeToTlv()
         )
     ) else listOf()
+    val signer = PlatformSigningProvider.getSignerForKey(alias) {
+        unlockPrompt {
+            authPromptMessage?.let { message = it }
+            authPromptCancelText?.let { cancelText = it }
+        }
+    }.getOrThrow()
     return signer.createCsr(this, additionalAttributes = additionalAttributes)
 }
 
