@@ -63,12 +63,13 @@ fun App(
 ) {
     MaterialTheme(colorScheme = darkColorScheme()) {
 
+        //The first IP is for using the emulator, the latter happened to be the IP of my dev machine.
         val default = if (getPlatform().name.contains("false")) "http://10.0.2.2:8080" else "http://10.6.252.4:8080"
 
         // Centralized state management for UI elements
         var baseUrl by rememberSaveable { mutableStateOf(default) }
         var getChallengeEndpoint by rememberSaveable { mutableStateOf("/api/v1/challenge") }
-        var relativeEndpointForWebview by rememberSaveable { mutableStateOf("/") }
+        var protectedEndpoint by rememberSaveable { mutableStateOf("/protected") }
         var connectionStatus by remember { mutableStateOf(ConnectionStatus.IDLE) }
         val errorLogs = remember { mutableStateListOf<String>() }
 
@@ -76,7 +77,7 @@ fun App(
         val http = remember { HttpClient() }
 
 
-        //TODO: Configure attestationClient
+        val client = remember { AttestationClient(http) }
 
 
         // State for the bottom sheet (error log drawer)
@@ -156,7 +157,29 @@ fun App(
                         coroutineScope.launch {
                             val fullUrl = baseUrl + getChallengeEndpoint
 
-                            //TODO fetch challenge, attest and store cert
+                            val result = client.getChallenge(Url(fullUrl))
+
+                            result.onSuccess { challenge ->
+                                //Just rendering
+                                navigator.loadHtml(Json.encodeToString(challenge), "application/json")
+                                //Be sure to delete the key before creating a new one!
+                                challenge.createAttestationProof(ALIAS).onSuccess {
+                                    val resp = client.attest(it, challenge.attestationEndpointUrl)
+                                    when (resp) {
+
+                                        is AttestationResponse.Failure -> errorLogs.add(
+                                            0,
+                                            "Fetch/Store Failed: ${resp.kind}: ${resp.explanation ?: "error"}"
+                                        )
+
+                                        is AttestationResponse.Success -> settings?.storeCertificateChain(resp.certificateChain)
+                                    }
+                                }.onFailure {
+                                    errorLogs.add(0, "Fetch/Store Failed: ${it.message ?: "Unknown error"}")
+                                }
+                            }.onFailure {
+                                errorLogs.add(0, "Fetch/Store Failed: ${it.message ?: "Unknown error"}")
+                            }
 
                         }
                     }
@@ -167,20 +190,20 @@ fun App(
 
                 EndpointInteractionSection(
                     title = "Render in WebView",
-                    endpoint = relativeEndpointForWebview,
-                    onEndpointChange = { relativeEndpointForWebview = it },
+                    endpoint = protectedEndpoint,
+                    onEndpointChange = { protectedEndpoint = it },
                     buttonText = "Fetch & Render",
                     onButtonClick = {
                         coroutineScope.launch {
                             catchingUnwrapped {
-                                val result = http.get(baseUrl + relativeEndpointForWebview) {
+                                val result = http.get(baseUrl + protectedEndpoint) {
                                     accept(ContentType.Text.Plain)
                                     settings?.loadCertificateChain()?.let { chain ->
                                         bearerAuth(createJWT(ALIAS, chain).serialize())
                                     }
                                 }
                                 if (result.status == HttpStatusCode.Forbidden) {
-                                    http.get(baseUrl + relativeEndpointForWebview) {
+                                    http.get(baseUrl + protectedEndpoint) {
                                         accept(ContentType.Any)
                                         settings?.loadCertificateChain()?.let { chain ->
                                             bearerAuth(createJWT(ALIAS, chain, result.bodyAsText()).serialize())
