@@ -102,7 +102,7 @@ private constructor(
         attestationEndpoint,
         proofOID,
         includeGenericDeviceName,
-        version = 1,
+        version = CURRENT_VERSION,
         keyConstraints,
     )
 
@@ -174,6 +174,10 @@ private constructor(
         result = 31 * result + (keyConstraints?.hashCode() ?: 0)
         result = 31 * result + validUntil.hashCode()
         return result
+    }
+
+    companion object {
+        const val CURRENT_VERSION:Int = 2
     }
 }
 

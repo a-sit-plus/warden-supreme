@@ -1,11 +1,8 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.RSAPadding
-import at.asitplus.signum.indispensable.SignatureAlgorithm
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.nativeDigest
 import kotlinx.serialization.SerialName
@@ -125,6 +122,7 @@ data class KeyConstraints(
         val deviceLock: Boolean? = null,
         val biometry: Boolean? = null,
         val allowNewBiometricFactors: Boolean? = null,
+        val authPrompt: AuthPrompt? = null,
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -163,4 +161,6 @@ data class KeyConstraints(
         return result
     }
 
+    @Serializable
+    data class AuthPrompt(val message: String, val cancelText: String)
 }

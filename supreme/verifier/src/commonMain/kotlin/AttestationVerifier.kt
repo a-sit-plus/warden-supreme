@@ -133,7 +133,7 @@ class AttestationVerifier(
 
     @Deprecated(
         "Misnomer; to be removed in 1.0.0",
-        replaceWith = ReplaceWith("verifyAttestation(csr, onPreAttestationError, onAttestationError, onAttestationSuccess,          certificateIssuer)")
+        replaceWith = ReplaceWith("verifyAttestation(csr, onPreAttestationError, onAttestationError, onAttestationSuccess, certificateIssuer)")
     )
     suspend fun verifyKeyAttestation(
         csr: Pkcs10CertificationRequest,

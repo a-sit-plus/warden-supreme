@@ -5,6 +5,7 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 ## NEXT
+* Quality of life improvements, such as truly, fully integrated attestation flows in a single line of client code
 * Add Schemas to docs
 
 ## 0.9.99
