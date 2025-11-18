@@ -24,8 +24,11 @@ In particular, the following requirements must be met:
 * Add Associated Domains (recommended):
     * If you’ll bind to your domain, add webcredentials:your.domain (and/or applinks:your.domain for related flows).
 * App Attest entitlement:
-    * When you call DCAppAttestService, Xcode adds com.apple.developer.devicecheck.appattest-environment automatically.
-    * Environment is development for debug/TestFlight/sandbox and production for App Store. Your server must verify this.
+    * Click on "+ Capability"
+    * Select "App Attest"
+    * An app can be built for two environments: _production_ for App Store distribution and _debug/development/sandbox_ for testing/development purposes.
+        * Your server must verify this!
+        * Warden Supreme exposes this via the iOS-specific `sandbox` configuration parameter
 
 Once everything is set up, App Attest can be used in your app.
 
