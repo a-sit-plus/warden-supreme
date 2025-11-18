@@ -39,9 +39,10 @@ data class KeyConstraints(
             val keySize: @Serializable(with = BitLengthSerializer::class) BitLength,
             val paddings: Set<RSAPadding> = setOf(RSAPadding.PSS),
             override val digests: Set<Digest> = setOf(Digest.SHA256),
-            override val allowSigning: Boolean = true,
             val allowDecrypting: Boolean = false,
         ) : AlgorithmParameters() {
+            //must be true as of now, because we require signing for proof of possession
+            override val allowSigning: Boolean = true
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
                 if (other !is RSA) return false
@@ -73,10 +74,10 @@ data class KeyConstraints(
             @Serializable(with = ECCurveSerializer::class)
             val curve: ECCurve = ECCurve.SECP_256_R_1,
             override val digests: Set<@Serializable(with = DigestSerializer::class) Digest> = setOf(curve.nativeDigest),
-            @Deprecated("Reserved for future use", level = DeprecationLevel.WARNING)
-            override val allowSigning: Boolean = true,
             val allowKeyAgreement: Boolean = false,
         ) : AlgorithmParameters() {
+            //must be true as of now, because we require signing for proof of possession
+            override val allowSigning: Boolean = true
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
                 if (other !is EC) return false

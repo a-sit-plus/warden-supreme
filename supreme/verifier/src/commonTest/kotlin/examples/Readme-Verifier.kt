@@ -4,7 +4,6 @@ import at.asitplus.attestation.supreme.AttestationVerifier
 import at.asitplus.attestation.supreme.ChallengeValidator
 import at.asitplus.attestation.supreme.KeyConstraints
 import at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters
-import at.asitplus.attestation.supreme.KeyConstraints.AuthPrompt
 import at.asitplus.attestation.supreme.KeyConstraints.KeyProtection
 import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.signum.indispensable.ECCurve
@@ -30,10 +29,9 @@ val verifier = AttestationVerifier(
         algorithmParameters = AlgorithmParameters.EC(
             curve = ECCurve.SECP_256_R_1,
             digests = setOf(ECCurve.SECP_256_R_1.nativeDigest),
-         /*(4)!*/allowSigning = true, //DEFAULT; Reserved for future use
             allowKeyAgreement = false //DEFAULT
         ),
- /*(5)!*/keyProtection = KeyProtection(
+ /*(4)!*/keyProtection = KeyProtection(
             timeout = 30.seconds,
             deviceLock = false,
             biometry = true,
@@ -41,6 +39,6 @@ val verifier = AttestationVerifier(
         )
     ),
     nonceValidity = 5.minutes, //DEFAULT
-    nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(6)!*/128)) },
- /*(7)!*/challengeValidator = redisBacked
+    nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(5)!*/128)) },
+ /*(6)!*/challengeValidator = redisBacked
 )

@@ -218,10 +218,8 @@ to create a hardware-backed P-256 key.
         * Protected by biometric auth
         * Usable for 30 seconds without reauthentication
         * Enrolling new biometric factors will invalidate the key
-    5. Note that setting this to false will not as of now, since the CSR needs to be signed.
-       This is reserved for future use.
-    6. We want extra long nonces! (Default: 64 bytes. Max: 128 bytes)
-    7. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here, roll your own!)
+    5. We want extra long nonces! (Default: 64 bytes. Max: 128 bytes)
+    6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here, roll your own!)
     
     Instead of passing a `Makoto` instance, it is also possible to directly use bare configuration parameters directly, as if configuring Makoto, to cut out the middle-man in code.
 

@@ -177,7 +177,7 @@ private constructor(
     }
 
     companion object {
-        const val CURRENT_VERSION:Int = 2
+        const val CURRENT_VERSION:Int = 1
     }
 }
 

@@ -7,7 +7,9 @@ this changelog also includes the original WARDEN changelog.
 ## NEXT
 * Quality of life improvements:
     * Truly, fully integrated attestation flows in a single line of client code
-    * Ability to set an auth prompt text an cancel message for integrated flows
+    * Ability to set an auth prompt text and cancel message for integrated flows
+    * Various documentation fixes
+* Force allow signing
 * Add Schemas to docs
 
 ## 0.9.99
