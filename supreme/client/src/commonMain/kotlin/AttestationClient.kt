@@ -62,7 +62,7 @@ class AttestationClient(client: HttpClient) {
 
     /**
      * Posts a [csr] containing an attestation challenge, as created by [createAttestationProof].
-     * @throws Throwable for any IO/low-level errors. Attestation failures are **not** thrown but encoded into the [AttestationResponse]!
+     * @throws Throwable for any IO/network/low-level errors. Attestation failures are **not** thrown but encoded into the [AttestationResponse]!
      */
     @Throws(Throwable::class)
     suspend fun attest(csr: Pkcs10CertificationRequest, destination: Url) =
@@ -74,8 +74,8 @@ class AttestationClient(client: HttpClient) {
 
 /**
  * Truly integrated attestation in a single call.
- * @throws Throwable Various errors can occur irrespective of attestation:
- * IO, accessing the platform crypto, not authenticating, etc…
+ * @throws Throwable Various errors can occur both related and unrelated to attestation:
+ * IO, accessing the platform crypto, not authenticating, system time off, …
  *
  * This is literally a shorthand for:
  * ```
@@ -122,7 +122,9 @@ suspend fun AttestationChallenge.createAttestationProof(
 
 
     val params = keyConstraints?.algorithmParameters
-        ?: throw IllegalArgumentException("No algorithm specified. Refusing to automatically create an attested key")
+        ?: return KmmResult.failure(IllegalArgumentException("No algorithm specified. Refusing to automatically create an attested key"))
+
+
     val protectionParameters = keyConstraints?.keyProtection
     PlatformSigningProvider.createSigningKey(alias) {
         when (params) {
@@ -148,9 +150,7 @@ suspend fun AttestationChallenge.createAttestationProof(
             }
         }
         hardware {
-            attestation {
-                challenge = this@createAttestationProof.nonce
-            }
+            attestation { challenge = this@createAttestationProof.nonce }
             protectionParameters?.let {
                 protection {
                     it.timeout?.let { timeout = it }
@@ -162,19 +162,22 @@ suspend fun AttestationChallenge.createAttestationProof(
                 }
             }
         }
-    }.getOrThrow()
+    }.getOrElse { return KmmResult.failure(it) }
+
+    val signer = PlatformSigningProvider.getSignerForKey(alias) {
+        unlockPrompt {
+            authPromptMessage?.let { message = it }
+            authPromptCancelText?.let { cancelText = it }
+        }
+    }.getOrElse { return KmmResult.failure(it) }
+
     val additionalAttributes = if (includeGenericDeviceName) listOf(
         Pkcs10CertificationRequestAttribute(
             WardenDefaults.OIDs.DEVICE_NAME,
             Asn1String.UTF8(getDeviceName()).encodeToTlv()
         )
     ) else listOf()
-    val signer = PlatformSigningProvider.getSignerForKey(alias) {
-        unlockPrompt {
-            authPromptMessage?.let { message = it }
-            authPromptCancelText?.let { cancelText = it }
-        }
-    }.getOrThrow()
+
     return signer.createCsr(this, additionalAttributes = additionalAttributes)
 }
 
@@ -203,21 +206,20 @@ suspend fun Signer.Attestable<*>.createCsr(
      * Additional CSR attributes to pack into this CSR.
      */
     additionalAttributes: List<Pkcs10CertificationRequestAttribute> = listOf()
-): KmmResult<Pkcs10CertificationRequest> =
-    attestation?.let { attestation ->
-        sign(
-            TbsCertificationRequest(
-                subjectName = subjectName.map { name ->
-                    RelativeDistinguishedName(name.attrsAndValues.filterNot { value -> value.oid == KnownOIDs.serialNumber })
-                } + RelativeDistinguishedName(challenge.getRdnSerialNumber()),
-                publicKey = publicKey,
-                attributes = additionalAttributes + Pkcs10CertificationRequestAttribute(
-                    challenge.proofOID,
-                    Asn1String.UTF8(attestation.jsonEncoded).encodeToTlv()
-                ),
-                extensions = additionalExtensions
-            ))
-    } ?: KmmResult.failure(IllegalStateException("No attestation statement present instance found"))
+): KmmResult<Pkcs10CertificationRequest> = attestation?.let { attestation ->
+    sign(
+        TbsCertificationRequest(
+            subjectName = subjectName.map { name ->
+                RelativeDistinguishedName(name.attrsAndValues.filterNot { value -> value.oid == KnownOIDs.serialNumber })
+            } + RelativeDistinguishedName(challenge.getRdnSerialNumber()),
+            publicKey = publicKey,
+            attributes = additionalAttributes + Pkcs10CertificationRequestAttribute(
+                challenge.proofOID,
+                Asn1String.UTF8(attestation.jsonEncoded).encodeToTlv()
+            ),
+            extensions = additionalExtensions
+        ))
+} ?: KmmResult.failure(IllegalStateException("No attestation statement present instance found"))
 
 /**
  * convenience shorthand to parse the attestation POST endpoint as a URL

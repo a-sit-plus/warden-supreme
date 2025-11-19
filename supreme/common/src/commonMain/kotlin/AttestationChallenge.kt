@@ -177,7 +177,7 @@ private constructor(
     }
 
     companion object {
-        const val CURRENT_VERSION:Int = 1
+        const val CURRENT_VERSION: Int = 1
     }
 }
 
@@ -191,15 +191,14 @@ fun TbsCertificationRequest.attestationStatementForChallenge(challenge: Attestat
 /**
  * Tries to extract an attestation statement from a TBS CSR, given it is present as an attribute with [oid]
  */
-fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): KmmResult<Attestation> =
-    catching {
-        attributes.find { it.oid == oid }?.value?.singleOrNull()
-            ?.let {
-                it.asPrimitive()
-                Attestation.fromJSON(Asn1String.decodeFromTlv(it.asPrimitive()).value)
-            }
-            ?: throw Asn1StructuralException("Attestation statement not present")
-    }
+fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): KmmResult<Attestation> = catching {
+    attributes.find { it.oid == oid }?.value?.singleOrNull()
+        ?.let {
+            it.asPrimitive()
+            Attestation.fromJSON(Asn1String.decodeFromTlv(it.asPrimitive()).value)
+        }
+        ?: throw Asn1StructuralException("Attestation statement not present")
+}
 
 
 /**
