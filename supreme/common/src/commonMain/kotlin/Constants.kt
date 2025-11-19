@@ -34,7 +34,6 @@ object WardenDefaults {
         val p256Signer = at.asitplus.attestation.supreme.KeyConstraints(
             at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters.EC(
                 curve = ECCurve.SECP_256_R_1,
-                allowSigning = true,
                 allowKeyAgreement = false
             )
         )
