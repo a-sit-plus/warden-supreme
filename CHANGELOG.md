@@ -11,6 +11,7 @@ this changelog also includes the original WARDEN changelog.
     * Various documentation fixes
 * Force allow signing
 * Add Schemas to docs
+* Fix `supreme-commons` build setup
 
 ## 0.9.99
 
