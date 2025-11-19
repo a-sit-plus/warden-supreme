@@ -51,7 +51,7 @@ class AttestationClient(client: HttpClient) {
     suspend fun getChallenge(endpoint: Url): KmmResult<AttestationChallenge> = catching {
         client.get(endpoint).body<AttestationChallenge>().also {
             val now = Clock.System.now()
-            if (it.validUntil.let { it < now } || it.issuedAt > now) throw IllegalStateException(
+            if (it.validUntil < now || it.issuedAt > now) throw IllegalStateException(
                 "System time off: issuedAt: ${it.issuedAt}, validUntil: ${it.validUntil}, local system time: $now"
             )
             it.version?.let { ver ->
