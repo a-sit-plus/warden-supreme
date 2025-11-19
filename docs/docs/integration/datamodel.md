@@ -2,29 +2,44 @@
 
 Warden Supreme standardizes how attestation challenges, proofs, and outcomes are represented across platforms, based
 [Signum's multiplatform attestation data model](https://a-sit-plus.github.io/signum/dokka/indispensable/at.asitplus.signum.indispensable/-attestation/index.html).
-The chose data model achieves the following:
+The chosen data model achieves the following:
 
 - Uniform parsing/validation for Android and iOS.
 - Comprehensible transport of challenges and proofs.
 - Explicit, auditable responses for success/failure.
+
+!!! tip inline end "JSON Schemas"
+    * [AttestationChallenge](../schemas/AttestationChallenge.json)
+    * [Attestation](../schemas/Attestation.json)
+    * [AttestationResponse](../schemas/AttestationResponse.json)
+
+
+Warden Supreme does not specify an encoding for its wire format. However, JSON has become the de-facto standard for many
+HTTP-based APIs. We therefore provide **experimental**, auto-generated schemas for Warden Supreme's datatypes.
+These can be helpful for integrating third-party clients.  
+Please note that these schemas really are experimental as of now.
 
 ## Core Artifacts
 
 - Challenge (Server → Client)
     - Contents:
         - `issuedAt`
-        - optional `validity` indicating how long the challenge is valid
+        - `validity` indicating how long the challenge is valid
         - optional `timeZone`
         - a server-chosen `nonce` (≤128 bytes)
         - the `attestationEndpoint` to submit the attestation proof to
-        - `proofOID` that identifies the CSR attribute to hold the attestation statement inside the CSR prodiced by the client
+        - `proofOID` that identifies the CSR attribute to hold the attestation statement inside the CSR produced by the client
           serving as attestation proof.
+        - `includeGenericDeviceName` to indicate whether the make and model if the client device (not the user-assignable name) should be included in the CSR
+        - `version` to indicate the data format version
+        - `keyConstraints` to tell the client which kind of key to create and attest.
     - Purpose: binds the proof to a fresh, server-originating value; communicates where and how to submit the
       attestation.
 
 - Proof Transport (Client → Server)
     - The platform-specific attestation statement (Android Key/ID Attestation, iOS App Attest) is embedded into a
-      PKCS#10 Certification Request (CSR) attribute identified by the provided `proofOID`.
+      PKCS#10 Certification Request (CSR) attribute identified by the provided `proofOID`.  
+      It is represented as a JSON-encoded UTF-8 string inside the extension
     - The CSR subject encodes the challenge nonce in a serialNumber RDN.
     - This yields a single, signed container that carries both the device/app attestation and linkage to the server’s
       challenge.
@@ -33,7 +48,7 @@ The chose data model achieves the following:
 This is a simple either-class, branching as follows:
     - **Success** contains a single property: a `certificateChain` (X.509). This enables immediate consumption by the arbitrary applications (mTLS, signed requests), regardless of platform specifics.
         - The leaf is a binding certificate issued for the attested key by the back-end.
-        - The root is the root CA configured at the back-end.
+        - The root is indended to be the root CA for the binding PKI configured at the back-end. However, the semantics can be adapted as desired.
     - **Failure** is a typed error with an optional explanation. Categories:
         - `TRUST`: trust or policy violations, such as:
             - Untrusted or mismatched root/intermediate (e.g., wrong environment or CA).
@@ -53,28 +68,7 @@ This is a simple either-class, branching as follows:
 The server extracts the challenge nonce from the CSR subject and the attestation statement from the CSR attribute
 identified by proofOID, then validates:
 
-- Challenge binding: the attestation’s nonce/clientDataHash must incorporate the exact server-issued nonce.
+- Challenge binding: the nonce must match the exact server-issued nonce and it must not be expired.
 - Platform trust & policy: certificate chain, environment (prod/sandbox), app identity, device state,
-  counters/continuity (see iOS notes below), boot/patch state (Android), and key usage constraints.
-- Time: issuance time and validity windows to mitigate clock drift and replay.
-
-## Semantics across Platforms
-
-- Android: supports offline attestation/assertion semantics with negligible runtime impact once keys are provisioned.
-- iOS: does not natively expose Android-style offline assertions. Warden Supreme replicates uniform assertion-like
-  semantics on iOS by leveraging App Attest artifacts plus a server-issued challenge to mirror Android behavior.
-  On iOS these proofs require contacting Apple services, which can
-  introduce latency.
-
-## Rationale
-
-- Single canonical container: a CSR provides a signed envelope with well-understood parsing and signature semantics.
-- Cross-platform uniformity: Android’s native flows and iOS’s replicated assertion semantics slot into the same
-  transport and verification pipeline.
-- Explicit outcomes: typed responses allow clients to differentiate retryable time issues from policy/trust failures.
-
-## Operational Implications
-
-- Statefulness: back-ends persist per-app-instance identity (key IDs/public keys), but forego complex tracking mechanisms
-  like those proposed by Apple's App Attest.
-- Privacy Controls: This strategy inimizes stored identifiers and prevents concrete user tracking.
+  counters/continuity (see iOS notes below), boot/patch state (Android).
+- Time: issuance time and validity windows for replay protection.

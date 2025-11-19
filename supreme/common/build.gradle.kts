@@ -7,9 +7,9 @@ plugins {
     id("org.jetbrains.dokka")
     id("maven-publish")
     id("signing")
+    id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
 }
-
 
 val artifactVersion: String by extra
 val groupId: String by extra
@@ -31,6 +31,12 @@ kotlin {
 
         commonMain.dependencies {
             api(libs.signum)
+        }
+
+        jvmTest.dependencies {
+            implementation(libs.schemakenerator.core)
+            implementation(libs.schemakenerator.serialization)
+            implementation(libs.schemakenerator.jsonschema)
         }
     }
 }

@@ -109,8 +109,8 @@ nav:
             - Overview: integration/supreme.md
             - Debugging: integration/debugging.md
             - Project Structure: integration/structure.md
-        - Data Model: integration/datamodel.md
-        - Using Warden without Integrated Clients: integration/raw.md
+        - Data Model and Schema: integration/datamodel.md
+        - Usage without Integrated Clients: integration/raw.md
         - Migration from WARDEN: integration/migration.md
         - Changelog: CHANGELOG.md
     - Glossary: glossary.md

@@ -5,6 +5,7 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 ## NEXT
+* Add Schemas to docs
 
 ## 0.9.99
 

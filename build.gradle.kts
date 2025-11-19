@@ -38,6 +38,7 @@ tasks.register<Copy>("copyChangelog") {
 tasks.register<Copy>("mkDocsPrepare") {
     dependsOn("dokkaHtmlMultiModule")
     dependsOn("copyChangelog")
+    dependsOn(project(":supreme-common").tasks.named("jvmTest"))
     into(rootDir.resolve("docs/docs/dokka"))
     from("${rootDir}/dokka")
 }

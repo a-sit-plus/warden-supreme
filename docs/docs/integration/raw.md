@@ -24,6 +24,8 @@ In addition, legacy deployments that cannot yet transition to the new integrated
 still and will remain operational. Until a migration is possible (see [migration notes](migration.md)), this page serves
 as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (previously WARDEN‑roboto).
 
+!!! tip "Hybrid Integration"
+    It is possible to use Warden Supreme's verifier with custom clients by adhering to the [same flows](supreme.md#high-level-attestation-flow) and [data model](datamodel.md).
 
 ## When to use _makoto_ vs. _roboto_
 

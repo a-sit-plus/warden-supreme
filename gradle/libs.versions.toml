@@ -10,6 +10,7 @@ errorprone = "2.43.0"
 protobuf = "4.33.0"
 devicecheck = "0.9.6"
 jackson = "2.20.0"
+schemakenerator = "2.5.0"
 
 #keep it nice and lenient
 semver = "1.2.0"
@@ -34,3 +35,6 @@ jackson-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-modul
 semver = { group = "net.swiftzer.semver", name = "semver", version.ref = "semver" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-reload4j = { group = "org.slf4j", name = "slf4j-reload4j", version.ref = "slf4j" }
+schemakenerator-core = { group = "io.github.smiley4", name = "schema-kenerator-core", version.ref = "schemakenerator" }
+schemakenerator-serialization = { group = "io.github.smiley4", name = "schema-kenerator-serialization", version.ref = "schemakenerator" }
+schemakenerator-jsonschema = { group = "io.github.smiley4", name = "schema-kenerator-jsonschema", version.ref = "schemakenerator" }
