@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.2.21"
+kotlin = "2.3.0-RC"
 guava = "33.5.0-jre"
 autovalue = "1.11.0"
 signum = "3.18.2"

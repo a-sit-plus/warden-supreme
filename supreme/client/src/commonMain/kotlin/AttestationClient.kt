@@ -2,6 +2,11 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
 import at.asitplus.catching
+import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
+import at.asitplus.signum.indispensable.Attestation
+import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.IosHomebrewAttestation
+import at.asitplus.signum.indispensable.SelfAttestation
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.KnownOIDs
 import at.asitplus.signum.indispensable.asn1.serialNumber
@@ -163,18 +168,42 @@ suspend fun Signer.Attestable<*>.createCsr(
 ): KmmResult<Pkcs10CertificationRequest> =
     attestation?.let { attestation ->
         sign(
-            TbsCertificationRequest(
-                subjectName = subjectName.map { name ->
-                    RelativeDistinguishedName(name.attrsAndValues.filterNot { value -> value.oid == KnownOIDs.serialNumber })
-                } + RelativeDistinguishedName(challenge.getRdnSerialNumber()),
-                publicKey = publicKey,
-                attributes = additionalAttributes + Pkcs10CertificationRequestAttribute(
-                    challenge.proofOID,
-                    Asn1String.UTF8(attestation.jsonEncoded).encodeToTlv()
-                ),
-                extensions = additionalExtensions
-            ))
+            prepareTbsCertificationRequest(
+                subjectName,
+                challenge,
+                additionalAttributes,
+                attestation,
+                additionalExtensions
+            )
+        ).onFailure { return KmmResult.failure(it) }
     } ?: KmmResult.failure(IllegalStateException("No attestation statement present instance found"))
+
+/**
+ * Prepares a [TbsCertificationRequest] for signing.
+ * @see createCsr
+ */
+@Throws(Throwable::class)
+fun prepareTbsCertificationRequest(
+    subjectName: List<RelativeDistinguishedName> = listOf(),
+    challenge: AttestationChallenge,
+    additionalAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
+    attestation: Attestation,
+    additionalExtensions: List<X509CertificateExtension> = listOf()
+)= TbsCertificationRequest(
+    subjectName = subjectName.map { name ->
+        RelativeDistinguishedName(name.attrsAndValues.filterNot { value -> value.oid == KnownOIDs.serialNumber })
+    } + RelativeDistinguishedName(challenge.getRdnSerialNumber()),
+    publicKey = when(attestation) {
+        is IosHomebrewAttestation -> attestation.parsedClientData.publicKey
+        is AndroidKeystoreAttestation -> attestation.certificateChain.leaf.decodedPublicKey.getOrThrow()
+        is SelfAttestation -> attestation.certificate.decodedPublicKey.getOrThrow()
+    },
+    attributes = additionalAttributes + Pkcs10CertificationRequestAttribute(
+        challenge.proofOID,
+        Asn1String.UTF8(attestation.jsonEncoded).encodeToTlv()
+    ),
+    extensions = additionalExtensions
+)
 
 /**
  * convenience shorthand to parse the attestation POST endpoint as a URL

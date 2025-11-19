@@ -23,8 +23,10 @@ project(":makoto-diag").projectDir = file("utils/makoto-diag")
 
 
 include("supreme-verifier")
-include("supreme-common")
-include("supreme-client")
 project(":supreme-verifier").projectDir = file("supreme/verifier")
+include("supreme-common")
 project(":supreme-common").projectDir = file("supreme/common")
+include("supreme-client")
 project(":supreme-client").projectDir = file("supreme/client")
+include("supreme-swiftclient")
+project(":supreme-swiftclient").projectDir = file("supreme/client-swift")
