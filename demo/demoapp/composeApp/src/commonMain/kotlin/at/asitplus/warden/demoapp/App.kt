@@ -35,6 +35,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.util.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -77,6 +78,14 @@ fun App(
         val coroutineScope = rememberCoroutineScope()
 
         val http = HttpClient()
+
+        //ATTESTATION client init
+        //ATTESTATION client init
+        //ATTESTATION client init
+        val client = remember { AttestationClient(http) }
+        //ATTESTATION client init
+        //ATTESTATION client init
+        //ATTESTATION client init
 
         // State for the bottom sheet (error log drawer)
         val scaffoldState = rememberBottomSheetScaffoldState(
@@ -157,7 +166,46 @@ fun App(
                     },
                     onButtonClick = {
                         coroutineScope.launch {
+                            idle = false
                             val fullUrl = baseUrl + getChallengeEndpoint
+
+                            //ATTESTATION ALL-IN-ONE CALL
+                            //ATTESTATION ALL-IN-ONE CALL
+                            //ATTESTATION ALL-IN-ONE CALL
+                            val result = catchingUnwrapped { client.performAttestationFlow(ALIAS, Url(fullUrl)) }
+                            //ATTESTATION ALL-IN-ONE CALL
+                            //ATTESTATION ALL-IN-ONE CALL
+                            //ATTESTATION ALL-IN-ONE CALL
+
+                            result.onSuccess { resp ->
+                                when (resp) {
+                                    is AttestationResponse.Failure -> {
+                                        navigator.loadHtml(resp.explanation ?: "Attestation error: ${resp.kind}")
+                                        idle = true
+                                    }
+
+                                    is AttestationResponse.Success -> {
+                                        //tell the user it worked
+                                        navigator.loadHtml(Res.readBytes("files/cert-issued.html").decodeToString())
+                                        //delete old cert chain
+                                        settings?.deleteCertificateChain()
+                                        //store new one
+                                        settings?.storeCertificateChain(resp.certificateChain)
+                                        idle = true
+
+                                    }
+                                }
+                            }.onFailure {
+                                navigator.loadHtml(
+                                    "<html><body style=\"background-color:white; color:black\">" +
+                                            (it.message ?: it::class.simpleName
+                                            ?: "Attestation process failed").escapeHTML()
+                                            + "</body></html>"
+                                )
+                                it.printStackTrace()
+                                idle = true
+                            }
+
                         }
                     }
                 )

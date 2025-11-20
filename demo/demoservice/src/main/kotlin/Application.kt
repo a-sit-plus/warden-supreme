@@ -23,6 +23,7 @@ fun Application.module() {
     configureLogging()
     loadKeyStore()
     configureSecurity()
+    configureAttestation()
     configureSerialization()
     configureRouting()
 }
