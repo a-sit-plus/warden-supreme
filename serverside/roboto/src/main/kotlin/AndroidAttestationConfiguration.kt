@@ -1491,6 +1491,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 }
 
 /**
- * Leniently (ignore case, and whitespace) parse hex to bytes
+ * Leniently (ignore case, whitespace, and `:`) parse hex to bytes
  */
-fun String.parseHex(): ByteArray = this.filterNot { it.isWhitespace() }.lowercase().hexToByteArray(HexFormat.Default)
+fun String.parseHex(): ByteArray =
+    this.filterNot { it.isWhitespace() }.filterNot { it != ':' }.lowercase().hexToByteArray(HexFormat.Default)

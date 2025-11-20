@@ -5,6 +5,8 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 ## 1.0.0-SNAPSHOT
+* More proper exception handling
+* More lenient hex parsing: also filter out `:` in addition to whitespaces
 
 ## 0.9.999
 * Quality of life improvements:
