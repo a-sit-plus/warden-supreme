@@ -8,6 +8,7 @@ this changelog also includes the original WARDEN changelog.
 * More proper exception handling
 * More lenient hex parsing: also filter out `:` in addition to whitespaces
 * Add direct link to file bug for logical error
+* Catch more exceptions and gracefully return errors
 
 ## 0.9.999
 * Quality of life improvements:

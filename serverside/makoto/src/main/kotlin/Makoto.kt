@@ -399,7 +399,6 @@ class Makoto(
                 }
             }
 
-            //Signum will remove IosLegacyHomebrewAttestation in new version
             else -> KeyAttestation(
                 null,
                 AttestationResult.Error("${attestationProof::class.simpleName} is unsupported")

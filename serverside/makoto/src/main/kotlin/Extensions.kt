@@ -2,8 +2,9 @@
 
 package at.asitplus.attestation
 
+import at.asitplus.KmmResult
+import at.asitplus.catching
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import kotlinx.serialization.KSerializer
@@ -14,7 +15,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.bouncycastle.util.encoders.Base64
 import org.bouncycastle.util.encoders.UrlBase64
-import org.bouncycastle.util.encoders.UrlBase64Encoder
 import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.cert.CertificateFactory
@@ -47,7 +47,7 @@ data class AttestationObject(
     )
 }
 
-internal fun PublicKey.transcodeToAllFormats() = toCryptoPublicKey().getOrThrow().let {
+internal fun PublicKey.transcodeToAllFormats() = toCryptoPublicKey().map {
     when (it) {
         is CryptoPublicKey.EC -> listOf(
             it.encodeToDer(),

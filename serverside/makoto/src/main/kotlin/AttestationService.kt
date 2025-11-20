@@ -3,9 +3,11 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.AttestationException
-import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.*
+import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
+import at.asitplus.signum.indispensable.Attestation
+import at.asitplus.signum.indispensable.IosHomebrewAttestation
+import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import com.google.android.attestation.AttestationApplicationId
@@ -57,14 +59,18 @@ abstract class AttestationService {
      */
     @Deprecated(
         "This uses the legacy attestation format, which is not future-proof, makes too few guarantees wrt. encoding, " +
-                "guesses the platform based on the number of elements in the attestation proof, etc.",
-        ReplaceWith("AttestationService.verifyAttestation(attestationProof, challenge)")
+                "guesses the platform based on the number of elements in the attestation proof, etc. Replace with `verifyKeyAttestation` taking a Supreme `Attestation` instead of individual components."
     )
     fun <T : PublicKey> verifyKeyAttestation(
         attestationProof: List<ByteArray>,
         expectedChallenge: ByteArray,
         keyToBeAttested: T
-    ): KeyAttestation<T> = keyToBeAttested.transcodeToAllFormats().let { transcended ->
+    ): KeyAttestation<T> = keyToBeAttested.transcodeToAllFormats().getOrElse {
+        return KeyAttestation(
+            null,
+            AttestationResult.Error("Could not transcode public key ${keyToBeAttested.encoded.encodeBase64()}")
+        )
+    }.let { transcended ->
         // try all different key encodings
         // not the most efficient way, but doing it like this won't involve any guesswork at all
         transcended.forEachIndexed { i, it ->
@@ -92,38 +98,33 @@ abstract class AttestationService {
         throw logicalError(keyToBeAttested, attestationProof, expectedChallenge)
     }
 
-
-    private fun <T : PublicKey> processAndroidAttestationResult(
-        keyToBeAttested: T,
-        firstTry: AttestationResult.Android
-    ): KeyAttestation<T> =
-        if (keyToBeAttested.toCryptoPublicKey() == firstTry.attestationCertificate.publicKey.toCryptoPublicKey()) {
-            KeyAttestation(keyToBeAttested, firstTry)
-        } else {
-            val reason = "Android attestation failed: keyToBeAttested (${keyToBeAttested.toLogString()}) does not " +
-                    "match key from attestation certificate: ${firstTry.attestationCertificate.publicKey.toLogString()}"
-            AttException.Content.Android(
-                reason, AttestationValueException(reason, null, AttestationValueException.Reason.APP_UNEXPECTED,
-                    expectedValue =keyToBeAttested.toCryptoPublicKey(),
-                    actualValue = firstTry.attestationCertificate.publicKey.toCryptoPublicKey())
-            ).toAttestationError(reason)
-        }
-
     private fun <T : PublicKey> T.toLogString(): String? = encoded.encodeBase64()
 
     private fun <T : PublicKey> AttestationException.Content.toAttestationError(it: String): KeyAttestation<T> =
         KeyAttestation(null, AttestationResult.Error(it, this))
 
 
-    /** Same as [verifyKeyAttestation], but taking an encoded (either ANSI X9.63 or DER) publix key as a byte array
-     * @see verifyKeyAttestation
+    /** Same as the other `verifyKeyAttestation`, but taking an encoded (either ANSI X9.63 or DER) public key as a byte array
+     *
      */
+    @Deprecated(
+        "This uses the legacy attestation format, which is not future-proof, makes too few guarantees wrt. encoding, " +
+                "guesses the platform based on the number of elements in the attestation proof, etc. Replace with `verifyKeyAttestation` taking an `Attestation` instead of individual components."
+    )
     fun verifyKeyAttestation(
         attestationProof: List<ByteArray>,
         challenge: ByteArray,
         encodedPublicKey: ByteArray
     ): KeyAttestation<PublicKey> =
-        verifyKeyAttestation(attestationProof, challenge, encodedPublicKey.parseToPublicKey())
+        verifyKeyAttestation(
+            attestationProof,
+            challenge,
+            catchingUnwrapped { encodedPublicKey.parseToPublicKey() }.getOrElse {
+                return KeyAttestation(
+                    null,
+                    AttestationResult.Error("Could not parse public key ${encodedPublicKey.encodeBase64()}")
+                )
+            })
 
     /**
      * Groups iOS-specific API to reduce toplevel clutter.
@@ -247,7 +248,8 @@ sealed class AttestationResult {
             }
         }
 
-        class Verified(attestationCertificateChain: List<X509Certificate>) : Android(attestationCertificateChain), AttestationResult.Verified {
+        class Verified(attestationCertificateChain: List<X509Certificate>) : Android(attestationCertificateChain),
+            AttestationResult.Verified {
 
             override val attestationRecord: ParsedAttestationRecord =
                 ParsedAttestationRecord.createParsedAttestationRecord(
