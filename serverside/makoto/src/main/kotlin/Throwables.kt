@@ -4,7 +4,6 @@ package at.asitplus.attestation
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
-import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import java.security.PublicKey
 import java.security.cert.CertPathValidatorException
 import kotlin.time.Clock
@@ -196,7 +195,7 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
 
         if (platform != other.platform) return false
 
-        if(platformSpecificCause:: class != other.platformSpecificCause::class) return false
+        if (platformSpecificCause::class != other.platformSpecificCause::class) return false
 
         if (platformSpecificCause is CertPathValidatorException) {
             val own = platformSpecificCause as CertPathValidatorException
@@ -277,7 +276,11 @@ internal fun <T : PublicKey> logicalError(
     expectedChallenge: ByteArray
 ) = RuntimeException(
     "Logical Error attesting key ${
-    keyToBeAttested.encoded.encodeBase64()
-} for attestation proof ${
-    attestationProof.joinToString { it.encodeBase64() }
-} with challenge ${expectedChallenge.encodeBase64()} at ${Clock.System.now()}")
+        keyToBeAttested.encoded.encodeBase64()
+    } for attestation proof ${
+        attestationProof.joinToString { it.encodeBase64() }
+    } with challenge ${expectedChallenge.encodeBase64()} at ${Clock.System.now()}. Please file an issue and attach the attestation proof: " +
+            "https://github.com/a-sit-plus/warden-supreme/issues/new" +
+            "?title=Logical%20Error%20attesting%20key" +
+            "&body=Key%20bytes%20%60${keyToBeAttested.encoded.encodeBase64Url()}%60%0A%0A%60%60%60%0Aattestation%20proof%20to%20be%20pasted%20here%0A%60%60%60"
+)

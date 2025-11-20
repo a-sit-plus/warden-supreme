@@ -3,6 +3,7 @@
 package at.asitplus.attestation
 
 import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import kotlinx.serialization.KSerializer
@@ -12,6 +13,8 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.bouncycastle.util.encoders.Base64
+import org.bouncycastle.util.encoders.UrlBase64
+import org.bouncycastle.util.encoders.UrlBase64Encoder
 import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.cert.CertificateFactory
@@ -62,8 +65,10 @@ internal fun PublicKey.transcodeToAllFormats() = toCryptoPublicKey().getOrThrow(
 }
 
 internal fun String.decodeBase64ToArray() = Base64.decode(this)
+internal fun String.decodeBase64UrlToArray() = UrlBase64.decode(this)
 
 internal fun ByteArray.encodeBase64() = Base64.toBase64String(this)
+internal fun ByteArray.encodeBase64Url() = UrlBase64.encode(this).decodeToString()
 
 internal fun Clock.toJavaClock(): java.time.Clock =
     object : java.time.Clock() {
@@ -80,7 +85,7 @@ internal fun Clock.toJavaClock(): java.time.Clock =
 
 internal fun kotlin.time.Instant.toJavaDate() = Date.from(toJavaInstant())
 
-fun ByteArray.parseToPublicKey(): PublicKey =
+internal fun ByteArray.parseToPublicKey(): PublicKey =
     try {
         CryptoPublicKey.decodeFromDer(this).toJcaPublicKey().getOrThrow()
     } catch (e: Throwable) {
