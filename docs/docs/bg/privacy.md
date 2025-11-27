@@ -127,7 +127,7 @@ labels such as
 
 * Device and integrity tiers (locked boot-loader on OEM-certified firmware; higher tiers additionally demand recent
   patch levels)
-* App Integrity (whether Google recognizes the exact APK/IPA that is installed)
+* App Integrity (whether Google recognizes the exact APK that is installed)
 * Account or licensing context (ties the verdict to the signed-in Play account)
 * Optional environment signals (for example, Play Protect status, screen-overlay risk, device-recall flags)
 
