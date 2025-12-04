@@ -1,9 +1,11 @@
 package at.asitplus.attestation
 
+import at.asitplus.signum.HazardousMaterials
 import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.types.shouldBeInstanceOf
 
+@OptIn(HazardousMaterials::class)
 val NoopAttestationServiceTest by testSuite {
 
     "TestNOOP" {

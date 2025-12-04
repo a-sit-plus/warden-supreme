@@ -731,15 +731,20 @@ class Makoto(
                     )
                 }
             }
-        } else if (it is AttestationException) {
-            it
-        } else AttestationException.Content.iOS(
-            cause = IosAttestationException(
-                cause = it,
-                reason = IosAttestationException.Reason.APP_UNEXPECTED
+        } else it as? AttestationException
+            ?: AttestationException.Content.iOS(
+                cause = IosAttestationException(
+                    cause = it,
+                    reason = IosAttestationException.Reason.APP_UNEXPECTED
+                )
             )
-        )
     }
+
+    inline fun <T : PublicKey, R> KeyAttestation<T>.foldTyped(
+        onError: (AttestationResult.Error) -> R,
+        onSuccess: (T, AttestationResult.Verified) -> R
+    ): R = if (isSuccess) onSuccess(attestedPublicKey!!, details as AttestationResult.Verified)
+    else onError(details as AttestationResult.Error)
 
     companion object {
         /**
