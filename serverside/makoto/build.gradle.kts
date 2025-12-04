@@ -2,6 +2,7 @@ import at.asitplus.gradle.bouncycastle
 import at.asitplus.gradle.datetime
 import at.asitplus.gradle.setupDokka
 import org.gradle.kotlin.dsl.kotlin
+import java.util.Properties
 
 plugins {
     kotlin("jvm")
@@ -48,6 +49,17 @@ val javadocJar = setupDokka(
 val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
     from(sourceSets.main.get().allSource)
+}
+
+
+
+File("${project.layout.projectDirectory.dir("src")}/main/kotlin/wardenVersion.kt").writer().apply {
+    write(
+"""
+package at.asitplus.attestation
+
+internal val wardenVersion: String = """" + "$version\"\n")
+    close()
 }
 
 
