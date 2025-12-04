@@ -22,6 +22,7 @@ import java.util.*
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaInstant
+import kotlin.time.toKotlinInstant
 
 
 private val ecKeyFactory = KeyFactory.getInstance("EC")
@@ -99,7 +100,7 @@ private fun ByteArray.ensureSize(size: Int): ByteArray = when {
 // taken from https://github.com/Kotlin/kotlinx-datetime/pull/249/
 fun java.time.Clock.toKotlinClock(): Clock = let {
     object : Clock {
-        override fun now(): kotlin.time.Instant = it.toKotlinClock().now()
+        override fun now(): kotlin.time.Instant = instant().toKotlinInstant()
     }
 }
 
