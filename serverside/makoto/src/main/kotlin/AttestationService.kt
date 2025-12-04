@@ -3,14 +3,15 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.AttestationException
-import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.*
+import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
+import at.asitplus.signum.indispensable.Attestation
+import at.asitplus.signum.indispensable.IosHomebrewAttestation
+import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import com.google.android.attestation.AttestationApplicationId
 import com.google.android.attestation.ParsedAttestationRecord
-import org.slf4j.LoggerFactory
 import java.security.PublicKey
 import java.security.cert.X509Certificate
 import kotlin.jvm.optionals.getOrNull
@@ -25,7 +26,6 @@ abstract class AttestationService {
         challenge: ByteArray,
         clientData: ByteArray? = null
     ): AttestationResult
-
 
     abstract fun verifyKeyAttestation(attestationProof: Attestation, challenge: ByteArray): KeyAttestation<PublicKey>
 
@@ -91,23 +91,6 @@ abstract class AttestationService {
         //can never be reached
         throw logicalError(keyToBeAttested, attestationProof, expectedChallenge)
     }
-
-
-    private fun <T : PublicKey> processAndroidAttestationResult(
-        keyToBeAttested: T,
-        firstTry: AttestationResult.Android
-    ): KeyAttestation<T> =
-        if (keyToBeAttested.toCryptoPublicKey() == firstTry.attestationCertificate.publicKey.toCryptoPublicKey()) {
-            KeyAttestation(keyToBeAttested, firstTry)
-        } else {
-            val reason = "Android attestation failed: keyToBeAttested (${keyToBeAttested.toLogString()}) does not " +
-                    "match key from attestation certificate: ${firstTry.attestationCertificate.publicKey.toLogString()}"
-            AttException.Content.Android(
-                reason, AttestationValueException(reason, null, AttestationValueException.Reason.APP_UNEXPECTED,
-                    expectedValue =keyToBeAttested.toCryptoPublicKey(),
-                    actualValue = firstTry.attestationCertificate.publicKey.toCryptoPublicKey())
-            ).toAttestationError(reason)
-        }
 
     private fun <T : PublicKey> T.toLogString(): String? = encoded.encodeBase64()
 
@@ -219,7 +202,11 @@ sealed class AttestationResult {
 
     protected abstract val details: String
 
-    sealed interface Verified
+    sealed interface Kind
+    sealed interface Verified : Kind
+
+    @DisabledAttestation
+    sealed interface NOOP : Kind
 
     /**
      * Successful Android Key Attestation result. [attestationCertificateChain] contains the attested certificate.
@@ -237,8 +224,9 @@ sealed class AttestationResult {
 
         val attestationCertificate by lazy { attestationCertificateChain.first() }
 
-        internal class NOOP internal constructor(attestationCertificateChain: List<ByteArray>) :
-            Android(attestationCertificateChain.mapNotNull { it.parseToCertificate() }) {
+        @DisabledAttestation
+        class NOOP internal constructor(attestationCertificateChain: List<ByteArray>) :
+            Android(attestationCertificateChain.mapNotNull { it.parseToCertificate() }), AttestationResult.NOOP {
             override val androidDetails = "NOOP"
             override val attestationRecord: ParsedAttestationRecord by lazy {
                 ParsedAttestationRecord.createParsedAttestationRecord(
@@ -247,7 +235,8 @@ sealed class AttestationResult {
             }
         }
 
-        class Verified(attestationCertificateChain: List<X509Certificate>) : Android(attestationCertificateChain), AttestationResult.Verified {
+        class Verified(attestationCertificateChain: List<X509Certificate>) : Android(attestationCertificateChain),
+            AttestationResult.Verified {
 
             override val attestationRecord: ParsedAttestationRecord =
                 ParsedAttestationRecord.createParsedAttestationRecord(
@@ -311,7 +300,8 @@ sealed class AttestationResult {
                         "iOS version: (semVer=${iosVersion.first}, buildNumber=[${iosVersion.second}]), app: ${attestation.receipt.payload.appId}"
         }
 
-        class NOOP(clientData: ByteArray?) : IOS(clientData) {
+        @DisabledAttestation
+        class NOOP(clientData: ByteArray?) : IOS(clientData), AttestationResult.NOOP {
             override val iosDetails = "NOOP"
         }
 
@@ -378,12 +368,10 @@ data class KeyAttestation<T : PublicKey> internal constructor(
     @Suppress("UNUSED")
     inline fun <R> fold(
         onError: (AttestationResult.Error) -> R,
-        onSuccess: (T, AttestationResult.Verified) -> R
-    ): R =
-        if (isSuccess) onSuccess(attestedPublicKey!!, details as AttestationResult.Verified)
-        else {
-            onError(details as AttestationResult.Error)
-        }
+        onSuccess: (T, AttestationResult.Verified?) -> R
+    ): R = if (isSuccess) onSuccess(attestedPublicKey!!, details as? AttestationResult.Verified)
+    else onError(details as AttestationResult.Error)
+
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -411,9 +399,9 @@ data class KeyAttestation<T : PublicKey> internal constructor(
  * Do not use in production!
  */
 
+@DisabledAttestation
 object NoopAttestationService : AttestationService() {
 
-    private val log = LoggerFactory.getLogger(this.javaClass)
     override fun verifyAttestation(
         attestationProof: List<ByteArray>,
         challenge: ByteArray,
@@ -421,6 +409,14 @@ object NoopAttestationService : AttestationService() {
     ): AttestationResult =
         if (attestationProof.size > 2) AttestationResult.Android.NOOP(attestationProof)
         else AttestationResult.IOS.NOOP(clientData)
+
+    @DisabledAttestation
+    inline fun <T : PublicKey, R> KeyAttestation<T>.foldTyped(
+        onError: (AttestationResult.Error) -> R,
+        onSuccess: (T, AttestationResult.NOOP) -> R
+    ): R = if (isSuccess) onSuccess(attestedPublicKey!!, details as AttestationResult.NOOP)
+    else onError(details as AttestationResult.Error)
+
 
     override fun verifyKeyAttestation(attestationProof: Attestation, challenge: ByteArray): KeyAttestation<PublicKey> =
         when (attestationProof) {
@@ -454,4 +450,9 @@ object NoopAttestationService : AttestationService() {
     override val android: Android
         get() = TODO("Not yet implemented")
 }
+
+@RequiresOptIn(message = "Access to disabled attestation. ALL BETS ARE OFF! NO AUTH GUARANTEES WHATSOEVER!")
+/** This is dangerous. It is exposed if you know what you are doing. Never user in production, only for testing*/
+@Repeatable
+annotation class DisabledAttestation(val message: String = "")
 
