@@ -4,6 +4,7 @@ import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.types.shouldBeInstanceOf
 
+@OptIn(DisabledAttestation::class)
 val NoopAttestationServiceTest by testSuite {
 
     "TestNOOP" {
