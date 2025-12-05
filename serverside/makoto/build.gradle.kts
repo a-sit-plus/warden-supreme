@@ -2,6 +2,8 @@ import at.asitplus.gradle.bouncycastle
 import at.asitplus.gradle.datetime
 import at.asitplus.gradle.setupDokka
 import org.gradle.kotlin.dsl.kotlin
+import java.nio.file.Files
+import java.util.Properties
 
 plugins {
     kotlin("jvm")
@@ -18,10 +20,26 @@ val groupId: String by extra
 group = groupId
 version = artifactVersion
 
+
 sourceSets.test {
     kotlin {
         srcDir("../roboto/src/test/kotlin/data")
     }
+}
+
+val generatedSrcDir = "${project.layout.projectDirectory.dir("src")}/generated/kotlin"
+sourceSets.main {
+    kotlin.srcDir(generatedSrcDir)
+}
+File(generatedSrcDir).mkdirs()
+File("$generatedSrcDir/wardenVersion.kt").writer().apply {
+
+    write(
+        """
+package at.asitplus.attestation
+
+internal val wardenVersion: String = """" + "$version\"\n")
+    close()
 }
 
 dependencies {

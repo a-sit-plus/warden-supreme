@@ -8,6 +8,7 @@ this changelog also includes the original WARDEN changelog.
 * Fix infinite recursion on clock conversion
 * Integration tests with default validity periods
 * Fix wrong offset sign with secondary constructor
+* Versioned debug statements
 
 ## 0.9.999
 * Quality of life improvements:

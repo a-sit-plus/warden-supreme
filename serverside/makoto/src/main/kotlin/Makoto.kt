@@ -218,7 +218,8 @@ class Makoto(
         challenge = challenge,
         clientData = clientData,
         verificationTime = clock.now(),
-        verificationTimeOffset = verificationTimeOffset
+        verificationTimeOffset = verificationTimeOffset,
+        version = Makoto.version
     )
 
 
@@ -244,7 +245,8 @@ class Makoto(
         challenge = challenge,
         clientData = publicKey.encoded,
         verificationTime = clock.now(),
-        verificationTimeOffset = verificationTimeOffset
+        verificationTimeOffset = verificationTimeOffset,
+        version = Makoto.version
     )
 
     /**
@@ -269,7 +271,8 @@ class Makoto(
         challenge = challenge,
         clientData = rawPublicKey,
         verificationTime = clock.now(),
-        verificationTimeOffset = verificationTimeOffset
+        verificationTimeOffset = verificationTimeOffset,
+        version = Makoto.version
     )
 
     /**
@@ -291,7 +294,8 @@ class Makoto(
         keyAttestation = attestationProof,
         challenge = challenge,
         verificationTime = clock.now(),
-        verificationTimeOffset = verificationTimeOffset
+        verificationTimeOffset = verificationTimeOffset,
+        version = Makoto.version
     )
 
     override fun verifyAttestation(
@@ -754,6 +758,11 @@ class Makoto(
         fun shortestDuration(firstInSeconds: Long, secondInSeconds: Long?): Duration =
             if (secondInSeconds == null) firstInSeconds.seconds
             else min(secondInSeconds, firstInSeconds).seconds
+
+        /**
+         * Version String of the current Warden Supreme release
+         */
+        val version: String = wardenVersion
     }
 
 }
