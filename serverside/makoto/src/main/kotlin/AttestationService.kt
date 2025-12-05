@@ -453,6 +453,5 @@ object NoopAttestationService : AttestationService() {
 
 @RequiresOptIn(message = "Access to disabled attestation. ALL BETS ARE OFF! NO AUTH GUARANTEES WHATSOEVER!")
 /** This is dangerous. It is exposed if you know what you are doing. Never use in production, only for testing*/
-@Repeatable
-annotation class DisabledAttestation(val message: String = "")
+annotation class DisabledAttestation()
 
