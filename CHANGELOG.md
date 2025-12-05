@@ -14,7 +14,7 @@ this changelog also includes the original WARDEN changelog.
     * NoopAttestationService produces `AttestationResult.NOOP`
     * `KeyAttestation.fold` now produces a nullable `AttestationResult.Verified` on success to acccount for NOOP results
     * Makoto and NoopAttestationService bring their own `foldTyped` extenstion (which sadly cannot override a common abstract extension, because they need to be inline)
-* make `makoto` property of AttestationVerifier public
+* Make `makoto` property of `AttestationVerifier` public
 * Versioned debug statements
 
 ## 0.9.999
