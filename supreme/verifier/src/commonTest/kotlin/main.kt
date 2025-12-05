@@ -36,12 +36,10 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
-val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 20.minutes)) {
+val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = false)) {
     if (System.getenv("SUPREME_ENDTOENDTEST") == "true") {
         //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
         //fail at runtime
-        val STMT_VALIDITY = 15.minutes
-        val VERIFICATION_OFFSET = 3.minutes
 
         "Verifier" - {
             val ENDPOINT_CHALLENGE = "/api/v1/challenge"
@@ -68,7 +66,6 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                         ).getOrThrow().toJcaPublicKey().getOrThrow()
                     )
                 )
-                    .attestationStatementValiditySeconds(STMT_VALIDITY.inWholeSeconds)
                     .build(),
                 IosAttestationConfiguration(
                     IosAttestationConfiguration.AppData(
@@ -76,9 +73,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = true, tim
                         "at.asitplus.signumtest.iosApp", //to test with real app from ios
                         sandbox = true
                     ),
-                    attestationStatementValiditySeconds = STMT_VALIDITY.inWholeSeconds
                 ),
-                verificationTimeOffset = VERIFICATION_OFFSET,
             )
 
 

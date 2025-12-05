@@ -20,7 +20,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Compile
-        run: ./gradlew :supreme-client:pixelAVDSetup :supreme-verifier:jvmTestClasses
+        run: ./gradlew :supreme-client:createAndroidDeviceTestApkListingFileRedirect :supreme-verifier:jvmTestClasses
       - name: Start Verifier
         run: SUPREME_ENDTOENDTEST=true TESTBALLOON_INCLUDE_PATTERNS=at.asitplus.attestation.supreme.TestEnv* ./gradlew :supreme-verifier:jvmTest &
       - name: Start Client Check
