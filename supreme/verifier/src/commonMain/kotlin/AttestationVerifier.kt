@@ -86,7 +86,7 @@ class AttestationVerifier(
             androidAttestationConfiguration.attestationStatementValiditySeconds
         ),
         nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
-        challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock, verificationTimeOffset)
+        challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock, -verificationTimeOffset)
     ) : this(
         Makoto(androidAttestationConfiguration, iosAttestationConfiguration, clock, verificationTimeOffset),
         attestationProofOID,
@@ -370,6 +370,7 @@ class InMemoryChallengeCache(private val clock: Clock, private val offset: Durat
             this === other || (other is NonceKey && bytes.contentEquals(other.bytes))
 
         override fun hashCode(): Int = bytes.contentHashCode()
+        override fun toString(): String = bytes.toHexString()
     }
 
     private val challengesByNonce = mutableMapOf<NonceKey, AttestationChallenge>()
