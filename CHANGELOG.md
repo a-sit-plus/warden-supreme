@@ -6,6 +6,7 @@ this changelog also includes the original WARDEN changelog.
 
 ## 1.0.0-SNAPSHOT
 * Fix infinite recursion on clock conversion
+* Integration tests with default validity periods
 
 ## 0.9.999
 * Quality of life improvements:
