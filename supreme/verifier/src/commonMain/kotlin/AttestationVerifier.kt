@@ -1,8 +1,10 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.KmmResult
 import at.asitplus.attestation.*
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.supreme.AttestationResponse.Failure
+import at.asitplus.attestation.supreme.AttestationResponse.Failure.Type
 import at.asitplus.attestation.supreme.PreAttestationError.ChallengeVerification
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
@@ -13,6 +15,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import org.kotlincrypto.random.CryptoRand
+import java.security.Signature
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -50,7 +53,7 @@ class AttestationVerifier(
     private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
         makoto.clock,
         -makoto.verificationTimeOffset
-    )
+    ),
 ) {
     /**
      *
@@ -86,7 +89,7 @@ class AttestationVerifier(
             androidAttestationConfiguration.attestationStatementValiditySeconds
         ),
         nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
-        challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock, verificationTimeOffset)
+        challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock, verificationTimeOffset),
     ) : this(
         Makoto(androidAttestationConfiguration, iosAttestationConfiguration, clock, verificationTimeOffset),
         attestationProofOID,
@@ -119,7 +122,7 @@ class AttestationVerifier(
     suspend fun issueChallenge(
         postEndpoint: String,
         timeZone: TimeZone? = null,
-        keyConstraints: KeyConstraints? = defaultKeyConstraints
+        keyConstraints: KeyConstraints? = defaultKeyConstraints,
     ) = AttestationChallenge(
         issuedAt = makoto.clock.now() - makoto.verificationTimeOffset,
         nonceValidity,
@@ -181,112 +184,105 @@ class AttestationVerifier(
         certificateIssuer: CertificateIssuer,
     ): AttestationResponse {
         val nonce = csr.tbsCsr.challenge.getOrElse {
-            val explanation =
-                catchingUnwrapped { PreAttestationError.ChallengeExtraction(it).onPreAttestationError() }.getOrNull()
-            return Failure(Failure.Type.CONTENT, explanation)
+            return Failure(Type.CONTENT, it.challengeReason(onPreAttestationError))
         }
 
         when (val challengeValidationResult = challengeValidator.validate(nonce)) {
-            is ChallengeValidationResult.Failure -> {
-                val explanation = catchingUnwrapped {
-                    ChallengeVerification(
-                        challengeValidationResult.reason,
-                        nonce
-                    ).onPreAttestationError()
-                }.getOrNull()
-                return Failure(
-                    Failure.Type.CONTENT,
-                    explanation
-                )
-            }
+            is ChallengeValidationResult.Failure ->
+                return Failure(Type.CONTENT, challengeValidationResult.reason(nonce, onPreAttestationError))
 
             is ChallengeValidationResult.Success -> {} //for now, we don't care for the issued challenge
             //but we may in teh future, e.g. to check whether Key Constraints are actually fulfilled.
         }
 
-        val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID)
-            .getOrElse {
-                val explanation = catchingUnwrapped {
-                    PreAttestationError.AttestationStatementExtraction(it, csr).onPreAttestationError()
-                }.getOrNull()
-                return Failure(
-                    Failure.Type.CONTENT,
-                    explanation
-                )
-            }
+        val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID).getOrElse {
+            return Failure(Type.CONTENT, it.extractionReason(csr, onPreAttestationError))
+        }
 
-        val result = makoto.verifyKeyAttestation(attestationStatement, nonce)
         with(makoto) {
-            return result.foldTyped(
+            return verifyKeyAttestation(attestationStatement, nonce).foldTyped(
                 onError = {
-                    val explanation = catchingUnwrapped {
-                        it.onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
-                    }.getOrNull()
+                    val explanation = it.extractReason(onAttestationError, attestationStatement, nonce)
                     when (it.cause) {
-                        null, is AttestationException.Content -> Failure(Failure.Type.CONTENT, explanation)
-                        is AttestationException.Certificate.Time -> Failure(Failure.Type.TIME, explanation)
-                        is AttestationException.Certificate.Trust -> Failure(Failure.Type.TRUST, explanation)
-                        is AttestationException.Configuration -> Failure(Failure.Type.INTERNAL, explanation)
+                        null, is AttestationException.Content -> Failure(Type.CONTENT, explanation)
+                        is AttestationException.Certificate.Time -> Failure(Type.TIME, explanation)
+                        is AttestationException.Certificate.Trust -> Failure(Type.TRUST, explanation)
+                        is AttestationException.Configuration -> Failure(Type.INTERNAL, explanation)
                     }
                 },
                 onSuccess = { pubKey, details ->
-                    val signature =
-                        (csr.signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance().getOrElse {
-                            //TODO: is this internal?
-                            val explanation = catchingUnwrapped {
-                                PreAttestationError.OperationalError(it).onPreAttestationError()
-                            }.getOrNull()
-                            return Failure(
-                                Failure.Type.INTERNAL,
-                                explanation
-                            )
-                        }
-
                     catchingUnwrapped {
-                        signature.initVerify(pubKey)
-                        if (signature.verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)) {
-                            val explanation = catchingUnwrapped {
-                                AttestationResult.Error("CSR signature verification failed")
-                                    .onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
-                            }.getOrNull()
-                            return Failure(
-                                Failure.Type.TRUST,
-                                explanation
-                            )
+                        csr.jcaSignature().getOrThrow().apply {
+                            initVerify(pubKey)
+                            if (verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)) {
+                                return Failure(Type.TRUST, csrReason(onAttestationError, attestationStatement, nonce))
+                            }
                         }
                     }.onFailure {
-                        val explanation = catchingUnwrapped {
-                            PreAttestationError.OperationalError(it).onPreAttestationError()
-                        }.getOrNull()
-                        return Failure(
-                            Failure.Type.INTERNAL,
-                            explanation
-                        )
+                        return Failure(Type.INTERNAL, it.operationalReason(onPreAttestationError))
                     }
 
                     catchingUnwrapped { details.certificateIssuer(csr) }.fold(
                         onSuccess = {
                             catchingUnwrapped {
-                                details.onAttestationSuccess(
-                                    pubKey.toCryptoPublicKey().getOrThrow()/*TODO*/
-                                )
+                                details.onAttestationSuccess(pubKey.toCryptoPublicKey().getOrThrow()/*TODO*/)
                             }
                             AttestationResponse.Success(it)
                         },
                         onFailure = {
-                            val explanation = catchingUnwrapped {
-                                PreAttestationError.OperationalError(it).onPreAttestationError()
-                            }.getOrNull()
-                            Failure(
-                                Failure.Type.INTERNAL,
-                                explanation
-                            )
+                            Failure(Type.INTERNAL, it.operationalReason(onPreAttestationError))
                         }
                     )
                 }
             )
         }
     }
+
+    private fun Pkcs10CertificationRequest.jcaSignature(): KmmResult<Signature> =
+        (signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance()
+
+    private fun csrReason(
+        onAttestationError: AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
+        attestationStatement: Attestation,
+        nonce: ByteArray,
+    ): String? = catchingUnwrapped {
+        AttestationResult.Error("CSR signature verification failed")
+            .onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
+    }.getOrNull()
+
+    private fun Throwable.operationalReason(
+        onPreAttestationError: PreAttestationError.() -> String?,
+    ): String? = catchingUnwrapped {
+        PreAttestationError.OperationalError(this).onPreAttestationError()
+    }.getOrNull()
+
+    private fun AttestationResult.Error.extractReason(
+        onAttestationError: AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
+        attestationStatement: Attestation,
+        nonce: ByteArray,
+    ): String? = catchingUnwrapped {
+        onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
+    }.getOrNull()
+
+    private fun Throwable.challengeReason(
+        onPreAttestationError: PreAttestationError.() -> String?,
+    ): String? = catchingUnwrapped {
+        PreAttestationError.ChallengeExtraction(this).onPreAttestationError()
+    }.getOrNull()
+
+    private fun ChallengeValidationResult.Failure.reason(
+        nonce: ByteArray,
+        onPreAttestationError: PreAttestationError.() -> String?,
+    ): String? = catchingUnwrapped {
+        ChallengeVerification(reason, nonce).onPreAttestationError()
+    }.getOrNull()
+
+    private fun Throwable.extractionReason(
+        csr: Pkcs10CertificationRequest,
+        onPreAttestationError: PreAttestationError.() -> String?,
+    ): String? = catchingUnwrapped {
+        PreAttestationError.AttestationStatementExtraction(this, csr).onPreAttestationError()
+    }.getOrNull()
 }
 
 /**
@@ -339,7 +335,7 @@ sealed class PreAttestationError {
     class ChallengeExtraction(override val throwable: Throwable) : PreAttestationError()
     class ChallengeVerification(
         override val throwable: Throwable?,
-        val receivedChallenge: ByteArray
+        val receivedChallenge: ByteArray,
     ) : PreAttestationError()
 
     class AttestationStatementExtraction(override val throwable: Throwable, val csr: Pkcs10CertificationRequest) :
