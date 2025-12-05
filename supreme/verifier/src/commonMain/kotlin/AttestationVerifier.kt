@@ -220,12 +220,7 @@ class AttestationVerifier(
             return result.foldTyped(
                 onError = {
                     val explanation = catchingUnwrapped {
-                        it.onAttestationError(
-                            makoto.collectDebugInfo(
-                                attestationStatement,
-                                nonce
-                            )
-                        )
+                        it.onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
                     }.getOrNull()
                     when (it.cause) {
                         null, is AttestationException.Content -> Failure(Failure.Type.CONTENT, explanation)
