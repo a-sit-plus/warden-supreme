@@ -9,3 +9,5 @@ local.properties
 /docs/.cache/
 /docs/docs/samples/
 /docs/docs/schemas/
+/serverside/makoto/src/main/kotlin/wardenVersion.kt
+/serverside/makoto/src/generated/
