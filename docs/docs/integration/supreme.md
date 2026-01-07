@@ -207,7 +207,7 @@ to create a hardware-backed P-256 key.
 
 ??? example "Comprehensive list of Verifier options"
     ```kotlin
-    --8<-- "Readme-Verifier.kt:25"
+    --8<-- "Readme-Verifier.kt:20"
     ```
     
     1. We want Warden Supreme to convey the attestation proof inside the CSR using a custom OID.
