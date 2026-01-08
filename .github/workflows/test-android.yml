@@ -14,6 +14,8 @@ jobs:
           java-version: '17'
       - name: Accept Android SDK licences
         run: yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses
+      - name: install sdk 30
+        run: ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install  platform-tools "platforms;android-30" "build-tools;30.0.0" "system-images;android-30;default;x86_64"
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules

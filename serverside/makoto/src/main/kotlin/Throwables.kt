@@ -4,7 +4,6 @@ package at.asitplus.attestation
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
-import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import java.security.PublicKey
 import java.security.cert.CertPathValidatorException
 import kotlin.time.Clock
@@ -76,16 +75,13 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
      *
      *
      */
-    open class Content private constructor(platform: Platform, message: String?, cause: Throwable) :
+    sealed class Content(platform: Platform, message: String?, cause: Throwable) :
         AttestationException(platform, message = message, cause = cause) {
-        companion object {
-            fun Android(message: String? = null, cause: AttestationValueException) =
-                Content(Platform.ANDROID, message, cause)
+            class Android(message: String? = null, override val cause: AttestationValueException) :Content(Platform.ANDROID, message, cause)
 
-            fun iOS(message: String? = null, cause: IosAttestationException) = Content(Platform.IOS, message, cause)
+            class iOS(message: String? = null, override val cause: IosAttestationException) :Content(Platform.IOS, message, cause)
 
-            fun Unknown(message: String? = null, cause: Throwable) = Content(Platform.UNKNOWN, message, cause)
-        }
+            class Unknown(message: String? = null, cause: Throwable): Content(Platform.UNKNOWN, message, cause)
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -196,7 +192,7 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
 
         if (platform != other.platform) return false
 
-        if(platformSpecificCause:: class != other.platformSpecificCause::class) return false
+        if (platformSpecificCause::class != other.platformSpecificCause::class) return false
 
         if (platformSpecificCause is CertPathValidatorException) {
             val own = platformSpecificCause as CertPathValidatorException
@@ -206,9 +202,10 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
             if (own.index != other.index) return false
             return true
         }
-        if (platformSpecificCause != other.platformSpecificCause) return false
 
-        return true
+        return if (this is Configuration)
+            (platformSpecificCause.message == other.platformSpecificCause.message)
+        else (platformSpecificCause == other.platformSpecificCause)
     }
 
     override fun hashCode(): Int {
@@ -277,7 +274,7 @@ internal fun <T : PublicKey> logicalError(
     expectedChallenge: ByteArray
 ) = RuntimeException(
     "Logical Error attesting key ${
-    keyToBeAttested.encoded.encodeBase64()
-} for attestation proof ${
-    attestationProof.joinToString { it.encodeBase64() }
-} with challenge ${expectedChallenge.encodeBase64()} at ${Clock.System.now()}")
+        keyToBeAttested.encoded.encodeBase64()
+    } for attestation proof ${
+        attestationProof.joinToString { it.encodeBase64() }
+    } with challenge ${expectedChallenge.encodeBase64()} at ${Clock.System.now()}")

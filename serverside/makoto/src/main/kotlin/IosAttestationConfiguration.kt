@@ -1,14 +1,23 @@
 package at.asitplus.attestation
 
+import at.asitplus.attestation.IosAttestationConfiguration.Companion.DEFAULT_VALIDITY_SECONDS
+import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromJsonObject
+import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromJsonString
+import at.asitplus.attestation.android.AndroidRevocationList.Companion.configurationSerializerModules
 import at.asitplus.attestation.android.TrustedRoot
 import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.receipt.ReceiptValidator
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.*
+import kotlinx.serialization.modules.plus
+import net.mamoe.yamlkt.Yaml
 import net.swiftzer.semver.SemVer
 import kotlin.time.toKotlinDuration
 
-@Deprecated("Legacy name", replaceWith = ReplaceWith("IosAttestationConfiguration"))
+//TODO remove in 1.1
+@Deprecated("Legacy name, will be removed in 1.1", replaceWith = ReplaceWith("IosAttestationConfiguration"))
 typealias IOSAttestationConfiguration = IosAttestationConfiguration
 
 /**
@@ -31,9 +40,9 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
     val iosVersion: OsVersions? = null,
 
     /**
-     * The maximum age an attestation statement is considered valid. Defaults to [ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE] + [Makoto.DEFAULT_TIME_OFFSET]
+     * The maximum age an attestation statement is considered valid. Defaults to [DEFAULT_VALIDITY_SECONDS]
      */
-    val attestationStatementValiditySeconds: Long = (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET).inWholeSeconds,
+    val attestationStatementValiditySeconds: Long = DEFAULT_VALIDITY_SECONDS,
 
     /**
      * Manually specify the trust anchors.
@@ -43,7 +52,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
      * Note that currently only Certificates are supported as trust anchors, no raw public keys
      */
     val trustedRoots: Set<TrustedRootPair> = APPLE_DEFAULT_TRUSTED_ROOTS,
-) {
+) : AttestationConfiguration {
 
 
     @JvmOverloads
@@ -67,8 +76,12 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         if (applications.isEmpty())
             throw AttestationException.Configuration(Platform.IOS, "No apps configured", IllegalArgumentException())
 
-        if(attestationStatementValiditySeconds <0)
-            throw AttestationException.Configuration(Platform.IOS, "Attestation statement validity must not be negative", IllegalArgumentException())
+        if (attestationStatementValiditySeconds < 0)
+            throw AttestationException.Configuration(
+                Platform.IOS,
+                "Attestation statement validity must not be negative",
+                IllegalArgumentException()
+            )
     }
 
     /**
@@ -209,13 +222,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             /**
              * @see AppData.iosVersionOverride
              */
-            @Deprecated("To be removed with 1.0.0", replaceWith = ReplaceWith("iosVersionOverride(version)"))
-            fun overrideIosVersion(version: OsVersions) = apply { iosVersionOverride = version }
-
-            /**
-             * @see AppData.iosVersionOverride
-             */
-            fun iosVersionOverride(version: OsVersions) = overrideIosVersion(version)
+            fun iosVersionOverride(version: OsVersions) = apply { iosVersionOverride = version }
 
             /**
              * @see AppData.trustedRootOverrides
@@ -268,6 +275,52 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         return result.toInt()
     }
 
+
+    /**
+     * Serialises this config into its canonical form (JSON). Can be loaded using [fromJsonString] afterwards.
+     */
+    override fun toJsonString(): String = jsonDebug.encodeToString(this)
+
+    /**
+     * Serialises this config into its canonical form (YAML). Can be loaded using [fromJsonString] afterwards.
+     */
+    override fun toYamlString(): String = yaml.encodeToString(this)
+
+    /**
+     * Serialises this config into a [JsonObject]. Can be loaded using [fromJsonObject] afterwards.
+     */
+    override fun toJsonElement(): JsonObject = jsonDebug.encodeToJsonElement(this).jsonObject
+
+    companion object : AttestationConfiguration.Reader<IosAttestationConfiguration> {
+
+        private val yaml by lazy {
+            Yaml {
+                serializersModule = configurationSerializerModules.reduce { acc, e -> acc + e }
+            }
+        }
+
+        /**
+         * Loads the config from its canonical form (JSON), as produced by [toJsonString].
+         */
+        override fun fromJsonString(jsonRepresentation: String): IosAttestationConfiguration =
+            jsonDebug.decodeFromString<IosAttestationConfiguration>(jsonRepresentation)
+
+        /**
+         * Loads the config from its canonical form (YAML), as produced by [toJsonString].
+         */
+        override fun fromYamlString(yamlRepresentation: String): IosAttestationConfiguration =
+            yaml.decodeFromString<IosAttestationConfiguration>(yamlRepresentation)
+
+        /**
+         * Loads the config from its canonical form (JSON), as produced by [toJsonElement].
+         */
+        override fun fromJsonObject(jsonRepresentation: JsonElement): IosAttestationConfiguration =
+            jsonDebug.decodeFromJsonElement<IosAttestationConfiguration>(jsonRepresentation)
+
+        /**[ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE] + [Makoto.DEFAULT_TIME_OFFSET]**/
+        val DEFAULT_VALIDITY_SECONDS: Long =
+            (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET).inWholeSeconds
+    }
 }
 
 typealias ParsedVersions = Pair<SemVer?, BuildNumber?>
@@ -342,10 +395,9 @@ class BuildNumber private constructor(
 /**
  * Represents a pair of trusted root entities for Apple's AppAttest ecosystem.
  */
-typealias TrustedRootPair = Pair<TrustedRoot.Certificate, TrustedRoot.Certificate>
+@Serializable
+data class TrustedRootPair(val attestationRoot: TrustedRoot, val receiptRoot: TrustedRoot)
 
-val TrustedRootPair.attestationRoot get() = first
-val TrustedRootPair.receiptRoot get() = second
 
 /**
  * Represents a default tuple of trusted root certificates specific to Apple's ecosystem.
@@ -358,6 +410,8 @@ val TrustedRootPair.receiptRoot get() = second
  *
  */
 val APPLE_DEFAULT_TRUSTED_ROOTS: Set<TrustedRootPair> = linkedSetOf(
-    TrustedRoot.Certificate(AttestationValidator.APPLE_APP_ATTEST_ROOT_CA_BUILTIN_TRUST_ANCHOR.trustedCert) to
-            TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert)
+    TrustedRootPair(
+        TrustedRoot.Certificate(AttestationValidator.APPLE_APP_ATTEST_ROOT_CA_BUILTIN_TRUST_ANCHOR.trustedCert),
+        TrustedRoot.Certificate(ReceiptValidator.APPLE_PUBLIC_ROOT_CA_G3_BUILTIN_TRUST_ANCHOR.trustedCert)
+    )
 )

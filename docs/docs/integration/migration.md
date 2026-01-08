@@ -1,6 +1,7 @@
 # Migration from WARDEN / WARDEN‑roboto
 
-!!! danger "Warden Supreme 0.9.99 Changed Defaults"
+!!! danger "Warden Supreme Changed Defaults"
+    Warden Supreme introduces behavioural changes compared to WARDEN / WARDEN-roboto:
     
     * Android leaf cert validity is ignored by default, because Warden Supreme (by default) uses random cryptographic nonces.
         * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is now a deprecated NOOP to be removed.

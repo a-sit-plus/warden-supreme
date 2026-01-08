@@ -61,7 +61,7 @@ class AttestationValueException(
 
         /**
          * Indicates an unexpected error when trying to attest an app's properties. This should never happen, but a borked
-         * attestation extension in the leaf certificate coul cause this.
+         * attestation extension in the leaf certificate could cause this.
          */
         APP_UNEXPECTED,
 
@@ -94,7 +94,13 @@ class AttestationValueException(
         /**
          * Indicates that the attestation statement creation time is too far off or missing
          */
-        TIME
+        STATEMENT_TIME;
+
+        companion object {
+            //TODO: remove in 1.1!
+            @Deprecated("Misnomer; renamed to STATEMENT_TIME. To be removed in 1.1", ReplaceWith("AttestationValueException.Reason.STATEMENT_TIME"), DeprecationLevel.ERROR)
+            val TIME = STATEMENT_TIME
+        }
     }
 
     override fun equals(other: Any?): Boolean {

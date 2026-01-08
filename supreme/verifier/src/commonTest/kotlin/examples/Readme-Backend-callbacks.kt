@@ -7,10 +7,10 @@ import docs.config.minimal.verifier
 import java.util.logging.Level
 import java.util.logging.Logger
 
-val csr: Pkcs10CertificationRequest = TODO()
-val logger = Logger.getLogger("demo")
+private val csr: Pkcs10CertificationRequest = TODO()
+private val logger = Logger.getLogger("demo")
 
-suspend fun foo() {
+private suspend fun foo() {
 
 
 

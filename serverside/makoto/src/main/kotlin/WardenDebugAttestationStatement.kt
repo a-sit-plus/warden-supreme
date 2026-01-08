@@ -3,21 +3,20 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.AndroidDebugAttestationStatement
-import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.AndroidRevocationList.Companion.configurationSerializerModules
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-private val jsonDebug by lazy {
-    kotlinx.serialization.json.Json {
+internal val jsonDebug by lazy {
+    Json {
         encodeDefaults = true
         ignoreUnknownKeys = true
         prettyPrint = true
@@ -27,7 +26,7 @@ private val jsonDebug by lazy {
 }
 
 private val jsonCompact by lazy {
-    kotlinx.serialization.json.Json {
+    Json {
         encodeDefaults = true
         ignoreUnknownKeys = true
         prettyPrint = false
@@ -42,16 +41,20 @@ private val jsonCompact by lazy {
 data class WardenDebugAttestationStatement
 internal constructor(
     val method: Method,
-    val androidAttestationConfiguration: AndroidAttestationConfiguration,
-    val iosAttestationConfiguration: IosAttestationConfiguration,
+    val androidAttestationConfiguration: AndroidAttestationConfiguration?,
+    val iosAttestationConfiguration: IosAttestationConfiguration?,
     val genericAttestationProof: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>? = null,
     val keyAttestation: Attestation? = null,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray? = null,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val clientData: ByteArray? = null,
     @Serializable(with = InstantLongSerializer::class) val verificationTime: Instant,
     val verificationTimeOffset: Duration = Duration.ZERO,
-    val version: String? = null,
-) {
+    override val version: String,
+) : DebugStatement<Any> {
+
+    init {
+        require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
+    }
 
     enum class Method {
         LEGACY,
@@ -63,23 +66,41 @@ internal constructor(
     /**
      * Creates a new [Makoto] instance based on recorded debug data.
      */
-    fun createWarden(): Makoto = Makoto(
-        androidAttestationConfiguration,
-        iosAttestationConfiguration,
-        FixedTimeClock(verificationTime),
-        verificationTimeOffset
-    )
+    fun createWarden(): Makoto {
+        require(androidAttestationConfiguration != null || iosAttestationConfiguration != null) { "At least one attestation configuration (iOS or Android) must be provided" }
+
+        return if (androidAttestationConfiguration == null)
+            Makoto(
+                iosAttestationConfiguration = iosAttestationConfiguration!!,
+                FixedTimeClock(verificationTime),
+                verificationTimeOffset
+            ) else if (iosAttestationConfiguration == null)
+            Makoto(
+                androidAttestationConfiguration,
+                FixedTimeClock(verificationTime),
+                verificationTimeOffset
+            )
+        else Makoto(
+            androidAttestationConfiguration,
+            iosAttestationConfiguration,
+            FixedTimeClock(verificationTime),
+            verificationTimeOffset
+        )
+    }
 
 
     /**
      * Replay the attestation call that was recorded. I.e., it automatically calls the correct `replay` method
      * baaed on how this debug statement was recorded.
      */
-    suspend fun replaySmart() = when (method) {
+    override suspend fun replay() = when (method) {
         Method.LEGACY -> replayGenericAttestation()
         Method.SUPREME -> replayKeyAttestation()
         Method.KEY_ATTESTATION_LEGACY, Method.KEY_ATTESTATION_LEGACY_RAW -> replayKeyAttestationLegacy()
     }
+
+    @Deprecated("To be removed in 1.1", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("replay"))
+    suspend fun replaySmart() = replay()
 
     /**
      * Replays
@@ -119,28 +140,56 @@ internal constructor(
     suspend fun replayKeyAttestationLegacy() =
         createWarden().verifyKeyAttestation(genericAttestationProof!!, challenge!!, clientData!!)
 
-    /**
-     * Produces a JSON representation of this debug info
-     */
-    fun serialize() = jsonDebug.encodeToString(this)
 
-    /**
-     * serializes and multibase-encodes this debug info
-     */
-    fun serializeCompact() =
+    override fun serialize() = jsonDebug.encodeToString(this)
+
+    override fun serializeCompact() =
         MultiBase.encode(MultiBase.Base.BASE64_URL, jsonCompact.encodeToString(this).encodeToByteArray())
 
-    companion object {
-        /**
-         * Parses a debug info from JSON
-         */
-        fun deserialize(string: String) = jsonDebug.decodeFromString<WardenDebugAttestationStatement>(string)
+    override fun toJsonElement(): JsonObject = jsonDebug.encodeToJsonElement(this).jsonObject
 
-        /**
-         * Multibase-decodes and deserializes a debug info string.
-         */
-        fun deserializeCompact(string: String) =
+    companion object : DebugStatement.Reader<Any, WardenDebugAttestationStatement> {
+
+        override fun deserialize(string: String) = jsonDebug.decodeFromString<WardenDebugAttestationStatement>(string)
+
+
+        override fun deserializeCompact(string: String) =
             jsonCompact.decodeFromString<WardenDebugAttestationStatement>(MultiBase.decode(string)!!.decodeToString())
+
+        override fun fromJsonElement(jsonElement: JsonElement): WardenDebugAttestationStatement =
+            jsonDebug.decodeFromJsonElement(jsonElement)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is WardenDebugAttestationStatement) return false
+
+        if (method != other.method) return false
+        if (androidAttestationConfiguration != other.androidAttestationConfiguration) return false
+        if (iosAttestationConfiguration != other.iosAttestationConfiguration) return false
+        if (genericAttestationProof != other.genericAttestationProof) return false
+        if (keyAttestation != other.keyAttestation) return false
+        if (!challenge.contentEquals(other.challenge)) return false
+        if (!clientData.contentEquals(other.clientData)) return false
+        if (verificationTime != other.verificationTime) return false
+        if (verificationTimeOffset != other.verificationTimeOffset) return false
+        if (version != other.version) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = method.hashCode()
+        result = 31 * result + (androidAttestationConfiguration?.hashCode() ?: 0)
+        result = 31 * result + (iosAttestationConfiguration?.hashCode() ?: 0)
+        result = 31 * result + (genericAttestationProof?.hashCode() ?: 0)
+        result = 31 * result + (keyAttestation?.hashCode() ?: 0)
+        result = 31 * result + (challenge?.contentHashCode() ?: 0)
+        result = 31 * result + (clientData?.contentHashCode() ?: 0)
+        result = 31 * result + verificationTime.hashCode()
+        result = 31 * result + verificationTimeOffset.hashCode()
+        result = 31 * result + (version?.hashCode() ?: 0)
+        return result
     }
 }
 
@@ -161,4 +210,22 @@ class FixedTimeClock(private var epochMilliseconds: Long) : Clock {
     }
 
     override fun now() = Instant.fromEpochMilliseconds(epochMilliseconds)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is FixedTimeClock) return false
+
+        if (epochMilliseconds != other.epochMilliseconds) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return epochMilliseconds.hashCode()
+    }
+
+    override fun toString(): String {
+        return "FixedTimeClock(" +
+                "epochMilliseconds=$epochMilliseconds" +
+                ")"
+    }
 }

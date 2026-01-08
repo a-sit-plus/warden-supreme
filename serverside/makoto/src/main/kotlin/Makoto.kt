@@ -33,14 +33,11 @@ import java.security.cert.CertPathValidatorException
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import java.security.interfaces.ECPublicKey
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.*
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-
-
-@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("Makoto"))
-typealias Warden = Makoto
 
 /**
  * Default, functional Android and Apple App and Key Attestation in all its glory.
@@ -53,15 +50,79 @@ typealias Warden = Makoto
  * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
  * @param clock a clock to set the time of verification (used for certificate validity checks)
  * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
+ *
+ * @throws IllegalArgumentException if neither Android nor iOS attestation configuration is provided
  */
 @OptIn(ExperimentalTime::class)
-class Makoto(
-    //TODO post 1.0.0: make it possible to configure only Android or only iOS
-    private val androidAttestationConfiguration: AndroidAttestationConfiguration,
-    private val iosAttestationConfiguration: IosAttestationConfiguration,
+class Makoto
+@Throws(IllegalArgumentException::class) internal constructor(
+    val iosAttestationConfiguration: IosAttestationConfiguration?,
+    val androidAttestationConfiguration: AndroidAttestationConfiguration?,
     val clock: Clock = Clock.System,
     val verificationTimeOffset: Duration = DEFAULT_TIME_OFFSET
 ) : AttestationService() {
+
+    init {
+        require(androidAttestationConfiguration != null || iosAttestationConfiguration != null) { "At least one attestation configuration (iOS or Android) must be provided" }
+    }
+
+    /**
+     * Default, functional Android and Apple App and Key Attestation in all its glory.
+     *
+     * Once configured, this class provides a streamlined interface for mobile client attestation
+     *
+     * @param androidAttestationConfiguration Configuration for Android key attestation.
+     * See [AndroidAttestationConfiguration]
+     * for details.
+     * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
+     * @param clock a clock to set the time of verification (used for certificate validity checks)
+     * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
+     *
+     * @throws IllegalArgumentException if neither Android nor iOS attestation configuration is provided
+     */
+    constructor(
+        androidAttestationConfiguration: AndroidAttestationConfiguration,
+        iosAttestationConfiguration: IosAttestationConfiguration,
+        clock: Clock = Clock.System,
+        verificationTimeOffset: Duration = DEFAULT_TIME_OFFSET
+    ) : this(iosAttestationConfiguration, androidAttestationConfiguration, clock, verificationTimeOffset)
+
+    /**
+     * Android-only App and Key Attestation
+     *
+     * Once configured, this class provides a streamlined interface for mobile client attestation
+     *
+     * @param androidAttestationConfiguration Configuration for Android key attestation.
+     * See [AndroidAttestationConfiguration]
+     * for details.
+     * @param clock a clock to set the time of verification (used for certificate validity checks)
+     * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
+     *
+     * @throws IllegalArgumentException if neither Android nor iOS attestation configuration is provided
+     */
+    constructor(
+        androidAttestationConfiguration: AndroidAttestationConfiguration,
+        clock: Clock = Clock.System,
+        verificationTimeOffset: Duration = DEFAULT_TIME_OFFSET
+    ) : this(iosAttestationConfiguration = null, androidAttestationConfiguration, clock, verificationTimeOffset)
+
+
+    /**
+     * iOS-only and Apple App and Key Attestation.
+     *
+     * Once configured, this class provides a streamlined interface for mobile client attestation
+     *
+     * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
+     * @param clock a clock to set the time of verification (used for certificate validity checks)
+     * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
+     *
+     * @throws IllegalArgumentException if neither Android nor iOS attestation configuration is provided
+     */
+    constructor(
+        iosAttestationConfiguration: IosAttestationConfiguration,
+        clock: Clock = Clock.System,
+        verificationTimeOffset: Duration = DEFAULT_TIME_OFFSET
+    ) : this(iosAttestationConfiguration, androidAttestationConfiguration = null, clock, verificationTimeOffset)
 
     /**
      * Java-friendly constructor with `java.time` types
@@ -69,11 +130,15 @@ class Makoto(
      * @param androidAttestationConfigurationJ Configuration for Android key attestation. See [AndroidAttestationConfiguration]
      * @param iosAttestationConfigurationJ IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
      * @param verificationTimeOffsetJ allows for fine-grained clock drift compensation (this duration is added to the certificate
-     * validity checks); can be negative. Note that [androidAttestationConfiguration] is the exact same configuration format as used by
-     * [WARDEN-roboto](https://github.com/a-sit-plus/warden-roboto), which also supports setting a verification time offset.
-     * For the sake of consistency and intelligibility, **only** set this offset globally and not inside [iosAttestationConfiguration].
+     * validity checks); can be negative. Note that [androidAttestationConfiguration] is the exact same [configuration format as used by
+     * Roboto](https://a-sit-plus.github.io/warden-supreme/dokka/roboto/at.asitplus.attestation.android/-android-attestation-configuration/index.html),
+     * which also supports setting a verification time offset.
+     * For the sake of consistency and intelligibility, **only** set this offset globally and not inside [androidAttestationConfigurationJ].
      * @param javaClock a clock to set the time of verification (used for certificate validity checks)
+     *
+     * @throws IllegalArgumentException if neither Android nor iOS attestation configuration is provided
      */
+    @Throws(IllegalArgumentException::class)
     @JvmOverloads
     constructor(
         androidAttestationConfigurationJ: AndroidAttestationConfiguration,
@@ -81,8 +146,57 @@ class Makoto(
         verificationTimeOffsetJ: java.time.Duration = DEFAULT_TIME_OFFSET.toJavaDuration(),
         javaClock: java.time.Clock = java.time.Clock.systemUTC()
     ) : this(
-        androidAttestationConfigurationJ,
         iosAttestationConfigurationJ,
+        androidAttestationConfigurationJ,
+        javaClock.toKotlinClock(),
+        verificationTimeOffsetJ.toKotlinDuration()
+    )
+
+    /**
+     * Android-only Java-friendly constructor with `java.time` types
+     *
+     * @param androidAttestationConfigurationJ Configuration for Android key attestation. See [AndroidAttestationConfiguration]
+     * @param verificationTimeOffsetJ allows for fine-grained clock drift compensation (this duration is added to the certificate
+     * validity checks); can be negative. Note that [androidAttestationConfiguration] is the exact same [configuration format as used by
+     * Roboto](https://a-sit-plus.github.io/warden-supreme/dokka/roboto/at.asitplus.attestation.android/-android-attestation-configuration/index.html),
+     * which also supports setting a verification time offset.
+     * For the sake of consistency and intelligibility, **only** set this offset globally.
+     * @param javaClock a clock to set the time of verification (used for certificate validity checks)
+     *
+     * @throws IllegalArgumentException if neither Android nor iOS attestation configuration is provided
+     */
+    @Throws(IllegalArgumentException::class)
+    @JvmOverloads
+    constructor(
+        androidAttestationConfigurationJ: AndroidAttestationConfiguration,
+        verificationTimeOffsetJ: java.time.Duration = DEFAULT_TIME_OFFSET.toJavaDuration(),
+        javaClock: java.time.Clock = java.time.Clock.systemUTC()
+    ) : this(
+        iosAttestationConfiguration = null,
+        androidAttestationConfigurationJ,
+        javaClock.toKotlinClock(),
+        verificationTimeOffsetJ.toKotlinDuration()
+    )
+
+    /**
+     * iOS-only Java-friendly constructor with `java.time` types
+     *
+     * @param iosAttestationConfigurationJ IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
+     * @param verificationTimeOffsetJ allows for fine-grained clock drift compensation (this duration is added to the certificate
+     * validity checks); can be negative.
+     * @param javaClock a clock to set the time of verification (used for certificate validity checks)
+     *
+     * @throws IllegalArgumentException if neither Android nor iOS attestation configuration is provided
+     */
+    @Throws(IllegalArgumentException::class)
+    @JvmOverloads
+    constructor(
+        iosAttestationConfigurationJ: IosAttestationConfiguration,
+        verificationTimeOffsetJ: java.time.Duration = DEFAULT_TIME_OFFSET.toJavaDuration(),
+        javaClock: java.time.Clock = java.time.Clock.systemUTC()
+    ) : this(
+        iosAttestationConfigurationJ,
+        androidAttestationConfiguration = null,
         javaClock.toKotlinClock(),
         verificationTimeOffsetJ.toKotlinDuration()
     )
@@ -90,11 +204,12 @@ class Makoto(
     private val log = LoggerFactory.getLogger(this.javaClass)
 
 
-    private val androidAttestationVerifiers = mutableListOf<Roboto>().apply {
+    private val androidAttestationVerifiers: List<Roboto>? = androidAttestationConfiguration?.let { cfg ->
+        val verifiers = mutableListOf<Roboto>()
         val androidOffset = catchingUnwrapped {
             Math.addExact(
                 verificationTimeOffset.inWholeSeconds,
-                androidAttestationConfiguration.verificationSecondsOffset
+                cfg.verificationSecondsOffset
             )
         }.getOrElse {
             throw AttestationException.Configuration(
@@ -107,64 +222,53 @@ class Makoto(
         val correctlyOffsetAndroidConfig =
             androidAttestationConfiguration.copy(verificationSecondsOffset = androidOffset)
 
-        if (!correctlyOffsetAndroidConfig.disableHardwareAttestation) add(
+        if (!correctlyOffsetAndroidConfig.disableHardwareAttestation) verifiers.add(
             HardwareAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
-        if (correctlyOffsetAndroidConfig.enableNougatAttestation) add(
+        if (correctlyOffsetAndroidConfig.enableNougatAttestation) verifiers.add(
             NougatHybridAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
-        if (correctlyOffsetAndroidConfig.enableSoftwareAttestation) add(
+        if (correctlyOffsetAndroidConfig.enableSoftwareAttestation) verifiers.add(
             SoftwareAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
+        verifiers
     }
 
+    private val iosSetup = catchingUnwrapped {
+        iosAttestationConfiguration?.let {
+            IosSetup(
+                it,
+                clock,
+                verificationTimeOffset
+            )
+        }
+    }.getOrElse {
+        throw AttestationException.Configuration(
+            Platform.IOS, it.message, it
+        )
+    }
 
     /**
      * The shortest attestation validity duration over Android and iOS configuration.
+     * Useful to get the shortest sensible nonce validity duration
+     */
+    val shortestValidityDuration: Duration? = shortestDurationInternal(
+        iosAttestationConfiguration?.attestationStatementValiditySeconds,
+        androidAttestationConfiguration?.attestationStatementValiditySeconds
+    )
+
+
+    /**
+     * The longest attestation validity duration over Android and iOS configuration.
      * Useful to get the longest sensible nonce validity duration
      */
-    val shortestValidityDuration: Duration = shortestDuration(
-        iosAttestationConfiguration.attestationStatementValiditySeconds,
-        androidAttestationConfiguration.attestationStatementValiditySeconds
+    val longestValidityDuration: Duration? = shortestDurationInternal(
+        iosAttestationConfiguration?.attestationStatementValiditySeconds,
+        androidAttestationConfiguration?.attestationStatementValiditySeconds
     )
-
-
-    private val iosApps =
-        iosAttestationConfiguration.applications.associateWith { appData ->
-            AppleAppAttest(
-                app = App(appData.teamIdentifier, appData.bundleIdentifier),
-                appleAppAttestEnvironment = if (appData.sandbox) AppleAppAttestEnvironment.DEVELOPMENT else AppleAppAttestEnvironment.PRODUCTION,
-            )
-        }
-
-
-    private val appAttestReader = ObjectMapper(CBORFactory())
-        .registerKotlinModule()
-        .readerFor(AttestationObject::class.java)
-
-    private val appAttestClock = java.time.Clock.offset(
-        clock.toJavaClock(),
-        verificationTimeOffset.toJavaDuration()
-    )
-    private val attestationValidators: Map<AppleAppAttest, List<AttestationValidator>> =
-        iosApps.map { (cfg, app) ->
-
-            val anchors = cfg.trustedRootOverrides ?: iosAttestationConfiguration.trustedRoots
-            app to anchors.map { trustAnchor ->
-                app.createAttestationValidator(
-                    clock = appAttestClock,
-                    receiptValidator = app.createReceiptValidator(
-                        clock = appAttestClock,
-                        maxAge = iosAttestationConfiguration.attestationStatementValiditySeconds.seconds.toJavaDuration(),
-                        trustAnchor = trustAnchor.receiptRoot.trustAnchor
-                    ),
-                    trustAnchor = trustAnchor.attestationRoot.trustAnchor,
-                )
-            }
-        }.toMap()
 
     override val ios = object : IOS {
         override fun verifyAppAttestation(attestationObject: ByteArray, challenge: ByteArray) =
@@ -219,7 +323,7 @@ class Makoto(
         clientData = clientData,
         verificationTime = clock.now(),
         verificationTimeOffset = verificationTimeOffset,
-        version = Makoto.version
+        version = version
     )
 
 
@@ -246,7 +350,7 @@ class Makoto(
         clientData = publicKey.encoded,
         verificationTime = clock.now(),
         verificationTimeOffset = verificationTimeOffset,
-        version = Makoto.version
+        version = version
     )
 
     /**
@@ -272,7 +376,7 @@ class Makoto(
         clientData = rawPublicKey,
         verificationTime = clock.now(),
         verificationTimeOffset = verificationTimeOffset,
-        version = Makoto.version
+        version = version
     )
 
     /**
@@ -295,7 +399,7 @@ class Makoto(
         challenge = challenge,
         verificationTime = clock.now(),
         verificationTimeOffset = verificationTimeOffset,
-        version = Makoto.version
+        version = version
     )
 
     override suspend fun verifyAttestation(
@@ -304,7 +408,10 @@ class Makoto(
         clientData: ByteArray?
     ): AttestationResult {
         log.debug("attestation proof length: ${attestationProof.size}")
-        return if (attestationProof.isEmpty()) AttestationResult.Error("Attestation proof is empty")
+        return if (attestationProof.isEmpty()) AttestationResult.Error(
+            "Attestation proof is empty",
+            AttestationException.Content.Unknown("Attestation proof is empty", cause = IllegalArgumentException())
+        )
         else if (attestationProof.size > 2) verifyAttestationAndroid(attestationProof, challenge).let {
             if (it is AttestationResult.Android) clientData?.let { encodedKey ->
                 if (!it.attestationCertificate.publicKey.encoded.contentEquals(encodedKey)) {
@@ -339,11 +446,19 @@ class Makoto(
                 return if (it is IndexOutOfBoundsException)
                     AttestationResult.Error(
                         "Invalid length of attestation proof: ${it.message}. " +
-                                "Possible reason: passed 'clientData' but no assertion"
+                                "Possible reason: passed 'clientData' but no assertion",
+                        AttestationException.Content.Unknown(
+                            "Invalid length of attestation proof: ${it.message}",
+                            cause = it
+                        )
                     )
                 else AttestationResult.Error(
                     "Could not verify client integrity due to internal error: " +
-                            "${it::class.simpleName}${it.message?.let { ". $it" }}"
+                            "${it::class.simpleName}${it.message?.let { ". $it" }}",
+                    AttestationException.Content.Unknown(
+                        "Could not verify client integrity due to internal error",
+                        cause = it
+                    )
                 )
 
             }
@@ -382,7 +497,13 @@ class Makoto(
                             is AttestationResult.Error -> KeyAttestation(null, it)
                             is AttestationResult.Android -> KeyAttestation(
                                 null,
-                                AttestationResult.Error("This must never happen!")
+                                AttestationResult.Error(
+                                    "Implementation Error. File a bug: https://github.com/a-sit-plus/warden-supreme/issues/new/choose",
+                                    AttestationException.Content.Unknown(
+                                        "Implementation Error. File a bug: https://github.com/a-sit-plus/warden-supreme/issues/new/choose",
+                                        IllegalArgumentException()
+                                    )
+                                )
                             )
                         }
                     }
@@ -399,14 +520,29 @@ class Makoto(
                     )
 
                     is AttestationResult.Error -> KeyAttestation(null, it)
-                    is AttestationResult.IOS -> KeyAttestation(null, AttestationResult.Error("This must never happen!"))
+                    is AttestationResult.IOS -> KeyAttestation(
+                        null,
+                        AttestationResult.Error(
+                            "Implementation Error. File a bug: https://github.com/a-sit-plus/warden-supreme/issues/new/choose",
+                            AttestationException.Content.Unknown(
+                                "Implementation Error. File a bug: https://github.com/a-sit-plus/warden-supreme/issues/new/choose",
+                                IllegalArgumentException()
+                            )
+                        )
+                    )
                 }
             }
 
             //Signum will remove IosLegacyHomebrewAttestation in new version
             else -> KeyAttestation(
                 null,
-                AttestationResult.Error("${attestationProof::class.simpleName} is unsupported")
+                AttestationResult.Error(
+                    "${attestationProof::class.simpleName} is unsupported",
+                    AttestationException.Content.Unknown(
+                        "${attestationProof::class.simpleName} is unsupported",
+                        cause = IllegalArgumentException()
+                    )
+                )
             )
 
         }
@@ -424,16 +560,38 @@ class Makoto(
     private suspend fun verifyAttestationAndroid(
         attestationCerts: List<ByteArray>,
         expectedChallenge: ByteArray
-    ): AttestationResult = runCatching {
+    ): AttestationResult = catchingUnwrapped {
+        if (androidAttestationVerifiers == null) throw AttestationException.Configuration(
+            Platform.ANDROID,
+            message = "Android Attestation is not configured",
+            IllegalArgumentException()
+        )
         log.debug("Verifying Android attestation")
-        if (attestationCerts.isEmpty()) return AttestationResult.Error("Attestation proof is empty")
+        if (attestationCerts.isEmpty()) return AttestationResult.Error(
+            "Android attestation proof is empty",
+            AttestationException.Content.Unknown(
+                "Android attestation proof is empty",
+                IllegalArgumentException()
+            )
+        )
         val certificates = attestationCerts.mapNotNull { it.parseToCertificate() }
         if (certificates.size != attestationCerts.size)
-            return AttestationResult.Error("Could not parse Android attestation certificate chain")
+            return AttestationResult.Error(
+                "Could not parse Android attestation certificate chain",
+                AttestationException.Content.Android(
+                    "Could not parse Android attestation certificate chain",
+                    cause = AttestationValueException(
+                        "At least one certificate failed to parse",
+                        reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                        expectedValue = attestationCerts.size,
+                        actualValue = certificates.size
+                    )
+                )
+            )
 
         //throws exception on fail
         val results = androidAttestationVerifiers.map {
-            runCatching {
+            catchingUnwrapped {
                 it.verifyAttestation(
                     certificates,
                     (clock.now()).toJavaDate(),
@@ -457,32 +615,33 @@ class Makoto(
     }.getOrElse {
         AttestationResult.Error(
             "Android Attestation Error: " + (it.message ?: it::class.simpleName),
-            if ((it is CertificateInvalidException) && (it.reason == CertificateInvalidException.Reason.TIME)) AttestationException.Certificate.Time.Android(
-                cause = it
-            )
-            else if (it is RevocationException) AttestationException.Certificate.Trust.Android(it.message, it)
-            else if (it is CertificateInvalidException) AttestationException.Certificate.Trust.Android(cause = it)
-            else if (it is CertificateException) AttestationException.Certificate.Trust.Android(
-                cause = CertificateInvalidException(
-                    message = it.message ?: "",
-                    cause = it,
-                    reason = CertificateInvalidException.Reason.TRUST,
-                    certificateChain = attestationCerts.mapNotNull { it.parseToCertificate() },
-                    invalidCertificate = null
+            it as? AttestationException.Configuration
+                ?: if ((it is CertificateInvalidException) && (it.reason == CertificateInvalidException.Reason.TIME)) AttestationException.Certificate.Time.Android(
+                    cause = it
                 )
-            ) else if (it is AttestationValueException) AttestationException.Content.Android(
-                cause = it,
-                message = it.message
-            )
-            else AttestationException.Content.Android(
-                cause = AttestationValueException(
-                    message = it.message,
+                else if (it is RevocationException) AttestationException.Certificate.Trust.Android(it.message, it)
+                else if (it is CertificateInvalidException) AttestationException.Certificate.Trust.Android(cause = it)
+                else if (it is CertificateException) AttestationException.Certificate.Trust.Android(
+                    cause = CertificateInvalidException(
+                        message = it.message ?: "",
+                        cause = it,
+                        reason = CertificateInvalidException.Reason.TRUST,
+                        certificateChain = attestationCerts.mapNotNull { it.parseToCertificate() },
+                        invalidCertificate = null
+                    )
+                ) else if (it is AttestationValueException) AttestationException.Content.Android(
                     cause = it,
-                    reason = AttestationValueException.Reason.APP_UNEXPECTED,
-                    expectedValue = "",
-                    actualValue = null
+                    message = it.message
                 )
-            )
+                else AttestationException.Content.Android(
+                    cause = AttestationValueException(
+                        message = it.message,
+                        cause = it,
+                        reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                        expectedValue = "",
+                        actualValue = null
+                    )
+                )
         )
     }
 
@@ -516,12 +675,17 @@ class Makoto(
         assertionData: AssertionData?,
         counter: Long
     ): AttestationResult = catchingUnwrapped {
+        if (iosSetup == null) throw AttestationException.Configuration(
+            Platform.IOS,
+            message = "iOS Attestation is not configured",
+            IllegalArgumentException()
+        )
         log.debug("Verifying iOS attestation")
 
         val parsedAttestationCert =
             X509CertificateHolder(appAttestReader.readValue<AttestationObject>(attestationObject).attStmt.x5c.first())
 
-        val results = attestationValidators.map { (app, validators) ->
+        val results = iosSetup.attestationValidators.map { (app, validators) ->
 
             //this exception is a also encompasses trust anchor mismatches
             var res: Result<ValidatedAttestation> = Result.failure(ReceiptException.InvalidCertificateChain(""))
@@ -554,15 +718,15 @@ class Makoto(
 
         val notBefore =
             result.second.receipt.payload.notBefore?.value ?: result.second.receipt.payload.creationTime.value
-        if (notBefore > appAttestClock.instant())
+        if (notBefore > iosSetup.appAttestClock.instant())
             throw AttestationException.Content.iOS(
-                message = "Attestation statement created after ${appAttestClock.instant()}: $notBefore",
+                message = "Attestation statement created after ${iosSetup.appAttestClock.instant()}: $notBefore",
                 cause = IosAttestationException(reason = IosAttestationException.Reason.STATEMENT_TIME)
             )
 
         val iosVersion =
-            iosApps.entries.firstOrNull { (_, appAttest) -> appAttest.app == result.first.app }?.key?.iosVersionOverride
-                ?: iosAttestationConfiguration.iosVersion
+            iosSetup.iosApps.entries.firstOrNull { (_, appAttest) -> appAttest.app == result.first.app }?.key?.iosVersionOverride
+                ?: iosSetup.iosVersion
 
         var parsedVersion: ParsedVersions = null to null
         iosVersion?.let { configuredVersion ->
@@ -670,7 +834,9 @@ class Makoto(
     )?.octets?.let(::String)?.let { it.toBuildNumber() }
 
     private fun encapsulateIosAttestationException(it: Throwable): AttestationException {
-        return if (it is ch.veehait.devicecheck.appattest.attestation.AttestationException) {
+        /*@formatter:off*/
+        return it as? AttestationException.Configuration ?: if (it is ch.veehait.devicecheck.appattest.attestation.AttestationException) {
+            /*@formatter:on*/
             when (it) {
                 is ch.veehait.devicecheck.appattest.attestation.AttestationException.InvalidAuthenticatorData -> {
                     AttestationException.Content.iOS(
@@ -744,6 +910,7 @@ class Makoto(
             )
     }
 
+
     inline fun <T : PublicKey, R> KeyAttestation<T>.foldTyped(
         onError: (AttestationResult.Error) -> R,
         onSuccess: (T, AttestationResult.Verified) -> R
@@ -757,7 +924,7 @@ class Makoto(
         val DEFAULT_TIME_OFFSET = 5.minutes
 
         /**
-         * Nomen est omen; takes two durations in seconds (with the second one nullable) and returns the shorter on
+         * Nomen est omen; takes two durations in seconds (with the second one nullable) and returns the shorter one
          * as [Duration]
          */
         fun shortestDuration(firstInSeconds: Long, secondInSeconds: Long?): Duration =
@@ -765,9 +932,75 @@ class Makoto(
             else min(secondInSeconds, firstInSeconds).seconds
 
         /**
+         * Nomen est omen; takes two durations in seconds (with the second one nullable) and returns the shorter one
+         * as [Duration]
+         */
+        fun longestDuration(firstInSeconds: Long, secondInSeconds: Long?): Duration =
+            if (secondInSeconds == null) firstInSeconds.seconds
+            else max(secondInSeconds, firstInSeconds).seconds
+
+        private fun shortestDurationInternal(firstInSeconds: Long?, secondInSeconds: Long?): Duration? {
+            if (firstInSeconds == null && secondInSeconds == null) return null
+
+            return if (secondInSeconds == null) shortestDuration(firstInSeconds!!, secondInSeconds)
+            else shortestDuration(secondInSeconds, firstInSeconds)
+        }
+
+        private fun longestDurationInternal(firstInSeconds: Long?, secondInSeconds: Long?): Duration? {
+            if (firstInSeconds == null && secondInSeconds == null) return null
+
+            return if (secondInSeconds == null) longestDuration(firstInSeconds!!, secondInSeconds)
+            else longestDuration(secondInSeconds, firstInSeconds)
+        }
+
+        /**
          * Version String of the current Warden Supreme release
          */
         val version: String = wardenVersion
+
+
+        private val appAttestReader = ObjectMapper(CBORFactory())
+            .registerKotlinModule()
+            .readerFor(AttestationObject::class.java)
+
+    }
+
+    private class IosSetup(
+        iosAttestationConfiguration: IosAttestationConfiguration,
+        clock: Clock,
+        verificationTimeOffset: Duration
+    ) {
+        val appAttestClock: java.time.Clock = java.time.Clock.offset(
+            clock.toJavaClock(),
+            verificationTimeOffset.toJavaDuration()
+        )
+        val iosApps: Map<IosAttestationConfiguration.AppData, AppleAppAttest> =
+            iosAttestationConfiguration.applications.associateWith { appData ->
+                AppleAppAttest(
+                    app = App(appData.teamIdentifier, appData.bundleIdentifier),
+                    appleAppAttestEnvironment = if (appData.sandbox) AppleAppAttestEnvironment.DEVELOPMENT else AppleAppAttestEnvironment.PRODUCTION,
+                )
+            }
+
+
+        val attestationValidators: Map<AppleAppAttest, List<AttestationValidator>> =
+            iosApps.map { (cfg, app) ->
+
+                val anchors = cfg.trustedRootOverrides ?: iosAttestationConfiguration.trustedRoots
+                app to anchors.map { trustAnchor ->
+                    app.createAttestationValidator(
+                        clock = appAttestClock,
+                        receiptValidator = app.createReceiptValidator(
+                            clock = appAttestClock,
+                            maxAge = iosAttestationConfiguration.attestationStatementValiditySeconds.seconds.toJavaDuration(),
+                            trustAnchor = trustAnchor.receiptRoot.trustAnchor
+                        ),
+                        trustAnchor = trustAnchor.attestationRoot.trustAnchor,
+                    )
+                }
+            }.toMap()
+
+        val iosVersion: IosAttestationConfiguration.OsVersions? = iosAttestationConfiguration.iosVersion
     }
 
 }

@@ -161,7 +161,4 @@ data class KeyConstraints(
         result = 31 * result + (keyProtection?.hashCode() ?: 0)
         return result
     }
-
-    @Serializable
-    data class AuthPrompt(val message: String, val cancelText: String)
 }

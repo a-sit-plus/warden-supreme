@@ -1,5 +1,6 @@
 import at.asitplus.gradle.*
 import com.android.build.api.dsl.androidLibrary
+import org.gradle.kotlin.dsl.html
 
 plugins {
     kotlin("multiplatform")
@@ -66,12 +67,8 @@ kotlin {
     }
 }
 
-
-
-
 val javadocJar = setupDokka(
-    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/",
-    multiModuleDoc = true
+    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/supreme",
 )
 
 publishing {

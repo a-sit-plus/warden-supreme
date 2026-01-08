@@ -1,5 +1,6 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
@@ -74,6 +75,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = false)) {
                         sandbox = true
                     ),
                 ),
+                clock = FixedTimeClock(2025u,1u,10u)
             )
 
 
@@ -115,7 +117,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = false)) {
                                     println(stmt.serializeCompact())
                                     stmt.serializeCompact()
                                 }) { csr ->
-                                println("Successfully attested device ${csr.deviceName}")
+                                println("Successfully attested device ${csr.deviceNameForOid(attestationValidator.genericDeviceNameOID ?: WardenDefaults.OIDs.DEVICE_NAME)}")
                                 Signer.Ephemeral {
                                     ec { }
                                 }.getOrThrow().let { signer ->

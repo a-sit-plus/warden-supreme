@@ -5,9 +5,6 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import com.google.android.attestation.ParsedAttestationRecord
 import java.util.*
 
-@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("HardwareAttestationVerifier"))
-typealias HardwareAttestationChecker = HardwareAttestationVerifier
-
 class HardwareAttestationVerifier @JvmOverloads constructor(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
