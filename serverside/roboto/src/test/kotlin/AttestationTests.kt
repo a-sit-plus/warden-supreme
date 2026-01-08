@@ -5,6 +5,7 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
+import at.asitplus.attestation.replayBlocking
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import com.google.android.attestation.ParsedAttestationRecord
@@ -177,7 +178,7 @@ val AttestationTests by testSuite {
                     val collectDebugInfo =
                         collectDebugInfo(attestationCertChain, challenge, verificationDate).serialize()
 
-                    AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                    AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replayBlocking()
                         .shouldBeInstanceOf<ParsedAttestationRecord>().apply {
                             attestationSecurityLevel() shouldBe SecurityLevel.SOFTWARE
                             keymasterSecurityLevel() shouldBe SecurityLevel.SOFTWARE

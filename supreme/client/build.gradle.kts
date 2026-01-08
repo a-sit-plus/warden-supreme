@@ -1,10 +1,6 @@
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
 import com.android.build.api.dsl.androidLibrary
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClients
-import java.net.Socket
-import kotlin.concurrent.thread
 
 
 plugins {
@@ -39,7 +35,7 @@ kotlin {
                     create("pixelAVD").apply {
                         device = "Pixel 4"
                         apiLevel = 30
-                        systemImageSource = "aosp-atd"
+                        systemImageSource = "aosp"
                     }
                 }
             }
@@ -116,30 +112,38 @@ val resignTestApk = tasks.register("resignTestApk") {
 
         apks.forEach { apk ->
             // Re-sign IN PLACE so downstream install tasks pick up the fixed cert
-            exec {
-                commandLine(
-                    apksigner, "sign",
-                    "--ks", ksPath,
-                    "--ks-pass", "pass:$ksPass",
-                    "--ks-key-alias", keyAlias,
-                    "--key-pass", "pass:$keyPass",
-                    "--ks-type", ksType,
-                    apk.absolutePath
-                )
+            val process = ProcessBuilder(
+                apksigner, "sign",
+                "--ks", ksPath,
+                "--ks-pass", "pass:$ksPass",
+                "--ks-key-alias", keyAlias,
+                "--key-pass", "pass:$keyPass",
+                "--ks-type", ksType,
+                apk.absolutePath
+            ).inheritIO().start()
+
+            val exitCode = process.waitFor()
+
+            if (exitCode != 0) {
+                throw GradleException("apksigner failed with exit code $exitCode")
             }
-        }
-        println("Re-signed ${apks.size} device-test APK(s) with $keyAlias from $ksPath")
+
+            println("Re-signed ${apk.name} device-test APK with $keyAlias from $ksPath")}
+
     }
 }
-tasks.findByName("createAndroidDeviceTestApkListingFileRedirect")?.dependsOn(resignTestApk)
-tasks.whenObjectAdded {
-    if (name == "createAndroidDeviceTestApkListingFileRedirect")
-        dependsOn(resignTestApk)
+// Instead of whenObjectAdded, use the newer Task Configuration Avoidance API
+tasks.matching { it.name == "createAndroidDeviceTestApkListingFileRedirect" }.configureEach {
+    dependsOn(resignTestApk)
+}
+
+// If there is an installation task, ensure it runs AFTER the signing
+tasks.matching { it.name.contains("installAndroidDeviceTest") }.configureEach {
+    mustRunAfter(resignTestApk)
 }
 
 val javadocJar = setupDokka(
-    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/",
-    multiModuleDoc = true
+    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/supreme",
 )
 
 publishing {

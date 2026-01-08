@@ -8,7 +8,7 @@ import at.asitplus.attestation.android.*
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
-val customTestRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
+
 val myCustomRoots = APPLE_DEFAULT_TRUSTED_ROOTS
 
 
@@ -36,8 +36,8 @@ val makoto = Makoto(
         allowBootloaderUnlock = false, //DEFAULT
      /*(10)!*/requireRollbackResistance = false, //DEFAULT
      /*(11)!*/ignoreLeafValidity = false, // defaults to true
-        hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS,   //DEFAULT
-        softwareTrustedRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11, //DEFAULT
+        hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS, //DEFAULT
+        softwareTrustedRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12, //DEFAULT
         verificationSecondsOffset = 0, //DEFAULT
      /*(12)!*/disableHardwareAttestation = false,
         enableSoftwareAttestation = false, //DEFAULT

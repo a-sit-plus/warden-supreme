@@ -3,6 +3,7 @@ package at.asitplus.attestation.supreme
 import at.asitplus.KmmResult
 import at.asitplus.attestation.*
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.supreme.AttestationResponse.Failure
 import at.asitplus.attestation.supreme.AttestationResponse.Failure.Type
 import at.asitplus.attestation.supreme.PreAttestationError.ChallengeVerification
@@ -18,10 +19,8 @@ import org.kotlincrypto.random.CryptoRand
 import java.security.Signature
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
-
-@Deprecated("Misnomer; to be removed in 1.0.0", replaceWith = ReplaceWith("AttestationVerifier"))
-typealias AttestationValidator = AttestationVerifier
 
 /**
  * Verifies attestation statements and issues certificates on success.
@@ -32,9 +31,10 @@ typealias AttestationValidator = AttestationVerifier
  * **Note that key constraints cannot be reliably enforced** due to technical client limitations. Not all platforms can restrict key usage and properties!
  * Still, Warden Supreme's client will respect the key constraints and create keys as specified.
  *
- * [includeGenericDeviceName] indicates whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16") with the attestation proof.
+ * [genericDeviceNameOID] indicates whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16") with the attestation proof.
  * On its own, this is **not the device's nickname and therefore cannot identify a person in its own**.
- * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
+ * Defaults to [WardenDefaults.OIDs.DEVICE_NAME] as it is very useful technical, **non-personally-identifying data**.
+ * Can be set to `null` to not include device names.
  *
  * The [nonceGenerator]'s responsibility is to generate nonces to ensure freshness of issues challenges. Defaults to [WardenDefaults.nonceGenerator],
  * which generates secure, random 64-byte nonces
@@ -43,14 +43,18 @@ typealias AttestationValidator = AttestationVerifier
  * [IosAttestationConfiguration.attestationStatementValiditySeconds] and [AndroidAttestationConfiguration.attestationStatementValiditySeconds].
  *
  */
-class AttestationVerifier(
+
+class AttestationVerifier
+@Throws(AttestationException.Configuration::class, IllegalArgumentException::class)
+constructor(
     val makoto: Makoto,
     val attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
-    val includeGenericDeviceName: Boolean = true,
+    val genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
-    val nonceValidity: Duration = makoto.shortestValidityDuration,
+    val nonceValidity: Duration = makoto.longestValidityDuration
+        ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds,
     private val nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
-    private val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
+    /*internal for testing*/ internal val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
         makoto.clock,
         -makoto.verificationTimeOffset
     ),
@@ -62,9 +66,10 @@ class AttestationVerifier(
      * for details.
      * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
      * @param attestationProofOID specifies the OID be used in a CSR to convey an attestation statement. Can be overridden. It defaults to [WardenDefaults.OIDs.ATTESTATION_PROOF].
-     * @param includeGenericDeviceName specifies Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
+     * @param genericDeviceNameOID specifies whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
      * On its own, this is **not the device's nickname and therefore cannot identify a person in its own**.
-     * Defaults to `true` as it is very useful technical, **non-personally-identifying data**.
+     * Defaults to [WardenDefaults.OIDs.DEVICE_NAME] as it is very useful technical, **non-personally-identifying data**.
+     * Can be set to `null` to not include device names.
      * @param clock a clock to set the time of verification (used for certificate validity checks)
      * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
      * @param defaultKeyConstraints allows for specifying key constraints to the client. Not all platforms can restrict key usage and properties!
@@ -76,15 +81,16 @@ class AttestationVerifier(
      * validity checks); can be negative.
      */
     @OptIn(ExperimentalTime::class)
+    @Throws(AttestationException.Configuration::class, IllegalArgumentException::class)
     constructor(
         androidAttestationConfiguration: AndroidAttestationConfiguration,
         iosAttestationConfiguration: IosAttestationConfiguration,
         attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
-        includeGenericDeviceName: Boolean = true,
+        genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         clock: Clock = Clock.System,
         verificationTimeOffset: Duration = Makoto.DEFAULT_TIME_OFFSET,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
-        nonceValidity: Duration = Makoto.shortestDuration(
+        nonceValidity: Duration = Makoto.longestDuration(
             iosAttestationConfiguration.attestationStatementValiditySeconds,
             androidAttestationConfiguration.attestationStatementValiditySeconds
         ),
@@ -93,18 +99,12 @@ class AttestationVerifier(
     ) : this(
         Makoto(androidAttestationConfiguration, iosAttestationConfiguration, clock, verificationTimeOffset),
         attestationProofOID,
-        includeGenericDeviceName,
+        genericDeviceNameOID,
         defaultKeyConstraints,
         nonceValidity,
         nonceGenerator,
         challengeValidator,
     )
-
-    /**
-     * Alias for [makoto]
-     */
-    @Deprecated("Misnomer; to be removed in 1.0.0", replaceWith = ReplaceWith("makoto"))
-    val warden: Makoto get() = makoto
 
     /**
      * Issues a new attestation challenge, using a nonce generated by [nonceGenerator], valid for a duration of [nonceValidity], expecting an CSR containing an attestation statement to be `HTTP POST`ed to [postEndpoint].
@@ -130,23 +130,10 @@ class AttestationVerifier(
         nonceGenerator(),
         postEndpoint,
         attestationProofOID,
-        includeGenericDeviceName,
+        genericDeviceNameOID,
         keyConstraints
     ).also { challengeValidator.store(it) }
 
-    @Deprecated(
-        "Misnomer; to be removed in 1.0.0",
-        replaceWith = ReplaceWith("verifyAttestation(csr, onPreAttestationError, onAttestationError, onAttestationSuccess, certificateIssuer)")
-    )
-    suspend fun verifyKeyAttestation(
-        csr: Pkcs10CertificationRequest,
-        onPreAttestationError: PreAttestationError.() -> String? = { null },
-        onAttestationError: AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
-        onAttestationSuccess: AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
-        certificateIssuer: suspend (Pkcs10CertificationRequest, AttestationResult.Verified) -> CertificateChain,
-    ) = verifyAttestation(csr, onPreAttestationError, onAttestationError, onAttestationSuccess) { csr ->
-        certificateIssuer(csr, this)
-    }
 
     /**
      * Verifies the received CSR:
@@ -204,10 +191,23 @@ class AttestationVerifier(
                 onError = {
                     val explanation = it.extractReason(onAttestationError, attestationStatement, nonce)
                     when (it.cause) {
-                        null, is AttestationException.Content -> Failure(Type.CONTENT, explanation)
                         is AttestationException.Certificate.Time -> Failure(Type.TIME, explanation)
+                        is AttestationException.Content -> when (it.cause as AttestationException.Content) {
+                            is AttestationException.Content.Android -> when ((it.cause as AttestationException.Content.Android).cause.reason) {
+                                AttestationValueException.Reason.STATEMENT_TIME -> Failure(Type.TIME, explanation)
+                                else -> Failure(Type.CONTENT, explanation)
+                            }
+
+                            is AttestationException.Content.iOS -> when ((it.cause as AttestationException.Content.iOS).cause.reason) {
+                                IosAttestationException.Reason.STATEMENT_TIME -> Failure(Type.TIME, explanation)
+                                else -> Failure(Type.CONTENT, explanation)
+                            }
+
+                            else -> Failure(Type.CONTENT, explanation)
+                        }
+
                         is AttestationException.Certificate.Trust -> Failure(Type.TRUST, explanation)
-                        is AttestationException.Configuration -> Failure(Type.INTERNAL, explanation)
+                        is AttestationException.Configuration -> Failure(Type.CONTENT, explanation)
                     }
                 },
                 onSuccess = { pubKey, details ->
@@ -246,8 +246,10 @@ class AttestationVerifier(
         attestationStatement: Attestation,
         nonce: ByteArray,
     ): String? = catchingUnwrapped {
-        AttestationResult.Error("CSR signature verification failed")
-            .onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
+        AttestationResult.Error(
+            "CSR signature verification failed",
+            AttestationException.Content.Unknown("CSR signature verification failed", IllegalArgumentException())
+        ).onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
     }.getOrNull()
 
     private fun Throwable.operationalReason(
@@ -350,7 +352,8 @@ sealed class PreAttestationError {
  * The [AttestationVerifier] passes [Makoto]'s clock and the inverse of [Makoto.verificationTimeOffset], since these two values
  * are also encoded into issues challenges.
  */
-class InMemoryChallengeCache(private val clock: Clock, private val offset: Duration) : ChallengeValidator {
+//internal props for testing
+class InMemoryChallengeCache(internal val clock: Clock, internal val offset: Duration) : ChallengeValidator {
 
     private val mutex = Mutex()
 

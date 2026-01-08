@@ -1,8 +1,6 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.toJcaCertificateBlocking
-import com.google.android.attestation.ParsedAttestationRecord
 import com.google.gson.*
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security
@@ -76,15 +74,7 @@ fun main(args: Array<String>) {
         setPrettyPrinting()
     }.create()
 
-
     println(
-        gson.toJson(
-            ParsedAttestationRecord.createParsedAttestationRecord(
-                listOf(
-                    at.asitplus.signum.indispensable.pki.X509Certificate.decodeFromByteArray(certB64.encodeToByteArray())!!
-                        .toJcaCertificateBlocking().getOrThrow()
-                )
-            )
-        )
+        at.asitplus.signum.indispensable.pki.X509Certificate.decodeFromByteArray(certB64.encodeToByteArray())?.androidAttestationExtension?.prettyPrint()
     )
 }

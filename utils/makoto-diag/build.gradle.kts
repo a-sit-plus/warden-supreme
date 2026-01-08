@@ -1,11 +1,11 @@
-
-
 plugins {
     kotlin("jvm")
     application
     id("at.asitplus.gradle.conventions")
     id("com.gradleup.shadow")
 }
+
+
 
 val artifactVersion: String by extra
 val groupId: String by extra

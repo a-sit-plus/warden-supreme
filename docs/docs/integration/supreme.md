@@ -3,7 +3,7 @@
 
 [![A-SIT Plus Official](https://img.shields.io/badge/A--SIT_Plus-official-005b79?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDMuNzYyODYgMTg0LjgxOTk5Ij48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiIGNsaXBQYXRoVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMCA1OTUuMjhoODQxLjg5VjBIMFoiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyBjbGlwLXBhdGg9InVybCgjYSkiIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMyAwIDAgLTEuMzMzMzMzMyAtNDgyLjI1IDUxNy41MykiPjxwYXRoIGZpbGw9IiMwMDViNzkiIGQ9Ik00MTUuNjcgMjQ5LjUzYy03LjE1LjA4LTEzLjk0IDEtMjAuMTcgMi43NWE1Mi4zMyA1Mi4zMyAwIDAgMC0xNy40OCA4LjQ2IDQwLjQzIDQwLjQzIDAgMCAwLTExLjk2IDE0LjU2Yy0yLjY4IDUuNDEtNC4xNCAxMS44NC00LjM1IDE5LjA5bC0uMDIgNi4xMnYyLjE3YS43MS43MSAwIDAgMCAuNy43M2gxNi41MmMuMzkgMCAuNy0uMzIuNzEtLjdsLjAxLTIuMmMwLTIuNi4wMi01LjgyLjAzLTYuMDcuMi00LjYgMS4yNC04LjY2IDMuMDgtMTIuMDZhMjguNTIgMjguNTIgMCAwIDEgOC4yMy05LjU4IDM1LjI1IDM1LjI1IDAgMCAxIDExLjk2LTUuNTggNTUuMzggNTUuMzggMCAwIDEgMTIuNTgtMS43NmM0LjMyLjEgOC42LjcgMTIuNzQgMS44YTM1LjA3IDM1LjA3IDAgMCAxIDExLjk2IDUuNTcgMjguNTQgMjguNTQgMCAwIDEgOC4yNCA5LjU3YzEuOTYgMy42NCAzIDguMDIgMy4xMiAxMy4wMnYyNC4wOUgzNjIuNGEuNy43IDAgMCAwLS43MS43VjMzNWMwIDguNDMuMDEgOC4wNS4wMSA4LjE0LjIgNy4zIDEuNjcgMTMuNzcgNC4zNiAxOS4yMmE0MC40MyA0MC40MyAwIDAgMCAxMS45NiAxNC41N2M1IDMuNzYgMTAuODcgNi42MSAxNy40OCA4LjQ2YTc3LjUgNzcuNSAwIDAgMCAyMC4wMiAyLjc3YzcuMTUtLjA3IDEzLjk0LTEgMjAuMTctMi43NGE1Mi4zIDUyLjMgMCAwIDAgMTcuNDgtOC40NiA0MC40IDQwLjQgMCAwIDAgMTEuOTUtMTQuNTdjMS42Mi0zLjI2IDMuNzctMTAuMDQgMy43Ny0xNC42OCAwLS4zOC0uMTctLjc0LS41NC0uODJsLTE2Ljg5LS40Yy0uMi0uMDQtLjM0LjM0LS4zNC41NCAwIC4yNy0uMDMuNC0uMDYuNi0uNSAyLjgyLTEuMzggNS40LTIuNjEgNy42OWEyOC41MyAyOC41MyAwIDAgMS04LjI0IDkuNTggMzUuMDEgMzUuMDEgMCAwIDEtMTEuOTYgNS41NyA1NS4yNSA1NS4yNSAwIDAgMS0xMi41NyAxLjc3Yy00LjMyLS4xLTguNjEtLjcxLTEyLjc1LTEuOGEzNS4wNSAzNS4wNSAwIDAgMS0xMS45Ni01LjU3IDI4LjUyIDI4LjUyIDAgMCAxLTguMjMtOS41OGMtMS44Ni0zLjQ0LTIuOS03LjU1LTMuMDktMTIuMmwtLjAxLTcuNDdoODkuMTZhLjcuNyAwIDAgMCAuNy0uNzJ2LTM5LjVjLS4xLTcuNjUtMS41OC0xNC40LTQuMzgtMjAuMDZhNDAuNCA0MC40IDAgMCAwLTExLjk1LTE0LjU2IDUyLjM3IDUyLjM3IDAgMCAwLTE3LjQ4LTguNDcgNzcuNTYgNzcuNTYgMCAwIDAtMjAuMDEtMi43N1oiLz48cGF0aCBmaWxsPSIjY2U0OTJlIiBkPSJNNDE5LjM4IDI4MC42M2gtNy41N2EuNy43IDAgMCAwLS43MS43MXYxNS40MmE4LjE3IDguMTcgMCAwIDAtMy43OCA2LjkgOC4yOCA4LjI4IDAgMCAwIDE2LjU0IDAgOC4yOSA4LjI5IDAgMCAwLTMuNzYtNi45di0xNS40MmEuNy43IDAgMCAwLS43Mi0uNzEiLz48L2c%2BPC9zdmc%2B&logoColor=white&labelColor=white)](https://a-sit-plus.github.io)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-brightgreen.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![Kotlin](https://img.shields.io/badge/kotlin-2.2.21-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.3.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
 ![Java](https://img.shields.io/badge/java-17-blue.svg?logo=OPENJDK)
 [![Maven Central](https://img.shields.io/maven-central/v/at.asitplus.warden/supreme-common)](https://mvnrepository.com/artifact/at.asitplus.warden/)
 
@@ -133,7 +133,7 @@ This combination makes it possible to attest its authenticity.
     **Warden Supreme, by definition, cannot take these decisions from you!**
 
 
-The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-warden/index.html) and a comprehensive example can be expanded below.  
+The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-makoto/index.html) and a comprehensive example can be expanded below.
 **Be sure to read up on [Clock drift issues](../technical/quirks.md#clock-drifts-and-temporal-validity) before tweaking properties!** 
 
 <div id="config-options-example"></div>
@@ -180,6 +180,13 @@ The full details on the configuration can be found in the [API documentation](..
     23. Account for clock drift!
     
     Note that revocation configuration has been revamped after 0.9.9999 (see below)!
+
+
+Starting with Warden Supreme 1.0.0, it is possible to configure attestation only for iOS or only for Android by simply omitting
+either the `androidAttestationConfiguration` or the `iosAttestationConfiguration`, respectively.  
+In such cases, trying to verify an attestation proof for the not-configured platform will always return an error.
+The shorthand `AttestationVerifier` constructor that directly accepts `androidAttestationConfiguration` and `iosAttestationConfiguration` properties
+instead of a pre-configured `Makoto` instance does not support such omissions.
 
 
 ??? note "A Note on Android Attestation"
@@ -235,7 +242,7 @@ to create a hardware-backed P-256 key.
     ```
     
     1. We want Warden Supreme to convey the attestation proof inside the CSR using a custom OID.
-    2. We don't care about device IDs
+    2. We don't care about device names in this example
     3. We explicitly specify the key we want to have created on the client.  
     The values shown here correspond to the defaults, as this is supported by Android and iOS.
     4. We require user authentication to use the private key:
@@ -247,6 +254,12 @@ to create a hardware-backed P-256 key.
     
     Instead of passing a `Makoto` instance, it is also possible to directly use bare configuration parameters directly, as if configuring Makoto, to cut out the middle-man in code.
 
+
+!!! tip
+    Warden Supreme does not check whether a device has biometrics enrolled. So if you choose to bind a to-be-attested key
+    to biometric auth, you need to check device capa&shy;bili&shy;ties beforehand!  
+    **&rarr;&nbsp;[AuthCheckKit](https://github.com/a-sit-plus/AuthCheckKit)
+    provides a unified multiplatform API for that.**
 
 ###  Handling Requests
 This example assumes Ktor. Since this is an example environment, TLS is omitted for brevity.
@@ -293,14 +306,64 @@ specifies key constraints:
 3. If everything worked out, store the received certificate chain using whatever means you decide on
 4. The kind of error tells you what went wrong. An `AttestationResponse.Failure` **may** also contain a string explaining further details.
 
-!!! tip inline end
-    Warden Supreme does not check whether a device has biometrics enrolled. So if you choose to bind a to-be-attested key
-    to biometric auth, you need to check device capa&shy;bili&shy;ties beforehand!  
-    **&rarr;&nbsp;[AuthCheckKit](https://github.com/a-sit-plus/AuthCheckKit)
-    provides a unified multiplatform API for that.**
-
 This really is it! If you've made it this far, you have successfully issued certificates to mobile clients that fulfil your policy.
 The `AttestationClient` doesn't even come with any configuration options.
+
+### Externalising Configuration
+
+Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` have canonical serialised representations (JSON ans YAML) and come with the following (de)serialization functions:
+
+* `toJsonString()` and `fromJsonString()`
+* `toYamlString()` and `fromYamlString()`
+* `toJsonObject()` and `fromJsonObject()`
+
+This is useful for externalising configurations, as using Spring Boot's internal config loader to construct configurations is discouraged
+due to [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
+
+#### Android Configuration Files
+
+??? example "JSON for a Sample App"
+    The below example shows every configuration property in JSON form.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+    As for deviations wrt. `revocation`:
+    
+    * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
+    * A file-based revocation list is configured to allow for manually revoking certificates.
+
+    ```json
+    --8<-- "android.json"
+    ```
+
+??? example "YAML for a Sample App"
+    The below example shows every configuration property in YAML form.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+    As for deviations wrt. `revocation`:
+    
+    * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
+    * A file-based revocation list is configured to allow for manually revoking certificates.
+    
+    ```yaml
+    --8<-- "android.yaml"
+    ```
+
+#### iOS Configuration Files
+
+??? example "JSON with Defaults for a Sample App"
+    The below example shows every configuration property in JSON form.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+
+    ```json
+    --8<-- "ios.json"
+    ```
+
+??? example "YAML with Defaults for a Sample App"
+    The below example shows every configuration property in YAML form.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+
+    ```yaml
+    --8<-- "ios.yaml"
+    ```
+
 
 ## Beyond the Basics
 
@@ -310,13 +373,15 @@ Hence, the verifier allows for hooking into every possible outcome of an attesta
 This also allows for customizing the explanations sent to clients.
 
 
-!!! tip inline end "Debugging"
-    Head over to the dedicated [debugging page](debugging.md) to learn how to debug attestation issues!
+!!! tip inline end "Error Handling and Debugging"
+    Head over to the dedicated [debugging page](debugging.md) to learn how to debug attestation issues and check out the [error handling page](errorhandling.md) for a comprehensive guide on how to handle and interpret
+    Warden Supreme's attestation errors.
+    
 
 The Supreme attestation verifier only returns an enum indicating the reason for an error, with the option to attach a custom explanatory string.
 This is by design, as it is generally undesirable to expose the internals of a back-end to clients.
 
-On the backend, however, attestation issues typically need to be analysed. Hence, the Supreme attestation validator provides
+On the backend, however, attestation issues typically need to be analysed. Hence, the Supreme attestation verifier provides
 three callbacks to analyse attestation errors and success (without side effects):
 
 ```kotlin
@@ -328,6 +393,7 @@ three callbacks to analyse attestation errors and success (without side effects)
    be extracted from a CSR. Different side-effect-free handling strategies can be employed based on error type.
 3. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).
 4. `onAttestationError` is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
+   See [the dedicated error handling guide](errorhandling.md) for more details!
 5. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!**. See [debugging and replaying diagnostics](../testing.md#debugging-replay-and-diagnostics).
 6. Again, a custom error message can be sent to the client
 7. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
@@ -346,4 +412,3 @@ While extensive configurations were also included alongside the basic ones, Ward
 * By default, a device identifier is always encoded into the CSR, this can be toggled.
 
 For more details, refer to the API docs on the [verifier](../../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/) and on the [client](../../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/)!
-

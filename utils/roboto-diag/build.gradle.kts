@@ -12,6 +12,7 @@ val groupId: String by extra
 group = groupId
 version = artifactVersion
 
+
 application {
     mainClass.set("at.asitplus.attestation.android.DiagKt")
 }

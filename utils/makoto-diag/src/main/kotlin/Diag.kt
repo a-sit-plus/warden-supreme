@@ -16,6 +16,6 @@ suspend fun main(args: Array<String>) {
         val stmt = WardenDebugAttestationStatement.deserializeCompact(line)
         println(stmt.serialize())
         //TODO Add a breakpoint to Line 19
-        stmt.replaySmart()
+        stmt.replay()
     }
 }

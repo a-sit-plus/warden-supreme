@@ -44,7 +44,7 @@ val FakeAttestationTests by testSuite {
                 requireStrongBox = false,
                 allowBootloaderUnlock = false,
                 ignoreLeafValidity = false,
-                hardwareAttestationTrustAnchors = setOf(attestationProof.last().publicKey)
+                hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
             )
         )
 
@@ -70,7 +70,7 @@ val FakeAttestationTests by testSuite {
                     requireStrongBox = false,
                     allowBootloaderUnlock = false,
                     ignoreLeafValidity = false,
-                    hardwareAttestationTrustAnchors = setOf(borkedAttestation.last().publicKey)
+                    hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(borkedAttestation.last().publicKey))
                 )
             ).verifyAttestation(
                 certificates = borkedAttestation,
@@ -120,7 +120,7 @@ val FakeAttestationTests by testSuite {
                         requireStrongBox = false,
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
-                        hardwareAttestationTrustAnchors = setOf(attestationProof.last().publicKey)
+                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
                     )
                 ).verifyAttestation(
                     certificates = attestationProof,
@@ -153,7 +153,7 @@ val FakeAttestationTests by testSuite {
                         requireStrongBox = false,
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
-                        hardwareAttestationTrustAnchors = setOf(attestationProof.last().publicKey)
+                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
                     )
                 ).verifyAttestation(
                     certificates = attestationProof,
@@ -175,7 +175,7 @@ val FakeAttestationTests by testSuite {
                             requireStrongBox = false,
                             allowBootloaderUnlock = false,
                             ignoreLeafValidity = false,
-                            hardwareAttestationTrustAnchors = setOf(attestationProof.last().publicKey)
+                            hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
                         )
                     ).verifyAttestation(
                         certificates = attestationProof,
@@ -211,7 +211,7 @@ val FakeAttestationTests by testSuite {
                         requireStrongBox = false,
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
-                        hardwareAttestationTrustAnchors = setOf(attestationProofSameMonth.last().publicKey)
+                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProofSameMonth.last().publicKey))
                     )
                 ).verifyAttestation(
                     certificates = attestationProofSameMonth,
@@ -244,7 +244,7 @@ val FakeAttestationTests by testSuite {
                         requireStrongBox = false,
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
-                        hardwareAttestationTrustAnchors = setOf(attestationProof.last().publicKey)
+                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
                     )
                 ).verifyAttestation(
                     certificates = attestationProof,
@@ -282,9 +282,9 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion,
-                            trustAnchorOverrides = setOf(attestationProof.last().publicKey)
+                            trustedRootOverrides = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
                         ),
                         androidVersion = androidVersion,
                         patchLevel = patchLevel,
@@ -308,9 +308,9 @@ val FakeAttestationTests by testSuite {
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
-                            signatureDigests = listOf(signatureDigest),
+                            signerFingerprints = listOf(signatureDigest),
                             appVersion = appVersion,
-                            trustAnchorOverrides = setOf()
+                            trustedRootOverrides = setOf()
                         ),
                         androidVersion = androidVersion,
                         patchLevel = patchLevel,

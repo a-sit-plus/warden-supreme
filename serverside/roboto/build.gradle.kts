@@ -80,6 +80,8 @@ dependencies {
     implementation(ktor("serialization-kotlinx-json"))
     implementation(ktor("client-cio"))
 
+    implementation(libs.yamltk)
+
     api(libs.guava)
     implementation(libs.autovalue.annotations)
     annotationProcessor(libs.autovalue.value)
@@ -89,6 +91,8 @@ dependencies {
 
 
     //dependencies for new attestation lib
+    implementation(libs.androidx.annotations)
+    implementation(libs.coroutines.guava)
     implementation(libs.cbor)
     implementation(libs.gson)
     implementation(libs.errorprone.annotations)
@@ -110,8 +114,7 @@ tasks.test {
 }
 
 val javadocJar = setupDokka(
-    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/",
-    multiModuleDoc = true
+    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/serverside",
 )
 
 val sourcesJar by tasks.registering(Jar::class) {

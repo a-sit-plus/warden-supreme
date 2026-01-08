@@ -1,7 +1,9 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
+import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.catching
+import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.asn1.*
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToString
@@ -23,7 +25,7 @@ import kotlin.time.Instant
 @Serializable
 data class AttestationChallenge
 /**
- * @throws IllegalArgumentException in case the nonce is larger than 128 bytes
+ * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes
  */
 @Throws(IllegalArgumentException::class)
 private constructor(
@@ -40,7 +42,8 @@ private constructor(
     @Serializable(with = DurationWholeSecondsSerializer::class)
     val validity: Duration,
     /**
-     * The server timezone. Can be omitted if the server does not want to disclose this information
+     * The server timezone. Purely diagnostic, since [Instant] used for [issuedAt] is UTC by definition.
+     * Can be omitted if the server does not want to disclose this information
      */
     @Serializable(with = TimeZoneSerializer::class)
     val timeZone: TimeZone? = null,
@@ -53,7 +56,7 @@ private constructor(
     val nonce: ByteArray,
 
     /**
-     * The endpoint to post the CSR containing the attestation proof to
+     * The endpoint to post the CSR containing the attestation proof to.
      */
     val attestationEndpoint: String,
 
@@ -65,26 +68,44 @@ private constructor(
 
     /**
      * Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
-     * On its own this is **not the device's nickname and therefore cannot identify a person in its own**.
-     * Defaults to `false`.
+     * Setting this to an OID other than `null` will include a device name on a best-effort basis. Defaults to `null` (i.e., no device name will be included).
      */
-    val includeGenericDeviceName: Boolean = false,
+    @Serializable(with = ObjectIdentifierStringSerializer::class)
+    val genericDeviceNameOID: ObjectIdentifier? = null,
 
     /**
-     * Indicates the wire format version
+     * Indicates the wire format version; needs to default to `null` for the default serializer to handle it correctly. The public constructor sets this to [CURRENT_VERSION].
      */
     val version: Int? = null,
 
     /**
-     * Specified key constraints for the client
+     * Specifies key constraints for the client
      */
     val keyConstraints: KeyConstraints? = null,
+
 
     ) {
     init {
         if (nonce.size > 128) throw IllegalArgumentException("nonce too large! must be at most 128 bytes.")
     }
 
+    /**
+     * @param issuedAt The issuing time of the nonce. Useful to detect clock drifts and exit early.
+     *  This is not considered sensible information, as clocks must be in sync anyhow.
+     *  @param validity How long this nonce is considered valid.
+     *  @param timeZone The server timezone. Purely diagnostic, since the [Instant] used for [issuedAt] is UTC by definition.
+     *  Can be omitted if the server does not want to disclose this information
+     *  @param nonce The nonce chosen by the server. Must be at most 128 bytes long, as
+     *  [this is the largest nonce size supported by Android](https://developer.android.com/reference/android/security/keystore/KeyGenParameterSpec.Builder#setAttestationChallenge(byte%5B%5D)).
+     *  @param attestationEndpoint The endpoint to post the CSR containing the attestation proof to.
+     *  @param proofOID The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
+     *  @param genericDeviceNameOID Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
+     *  Setting this to an OID other than `null` will include a device name on a best-effort basis. Defaults to `null` (i.e., no device name will be included).
+     *  @param keyConstraints Specifies key constraints for the client.
+     *
+     * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes
+     */
+    @Throws(IllegalArgumentException::class)
     constructor(
         issuedAt: Instant,
         validity: Duration,
@@ -92,42 +113,18 @@ private constructor(
         nonce: ByteArray,
         attestationEndpoint: String,
         proofOID: ObjectIdentifier,
-        includeGenericDeviceName: Boolean = false,
+        genericDeviceNameOID: ObjectIdentifier? = null,
         keyConstraints: KeyConstraints? = null,
     ) : this(
-        issuedAt,
-        validity,
-        timeZone,
-        nonce,
-        attestationEndpoint,
-        proofOID,
-        includeGenericDeviceName,
+        issuedAt = issuedAt,
+        validity = validity,
+        timeZone = timeZone,
+        nonce = nonce,
+        attestationEndpoint = attestationEndpoint,
+        proofOID = proofOID,
+        genericDeviceNameOID = genericDeviceNameOID,
         version = CURRENT_VERSION,
-        keyConstraints,
-    )
-
-
-    /**
-     * Convenience constructor to pass two instants instead of instant and duration
-     */
-    constructor(
-        issuedAt: Instant,
-        validUntil: Instant,
-        timeZone: TimeZone?,
-        nonce: ByteArray,
-        attestationEndpoint: String,
-        proofOID: ObjectIdentifier,
-        includeGenericDeviceName: Boolean = false,
-        keyConstrains: KeyConstraints? = null,
-    ) : this(
-        issuedAt,
-        validUntil - issuedAt,
-        timeZone,
-        nonce,
-        attestationEndpoint,
-        proofOID,
-        includeGenericDeviceName,
-        keyConstrains
+        keyConstraints = keyConstraints,
     )
 
     /**
@@ -148,7 +145,7 @@ private constructor(
         if (this === other) return true
         if (other !is AttestationChallenge) return false
 
-        if (includeGenericDeviceName != other.includeGenericDeviceName) return false
+        if (genericDeviceNameOID != other.genericDeviceNameOID) return false
         if (version != other.version) return false
         if (issuedAt != other.issuedAt) return false
         if (validity != other.validity) return false
@@ -163,7 +160,7 @@ private constructor(
     }
 
     override fun hashCode(): Int {
-        var result = includeGenericDeviceName.hashCode()
+        var result = genericDeviceNameOID.hashCode()
         result = 31 * result + (version ?: 0)
         result = 31 * result + issuedAt.hashCode()
         result = 31 * result + validity.hashCode()
@@ -177,7 +174,7 @@ private constructor(
     }
 
     companion object {
-        const val CURRENT_VERSION:Int = 1
+        const val CURRENT_VERSION: Int = 2
     }
 }
 
@@ -215,15 +212,47 @@ val TbsCertificationRequest.challenge: KmmResult<ByteArray>
     }
 
 /**
- * Tries to extract a device name from a TBS CSR's attribute with OID [WardenDefaults.OIDs.DEVICE_NAME].
+ * Tries to extract a device name from a TBS CSR, given it is present as an attribute with [oid]
  */
-val TbsCertificationRequest.deviceName: String?
-    get() = catching {
-        attributes.find { it.oid == WardenDefaults.OIDs.DEVICE_NAME }?.value?.singleOrNull()?.asPrimitive()
-            ?.decodeToUtf8String()?.value
-    }.getOrNull()
+fun TbsCertificationRequest.deviceNameForOid(oid: ObjectIdentifier): String? = catchingUnwrapped {
+    attributes.find { it.oid == oid }?.value?.singleOrNull()?.asPrimitive()
+        ?.decodeToUtf8String()?.value
+}.getOrNull()
+
+/**
+ * Tries to extract a device name from a TBS CSR if `genericDeviceNameOID` is specified in [challenge]
+ */
+fun TbsCertificationRequest.deviceNameForChallenge(challenge: AttestationChallenge): String? =
+    challenge.genericDeviceNameOID?.let { oid ->
+        deviceNameForOid(oid)
+    }
 
 /**
  * @see TbsCertificationRequest.deviceName
  */
-val Pkcs10CertificationRequest.deviceName: String? get() = tbsCsr.deviceName
+fun Pkcs10CertificationRequest.deviceNameForOid(oid: ObjectIdentifier): String? = tbsCsr.deviceNameForOid(oid)
+
+/**
+ * @see TbsCertificationRequest.deviceNameForChallenge
+ */
+fun Pkcs10CertificationRequest.deviceNameForChallenge(challenge: AttestationChallenge): String? =
+    tbsCsr.deviceNameForChallenge(challenge)
+
+
+//TODO: remove in 1.1!
+@Deprecated(
+    "Use `deviceNameForOid(WardenDefaults.OIDs.DEVICE_NAME)` instead to emulate old behaviour, but you should really specify whatever OID you have set to convey a generic device. Will be removed in 1.1.",
+    ReplaceWith("deviceNameForOid(deviceNameOid)"),
+    DeprecationLevel.ERROR
+)
+val TbsCertificationRequest.deviceName: String?
+    get() = deviceNameForOid(WardenDefaults.OIDs.DEVICE_NAME)
+
+
+//TODO: remove in 1.1!
+@Deprecated(
+    "Use `deviceNameForOid(WardenDefaults.OIDs.DEVICE_NAME)` instead to emulate old behaviour, but you should really specify whatever OID you have set to convey a generic device. Will be removed in 1.1",
+    ReplaceWith("deviceNameForOid(deviceNameOid)"),
+    DeprecationLevel.ERROR
+)
+val Pkcs10CertificationRequest.deviceName: String? get() = tbsCsr.deviceNameForOid(WardenDefaults.OIDs.DEVICE_NAME)
