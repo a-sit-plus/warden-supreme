@@ -6,8 +6,6 @@ import com.google.android.attestation.ParsedAttestationRecord
 import java.time.Instant
 import java.util.*
 
-@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("NougatHybridAttestationVerifier"))
-typealias NougatHybridAttestationChecker = NougatHybridAttestationVerifier
 class NougatHybridAttestationVerifier @JvmOverloads constructor(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }

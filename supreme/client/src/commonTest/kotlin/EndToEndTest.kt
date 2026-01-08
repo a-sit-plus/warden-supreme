@@ -9,6 +9,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Instant
 
 val ENDPOINT_CHALLENGE = "http://10.0.2.2:8080/api/v1/challenge"
 val ENDPOINT_SHUTDOWN = "http://10.0.2.2:8080/shutdown"
@@ -22,7 +25,7 @@ val EndToEndTest by testSuite {
 
         test("endToEnd") {
             PlatformSigningProvider.deleteSigningKey(ALIAS)
-            val client = AttestationClient(HttpClient())
+            val client = AttestationClient(HttpClient(), FixedTimeClock(2025u,1u,10u))
 
             val result = client.performAttestationFlow(ALIAS,Url(ENDPOINT_CHALLENGE))
             val clue =
@@ -47,4 +50,23 @@ val EndToEndTest by testSuite {
     } else test("NOOP") {
 
     }
+}
+
+private class FixedTimeClock(private var epochMilliseconds: Long) : Clock {
+    constructor(instant: Instant) : this(instant.toEpochMilliseconds())
+    constructor(yyyy: UInt, mm: UInt, dd: UInt) : this(
+        Instant.parse(
+            "$yyyy-${
+                mm.toString().let { if (it.length < 2) "0$it" else it }
+            }-${
+                dd.toString().let { if (it.length < 2) "0$it" else it }
+            }T00:00:00.000Z"
+        )
+    )
+
+    fun offsetBy(duration: Duration) {
+        epochMilliseconds += duration.inWholeMilliseconds
+    }
+
+    override fun now() = Instant.fromEpochMilliseconds(epochMilliseconds)
 }

@@ -24,8 +24,10 @@ import kotlin.time.Clock
  * attestation statements to an attestation verification endpoint.
  *
  * Based on a _Ktor_ [client]. Automatically installs JSON content negotiation.
+ * For testing, it is possible to provide a custom [clock] for high-level checks.
+ * **Note that this clock does not affect generated attestation proofs, because those will always use the actual device clock!**
  */
-class AttestationClient(client: HttpClient) {
+class AttestationClient(client: HttpClient, private val clock: Clock = Clock.System) {
     private val client = client.config {
         install(ContentNegotiation) {
             json()
@@ -36,13 +38,13 @@ class AttestationClient(client: HttpClient) {
     /**
      * Fetches a challenge from an endpoint. This is the first step in an attestation ceremony.
      * This will fail if the system time is off too much:
-     *  * [AttestationChallenge.validUntil] is earlier than the local system clock
-     *  * [AttestationChallenge.issuedAt] is later than the local system clock
+     *  * [AttestationChallenge.validUntil] is earlier than the local clock
+     *  * [AttestationChallenge.issuedAt] is later than the local clock
      *
      *  This will also fail when a challenge of a newer version was received
      *
-     * The reason for the second constraint is the simple fact that if the back-end's clock lags behind the local system clock
-     * (i.e., challenge issuing time is after [Clock.System.now]), certificate chain validation will fail, due to the
+     * The reason for the second constraint is the simple fact that if the back-end's clock lags behind the local clock
+     * (i.e., challenge issuing time is after [clock]`.now`), certificate chain validation will fail, due to the
      * leaf certificate's `notBefore` being in the future from the back-end's point of view.
      *
      * The first contraint simply fails early for challenges that will be rejected by the back-end anyhow. Since [AttestationChallenge.validUntil] may be `null`,
@@ -50,12 +52,13 @@ class AttestationClient(client: HttpClient) {
      */
     suspend fun getChallenge(endpoint: Url): KmmResult<AttestationChallenge> = catching {
         client.get(endpoint).body<AttestationChallenge>().also {
-            val now = Clock.System.now()
+            val now = clock.now()
             if (it.validUntil < now || it.issuedAt > now) throw IllegalStateException(
                 "System time off: issuedAt: ${it.issuedAt}, validUntil: ${it.validUntil}, local system time: $now"
             )
             it.version?.let { ver ->
                 if (ver > CURRENT_VERSION) throw IllegalArgumentException("Received AttestationChallenge version ${it.version} is newer than locally supported version $CURRENT_VERSION")
+                //TODO once needed: different logic based on version
             }
         }
     }
@@ -88,15 +91,33 @@ class AttestationClient(client: HttpClient) {
  * requires authentication.
  *
  * Requires the verifier to pack [KeyConstraints] into the conveyed challenge.
+ *
+ *
+ * Usually, you'll want to use pass [AlternativeNames] into [additionalCsrExtensions], not a subject name!
+ * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [challenge].
+ * Hence, the values passed to this parameter containing a [KnownOIDs.serialNumber] will be overwritten.
+ *
+ * @param additionalCsrExtensions Certificate extensions to be requested. May be ignored by the issuer.
+ *
+ * @param additionalCsrAttributes Additional CSR attributes to pack into this CSR.
+ *
  */
 @Throws(Throwable::class)
 suspend fun AttestationClient.performAttestationFlow(
     alias: String, fetchChallengeEndpoint: Url,
     authPromptMessage: String? = null,
     authPromptCancelText: String? = null,
+    additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
+    additionalCsrAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
 ): AttestationResponse {
     val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
-    val csr = challenge.createAttestationProof(alias).getOrThrow()
+    val csr = challenge.createAttestationProof(
+        alias,
+        authPromptMessage,
+        authPromptCancelText,
+        additionalCsrExtensions,
+        additionalCsrAttributes
+    ).getOrThrow()
     return attest(csr, challenge.attestationEndpointUrl)
 }
 
@@ -110,6 +131,14 @@ suspend fun AttestationClient.performAttestationFlow(
  * Encodes the challenge's nonce into a [KnownOIDs.serialNumber] subjectName
  * and the attestation statement into a Pkcs10CertificationRequestAttribute with [AttestationChallenge.proofOID].
  * Since this operation prepares and directly signs the CSR, it may require user authentication.
+ *
+ * Usually, you'll want to use pass [AlternativeNames] into [additionalCsrExtensions], not a subject name!
+ * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [challenge].
+ * Hence, the values passed to this parameter containing a [KnownOIDs.serialNumber] will be overwritten.
+ *
+ * @param additionalCsrExtensions Certificate extensions to be requested. May be ignored by the issuer.
+ *
+ * @param additionalCsrAttributes Additional CSR attributes to pack into this CSR.
  */
 suspend fun AttestationChallenge.createAttestationProof(
     /**
@@ -118,6 +147,8 @@ suspend fun AttestationChallenge.createAttestationProof(
     alias: String,
     authPromptMessage: String? = null,
     authPromptCancelText: String? = null,
+    additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
+    additionalCsrAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
 ): KmmResult<Pkcs10CertificationRequest> {
 
 
@@ -163,45 +194,46 @@ suspend fun AttestationChallenge.createAttestationProof(
             }
         }
     }.getOrThrow()
-    val additionalAttributes = if (includeGenericDeviceName) listOf(
-        Pkcs10CertificationRequestAttribute(
-            WardenDefaults.OIDs.DEVICE_NAME,
-            Asn1String.UTF8(getDeviceName()).encodeToTlv()
-        )
-    ) else listOf()
+    val additionalAttributes = genericDeviceNameOID?.let { deviceNameOID ->
+        additionalCsrAttributes +
+                Pkcs10CertificationRequestAttribute(
+                    deviceNameOID,
+                    Asn1String.UTF8(getDeviceName()).encodeToTlv()
+                )
+
+    } ?: additionalCsrAttributes
     val signer = PlatformSigningProvider.getSignerForKey(alias) {
         unlockPrompt {
             authPromptMessage?.let { message = it }
             authPromptCancelText?.let { cancelText = it }
         }
     }.getOrThrow()
-    return signer.createCsr(this, additionalAttributes = additionalAttributes)
+    return signer.createCsr(
+        this,
+        additionalExtensions = additionalCsrExtensions,
+        additionalAttributes = additionalAttributes
+    )
 }
 
 /**
  * Creates a signed CSR from an attestable signer.
  * Encodes the challenge's nonce into a [KnownOIDs.serialNumber] subjectName
  * and the attestation statement into a Pkcs10CertificationRequestAttribute with [AttestationChallenge.proofOID].
- * Since this operation prepares and directly signs the CSR, it may require user authentication
+ * Since this operation prepares and directly signs the CSR, it may require user authentication.
+ *
+ * @param subjectName The subject name, if required.
+ * Usually, you'll want to use pass [AlternativeNames] into [additionalExtensions], not a subject name!
+ * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [challenge].
+ * Hence, the values passed to this parameter containing a [KnownOIDs.serialNumber] will be overwritten.
+ *
+ * @param additionalExtensions Certificate extensions to be requested. May be ignored by the issuer.
+ *
+ * @param additionalAttributes Additional CSR attributes to pack into this CSR.
  */
 suspend fun Signer.Attestable<*>.createCsr(
     challenge: AttestationChallenge,
-    /**
-     * The subject name, if required.
-     * Usually, you'll want to use pass [AlternativeNames] into [additionalExtensions], not a subject name!
-     * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [challenge].
-     * Hence, the valued passed to this parameter containing a [KnownOIDs.serialNumber] will be overwritten.
-     */
     subjectName: List<RelativeDistinguishedName> = listOf(),
-
-    /**
-     * Certificate extensions to be requested. May be ignored by the issuer.
-     */
     additionalExtensions: List<X509CertificateExtension> = listOf(),
-
-    /**
-     * Additional CSR attributes to pack into this CSR.
-     */
     additionalAttributes: List<Pkcs10CertificationRequestAttribute> = listOf()
 ): KmmResult<Pkcs10CertificationRequest> =
     attestation?.let { attestation ->

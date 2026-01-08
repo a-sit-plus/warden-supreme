@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.semver)
     implementation(libs.slf4j.api)
     implementation(libs.jackson.kotlin)
+    implementation(libs.yamltk)
 
     testImplementation(libs.slf4j.reload4j)
     testImplementation(kotlin("reflect"))
@@ -59,8 +60,7 @@ dependencies {
 
 
 val javadocJar = setupDokka(
-    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/",
-    multiModuleDoc = true
+    baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/serverside",
 )
 
 val sourcesJar by tasks.registering(Jar::class) {

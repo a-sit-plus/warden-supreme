@@ -225,7 +225,12 @@ val FeatureDemonstration by testSuite {
                             teamIdentifier = "9CYHJNG644",
                             bundleIdentifier = "at.asitplus.attestation-client",
                             sandbox = false,
-                            trustedRootOverrides = setOf(APPLE_DEFAULT_TRUSTED_ROOTS.first().receiptRoot to APPLE_DEFAULT_TRUSTED_ROOTS.first().receiptRoot)
+                            trustedRootOverrides = setOf(
+                                TrustedRootPair(
+                                    APPLE_DEFAULT_TRUSTED_ROOTS.first().receiptRoot,
+                                    APPLE_DEFAULT_TRUSTED_ROOTS.first().receiptRoot
+                                )
+                            )
                         )
                     ),
                     iosVersion = IosAttestationConfiguration.OsVersions(

@@ -39,9 +39,6 @@ import kotlin.time.toKotlinInstant
  */
 const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
 
-@Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("Roboto"))
-typealias AndroidAttestationChecker = Roboto
-
 abstract class Roboto(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
     private val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
@@ -198,10 +195,10 @@ abstract class Roboto(
                         certificateChain = this,
                         rootCertStage = CertificateInvalidException.OtherMatchingRoot.Stage.HARDWARE
                     )
-                else if (GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.publicKey.encoded }
+                else if (GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.map { it.publicKey.encoded }
                         .firstOrNull { it.contentEquals(root.publicKey.encoded) } != null)
                     CertificateInvalidException.OtherMatchingRoot(
-                        message = "No matching root certificate. Found a default SOFTWARE Root",
+                        message = "No matching root certificate. Found a default SOFTWARE (pre-Android-13) Root",
                         invalidCertificate = root,
                         certificateChain = this,
                         rootCertStage = CertificateInvalidException.OtherMatchingRoot.Stage.SOFTWARE
@@ -228,7 +225,7 @@ abstract class Roboto(
             teeEnforced().creationDateTime().getOrNull() ?: softwareEnforced().creationDateTime().getOrNull()
         if (createdAt == null) throw AttestationValueException(
             "Attestation statement creation time missing",
-            reason = AttestationValueException.Reason.TIME,
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
             expectedValue = checkTime,
             actualValue = null
         )
@@ -236,14 +233,14 @@ abstract class Roboto(
         val difference = Duration.between(createdAt, checkTime)
         if (difference.isNegative) throw AttestationValueException(
             "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
-            reason = AttestationValueException.Reason.TIME,
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
             expectedValue = checkTime,
             actualValue = createdAt
         )
 
         if (difference > Duration.ofSeconds(attestationConfiguration.attestationStatementValiditySeconds.toLong())) throw AttestationValueException(
             "Attestation statement creation time too far in the past: $createdAt, check time: $checkTime, attestation statement validity in seconds: ${attestationConfiguration.attestationStatementValiditySeconds}",
-            reason = AttestationValueException.Reason.TIME,
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
             expectedValue = checkTime,
             actualValue = createdAt
         )
@@ -444,7 +441,6 @@ abstract class Roboto(
         expectedChallenge: ByteArray,
         verificationDate: Date = Date(),
     ) = AndroidDebugAttestationStatement(
-        version,
         this,
         attestationConfiguration,
         verificationDate,

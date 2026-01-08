@@ -10,4 +10,7 @@ local.properties
 /docs/docs/samples/
 /docs/docs/schemas/
 /serverside/makoto/src/main/kotlin/wardenVersion.kt
+/serverside/roboto/src/main/kotlin/wardenVersion.kt
 /serverside/makoto/src/generated/
+/serverside/roboto/src/generated/
+/docs/docs/examples/

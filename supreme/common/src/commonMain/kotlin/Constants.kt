@@ -20,7 +20,7 @@ object WardenDefaults {
         val ATTESTATION_PROOF = ObjectIdentifier(Uuid.parse("3fe0e8a9-4a7a-4cd1-a3cc-93c228908116"))
 
         /**
-         * Device name attribute OID
+         * Default device name attribute OID, can be uses, if desired, but must be manually set
          */
         val DEVICE_NAME = ObjectIdentifier(Uuid.parse("792c51ff-6032-47a3-9c1c-2401be1b6a2f"))
     }

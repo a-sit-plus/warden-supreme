@@ -4,15 +4,50 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-## Next
+# 1.0.0
+* Remove all deprecations marked for removal with 1.0.0.
+* Make it possible to configure only iOS or only Android attestation
+* Revamp AttestationChallenge
+    * Configurable device name OID
+        * Replace `includeGenericDeviceName` in favour of `genericDeviceNameOID`
+        * Old constructor signatures have been removed
+        * Also Affects `AttestationVerifier`
+    * bump challenge version to `2`
+* Remove ability to specify challenge validity as instant
+    * Validity is set as a duration
+    * read-only `validUntil` Instant-property stays
+* Fix custom auth prompts not propagating for fully integrated flows
+* Allow specifying CSR attributes and extensions for fully integrated flows
+* Make Content exception a sealed class
+* Rename `AttestationValueException.Reason.TIME` -> `AttestationValueException.Reason.STATEMENT_TIME`
+* AttestationResult.Error will now always contain a `cause`
+* `AttestationResult.Error.CONTENT` is now thrown when an attestation is received for a non-configured platform 
+* Fix nonce validity duration calculation
+* Fix default Android attestation statement validity seconds really defaulting to `null` when using Spring Boot config loading
+* Ability to set clock on client for testing/debugging (only sensible on Android)
+* Add custom Android Attestation Extension parser (for debugging purposes, for now)
+* Introduce canonical config format to avoid issues with config loading
+    * Discourage config Loading through Hoplite or Spring Boot
+    * Includes YAML and JSON format
+    * Docs include auto-generated full JSON and YAML as a reference
 * Completely revamped revocation checks based on configurable, chainable loaders:
-   * HTTP-based, caching
-   * File-based, caching
-   * In-memory, static, non-caching
+    * HTTP-based, caching
+    * File-based, caching
+    * In-memory, static, non-caching
 * Provide fully-fledged Android revocation lists
 * Make attestation functions suspending and provide blocking wrappers under old `@JvmName`s
 * The Android-specific `Revoked` error now includes the revocation list entry that indicated a revocation or suspension.
+* Make Makoto configs publicly accessible
 * Additional fixes to exception equality checks
+* Gradle 9 + Kotlin 2.3
+    * Return value checker defaults to `check`
+* Dependency updates:
+    * Dokka 2.10.0  
+    * AGP 8.12.3
+    * Ktor 3.3.3
+    * Bouncy Castle 1.83 (no more forcing exact version)
+    * Android Key Attestation Check lib from Google b5176b4d3fdd97301be0d194ab48ab3c6fa558fb
+
 
 ## 0.9.9999.1
 * Fix missing old HW trust anchor

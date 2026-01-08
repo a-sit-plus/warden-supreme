@@ -83,6 +83,7 @@ markdown_extensions:
       base_path:
         - ../supreme/verifier/src/commonTest/kotlin/examples/
         - ../supreme/client/src/commonTest/kotlin/examples/
+        - docs/examples/
   - pymdownx.superfences
   - admonition
   - pymdownx.details
@@ -106,10 +107,11 @@ nav:
         - References: refs.md
     - Integration Guide:
         - Integrating Warden Supreme:
-            - Overview: integration/supreme.md
-            - Debugging: integration/debugging.md
-            - Project Structure: integration/structure.md
-        - Data Model and Schema: integration/datamodel.md
+            - End-to-End Integration: integration/supreme.md
+            - Error Handling: integration/errorhandling.md
+            - Data Model and Schema: integration/datamodel.md
+        - Project Structure: integration/structure.md
+        - Debugging: integration/debugging.md
         - Usage without Integrated Clients: integration/raw.md
         - Migration from WARDEN: integration/migration.md
         - Changelog: CHANGELOG.md
