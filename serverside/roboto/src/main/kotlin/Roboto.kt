@@ -581,14 +581,6 @@ class EternalX509Certificate(private val delegate: X509Certificate) : X509Certif
 
 }
 
-internal val json = Json { ignoreUnknownKeys = true }
-
-fun HttpClientConfig<*>.setup(proxyUrl: String?) =
-    apply {
-        install(HttpCache)
-        install(ContentNegotiation) { json(json) }
-        engine { proxyUrl?.let { proxy = ProxyBuilder.http(it) } }
-    }
 
 
 /**

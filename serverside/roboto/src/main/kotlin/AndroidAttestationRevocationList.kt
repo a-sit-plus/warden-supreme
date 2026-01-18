@@ -1,0 +1,277 @@
+package at.asitplus.attestation.android
+
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.decodeFromStream
+import java.io.FileInputStream
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import kotlin.time.*
+import kotlin.time.Duration.Companion.seconds
+
+
+/**
+ * Represents a revocation list specific to Android attestation  as per
+ * [the official specification}(https://developer.android.com/privacy-and-security/security-key-attestation#certificate_status),
+ * containing information about revoked or suspended certificates, metadata on expiration, and modification timestamps.
+ *
+ * @property entries A map where keys represent unique certificate serial numbers and values
+ * correspond to revocation entries detailing the status and reason.
+ * @property date The optional timestamp indicating when the revocation list was issued.
+ * @property expires The optional expiration timestamp after which this list is no longer valid.
+ * If `null`, the entry does not expire. See also [isExpired].
+ * @property lastModified The optional timestamp indicating the last modification date of the list.
+ */
+@OptIn(ExperimentalTime::class)
+@Serializable
+data class AndroidAttestationRevocationList(
+    val entries: Map<String, Entry>,
+    val date: Instant? = null,
+    val expires: Instant? = null,
+    val lastModified: Instant? = null
+) {
+
+    fun isExpired(now: Instant): Boolean = expires?.let { now > it } ?: false
+    fun isExpired(now: java.time.Instant) = isExpired(now.toKotlinInstant())
+
+    /**
+     * Represents a revocation entry containing information about the status,
+     * reason for revocation, and the optional expiration date.
+     *
+     * @property status The revocation status of the entry, indicating if it is revoked or suspended.
+     * @property reason The reason for the revocation, such as revoked or suspended.
+     * @property expires The optional expiration date for the entry in ISO-8601 format.
+     * Only ever present for [RevocationStatus.SUSPENDED]. If `null`, the entry does not expire.
+     * See also [isExpired].
+     */
+    @Serializable
+    data class Entry(
+        val status: RevocationStatus,
+        val reason: RevocationReason? = null,
+        @Serializable(with = Iso8601YyyMmDdSerializer::class)
+        val expires: Instant? = null,
+        val comment: String? = null
+    ) {
+        fun isExpired(now: Instant): Boolean = expires?.let { now > it } ?: false
+        fun isExpired(now: java.time.Instant) = isExpired(now.toKotlinInstant())
+    }
+
+    @Serializable
+    enum class RevocationStatus {
+        REVOKED,
+        SUSPENDED
+    }
+
+    @Serializable
+    enum class RevocationReason {
+        UNSPECIFIED,
+        KEY_COMPROMISE,
+        CA_COMPROMISE,
+        SUPERSEDED,
+        SOFTWARE_FLAW
+    }
+
+
+    /**
+     * Checks if a device with the given serial number is either revoked or suspended.
+     *
+     * @param serial The unique serial number of the device being checked.
+     * @return `true` if the serial number exists in the revocation list, indicating
+     *         that the device has been revoked or suspended; `false` otherwise.
+     */
+    fun isRevokedOrSuspended(serial: String) = entries.containsKey(serial)
+
+    fun serialize() = json.encodeToString(this)
+
+
+    companion object {
+
+        internal val json = Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            encodeDefaults = false
+            explicitNulls = false
+        }
+
+        fun deserialize(
+            jsonString: String,
+            dateOverride: Instant? = null,
+            expiresOverride: Instant? = null,
+            lastModifiedOverride: Instant? = null
+        ): AndroidAttestationRevocationList =
+            deserialize(
+                json.decodeFromString<JsonObject>(jsonString),
+                dateOverride = dateOverride,
+                expiresOverride = expiresOverride,
+                lastModifiedOverride = lastModifiedOverride
+            )
+
+        fun deserialize(
+            jsonObject: JsonObject,
+            dateOverride: Instant? = null,
+            expiresOverride: Instant? = null,
+            lastModifiedOverride: Instant? = null
+        ): AndroidAttestationRevocationList =
+            json.decodeFromJsonElement<AndroidAttestationRevocationList>(jsonObject)
+                .let { parsed -> dateOverride?.let { parsed.copy(date = it) } ?: parsed }
+                .let { parsed -> expiresOverride?.let { parsed.copy(expires = it) } ?: parsed }
+                .let { parsed -> lastModifiedOverride?.let { parsed.copy(lastModified = it) } ?: parsed }
+    }
+
+    /**
+     * Generic Interface to load an [AndroidAttestationRevocationList].
+     * Implementing classes are expected to be configured with any
+     * parameters needed for loading, s.t. loading itself requires no parameters
+     */
+    interface Loader {
+        /**
+         * Loads an [at.asitplus.attestation.android.AndroidAttestationRevocationList], which provides information
+         * about revoked or suspended devices as per the official specification.
+         * The implementation details, such as the source of the revocation list,
+         * may vary depending on the specific implementation of the `Loader` interface.
+         *
+         * @return The loaded `AndroidAttestationRevocationList`, containing details
+         * on revoked or suspended entries, along with metadata such as expiration
+         * and modification dates (when available).
+         * @throws Throwable if an error occurs during the loading process, such as
+         * network issues, IO errors,  or invalid data.
+         */
+        @Throws(Throwable::class)
+        suspend fun load(): AndroidAttestationRevocationList
+
+        /**
+         * Loads an [AndroidAttestationRevocationList] in a blocking manner.
+         *
+         * @see load
+         */
+        @Throws(Throwable::class)
+        fun loadBlocking(): AndroidAttestationRevocationList = runBlocking { load() }
+
+        /**
+         * Caching HTTP [Loader] that fetches an
+         * [AndroidAttestationRevocationList] over HTTP. This class uses an
+         * [HttpClient] to perform requests and parses the fetched JSON content
+         * into the revocation list format and respects [HttpHeaders.CacheControl]!
+         *
+         * @param T The type of the [HttpClientEngineConfig] to configure the HTTP engine.
+         * @param engineFactory The factory responsible for creating the engine used for the HTTP client.
+         * @param sourceUrl The URL from which the revocation list will be fetched.
+         * Defaults to the official Google attestation revocation list URL.
+         * @param preferCacheControl if `true` (which is the default), a present [HttpHeaders.CacheControl] `max-age` property
+         * will take precedence over a potentially present [HttpHeaders.Expires] value.
+         * Note that Google explicitly mentions cache control to communicate expiry times. Most probably
+         * because it will work as expected regardless of clock drifts.
+         *
+         * @param config An optional HTTP client configuration lambda that allows customization of the client's behaviour.
+         * Note that fixed defaults for caching, content-negotiation, and deserialization may override parts of the provided config.
+         */
+        class Http<T : HttpClientEngineConfig>(
+            engineFactory: HttpClientEngineFactory<T>,
+            val sourceUrl: String = GOOGLE_OFFICIAL_REVOCATION_LIST,
+            private val clock: Clock = Clock.System,
+            private val preferCacheControl: Boolean = true,
+            config: HttpClientConfig<T>.() -> Unit
+        ) : Loader {
+
+            private val httpClient = HttpClient(engineFactory) {
+                config()
+                install(ContentNegotiation) { json(json) }
+            }
+
+            override suspend fun load(): AndroidAttestationRevocationList =
+                httpClient.get(sourceUrl).run {
+                    val validity: Duration? = if (preferCacheControl) {
+                        val cacheControl =
+                            headers.getAll(HttpHeaders.CacheControl)
+                                .orEmpty()
+                                .asSequence()
+                                .flatMap { it.split(',') }.filter { it.contains("=") }
+                                .map { it.split("=") }.filter { it.size == 2 }.filter { it.first() == "max-age" }
+                                .toList()
+                        if (cacheControl.size > 1)
+                            throw IllegalArgumentException("Found multiple Cache-Control entries setting a max-age: ${cacheControl.joinToString { it.joinToString() }}")
+                        cacheControl.first()[2].toLong().seconds
+                    } else null
+
+                    deserialize(
+                        jsonObject = body<JsonObject>(),
+                        dateOverride = headers.getInstant(HttpHeaders.Date),
+                        expiresOverride = validity?.let { clock.now() + it } ?: headers.getInstant(HttpHeaders.Expires),
+                        lastModifiedOverride = headers.getInstant(HttpHeaders.LastModified)
+                    )
+                }
+
+
+            companion object {
+                private val httpDateFormatter =
+                    DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC)
+
+                private fun Headers.getInstant(name: String): Instant? =
+                    get(name)?.let {
+                        java.time.Instant.from(httpDateFormatter.parse(it)).toKotlinInstant()
+                    }
+
+                val GOOGLE_OFFICIAL_REVOCATION_LIST = "https://android.googleapis.com/attestation/status"
+            }
+        }
+
+        class File(
+            val path: String,
+            private val fallbackToFileSystemInfo: Boolean = true
+        ) : Loader {
+            @Throws(Throwable::class)
+            override suspend fun load(): AndroidAttestationRevocationList = withContext(Dispatchers.IO) {
+                FileInputStream(path).use { reader ->
+                    var read = deserialize(json.decodeFromStream<JsonObject>(reader))
+                    if (fallbackToFileSystemInfo) {
+                        if (read.lastModified == null) {
+                            val fromFs = java.io.File(path).lastModified()
+                            if (fromFs != 0L) read = read.copy(lastModified = Instant.fromEpochMilliseconds(fromFs))
+                        }
+                        if (read.date == null) {
+                            val attrs: BasicFileAttributes =
+                                Files.readAttributes(Path.of(path), BasicFileAttributes::class.java)
+                            val fromFs = attrs.creationTime().toMillis()
+                            if (fromFs != 0L) read = read.copy(date = Instant.fromEpochMilliseconds(fromFs))
+                        }
+                    }
+                    read
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+private object Iso8601YyyMmDdSerializer : KSerializer<Instant> {
+    override val descriptor = PrimitiveSerialDescriptor("Iso8601YyyMmDd", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Instant) {
+        encoder.encodeString(value.toString().take(10))
+    }
+
+    override fun deserialize(decoder: Decoder): Instant {
+        return Instant.parse(decoder.decodeString())
+    }
+
+}
