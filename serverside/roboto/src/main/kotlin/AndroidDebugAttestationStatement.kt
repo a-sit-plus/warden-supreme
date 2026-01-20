@@ -1,6 +1,7 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import java.security.cert.X509Certificate
 import java.util.*
@@ -16,28 +17,9 @@ class AndroidDebugAttestationStatement(
     val configuration: AndroidAttestationConfiguration,
     @Serializable(with = DateTimeSerializer::class) val verificationTime: Date,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray,
-    val attestationStatement: List<@Serializable(with = CertPemSerializer::class) X509Certificate>
+    val attestationStatement: List<@Serializable(with = CertPemSerializer::class) X509Certificate>,
+    val revocationLists: List<AttestationRevocationList>,
 ) {
-
-    constructor(
-        verifier: Roboto,
-        configuration: AndroidAttestationConfiguration,
-        verificationTime: Date,
-        challenge: ByteArray,
-        attestationStatement: List<X509Certificate>
-    ) : this(
-        when (verifier) {
-            is HardwareAttestationVerifier -> Type.HARDWARE
-            is SoftwareAttestationVerifier -> Type.SOFTWARE
-            is NougatHybridAttestationVerifier -> Type.NOUGAT_HYBRID
-            else -> throw IllegalArgumentException("Unknown checker type")
-        },
-        configuration,
-        verificationTime,
-        challenge,
-        attestationStatement
-
-    )
 
     fun checkerFromConfig(): Roboto =
         when (kind) {
@@ -46,7 +28,11 @@ class AndroidDebugAttestationStatement(
             Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(configuration)
         }
 
-    fun replay() = checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)
+    @JvmName("replaySuspending")
+    suspend fun replay() = checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)
+
+    @JvmName("replay")
+    fun replayBlocking() = runBlocking { replay() }
 
 
     fun serialize() = jsonDebug.encodeToString(this)
@@ -57,6 +43,26 @@ class AndroidDebugAttestationStatement(
     }
 
     companion object {
+        suspend operator fun invoke(
+            verifier: Roboto,
+            configuration: AndroidAttestationConfiguration,
+            verificationTime: Date,
+            challenge: ByteArray,
+            attestationStatement: List<X509Certificate>
+        ) = AndroidDebugAttestationStatement(
+            when (verifier) {
+                is HardwareAttestationVerifier -> Type.HARDWARE
+                is SoftwareAttestationVerifier -> Type.SOFTWARE
+                is NougatHybridAttestationVerifier -> Type.NOUGAT_HYBRID
+                else -> throw IllegalArgumentException("Unknown checker type")
+            },
+            configuration,
+            verificationTime,
+            challenge,
+            attestationStatement,
+            verifier.revocationListFromLastCall()
+        )
+
         fun deserialize(string: String) = jsonDebug.decodeFromString<AndroidDebugAttestationStatement>(string)
     }
 }
