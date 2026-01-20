@@ -19,7 +19,7 @@ private val jsonDebug by lazy {
 }
 
 @Serializable
-class ConfigWithList(val config: Configuration<*>, val list: AttestationRevocationList)
+data class ConfigWithList(val config: Configuration<*>, val list: AttestationRevocationList)
 
 @Serializable
 class AndroidDebugAttestationStatement(
@@ -33,10 +33,13 @@ class AndroidDebugAttestationStatement(
 ) {
 
     fun checkerFromConfig(): Roboto =
+        configuration.copy(revocation = revocationLists.map { (_,list)-> AttestationRevocationList.InMemoryLoader.Configuration(list) }).let { cfg->
+
         when (kind) {
-            Type.HARDWARE -> HardwareAttestationVerifier(configuration)
-            Type.SOFTWARE -> SoftwareAttestationVerifier(configuration)
-            Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(configuration)
+            Type.HARDWARE -> HardwareAttestationVerifier(cfg)
+            Type.SOFTWARE -> SoftwareAttestationVerifier(cfg)
+            Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(cfg)
+        }
         }
 
     @JvmName("replaySuspending")

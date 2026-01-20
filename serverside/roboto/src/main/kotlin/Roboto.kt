@@ -55,7 +55,9 @@ abstract class Roboto(
 
     private val newPkixCertPathValidator = getValidator()
 
-    private val revocationCheckers:List<Pair<AttestationRevocationList.Loader.Configuration<*>,AttestationRevocationList.Loader>> = attestationConfiguration.revocation.map { (it to it.createLoader())}
+    private val revocationCheckers: List<Pair<AttestationRevocationList.Loader.Configuration<*>, AttestationRevocationList.Loader>> by lazy {
+        attestationConfiguration.revocation.map { (it to it.createLoader()) }
+    }
 
     private val revocationMutex = Mutex()
     private var revocationListsFromLastCall = listOf<ConfigWithList>()
@@ -142,14 +144,20 @@ abstract class Roboto(
         }
         if (revocationCheckers.isNotEmpty()) revocationMutex.withLock {
             catchingUnwrapped {
-                revocationCheckers.map { (cfg, loader) -> ConfigWithList(cfg , loader.load(verificationDate.toInstant().toKotlinInstant())) }
+                revocationCheckers.map { (cfg, loader) ->
+                    ConfigWithList(
+                        cfg,
+                        loader.load(verificationDate.toInstant().toKotlinInstant())
+                    )
+                }
             }.onSuccess {
                 revocationListsFromLastCall = it
                 if (it.any { it.list.isRevokedOrSuspended(certificate.serialNumber) })
                     throw RevocationException.Revoked(
                         "Certificate ${certificate.serialNumber} revoked",
                         certificateChain = fullChainForDebugging,
-                        revokedCertificate = certificate
+                        revokedCertificate = certificate,
+                        TODO("get list and source")
                     )
             }.onFailure {
                 throw RevocationException.ListUnavailable(

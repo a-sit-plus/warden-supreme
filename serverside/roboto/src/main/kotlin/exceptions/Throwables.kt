@@ -1,7 +1,10 @@
 package at.asitplus.attestation.android.exceptions
 
+import at.asitplus.attestation.android.AttestationRevocationList
 import at.asitplus.attestation.android.SoftwareAttestationVerifier
 import at.asitplus.attestation.android.contentEqualsIfArray
+import at.asitplus.attestation.android.contentHashCodeIfArray
+import at.asitplus.signum.indispensable.contentEqualsIfArray
 import java.security.cert.X509Certificate
 
 /**
@@ -287,24 +290,29 @@ sealed class RevocationException(message: String?, cause: Throwable? = null, val
         message: String?,
         cause: Throwable? = null,
         val certificateChain: List<X509Certificate>,
-        val revokedCertificate: X509Certificate
+        val revokedCertificate: X509Certificate,
+        val entry: AttestationRevocationList.Entry,
     ) : RevocationException(message, cause, Reason.REVOKED) {
 
+        private val encodedChain by lazy { certificateChain.map { it.encoded }.toTypedArray() }
+        private val encodedCertificate by lazy { revokedCertificate.encoded }
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is Revoked) return false
             if (!super.equals(other)) return false
 
-            if (certificateChain != other.certificateChain) return false
-            if (revokedCertificate != other.revokedCertificate) return false
+            if (!encodedChain.contentDeepEquals(other.encodedChain)) return false
+            if (!encodedCertificate.contentEquals(other.encodedCertificate)) return false
+            if (entry != other.entry) return false
 
             return true
         }
 
         override fun hashCode(): Int {
             var result = super.hashCode()
-            result = 31 * result + certificateChain.hashCode()
-            result = 31 * result + revokedCertificate.hashCode()
+            result = 31 * result + encodedChain.contentDeepHashCode()
+            result = 31 * result + encodedCertificate.contentHashCode()
+            result = 31 * result + entry.hashCode()
             return result
         }
     }

@@ -27,6 +27,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.plus
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import java.io.FileInputStream
@@ -135,28 +136,40 @@ data class AttestationRevocationList(
 
 
     companion object {
+        @PublishedApi
+        internal val configSubclasses = mutableSetOf<SerializersModule>()
 
-        private val configSubclasses = mutableSetOf<KClass<Configuration<*>>>()
+        init {
+            registerConfiguration(InMemoryLoader.Configuration::class)
+            registerConfiguration(FileLoader.Configuration::class)
+            registerConfiguration(HttpLoader.Configuration::class)
+        }
 
-        fun registerConfiguration(clazz: KClass<Configuration<*>>) {
-            configSubclasses.add(clazz)
+        @PublishedApi
+        internal var inited = false
+
+        /**
+         * Can be used to register additional [Loader.Configuration]s to support custom [Loader]s.
+         * **Must be called before any serialization/deserialization**, calling afterwards throw an [IllegalArgumentException]!
+         */
+        inline fun <reified L, reified T : Configuration<L>> registerConfiguration(clazz: KClass<T>) {
+            if (inited) throw IllegalStateException("AttestationRevocationList Loader Serializers are already initialized")
+            configSubclasses.add(SerializersModule {
+                polymorphic(Configuration::class) {
+                    subclass(clazz)
+                }
+            })
         }
 
 
         internal val json by lazy {
+            inited = true
             Json {
                 ignoreUnknownKeys = true
                 isLenient = true
                 encodeDefaults = false
                 explicitNulls = false
-
-                serializersModule = SerializersModule {
-                    polymorphic(Configuration::class) {
-                        subclass(FileLoader.Configuration::class)
-                        subclass(HttpLoader.Configuration::class)
-                        configSubclasses.forEach { subclass(it) }
-                    }
-                }
+                serializersModule = configSubclasses.reduce { acc, e -> acc + e }
                 classDiscriminator = "type"
             }
         }
@@ -413,6 +426,23 @@ data class AttestationRevocationList(
                 FileLoader(path, fallbackRevocationListValiditySeconds, fallbackToFileSystemInfo)
 
         }
+    }
+
+    /**
+     * In-Memory "Loader", that will always return [list] and ignore all validity.
+     */
+    class InMemoryLoader(val list: AttestationRevocationList) : Loader {
+        override val fallbackRevocationListValiditySeconds: Long = -1
+        override suspend fun load(now: Instant) = list
+
+
+        @Serializable
+        @SerialName("mem")
+        data class Configuration(val list: AttestationRevocationList) : Loader.Configuration<InMemoryLoader> {
+            override fun createLoader() = InMemoryLoader(list)
+            override val fallbackRevocationListValiditySeconds: Long = -1
+        }
+
     }
 }
 
