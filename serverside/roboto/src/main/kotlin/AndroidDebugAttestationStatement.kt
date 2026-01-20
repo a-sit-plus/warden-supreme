@@ -3,12 +3,16 @@ package at.asitplus.attestation.android
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.plus
 import java.security.cert.X509Certificate
 import java.util.*
 
-private val jsonDebug = kotlinx.serialization.json.Json {
-    encodeDefaults = true
-    ignoreUnknownKeys = true
+private val jsonDebug by lazy {
+    kotlinx.serialization.json.Json {
+        encodeDefaults = true
+        ignoreUnknownKeys = true
+        serializersModule += AttestationRevocationList.json.serializersModule
+    }
 }
 
 @Serializable

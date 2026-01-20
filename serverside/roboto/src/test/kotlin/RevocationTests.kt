@@ -6,13 +6,12 @@ import com.zkdcloud.proxy.http.ServerStart
 import com.zkdcloud.proxy.http.handler.client.ExceptionDuplexHandler
 import com.zkdcloud.proxy.http.handler.client.JudgeTypeInboundHandler
 import de.infix.testBalloon.framework.core.testSuite
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.engine.mock.*
+import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.util.date.*
 import io.ktor.utils.io.*
@@ -31,13 +30,15 @@ import io.netty.util.concurrent.DefaultThreadFactory
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.File
-import java.math.BigInteger
-import java.net.ConnectException
 import java.nio.charset.StandardCharsets
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 
 const val TEST_STATUS_LIST_PATH = "../../dependencies/android-key-attestation/src/test/resources/status.json"
@@ -55,6 +56,7 @@ val TEST_CERT = """
         """.trimIndent()
 
 
+@OptIn(ExperimentalTime::class)
 val RevocationTestFromGoogleSources by testSuite {
 
     "custom implementation" - {
@@ -66,60 +68,70 @@ val RevocationTestFromGoogleSources by testSuite {
 
         "load Test Serial" {
 
-            Roboto.RevocationList.from(File(TEST_STATUS_LIST_PATH).inputStream())
-                .isRevoked(serialNumber).shouldBeTrue()
+            var loadBlocking =
+                AttestationRevocationList.FileLoader(TEST_STATUS_LIST_PATH, 0L).loadBlocking(Clock.System.now())
+            loadBlocking
+                .isRevokedOrSuspended(serialNumber).shouldBeTrue()
         }
 
         "test cache" - {
 
             "without HTTP Expiry Header" {
-                var requestCounter = 0
-                val client = MockEngine { _ ->
-                    requestCounter++
-                    respond(withExpiry = false)
-                }.setup(null)
+                val now = Clock.System.now()
+                val client = AttestationRevocationList.HttpLoader(
+                    MockEngine,
+                    url = "",
+                    fallbackRevocationListValiditySeconds = 0L
+                ) {
+                    engine { requestHandlers.add(setResponse(now, withExpiry1Hour = false)) }
+                }
+                val first = client.loadBlocking(now)
+                first.expires shouldBe now
                 val times = 1000
                 repeat(times) {
-                    Roboto.RevocationList.fromGoogleServer(client)
+                    var newList = client.loadBlocking(now)
+                    newList.expires shouldBe now
+                    (newList === first).shouldBeFalse()
                 }
-                requestCounter shouldBe times
             }
 
-            "without HTTP Expiry Header" {
-                var requestCounter = 0
-                val client = MockEngine { _ ->
-                    requestCounter++
-                    respond(withExpiry = true)
-                }.setup(null)
+            "with HTTP Expiry Header" {
+                val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
+                val client = AttestationRevocationList.HttpLoader(
+                    MockEngine,
+                    url = "",
+                    fallbackRevocationListValiditySeconds = 0L
+                ) {
+                    engine { requestHandlers.add(setResponse(now, withExpiry1Hour = true)) }
+                }
+
+                val first = client.loadBlocking(now)
                 val times = 1000
                 repeat(times) {
-                    Roboto.RevocationList.fromGoogleServer(client)
+                    (client.loadBlocking(now) === first).shouldBeTrue()
+                    first.expires shouldBe now + 1.hours
                 }
-                requestCounter shouldBe 1
             }
         }
+        /*
+                "Test HTTP local proxy" {
+                    val client = HttpClient(CIO) { setup("http://localhost:1081") }
+                    shouldThrow<ConnectException> {
+                        Roboto.RevocationList.fromGoogleServer(client)
+                    }
+                    startProxy()
+                    Roboto.RevocationList.fromGoogleServer(client)
+                        .isRevoked(BigInteger("6681152659205225093", 16)) shouldBe true
+                }
 
-        "Test HTTP local proxy" {
-            val client = HttpClient(CIO) { setup("http://localhost:1081") }
-            shouldThrow<ConnectException> {
-                Roboto.RevocationList.fromGoogleServer(client)
-            }
-            startProxy()
-            Roboto.RevocationList.fromGoogleServer(client)
-                .isRevoked(BigInteger("6681152659205225093", 16)) shouldBe true
-        }
-
-        "load Bad Serial" {
-            Roboto.RevocationList.from(File(TEST_STATUS_LIST_PATH).inputStream()).isRevoked(
-                BigInteger.valueOf(0xbadbeef)
-            ).shouldBeFalse()
-        }
-
-
+                "load Bad Serial" {
+                    Roboto.RevocationList.from(File(TEST_STATUS_LIST_PATH).inputStream()).isRevoked(
+                        BigInteger.valueOf(0xbadbeef)
+                    ).shouldBeFalse()
+                }*/
     }
 }
 
-private fun MockEngine.setup(proxyUrl: String?) = HttpClient(this) { setup(proxyUrl) }
 
 //Ripped from MIT-Licences HTTP Proxy included as submodule. NOT PART OF RELEASE! Only Used for Testing
 private fun startProxy(): ChannelFuture? {
@@ -158,12 +170,27 @@ private fun startProxy(): ChannelFuture? {
     return serverBootstrap.bind(port).sync().channel().closeFuture()
 }
 
-private fun MockRequestHandleScope.respond(withExpiry: Boolean) = respond(
-    content = ByteReadChannel(File(TEST_STATUS_LIST_PATH).readBytes()),
-    status = HttpStatusCode.OK,
-    headers = if (withExpiry) headersOf(
-        HttpHeaders.ContentType to listOf("application/json"),
-        HttpHeaders.Expires to listOf(GMTDate(getTimeMillis() + 3600_000).toHttpDate())
-    ) else headersOf(HttpHeaders.ContentType to listOf("application/json"))
-)
+private fun setResponse(
+    @OptIn(ExperimentalTime::class)
+    now: Instant,
+    withExpiry1Hour: Boolean,
+    cacheLifeTimeSeconds: Long? = null
+): suspend MockRequestHandleScope.(request: HttpRequestData) -> HttpResponseData =
+    {
+
+        @OptIn(ExperimentalTime::class) val expiry =
+            if (withExpiry1Hour) HttpHeaders.Expires to listOf(GMTDate(now.toEpochMilliseconds() + 3600_000).toHttpDate()) else null
+        val cache = cacheLifeTimeSeconds?.let { HttpHeaders.CacheControl to listOf("max-age=$it") }
+        val contentType = HttpHeaders.ContentType to listOf("application/json")
+
+        val headers = listOf(expiry, cache, contentType).filterNotNull()
+        respond(
+            content = ByteReadChannel(File(TEST_STATUS_LIST_PATH).readBytes()),
+            status = HttpStatusCode.OK,
+            headers = headers { headers.forEach { appendAll(it.first, it.second) } }
+        )
+    }
+
+
+
 

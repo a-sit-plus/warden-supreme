@@ -12,16 +12,20 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-private val jsonDebug = kotlinx.serialization.json.Json {
-    encodeDefaults = true
-    ignoreUnknownKeys = true
-    prettyPrint = true
+private val jsonDebug by lazy {
+    kotlinx.serialization.json.Json {
+        encodeDefaults = true
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
 }
 
-private val jsonCompact = kotlinx.serialization.json.Json {
-    encodeDefaults = true
-    ignoreUnknownKeys = true
-    prettyPrint = false
+private val jsonCompact by lazy {
+    kotlinx.serialization.json.Json {
+        encodeDefaults = true
+        ignoreUnknownKeys = true
+        prettyPrint = false
+    }
 }
 
 

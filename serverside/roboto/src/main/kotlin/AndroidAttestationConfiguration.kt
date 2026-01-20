@@ -280,7 +280,7 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11: Set<TrustedRoot> =
 
 /**Defaults for checking against the official Google revocation list based on the OS/JVM trust store without using a proxy.*/
 val DEFAULT_GOOGLE_REVOCATION_CHECKS: List<AttestationRevocationList.HttpLoader.Configuration> = listOf(
-    AttestationRevocationList.HttpLoader.Configuration()
+    AttestationRevocationList.HttpLoader.Configuration.GoogleDefault.withHttpProxy(null)
 )
 
 /**

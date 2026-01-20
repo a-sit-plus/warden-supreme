@@ -472,11 +472,12 @@ val AttestationTests by testSuite {
                                 recordedAttestation.verificationDate,
                                 recordedAttestation.challenge
                             ).shouldBeInstanceOf<ParsedAttestationRecord>()
-                            collectDebugInfo(
+                            var debugInfo = collectDebugInfo(
                                 recordedAttestation.attestationCertChain,
                                 recordedAttestation.challenge,
                                 recordedAttestation.verificationDate
-                            ).replay().shouldBeInstanceOf<ParsedAttestationRecord>()
+                            )
+                            debugInfo.replay().shouldBeInstanceOf<ParsedAttestationRecord>()
                         }
                     }
 

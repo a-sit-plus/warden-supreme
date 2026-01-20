@@ -1,6 +1,7 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.AttestationRevocationList.HttpLoader.Configuration.ProxyConfig.Type
+import at.asitplus.attestation.android.AttestationRevocationList.Loader.Configuration
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
@@ -25,6 +26,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import java.io.FileInputStream
 import java.math.BigInteger
 import java.nio.file.Files
@@ -32,7 +36,9 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.*
+import kotlin.math.min
+import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -122,7 +128,7 @@ data class AttestationRevocationList(
         serialNumber: BigInteger
     ): Boolean {
         val serialNumberNormalised = serialNumber.toString(16).lowercase(Locale.getDefault())
-        return  entries.containsKey(serialNumberNormalised)
+        return entries.containsKey(serialNumberNormalised)
     }
 
     fun serialize() = json.encodeToString(this)
@@ -130,12 +136,31 @@ data class AttestationRevocationList(
 
     companion object {
 
-        internal val json = Json {
-            ignoreUnknownKeys = true
-            isLenient = true
-            encodeDefaults = false
-            explicitNulls = false
+        private val configSubclasses = mutableSetOf<KClass<Configuration<*>>>()
+
+        fun registerConfiguration(clazz: KClass<Configuration<*>>) {
+            configSubclasses.add(clazz)
         }
+
+
+        internal val json by lazy {
+            Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+                encodeDefaults = false
+                explicitNulls = false
+
+                serializersModule = SerializersModule {
+                    polymorphic(Configuration::class) {
+                        subclass(FileLoader.Configuration::class)
+                        subclass(HttpLoader.Configuration::class)
+                        configSubclasses.forEach { subclass(it) }
+                    }
+                }
+                classDiscriminator = "type"
+            }
+        }
+
 
         fun deserialize(
             jsonString: String,
@@ -168,9 +193,15 @@ data class AttestationRevocationList(
      * parameters needed for loading, s.t. loading itself requires no parameters
      */
     interface Loader {
+        val fallbackRevocationListValiditySeconds: Long
 
         interface Configuration<L : Loader> {
             fun createLoader(): L
+            val fallbackRevocationListValiditySeconds: Long
+
+            companion object {
+
+            }
         }
 
 
@@ -225,9 +256,9 @@ data class AttestationRevocationList(
      *
      * @param T The type of the [HttpClientEngineConfig] to configure the HTTP engine.
      * @param engineFactory The factory responsible for creating the engine used for the HTTP client.
-     * @param sourceUrl The URL from which the revocation list will be fetched.
+     * @param url The URL from which the revocation list will be fetched.
      * Defaults to the official Google attestation revocation list URL.
-     * @param preferCacheControl if `true` (which is the default), a present [HttpHeaders.CacheControl] `max-age` property
+     * @param preferHeaderBasedExpiry if `true` (which is the default), a present [HttpHeaders.CacheControl] `max-age` property
      * will take precedence over a potentially present [HttpHeaders.Expires] value.
      * Note that Google explicitly mentions cache control to communicate expiry times. Most probably
      * because it will work as expected regardless of clock drifts.
@@ -237,8 +268,9 @@ data class AttestationRevocationList(
      */
     class HttpLoader<T : HttpClientEngineConfig>(
         engineFactory: HttpClientEngineFactory<T>,
-        val sourceUrl: String = GOOGLE_OFFICIAL_REVOCATION_LIST,
-        private val preferCacheControl: Boolean = true,
+        val url: String,
+        override val fallbackRevocationListValiditySeconds: Long,
+        private val preferHeaderBasedExpiry: Boolean = true,
         config: HttpClientConfig<T>.() -> Unit
     ) : AttestationRevocationList.CachingLoader() {
 
@@ -248,8 +280,8 @@ data class AttestationRevocationList(
         }
 
         override suspend fun fetch(now: Instant): AttestationRevocationList =
-            httpClient.get(sourceUrl).run {
-                val validity: Duration? = if (preferCacheControl) {
+            httpClient.get(url).run {
+                val validity: Duration? = if (this@HttpLoader.preferHeaderBasedExpiry) {
                     val cacheControl =
                         headers.getAll(HttpHeaders.CacheControl)
                             .orEmpty()
@@ -259,13 +291,19 @@ data class AttestationRevocationList(
                             .toList()
                     if (cacheControl.size > 1)
                         throw IllegalArgumentException("Found multiple Cache-Control entries setting a max-age: ${cacheControl.joinToString { it.joinToString() }}")
-                    cacheControl.first()[2].toLong().seconds
+                    val cacheControlTime =
+                        if (cacheControl.isNotEmpty()) cacheControl.first()[2].toLong().seconds else null
+                    val expiry = headers.getInstant(HttpHeaders.Expires)?.let { it - now }
+                    if (cacheControlTime == null && expiry == null) null
+                    else if (cacheControlTime == null) expiry
+                    else if (expiry == null) cacheControlTime
+                    else min(cacheControlTime.inWholeSeconds, expiry.inWholeSeconds).seconds
                 } else null
 
                 deserialize(
                     jsonObject = body<JsonObject>(),
                     dateOverride = headers.getInstant(HttpHeaders.Date),
-                    expiresOverride = validity?.let { now + it } ?: headers.getInstant(HttpHeaders.Expires),
+                    expiresOverride = (validity ?: fallbackRevocationListValiditySeconds.seconds).let { now + it },
                     lastModifiedOverride = headers.getInstant(HttpHeaders.LastModified)
                 )
             }
@@ -273,14 +311,15 @@ data class AttestationRevocationList(
 
         @Serializable
         @SerialName("http")
-        class Configuration(
-            val sourceUrl: String = GOOGLE_OFFICIAL_REVOCATION_LIST,
-            val preferCacheControl: Boolean = true,
+        data class Configuration(
+            val url: String = GOOGLE_OFFICIAL_REVOCATION_LIST,
+            override val fallbackRevocationListValiditySeconds: Long = 0,
+            val preferHeaderBasedExpiry: Boolean = true,
             val proxyConfig: ProxyConfig? = null
         ) : Loader.Configuration<HttpLoader<HttpClientEngineConfig>> {
 
             override fun createLoader(): HttpLoader<HttpClientEngineConfig> =
-                HttpLoader(CIO, sourceUrl, preferCacheControl) {
+                HttpLoader(CIO, url, fallbackRevocationListValiditySeconds, preferHeaderBasedExpiry) {
                     proxyConfig?.let { cfg ->
                         when (cfg.type) {
                             ProxyConfig.Type.SOCKS -> {
@@ -307,12 +346,15 @@ data class AttestationRevocationList(
                 /**
                  * convenience helper to optionally set an HTTP Proxy. if [url] is `null`, no proxy will be configured.
                  */
-                fun withHttpProxy(url: String?) = HttpLoader.Configuration(proxyConfig = url?.let {
-                    ProxyConfig(
-                        type = Type.HTTP,
-                        it
-                    )
-                })
+                fun withHttpProxy(url: String?) = HttpLoader.Configuration(
+                    url = GOOGLE_OFFICIAL_REVOCATION_LIST,
+                    fallbackRevocationListValiditySeconds = 60 /*to prevent rate limiting*/,
+                    proxyConfig = url?.let {
+                        ProxyConfig(
+                            type = Type.HTTP,
+                            it
+                        )
+                    })
             }
         }
 
@@ -332,6 +374,7 @@ data class AttestationRevocationList(
 
     class FileLoader(
         val path: String,
+        override val fallbackRevocationListValiditySeconds: Long,
         private val fallbackToFileSystemInfo: Boolean = true
     ) : CachingLoader() {
 
@@ -351,6 +394,9 @@ data class AttestationRevocationList(
                         if (fromFs != 0L) read = read.copy(date = Instant.fromEpochMilliseconds(fromFs))
                     }
                 }
+
+                if (read.expires == null) read =
+                    read.copy(expires = now + fallbackRevocationListValiditySeconds.seconds)
                 read
             }
         }
@@ -358,11 +404,13 @@ data class AttestationRevocationList(
 
         @Serializable
         @SerialName("file")
-        class Configuration(
+        data class Configuration(
             val path: String,
+            override val fallbackRevocationListValiditySeconds: Long = 0,
             val fallbackToFileSystemInfo: Boolean = true
         ) : Loader.Configuration<FileLoader> {
-            override fun createLoader() = FileLoader(path, fallbackToFileSystemInfo)
+            override fun createLoader() =
+                FileLoader(path, fallbackRevocationListValiditySeconds, fallbackToFileSystemInfo)
 
         }
     }
