@@ -55,10 +55,10 @@ abstract class Roboto(
 
     private val newPkixCertPathValidator = getValidator()
 
-    private val revocationCheckers = attestationConfiguration.revocation.map { it.createLoader() }
+    private val revocationCheckers:List<Pair<AttestationRevocationList.Loader.Configuration<*>,AttestationRevocationList.Loader>> = attestationConfiguration.revocation.map { (it to it.createLoader())}
 
     private val revocationMutex = Mutex()
-    private var revocationListsFromLastCall = listOf<AttestationRevocationList>()
+    private var revocationListsFromLastCall = listOf<ConfigWithList>()
     internal suspend fun revocationListFromLastCall() = revocationMutex.withLock { revocationListsFromLastCall }
 
 
@@ -142,10 +142,10 @@ abstract class Roboto(
         }
         if (revocationCheckers.isNotEmpty()) revocationMutex.withLock {
             catchingUnwrapped {
-                revocationCheckers.map { it.load(verificationDate.toInstant().toKotlinInstant()) }
+                revocationCheckers.map { (cfg, loader) -> ConfigWithList(cfg , loader.load(verificationDate.toInstant().toKotlinInstant())) }
             }.onSuccess {
                 revocationListsFromLastCall = it
-                if (it.any { it.isRevokedOrSuspended(certificate.serialNumber) })
+                if (it.any { it.list.isRevokedOrSuspended(certificate.serialNumber) })
                     throw RevocationException.Revoked(
                         "Certificate ${certificate.serialNumber} revoked",
                         certificateChain = fullChainForDebugging,
@@ -425,6 +425,7 @@ abstract class Roboto(
         expectedChallenge: ByteArray,
         verificationDate: Date = Date(),
     ) = AndroidDebugAttestationStatement(
+        ROBOTO_DEBUG_VERSION,
         this,
         attestationConfiguration,
         verificationDate,

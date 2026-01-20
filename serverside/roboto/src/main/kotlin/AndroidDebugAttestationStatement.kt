@@ -1,11 +1,14 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.AttestationRevocationList.Loader.Configuration
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.plus
 import java.security.cert.X509Certificate
 import java.util.*
+
+internal const val ROBOTO_DEBUG_VERSION = 2
 
 private val jsonDebug by lazy {
     kotlinx.serialization.json.Json {
@@ -16,13 +19,17 @@ private val jsonDebug by lazy {
 }
 
 @Serializable
+class ConfigWithList(val config: Configuration<*>, val list: AttestationRevocationList)
+
+@Serializable
 class AndroidDebugAttestationStatement(
+    val version: Int,
     val kind: Type,
     val configuration: AndroidAttestationConfiguration,
     @Serializable(with = DateTimeSerializer::class) val verificationTime: Date,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray,
     val attestationStatement: List<@Serializable(with = CertPemSerializer::class) X509Certificate>,
-    val revocationLists: List<AttestationRevocationList>,
+    val revocationLists: List<ConfigWithList>,
 ) {
 
     fun checkerFromConfig(): Roboto =
@@ -48,12 +55,14 @@ class AndroidDebugAttestationStatement(
 
     companion object {
         suspend operator fun invoke(
+            version: Int,
             verifier: Roboto,
             configuration: AndroidAttestationConfiguration,
             verificationTime: Date,
             challenge: ByteArray,
             attestationStatement: List<X509Certificate>
         ) = AndroidDebugAttestationStatement(
+            version,
             when (verifier) {
                 is HardwareAttestationVerifier -> Type.HARDWARE
                 is SoftwareAttestationVerifier -> Type.SOFTWARE
