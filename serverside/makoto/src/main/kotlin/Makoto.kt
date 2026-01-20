@@ -185,7 +185,7 @@ class Makoto(
     }
 
     override val android = object : Android {
-        override fun verifyKeyAttestation(
+        override suspend fun verifyKeyAttestation(
             attestationCerts: List<X509Certificate>,
             expectedChallenge: ByteArray
         ) = verifyKeyAttestation<PublicKey>(
@@ -298,7 +298,7 @@ class Makoto(
         version = Makoto.version
     )
 
-    override fun verifyAttestation(
+    override suspend fun verifyAttestation(
         attestationProof: List<ByteArray>,
         challenge: ByteArray,
         clientData: ByteArray?
@@ -350,7 +350,7 @@ class Makoto(
         }
     }
 
-    override fun verifyKeyAttestation(
+    override suspend fun doVerifyKeyAttestation(
         attestationProof: Attestation,
         challenge: ByteArray
     ): KeyAttestation<PublicKey> =
@@ -421,7 +421,7 @@ class Makoto(
      *
      * @return [AttestationResult.Android] on success [AttestationResult.Error] in case attestation failed
      */
-    private fun verifyAttestationAndroid(
+    private suspend fun verifyAttestationAndroid(
         attestationCerts: List<ByteArray>,
         expectedChallenge: ByteArray
     ): AttestationResult = runCatching {

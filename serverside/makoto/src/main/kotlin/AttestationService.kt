@@ -12,6 +12,7 @@ import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import com.google.android.attestation.AttestationApplicationId
 import com.google.android.attestation.ParsedAttestationRecord
+import kotlinx.coroutines.runBlocking
 import java.security.PublicKey
 import java.security.cert.X509Certificate
 import kotlin.jvm.optionals.getOrNull
@@ -21,13 +22,24 @@ import at.asitplus.attestation.AttestationException as AttException
 abstract class AttestationService {
 
 
-    internal abstract fun verifyAttestation(
+    internal abstract suspend fun verifyAttestation(
         attestationProof: List<ByteArray>,
         challenge: ByteArray,
         clientData: ByteArray? = null
     ): AttestationResult
 
-    abstract fun verifyKeyAttestation(attestationProof: Attestation, challenge: ByteArray): KeyAttestation<PublicKey>
+    @JvmName("verifyKeyAttestation")
+    fun verifyKeyAttestationBlocking(attestationProof: Attestation, challenge: ByteArray): KeyAttestation<PublicKey> =
+        runBlocking { doVerifyKeyAttestation(attestationProof, challenge) }
+
+    @JvmName("verifyKeyAttestationSuspending")
+    suspend fun verifyKeyAttestation(attestationProof: Attestation, challenge: ByteArray): KeyAttestation<PublicKey> =
+        doVerifyKeyAttestation(attestationProof, challenge)
+
+    protected abstract suspend fun doVerifyKeyAttestation(
+        attestationProof: Attestation,
+        challenge: ByteArray
+    ): KeyAttestation<PublicKey>
 
     /**
      * Verifies key attestation for both Android and Apple devices.
@@ -58,9 +70,54 @@ abstract class AttestationService {
     @Deprecated(
         "This uses the legacy attestation format, which is not future-proof, makes too few guarantees wrt. encoding, " +
                 "guesses the platform based on the number of elements in the attestation proof, etc.",
-        ReplaceWith("AttestationService.verifyAttestation(attestationProof, challenge)")
+        ReplaceWith("verifyKeyAttestation(attestationProof, challenge)")
     )
-    fun <T : PublicKey> verifyKeyAttestation(
+    @JvmName("verifyKeyAttestation")
+    fun <T : PublicKey> verifyKeyAttestationBlocking(
+        attestationProof: List<ByteArray>,
+        expectedChallenge: ByteArray,
+        keyToBeAttested: T
+    ): KeyAttestation<T> = runBlocking {
+        verifyKeyAttestation(
+            attestationProof,
+            expectedChallenge,
+            keyToBeAttested
+        )
+    }
+
+    /**
+     * Verifies key attestation for both Android and Apple devices.
+     *
+     * Succeeds if attestation data structures of the client (in [attestationProof]) can be verified and [expectedChallenge] matches
+     * the attestation challenge. For Android clients, this function makes sure that [keyToBeAttested] matches the key contained in the attestation certificate.
+     * For iOS this key needs to be specified explicitly anyhow to emulate key attestation
+     *
+     * @param attestationProof On Android, this is simply the certificate chain from the attestation certificate
+     * (i.e. the certificate corresponding to the key to be attested) up to one of the [Google hardware attestation root
+     * certificates](https://developer.android.com/training/articles/security-key-attestation#root_certificate).
+     * on iOS this must contain the [AppAttest attestation statement](https://developer.apple.com/documentation/devicecheck/validating_apps_that_connect_to_your_server#3576643)
+     * at index `0` and an [assertion](https://developer.apple.com/documentation/devicecheck/validating_apps_that_connect_to_your_server#3576644)
+     * at index `1`, which, is verified for integrity and to match [keyToBeAttested].
+     * The signature counter in the attestation must be `0` and the signature counter in the assertion must be `1`.
+     *
+     * Passing a public key created in the same app on the iDevice's secure hardware as `clientData` to create an assertion effectively
+     * emulates Android's key attestation: Attesting such a secondary key through an assertion, proves that
+     * it was also created within the same app, on the same device, resulting in an attested key, which can then be used
+     * for general-purpose crypto. **BEWARE: supports only EC key on iOS (either the ANSI X9.63 encoded or DER encoded).
+     * The key can be passed in either encoding to the secure enclave for assertion/attestation**
+     *
+     * @param expectedChallenge
+     * @param keyToBeAttested
+     *
+     * @return [KeyAttestation] containing the attested public key on success or null in case of failure (see [KeyAttestation])
+     */
+    @Deprecated(
+        "This uses the legacy attestation format, which is not future-proof, makes too few guarantees wrt. encoding, " +
+                "guesses the platform based on the number of elements in the attestation proof, etc.",
+        ReplaceWith("verifyKeyAttestation(attestationProof, challenge)")
+    )
+    @JvmName("verifyKeyAttestationSuspending")
+    suspend fun <T : PublicKey> verifyKeyAttestation(
         attestationProof: List<ByteArray>,
         expectedChallenge: ByteArray,
         keyToBeAttested: T
@@ -100,8 +157,30 @@ abstract class AttestationService {
 
     /** Same as [verifyKeyAttestation], but taking an encoded (either ANSI X9.63 or DER) publix key as a byte array
      * @see verifyKeyAttestation
+     *
      */
-    fun verifyKeyAttestation(
+    @Deprecated(
+        "This uses the legacy attestation format, which is not future-proof, makes too few guarantees wrt. encoding, " +
+                "guesses the platform based on the number of elements in the attestation proof, etc.",
+        ReplaceWith("verifyKeyAttestation(attestationProof, challenge)")
+    )
+    @JvmName("verifyKeyAttestation")
+    suspend fun verifyKeyAttestationBlocking(
+        attestationProof: List<ByteArray>,
+        challenge: ByteArray,
+        encodedPublicKey: ByteArray
+    ): KeyAttestation<PublicKey> = verifyKeyAttestation(attestationProof, challenge, encodedPublicKey)
+
+    /** Same as [verifyKeyAttestation], but taking an encoded (either ANSI X9.63 or DER) publix key as a byte array
+     * @see verifyKeyAttestation
+     */
+    @Deprecated(
+        "This uses the legacy attestation format, which is not future-proof, makes too few guarantees wrt. encoding, " +
+                "guesses the platform based on the number of elements in the attestation proof, etc.",
+        ReplaceWith("verifyKeyAttestation(attestationProof, challenge)")
+    )
+    @JvmName("verifyKeyAttestationSuspending")
+    suspend fun verifyKeyAttestation(
         attestationProof: List<ByteArray>,
         challenge: ByteArray,
         encodedPublicKey: ByteArray
@@ -158,10 +237,20 @@ abstract class AttestationService {
          * @param attestationCerts attestation certificate chain
          * @param expectedChallenge attestation challenge
          */
-        fun verifyKeyAttestation(
+        suspend fun verifyKeyAttestation(
             attestationCerts: List<X509Certificate>,
             expectedChallenge: ByteArray
         ): KeyAttestation<PublicKey>
+
+        /**
+         * convenience method for [verifyKeyAttestation] specific to Android. Attests the public key contained in the leaf
+         * @param attestationCerts attestation certificate chain
+         * @param expectedChallenge attestation challenge
+         */
+        fun verifyKeyAttestationBlocking(
+            attestationCerts: List<X509Certificate>,
+            expectedChallenge: ByteArray
+        ): KeyAttestation<PublicKey> = runBlocking { verifyKeyAttestation(attestationCerts, expectedChallenge) }
     }
 }
 
@@ -402,7 +491,8 @@ data class KeyAttestation<T : PublicKey> internal constructor(
 @DisabledAttestation
 object NoopAttestationService : AttestationService() {
 
-    override fun verifyAttestation(
+    @DisabledAttestation
+    override suspend fun verifyAttestation(
         attestationProof: List<ByteArray>,
         challenge: ByteArray,
         clientData: ByteArray?
@@ -417,8 +507,11 @@ object NoopAttestationService : AttestationService() {
     ): R = if (isSuccess) onSuccess(attestedPublicKey!!, details as AttestationResult.NOOP)
     else onError(details as AttestationResult.Error)
 
-
-    override fun verifyKeyAttestation(attestationProof: Attestation, challenge: ByteArray): KeyAttestation<PublicKey> =
+    @DisabledAttestation
+    override suspend fun doVerifyKeyAttestation(
+        attestationProof: Attestation,
+        challenge: ByteArray
+    ): KeyAttestation<PublicKey> =
         when (attestationProof) {
             is IosHomebrewAttestation -> KeyAttestation(
                 attestationProof.parsedClientData.publicKey.toJcaPublicKey().getOrThrow(),
@@ -433,22 +526,46 @@ object NoopAttestationService : AttestationService() {
             else -> KeyAttestation(null, AttestationResult.Error("Unsupported attestation proof type"))
         }
 
+    @DisabledAttestation
     override val ios: IOS
         get() = object : IOS {
-            override fun verifyAppAttestation(attestationObject: ByteArray, challenge: ByteArray) =
-                verifyAttestation(listOf(attestationObject), challenge, clientData = null)
 
+            @DisabledAttestation
+            override fun verifyAppAttestation(attestationObject: ByteArray, challenge: ByteArray) =
+                runBlocking { verifyAttestation(listOf(attestationObject), challenge, clientData = null) }
+
+            @DisabledAttestation
             override fun verifyAssertion(
                 attestationObject: ByteArray,
                 assertionFromDevice: ByteArray,
                 referenceClientData: ByteArray,
                 challenge: ByteArray,
                 counter: Long
-            ) = verifyAttestation(listOf(attestationObject, assertionFromDevice), challenge, referenceClientData)
+            ) = runBlocking {
+                verifyAttestation(
+                    listOf(attestationObject, assertionFromDevice),
+                    challenge,
+                    referenceClientData
+                )
+            }
 
         }
+
+    @DisabledAttestation
     override val android: Android
-        get() = TODO("Not yet implemented")
+        get() = object : Android {
+            @DisabledAttestation
+            override suspend fun verifyKeyAttestation(
+                attestationCerts: List<X509Certificate>,
+                expectedChallenge: ByteArray
+            ): KeyAttestation<PublicKey> = KeyAttestation(
+                attestationCerts.first().publicKey, verifyAttestation(
+                    attestationCerts.map { it.encoded },
+                    expectedChallenge,
+                )
+            )
+        }
+
 }
 
 @RequiresOptIn(message = "Access to disabled attestation. ALL BETS ARE OFF! NO AUTH GUARANTEES WHATSOEVER!")

@@ -43,7 +43,9 @@ val makoto = Makoto(
         enableSoftwareAttestation = false, //DEFAULT
      /*(13)!*/enableNougatAttestation = false, //DEFAULT
      /*(14)!*/attestationStatementValiditySeconds = null, // DEFAULT; no validity time checks!
-     /*(15)!*/httpProxy = "https://192.168.178.74:8000",
+     /*(15)!*/ revocation = listOf(
+            AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("https://192.168.178.74:8000")
+        ),
         requireRemoteKeyProvisioning = false //DEFAULT
 
     ),

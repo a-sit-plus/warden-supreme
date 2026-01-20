@@ -182,11 +182,11 @@ val WardenTest by testSuite {
                                 ).serializeCompact()
                                 val replayGenericAttestation =
                                     WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayGenericAttestation(ignoreProxy = false)
+                                        .replayGenericAttestation()
                                 replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(
                                     dbg
                                 )
-                                    .replaySmart(ignoreProxy = false)
+                                    .replaySmart()
                                 replayGenericAttestation
                                     .shouldNotBeInstanceOf<AttestationResult.Error>()
                             }
@@ -214,11 +214,11 @@ val WardenTest by testSuite {
                                 ).serializeCompact()
                                 val replayKeyAttestationLegacy =
                                     WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayKeyAttestationLegacy(ignoreProxy = false)
+                                        .replayKeyAttestationLegacy()
                                 replayKeyAttestationLegacy shouldBe WardenDebugAttestationStatement.deserializeCompact(
                                     dbg
                                 )
-                                    .replaySmart(ignoreProxy = false)
+                                    .replaySmart()
                                 replayKeyAttestationLegacy
                                     .shouldNotBeInstanceOf<AttestationResult.Error>()
                             }
@@ -254,9 +254,9 @@ val WardenTest by testSuite {
                             ).serializeCompact()
                             val replayGenericAttestation =
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false)
+                                    .replayGenericAttestation()
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart(ignoreProxy = false)
+                                .replaySmart()
                             replayGenericAttestation
                                 .shouldNotBeInstanceOf<AttestationResult.Error>()
                         }
@@ -290,9 +290,9 @@ val WardenTest by testSuite {
                             ).serializeCompact()
                             val replayGenericAttestation =
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false)
+                                    .replayGenericAttestation()
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart(ignoreProxy = false)
+                                .replaySmart()
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Error>()
                                 .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
@@ -323,9 +323,9 @@ val WardenTest by testSuite {
                             ).serializeCompact()
                             val replayGenericAttestation =
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false)
+                                    .replayGenericAttestation()
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart(ignoreProxy = false)
+                                .replaySmart()
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Error>()
                                 .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
@@ -364,9 +364,9 @@ val WardenTest by testSuite {
                         ).serializeCompact()
                         val replayGenericAttestation =
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false)
+                                .replayGenericAttestation()
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Error>().apply {
                                 cause.shouldBeInstanceOf<AttestationException.Content>().also {
@@ -410,9 +410,9 @@ val WardenTest by testSuite {
                         ).serializeCompact()
                         val replayGenericAttestation =
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false)
+                                .replayGenericAttestation()
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Error>().apply {
                                 cause.shouldBeInstanceOf<AttestationException.Content>().also {
@@ -462,9 +462,9 @@ val WardenTest by testSuite {
                             recordedAttestation.challenge
                         ).serializeCompact()
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation(ignoreProxy = false).apply {
+                            .replayGenericAttestation().apply {
                                 this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart(ignoreProxy = false)
+                                    .replaySmart()
                                 shouldBeInstanceOf<AttestationResult.Error>().apply {
                                     cause.shouldBeInstanceOf<AttestationException.Content>().also {
                                         when (it.platform) {
@@ -516,9 +516,9 @@ val WardenTest by testSuite {
                             keyToBeAttested
                         ).serializeCompact()
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestationLegacy(ignoreProxy = false).apply {
+                            .replayKeyAttestationLegacy().apply {
                                 this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart(ignoreProxy = false)
+                                    .replaySmart()
                                 isSuccess.shouldBeFalse()
                                 details.shouldBeInstanceOf<AttestationResult.Error>().also { println(it) }.apply {
                                     cause.shouldBeInstanceOf<AttestationException.Content>().also {
@@ -568,9 +568,9 @@ val WardenTest by testSuite {
                                 recordedAttestation.challenge,
                             ).serializeCompact()
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                .replayGenericAttestation().apply {
                                     this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replaySmart(ignoreProxy = false)
+                                        .replaySmart()
                                     shouldBeInstanceOf<AttestationResult.IOS>()
                                 }
                         }
@@ -600,9 +600,9 @@ val WardenTest by testSuite {
                                 recordedAttestation.challenge,
                             ).serializeCompact()
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                .replayGenericAttestation().apply {
                                     this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replaySmart(ignoreProxy = false)
+                                        .replaySmart()
                                     shouldBeInstanceOf<AttestationResult.Error>()
                                         .cause.shouldBeInstanceOf<AttestationException.Content>()
                                         .platformSpecificCause.shouldBeInstanceOf<IosAttestationException>()
@@ -636,9 +636,9 @@ val WardenTest by testSuite {
                                 recordedAttestation.challenge,
                             ).serializeCompact()
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                .replayGenericAttestation().apply {
                                     this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replaySmart(ignoreProxy = false)
+                                        .replaySmart()
                                     shouldBeInstanceOf<AttestationResult.Android>()
                                 }
                         }
@@ -659,9 +659,9 @@ val WardenTest by testSuite {
                                 recordedAttestation.challenge,
                             ).serializeCompact()
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                .replayGenericAttestation().apply {
                                     this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replaySmart(ignoreProxy = false)
+                                        .replaySmart()
                                     shouldBeInstanceOf<AttestationResult.Android>()
                                 }
                         }
@@ -682,9 +682,9 @@ val WardenTest by testSuite {
                                 recordedAttestation.challenge,
                             ).serializeCompact()
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false).apply {
+                                .replayGenericAttestation().apply {
                                     this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replaySmart(ignoreProxy = false)
+                                        .replaySmart()
                                     shouldBeInstanceOf<AttestationResult.Android>()
                                 }
                         }
@@ -723,9 +723,9 @@ val WardenTest by testSuite {
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    .replayGenericAttestation().apply {
                                         this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replaySmart(ignoreProxy = false)
+                                            .replaySmart()
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                     }
@@ -760,9 +760,9 @@ val WardenTest by testSuite {
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    .replayGenericAttestation().apply {
                                         this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replaySmart(ignoreProxy = false)
+                                            .replaySmart()
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                     }
@@ -797,9 +797,9 @@ val WardenTest by testSuite {
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    .replayGenericAttestation().apply {
                                         this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replaySmart(ignoreProxy = false)
+                                            .replaySmart()
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                     }
@@ -827,10 +827,10 @@ val WardenTest by testSuite {
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
                                     WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayGenericAttestation(ignoreProxy = false)
+                                        .replayGenericAttestation()
                                         .apply {
                                             this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                .replaySmart(ignoreProxy = false)
+                                                .replaySmart()
                                             shouldBeInstanceOf<AttestationResult.Error>()
                                                 .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                         }
@@ -853,10 +853,10 @@ val WardenTest by testSuite {
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
                                     WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayGenericAttestation(ignoreProxy = false)
+                                        .replayGenericAttestation()
                                         .apply {
                                             this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                .replaySmart(ignoreProxy = false)
+                                                .replaySmart()
                                             shouldBeInstanceOf<AttestationResult.Error>()
                                                 .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                         }
@@ -879,10 +879,10 @@ val WardenTest by testSuite {
                                         recordedAttestation.challenge,
                                     ).serializeCompact()
                                     WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayGenericAttestation(ignoreProxy = false)
+                                        .replayGenericAttestation()
                                         .apply {
                                             this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                .replaySmart(ignoreProxy = false)
+                                                .replaySmart()
                                             shouldBeInstanceOf<AttestationResult.Error>()
                                                 .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                                         }
@@ -908,9 +908,9 @@ val WardenTest by testSuite {
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    .replayGenericAttestation().apply {
                                         this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replaySmart(ignoreProxy = false)
+                                            .replaySmart()
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -938,9 +938,9 @@ val WardenTest by testSuite {
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    .replayGenericAttestation().apply {
                                         this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replaySmart(ignoreProxy = false)
+                                            .replaySmart()
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -977,9 +977,9 @@ val WardenTest by testSuite {
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    .replayGenericAttestation().apply {
                                         this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replaySmart(ignoreProxy = false)
+                                            .replaySmart()
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -1004,9 +1004,9 @@ val WardenTest by testSuite {
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    .replayGenericAttestation().apply {
                                         this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replaySmart(ignoreProxy = false)
+                                            .replaySmart()
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -1030,9 +1030,9 @@ val WardenTest by testSuite {
                                     recordedAttestation.challenge,
                                 ).serializeCompact()
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false).apply {
+                                    .replayGenericAttestation().apply {
                                         this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replaySmart(ignoreProxy = false)
+                                            .replaySmart()
                                         shouldBeInstanceOf<AttestationResult.Error>()
                                             .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     }
@@ -1112,9 +1112,9 @@ val WardenTest by testSuite {
                             challenge,
                         ).serializeCompact()
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation(ignoreProxy = false).apply {
+                            .replayGenericAttestation().apply {
                                 this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart(ignoreProxy = false)
+                                    .replaySmart()
                                 shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                             }
@@ -1154,9 +1154,9 @@ val WardenTest by testSuite {
                             challenge,
                         ).serializeCompact()
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation(ignoreProxy = false).apply {
+                            .replayGenericAttestation().apply {
                                 this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart(ignoreProxy = false)
+                                    .replaySmart()
                                 shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Content>()
                             }
@@ -1190,9 +1190,9 @@ val WardenTest by testSuite {
                             challenge,
                         ).serializeCompact()
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation(ignoreProxy = false).apply {
+                            .replayGenericAttestation().apply {
                                 this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replaySmart(ignoreProxy = false)
+                                    .replaySmart()
                                 shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Content>()
                             }
@@ -1229,9 +1229,9 @@ val WardenTest by testSuite {
                             ).serializeCompact()
                             val replayGenericAttestation =
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false)
+                                    .replayGenericAttestation()
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart(ignoreProxy = false)
+                                .replaySmart()
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Android>()
                         }
@@ -1266,9 +1266,9 @@ val WardenTest by testSuite {
                             ).serializeCompact()
                             val replayGenericAttestation =
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false)
+                                    .replayGenericAttestation()
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart(ignoreProxy = false)
+                                .replaySmart()
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Android>()
                         }
@@ -1302,9 +1302,9 @@ val WardenTest by testSuite {
                             ).serializeCompact()
                             val replayGenericAttestation =
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation(ignoreProxy = false)
+                                    .replayGenericAttestation()
                             replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replaySmart(ignoreProxy = false)
+                                .replaySmart()
                             replayGenericAttestation
                                 .shouldBeInstanceOf<AttestationResult.Android>()
                         }
@@ -1364,9 +1364,9 @@ val WardenTest by testSuite {
                         ).serializeCompact()
                         val replayGenericAttestation =
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false)
+                                .replayGenericAttestation()
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
                                 attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
@@ -1408,9 +1408,9 @@ val WardenTest by testSuite {
                         ).serializeCompact()
                         val replayGenericAttestation =
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false)
+                                .replayGenericAttestation()
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
                                 attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
@@ -1452,9 +1452,9 @@ val WardenTest by testSuite {
                         ).serializeCompact()
                         val replayGenericAttestation =
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false)
+                                .replayGenericAttestation()
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
                                 attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
@@ -1497,9 +1497,9 @@ val WardenTest by testSuite {
                         ).serializeCompact()
                         val replayGenericAttestation =
                             WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation(ignoreProxy = false)
+                                .replayGenericAttestation()
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayGenericAttestation
                             .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
                                 attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
@@ -1539,9 +1539,9 @@ val WardenTest by testSuite {
                     ).serializeCompact()
                     val replayGenericAttestation =
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation(ignoreProxy = false)
+                            .replayGenericAttestation()
                     replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replaySmart(ignoreProxy = false)
+                        .replaySmart()
                     replayGenericAttestation
                         .shouldBeInstanceOf<AttestationResult.Error>()
                         .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
@@ -1577,9 +1577,9 @@ val WardenTest by testSuite {
                     ).serializeCompact()
                     val replayGenericAttestation =
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation(ignoreProxy = false)
+                            .replayGenericAttestation()
                     replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replaySmart(ignoreProxy = false)
+                        .replaySmart()
                     replayGenericAttestation
                         .shouldBeInstanceOf<AttestationResult.Error>()
                         .cause.shouldBeInstanceOf<AttestationException.Content>()
@@ -1615,9 +1615,9 @@ val WardenTest by testSuite {
                     ).serializeCompact()
                     val replayGenericAttestation =
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation(ignoreProxy = false)
+                            .replayGenericAttestation()
                     replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replaySmart(ignoreProxy = false)
+                        .replaySmart()
                     replayGenericAttestation
                         .shouldBeInstanceOf<AttestationResult.Error>()
                         .cause.shouldBeInstanceOf<AttestationException.Content>()
@@ -1673,9 +1673,9 @@ val WardenTest by testSuite {
 
                     val replayKeyAttestation =
                         WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation(ignoreProxy = false)
+                            .replayKeyAttestation()
                     replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replaySmart(ignoreProxy = false)
+                        .replaySmart()
                     replayKeyAttestation.isSuccess.shouldBeTrue()
 
                 }
@@ -1689,9 +1689,9 @@ val WardenTest by testSuite {
                         it.first.reversed().hexToByteArray(HexFormat.UpperCase)
                     ).serializeCompact()
                     val attestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replayKeyAttestation(ignoreProxy = false)
+                        .replayKeyAttestation()
                     attestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replaySmart(ignoreProxy = false)
+                        .replaySmart()
                     attestation.isSuccess.shouldBeFalse()
                 }
             }
@@ -1723,9 +1723,9 @@ val WardenTest by testSuite {
                         it.first.hexToByteArray(HexFormat.UpperCase),
                     ).serializeCompact()
                     val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replayKeyAttestation(ignoreProxy = false)
+                        .replayKeyAttestation()
                     replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replaySmart(ignoreProxy = false)
+                        .replaySmart()
                     replayKeyAttestation.isSuccess.shouldBeFalse()
                 }
             }
@@ -1761,9 +1761,9 @@ val WardenTest by testSuite {
                             it.first.hexToByteArray(HexFormat.UpperCase),
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation(ignoreProxy = false)
+                            .replayKeyAttestation()
                         replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayKeyAttestation.isSuccess.shouldBeFalse()
                     }
 
@@ -1779,9 +1779,9 @@ val WardenTest by testSuite {
                             it.first.hexToByteArray(HexFormat.UpperCase),
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation(ignoreProxy = false)
+                            .replayKeyAttestation()
                         replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayKeyAttestation.isSuccess.shouldBeFalse()
                     }
                 }
@@ -1819,9 +1819,9 @@ val WardenTest by testSuite {
                             isSuccess.shouldBeFalse()
                         }
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation(ignoreProxy = false)
+                            .replayKeyAttestation()
                         replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayKeyAttestation.isSuccess.shouldBeFalse()
                     }
 
@@ -1837,9 +1837,9 @@ val WardenTest by testSuite {
                             it.first.hexToByteArray(HexFormat.UpperCase),
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestation(ignoreProxy = false)
+                            .replayKeyAttestation()
                         replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replaySmart(ignoreProxy = false)
+                            .replaySmart()
                         replayKeyAttestation.isSuccess.shouldBeFalse()
                     }
                 }
@@ -1877,9 +1877,9 @@ val WardenTest by testSuite {
                         it.first.hexToByteArray(HexFormat.UpperCase),
                     ).serializeCompact()
                     val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replayKeyAttestation(ignoreProxy = false)
+                        .replayKeyAttestation()
                     replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replaySmart(ignoreProxy = false)
+                        .replaySmart()
                     replayKeyAttestation.isSuccess.shouldBeFalse()
                 }
             }
@@ -1911,9 +1911,9 @@ val WardenTest by testSuite {
                         it.first.hexToByteArray(HexFormat.UpperCase),
                     ).serializeCompact()
                     val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replayKeyAttestation(ignoreProxy = false)
+                        .replayKeyAttestation()
                     replayKeyAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                        .replaySmart(ignoreProxy = false)
+                        .replaySmart()
                     replayKeyAttestation.isSuccess.shouldBeFalse()
                 }
             }

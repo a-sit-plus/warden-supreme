@@ -4,7 +4,14 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-# 1.0.0
+## Next
+* Completely revamped revocation checks based on configurable, chainable loaders:
+   * HTTP-based, caching
+   * File-based, caching
+   * In-memory, static, non-caching
+* Provide fully-fledged Android revocation lists
+* Make attestation functions suspending and provide blocking wrappers under old `@JvmName`s
+* The Android-specific `Revoked` error now includes the revocation list entry that indicated a revocation or suspension.
 
 ## 0.9.9999.1
 * Fix missing old HW trust anchor

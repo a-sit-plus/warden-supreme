@@ -30,7 +30,7 @@ val TemporalOffsetTest by testSuite {
                 shouldNotBeInstanceOf<AttestationResult.Error>()
                 WardenDebugAttestationStatement.deserializeCompact(
                     attestationService.collectDebugInfo(it.attestationProof, it.challenge).serializeCompact()
-                ).replaySmart(ignoreProxy = false) shouldBe this
+                ).replaySmart() shouldBe this
             }
         }
     }
@@ -50,7 +50,7 @@ val TemporalOffsetTest by testSuite {
                 shouldNotBeInstanceOf<AttestationResult.Error>()
                 WardenDebugAttestationStatement.deserializeCompact(
                     attestationService.collectDebugInfo(it.attestationProof, it.challenge).serializeCompact()
-                ).replaySmart(ignoreProxy = false) shouldBe this
+                ).replaySmart() shouldBe this
             }
         }
     }
@@ -70,7 +70,7 @@ val TemporalOffsetTest by testSuite {
                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
                 WardenDebugAttestationStatement.deserializeCompact(
                     attestationService.collectDebugInfo(it.attestationProof, it.challenge).serializeCompact()
-                ).replaySmart(ignoreProxy = false) shouldBe this
+                ).replaySmart() shouldBe this
 
             }
         }
@@ -94,7 +94,7 @@ val TemporalOffsetTest by testSuite {
                         pixel6KeyMint200Good.attestationProof,
                         pixel6KeyMint200Good.challenge
                     ).serializeCompact()
-                ).replaySmart(ignoreProxy = false) shouldBe this
+                ).replaySmart() shouldBe this
             }
         }
     }
@@ -118,7 +118,7 @@ val TemporalOffsetTest by testSuite {
 
                 WardenDebugAttestationStatement.deserializeCompact(
                     attestationService.collectDebugInfo(ios16.attestationProof, ios16.challenge).serializeCompact()
-                ).replaySmart(ignoreProxy = false) shouldBe this
+                ).replaySmart() shouldBe this
             }
         }
 
