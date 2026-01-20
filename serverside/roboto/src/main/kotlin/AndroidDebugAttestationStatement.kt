@@ -1,6 +1,6 @@
 package at.asitplus.attestation.android
 
-import at.asitplus.attestation.android.AttestationRevocationList.Loader.Configuration
+import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
@@ -14,12 +14,12 @@ private val jsonDebug by lazy {
     kotlinx.serialization.json.Json {
         encodeDefaults = true
         ignoreUnknownKeys = true
-        serializersModule += AttestationRevocationList.json.serializersModule
+        serializersModule += AndroidRevocationList.json.serializersModule
     }
 }
 
 @Serializable
-data class ConfigWithList(val config: Configuration<*>, val list: AttestationRevocationList)
+data class ConfigWithList(val config: Configuration<*>, val list: AndroidRevocationList)
 
 @Serializable
 class AndroidDebugAttestationStatement(
@@ -33,7 +33,7 @@ class AndroidDebugAttestationStatement(
 ) {
 
     fun checkerFromConfig(): Roboto =
-        configuration.copy(revocation = revocationLists.map { (_,list)-> AttestationRevocationList.InMemoryLoader.Configuration(list) }).let { cfg->
+        configuration.copy(revocation = revocationLists.map { (_,list)-> AndroidRevocationList.InMemoryLoader.Configuration(list) }).let { cfg->
 
         when (kind) {
             Type.HARDWARE -> HardwareAttestationVerifier(cfg)

@@ -6,9 +6,10 @@ import com.zkdcloud.proxy.http.ServerStart
 import com.zkdcloud.proxy.http.handler.client.ExceptionDuplexHandler
 import com.zkdcloud.proxy.http.handler.client.JudgeTypeInboundHandler
 import de.infix.testBalloon.framework.core.testSuite
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
@@ -30,6 +31,8 @@ import io.netty.util.concurrent.DefaultThreadFactory
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.math.BigInteger
+import java.net.ConnectException
 import java.nio.charset.StandardCharsets
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -66,19 +69,21 @@ val RevocationTestFromGoogleSources by testSuite {
             factory.generateCertificate(ByteArrayInputStream(TEST_CERT.toByteArray(StandardCharsets.UTF_8))) as X509Certificate
         val serialNumber = cert.serialNumber
 
-        "load Test Serial" {
+        "File-based" {
 
-            var loadBlocking =
-                AttestationRevocationList.FileLoader(TEST_STATUS_LIST_PATH, 0L).loadBlocking(Clock.System.now())
+            val loadBlocking =
+                AndroidRevocationList.FileLoader(TEST_STATUS_LIST_PATH, 0L).loadBlocking(Clock.System.now())
             loadBlocking
                 .isRevokedOrSuspended(serialNumber).shouldBeTrue()
+
+            loadBlocking.isRevokedOrSuspended(BigInteger.valueOf(0xbadbeef)).shouldBeFalse()
         }
 
         "test cache" - {
 
             "without HTTP Expiry Header" {
                 val now = Clock.System.now()
-                val client = AttestationRevocationList.HttpLoader(
+                val client = AndroidRevocationList.HttpLoader(
                     MockEngine,
                     url = "",
                     fallbackRevocationListValiditySeconds = 0L
@@ -97,7 +102,7 @@ val RevocationTestFromGoogleSources by testSuite {
 
             "with HTTP Expiry Header" {
                 val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
-                val client = AttestationRevocationList.HttpLoader(
+                val client = AndroidRevocationList.HttpLoader(
                     MockEngine,
                     url = "",
                     fallbackRevocationListValiditySeconds = 0L
@@ -113,22 +118,22 @@ val RevocationTestFromGoogleSources by testSuite {
                 }
             }
         }
-        /*
-                "Test HTTP local proxy" {
-                    val client = HttpClient(CIO) { setup("http://localhost:1081") }
-                    shouldThrow<ConnectException> {
-                        Roboto.RevocationList.fromGoogleServer(client)
-                    }
-                    startProxy()
-                    Roboto.RevocationList.fromGoogleServer(client)
-                        .isRevoked(BigInteger("6681152659205225093", 16)) shouldBe true
-                }
 
-                "load Bad Serial" {
-                    Roboto.RevocationList.from(File(TEST_STATUS_LIST_PATH).inputStream()).isRevoked(
-                        BigInteger.valueOf(0xbadbeef)
-                    ).shouldBeFalse()
-                }*/
+        "Test HTTP local proxy" {
+            val client = AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("http://localhost:1081")
+                    .createLoader()
+            shouldThrow<ConnectException> {
+                client.loadBlocking(Clock.System.now())
+            }
+            startProxy()
+            val revocationList = client.loadBlocking(Clock.System.now())
+            revocationList.isRevokedOrSuspended("6681152659205225093") shouldBe true
+            revocationList.expires!! shouldBeGreaterThan (Clock.System.now() + 12.hours)
+            repeat(100000) {
+                (client.loadBlocking(Clock.System.now()) === revocationList).shouldBeTrue()
+
+            }
+        }
     }
 }
 

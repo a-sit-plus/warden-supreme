@@ -55,7 +55,7 @@ abstract class Roboto(
 
     private val newPkixCertPathValidator = getValidator()
 
-    private val revocationCheckers: List<Pair<AttestationRevocationList.Loader.Configuration<*>, AttestationRevocationList.Loader>> by lazy {
+    private val revocationCheckers: List<Pair<AndroidRevocationList.Loader.Configuration<*>, AndroidRevocationList.Loader>> by lazy {
         attestationConfiguration.revocation.map { (it to it.createLoader()) }
     }
 
@@ -150,15 +150,19 @@ abstract class Roboto(
                         loader.load(verificationDate.toInstant().toKotlinInstant())
                     )
                 }
-            }.onSuccess {
-                revocationListsFromLastCall = it
-                if (it.any { it.list.isRevokedOrSuspended(certificate.serialNumber) })
-                    throw RevocationException.Revoked(
-                        "Certificate ${certificate.serialNumber} revoked",
-                        certificateChain = fullChainForDebugging,
-                        revokedCertificate = certificate,
-                        TODO("get list and source")
-                    )
+            }.onSuccess { revocationLists ->
+                revocationListsFromLastCall = revocationLists
+                revocationLists.forEach {
+                    it.list.find(certificate.serialNumber)?.let { entry ->
+                        throw RevocationException.Revoked(
+                            "Certificate ${certificate.serialNumber} revoked",
+                            certificateChain = fullChainForDebugging,
+                            revokedCertificate = certificate,
+                            entry = entry
+                        )
+                    }
+                }
+
             }.onFailure {
                 throw RevocationException.ListUnavailable(
                     "Could not init revocation list",

@@ -1,9 +1,8 @@
 package at.asitplus.attestation.android.exceptions
 
-import at.asitplus.attestation.android.AttestationRevocationList
+import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.SoftwareAttestationVerifier
 import at.asitplus.attestation.android.contentEqualsIfArray
-import at.asitplus.attestation.android.contentHashCodeIfArray
 import at.asitplus.signum.indispensable.contentEqualsIfArray
 import java.security.cert.X509Certificate
 
@@ -291,7 +290,7 @@ sealed class RevocationException(message: String?, cause: Throwable? = null, val
         cause: Throwable? = null,
         val certificateChain: List<X509Certificate>,
         val revokedCertificate: X509Certificate,
-        val entry: AttestationRevocationList.Entry,
+        val entry: AndroidRevocationList.Entry,
     ) : RevocationException(message, cause, Reason.REVOKED) {
 
         private val encodedChain by lazy { certificateChain.map { it.encoded }.toTypedArray() }

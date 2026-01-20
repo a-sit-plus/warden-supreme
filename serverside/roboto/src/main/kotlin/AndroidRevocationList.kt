@@ -1,7 +1,8 @@
 package at.asitplus.attestation.android
 
-import at.asitplus.attestation.android.AttestationRevocationList.HttpLoader.Configuration.ProxyConfig.Type
-import at.asitplus.attestation.android.AttestationRevocationList.Loader.Configuration
+import at.asitplus.attestation.android.AndroidRevocationList.HttpLoader.Companion.GOOGLE_OFFICIAL_REVOCATION_LIST
+import at.asitplus.attestation.android.AndroidRevocationList.HttpLoader.Configuration.ProxyConfig.Type
+import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
@@ -61,7 +62,7 @@ import kotlin.time.toKotlinInstant
  */
 @OptIn(ExperimentalTime::class)
 @Serializable
-data class AttestationRevocationList(
+data class AndroidRevocationList(
     val entries: Map<String, Entry>,
     val date: Instant? = null,
     val expires: Instant? = null,
@@ -125,17 +126,41 @@ data class AttestationRevocationList(
      * @return `true` if the serial number exists in the revocation list, indicating
      *         that the device has been revoked or suspended; `false` otherwise.
      */
-    fun isRevokedOrSuspended(
-        serialNumber: BigInteger
-    ): Boolean {
-        val serialNumberNormalised = serialNumber.toString(16).lowercase(Locale.getDefault())
-        return entries.containsKey(serialNumberNormalised)
-    }
+    fun isRevokedOrSuspended(serialNumber: BigInteger): Boolean = isRevokedOrSuspended(serialNumber.normalize())
+
+
+    /**
+     * Retrieves a revocation entry corresponding to the provided serial number.
+     *
+     * @param serial The unique serial number of the certificate or device being queried.
+     * @return The [Entry] associated with the serial number if it exists in the revocation list,
+     *         or `null` if no entry is found.
+     */
+    fun find(serial: String): Entry? = entries[serial]
+
+    /**
+     * Retrieves a revocation entry corresponding to the provided serial number.
+     *
+     * @param serialNumber The unique serial number of the certificate or device in `BigInteger` format.
+     *                     It will be normalized before lookup.
+     * @return The corresponding [Entry] from the revocation list if it exists, or `null` if no match is found.
+     */
+    fun find(serialNumber: BigInteger): Entry? = entries[serialNumber.normalize()]
+
 
     fun serialize() = json.encodeToString(this)
 
+    private fun BigInteger.normalize(): String = toString(16).lowercase(Locale.getDefault())
 
     companion object {
+
+        @JvmField
+        val GoogleDefaultLoaderConfig = HttpLoader.Configuration(
+            url = GOOGLE_OFFICIAL_REVOCATION_LIST,
+            fallbackRevocationListValiditySeconds = 60 /*to prevent rate limiting*/,
+            preferHeaderBasedExpiry = true
+        )
+
         @PublishedApi
         internal val configSubclasses = mutableSetOf<SerializersModule>()
 
@@ -180,7 +205,7 @@ data class AttestationRevocationList(
             dateOverride: Instant? = null,
             expiresOverride: Instant? = null,
             lastModifiedOverride: Instant? = null
-        ): AttestationRevocationList =
+        ): AndroidRevocationList =
             deserialize(
                 json.decodeFromString<JsonObject>(jsonString),
                 dateOverride = dateOverride,
@@ -193,15 +218,15 @@ data class AttestationRevocationList(
             dateOverride: Instant? = null,
             expiresOverride: Instant? = null,
             lastModifiedOverride: Instant? = null
-        ): AttestationRevocationList =
-            json.decodeFromJsonElement<AttestationRevocationList>(jsonObject)
+        ): AndroidRevocationList =
+            json.decodeFromJsonElement<AndroidRevocationList>(jsonObject)
                 .let { parsed -> dateOverride?.let { parsed.copy(date = it) } ?: parsed }
                 .let { parsed -> expiresOverride?.let { parsed.copy(expires = it) } ?: parsed }
                 .let { parsed -> lastModifiedOverride?.let { parsed.copy(lastModified = it) } ?: parsed }
     }
 
     /**
-     * Generic Interface to load an [AttestationRevocationList].
+     * Generic Interface to load an [AndroidRevocationList].
      * Implementing classes are expected to be configured with any
      * parameters needed for loading, s.t. loading itself requires no parameters
      */
@@ -212,19 +237,16 @@ data class AttestationRevocationList(
             fun createLoader(): L
             val fallbackRevocationListValiditySeconds: Long
 
-            companion object {
-
-            }
         }
 
 
         /**
-         * Loads an [AttestationRevocationList], which provides information
+         * Loads an [AndroidRevocationList], which provides information
          * about revoked or suspended devices as per the official specification.
          * The implementation details, such as the source of the revocation list,
          * may vary depending on the specific implementation of the `Loader` interface.
          *
-         * This will only return a fresh [AttestationRevocationList] if the last loaded one is expired.
+         * This will only return a fresh [AndroidRevocationList] if the last loaded one is expired.
          *
          * @return The loaded `AndroidAttestationRevocationList`, containing details
          * on revoked or suspended entries, along with metadata such as expiration
@@ -233,23 +255,23 @@ data class AttestationRevocationList(
          * network issues, IO errors, or invalid data.
          */
         @Throws(Throwable::class)
-        suspend fun load(now: Instant): AttestationRevocationList
+        suspend fun load(now: Instant): AndroidRevocationList
 
         /**
-         * Loads an [AttestationRevocationList] in a blocking manner.
+         * Loads an [AndroidRevocationList] in a blocking manner.
          *
          * @see load
          */
         @Throws(Throwable::class)
-        fun loadBlocking(now: Instant): AttestationRevocationList = runBlocking { load(now) }
+        fun loadBlocking(now: Instant): AndroidRevocationList = runBlocking { load(now) }
     }
 
     abstract class CachingLoader : Loader {
         private val cacheLock = Mutex()
-        private var cachedList: AttestationRevocationList? = null
+        private var cachedList: AndroidRevocationList? = null
 
         @Throws(Throwable::class)
-        override suspend fun load(now: Instant): AttestationRevocationList = cacheLock.withLock {
+        override suspend fun load(now: Instant): AndroidRevocationList = cacheLock.withLock {
             cachedList?.let {
                 if (it.expires == null || it.expires > now)
                     return it
@@ -257,13 +279,13 @@ data class AttestationRevocationList(
             fetch(now).also { cachedList = it }
         }
 
-        abstract suspend fun fetch(now: Instant): AttestationRevocationList
+        abstract suspend fun fetch(now: Instant): AndroidRevocationList
 
     }
 
     /**
      * Caching HTTP [Loader] that fetches an
-     * [AttestationRevocationList] over HTTP. This class uses an
+     * [AndroidRevocationList] over HTTP. This class uses an
      * [HttpClient] to perform requests and parses the fetched JSON content
      * into the revocation list format and respects [HttpHeaders.CacheControl]!
      *
@@ -285,14 +307,24 @@ data class AttestationRevocationList(
         override val fallbackRevocationListValiditySeconds: Long,
         private val preferHeaderBasedExpiry: Boolean = true,
         config: HttpClientConfig<T>.() -> Unit
-    ) : AttestationRevocationList.CachingLoader() {
+    ) : AndroidRevocationList.CachingLoader() {
+
+        /**
+         * Shuts down the HTTP client instance associated with the loader.
+         *
+         * This method releases resources held by the HTTP client to ensure that
+         * no further network connections or operations can occur. It should be
+         * called when the loader is no longer needed to clean up resources
+         * effectively and avoid potential memory leaks.
+         */
+        fun shutdown() = httpClient.close()
 
         private val httpClient = HttpClient(engineFactory) {
             config()
             install(ContentNegotiation) { json(json) }
         }
 
-        override suspend fun fetch(now: Instant): AttestationRevocationList =
+        override suspend fun fetch(now: Instant): AndroidRevocationList =
             httpClient.get(url).run {
                 val validity: Duration? = if (this@HttpLoader.preferHeaderBasedExpiry) {
                     val cacheControl =
@@ -355,23 +387,23 @@ data class AttestationRevocationList(
                 }
             }
 
-            object GoogleDefault {
-                /**
-                 * convenience helper to optionally set an HTTP Proxy. if [url] is `null`, no proxy will be configured.
-                 */
-                fun withHttpProxy(url: String?) = HttpLoader.Configuration(
-                    url = GOOGLE_OFFICIAL_REVOCATION_LIST,
-                    fallbackRevocationListValiditySeconds = 60 /*to prevent rate limiting*/,
-                    proxyConfig = url?.let {
-                        ProxyConfig(
-                            type = Type.HTTP,
-                            it
-                        )
-                    })
-            }
+            /**
+             * Convenience helper to copy this config, setting or clearing an HTTP Proxy:
+             * * if [url] is `null`, no proxy will be configured
+             * * otherwise an HTTP proxy will be configured based on [url]
+             */
+            fun withHttpProxy(url: String?) = copy(proxyConfig = url?.let {
+                ProxyConfig(
+                    type = Type.HTTP,
+                    it
+                )
+            })
         }
 
         companion object {
+
+
+
             private val httpDateFormatter =
                 DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC)
 
@@ -431,14 +463,14 @@ data class AttestationRevocationList(
     /**
      * In-Memory "Loader", that will always return [list] and ignore all validity.
      */
-    class InMemoryLoader(val list: AttestationRevocationList) : Loader {
+    class InMemoryLoader(val list: AndroidRevocationList) : Loader {
         override val fallbackRevocationListValiditySeconds: Long = -1
         override suspend fun load(now: Instant) = list
 
 
         @Serializable
         @SerialName("mem")
-        data class Configuration(val list: AttestationRevocationList) : Loader.Configuration<InMemoryLoader> {
+        data class Configuration(val list: AndroidRevocationList) : Loader.Configuration<InMemoryLoader> {
             override fun createLoader() = InMemoryLoader(list)
             override val fallbackRevocationListValiditySeconds: Long = -1
         }

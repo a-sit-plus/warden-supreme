@@ -1,4 +1,5 @@
 package at.asitplus.attestation.android
+
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
@@ -278,11 +279,6 @@ val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
 val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11: Set<TrustedRoot> =
     DEFAULT_SOFTWARE_TRUST_ANCHORS.map { TrustedRoot.PublicKey(it) }.toSet()
 
-/**Defaults for checking against the official Google revocation list based on the OS/JVM trust store without using a proxy.*/
-val DEFAULT_GOOGLE_REVOCATION_CHECKS: List<AttestationRevocationList.HttpLoader.Configuration> = listOf(
-    AttestationRevocationList.HttpLoader.Configuration.GoogleDefault.withHttpProxy(null)
-)
-
 /**
  * Main Android attestation configuration class serving as ground truth for all key and app attestation verifications.
  *
@@ -420,10 +416,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
-     * @see AttestationRevocationList.HttpLoader.Configuration
-     * @see AttestationRevocationList.FileLoader.Configuration
+     * @see AndroidRevocationList.HttpLoader.Configuration
+     * @see AndroidRevocationList.FileLoader.Configuration
      */
-    val revocation: List<AttestationRevocationList.Loader.Configuration<*>> = DEFAULT_GOOGLE_REVOCATION_CHECKS
+    val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
 
 
 ) {
@@ -550,7 +546,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation = disableHardwareAttestation,
         enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
-        revocation = listOf(AttestationRevocationList.HttpLoader.Configuration.GoogleDefault.withHttpProxy(httpProxy)),
+        revocation = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy(httpProxy)),
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
     )
 
@@ -661,10 +657,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
-         * @see AttestationRevocationList.HttpLoader.Configuration
-         * @see AttestationRevocationList.FileLoader.Configuration
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        revocation: List<AttestationRevocationList.Loader.Configuration<*>> = DEFAULT_GOOGLE_REVOCATION_CHECKS
+        revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
 
     ) : this(
         applications = applications,
@@ -810,7 +806,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation = disableHardwareAttestation,
         enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
-        revocation = listOf(AttestationRevocationList.HttpLoader.Configuration.GoogleDefault.withHttpProxy(httpProxy)),
+        revocation = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy(httpProxy)),
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
     )
 
@@ -916,10 +912,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
-         * @see AttestationRevocationList.HttpLoader.Configuration
-         * @see AttestationRevocationList.FileLoader.Configuration
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        revocation: List<AttestationRevocationList.Loader.Configuration<*>> = DEFAULT_GOOGLE_REVOCATION_CHECKS,
+        revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
         /**
          * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
@@ -1043,10 +1039,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
-         * @see AttestationRevocationList.HttpLoader.Configuration
-         * @see AttestationRevocationList.FileLoader.Configuration
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        revocation: List<AttestationRevocationList.Loader.Configuration<*>> = DEFAULT_GOOGLE_REVOCATION_CHECKS,
+        revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
         /**
          * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
@@ -1176,10 +1172,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
-         * @see AttestationRevocationList.HttpLoader.Configuration
-         * @see AttestationRevocationList.FileLoader.Configuration
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        revocation: List<AttestationRevocationList.Loader.Configuration<*>> = DEFAULT_GOOGLE_REVOCATION_CHECKS,
+        revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
         /**
          * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
@@ -1541,10 +1537,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var
                 /**
                  * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
-                 * @see AttestationRevocationList.HttpLoader.Configuration
-                 * @see AttestationRevocationList.FileLoader.Configuration
+                 * @see AndroidRevocationList.HttpLoader.Configuration
+                 * @see AndroidRevocationList.FileLoader.Configuration
                  */
-                revocation: List<AttestationRevocationList.Loader.Configuration<*>> = DEFAULT_GOOGLE_REVOCATION_CHECKS
+                revocation: List<AndroidRevocationList.Loader.Configuration<*>> =
+            listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
 
         /**
@@ -1665,17 +1662,20 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         fun enableNougatAttestation() = apply { enableNougatAttestation = true }
 
-       @Deprecated("To be removed in 1.0.0", replaceWith = ReplaceWith("revocation(istOf(AttestationRevocationList.HttpLoader.Configuration.GoogleDefault.withHttpProxy(url)))"))
+        @Deprecated(
+            "To be removed in 1.0.0",
+            replaceWith = ReplaceWith("revocation(istOf(AttestationRevocationList.HttpLoader.Configuration.GoogleDefault.withHttpProxy(url)))")
+        )
         fun httpProxy(url: String) = apply {
-            revocation = listOf(AttestationRevocationList.HttpLoader.Configuration.GoogleDefault.withHttpProxy(url))
+            revocation = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy(url))
         }
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
-         * @see AttestationRevocationList.HttpLoader.Configuration
-         * @see AttestationRevocationList.FileLoader.Configuration
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        fun revocation(revocation: List<AttestationRevocationList.Loader.Configuration<*>>) {
+        fun revocation(revocation: List<AndroidRevocationList.Loader.Configuration<*>>) {
             this.revocation = revocation
         }
 
