@@ -161,8 +161,8 @@ data class AndroidRevocationList(
             preferHeaderBasedExpiry = true
         )
 
-        @PublishedApi
-        internal val configSubclasses = mutableSetOf<SerializersModule>()
+        val configurationSerializerModules = mutableSetOf<SerializersModule>()
+
 
         init {
             registerConfiguration(InMemoryLoader.Configuration::class)
@@ -179,7 +179,7 @@ data class AndroidRevocationList(
          */
         inline fun <reified L, reified T : Configuration<L>> registerConfiguration(clazz: KClass<T>) {
             if (inited) throw IllegalStateException("AttestationRevocationList Loader Serializers are already initialized")
-            configSubclasses.add(SerializersModule {
+            configurationSerializerModules.add(SerializersModule {
                 polymorphic(Configuration::class) {
                     subclass(clazz)
                 }
@@ -194,7 +194,7 @@ data class AndroidRevocationList(
                 isLenient = true
                 encodeDefaults = false
                 explicitNulls = false
-                serializersModule = configSubclasses.reduce { acc, e -> acc + e }
+                serializersModule = configurationSerializerModules.reduce { acc, e -> acc + e }
                 classDiscriminator = "type"
             }
         }
