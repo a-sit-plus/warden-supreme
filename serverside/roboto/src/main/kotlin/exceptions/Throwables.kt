@@ -103,8 +103,16 @@ class AttestationValueException(
         if (!super.equals(other)) return false
 
         if (reason != other.reason) return false
-        if (!expectedValue.contentEqualsIfArray(other.expectedValue)) return false
-        if (!actualValue.contentEqualsIfArray(other.actualValue)) return false
+        if (expectedValue is Collection<*> && other.expectedValue is Collection<*>) {
+            if (!expectedValue.toTypedArray().contentDeepEquals(other.expectedValue.toTypedArray())) return false
+        } else {
+            if (!expectedValue.contentEqualsIfArray(other.expectedValue)) return false
+        }
+        if (actualValue is Collection<*> && other.actualValue is Collection<*>) {
+            if (!actualValue.toTypedArray().contentDeepEquals(other.actualValue.toTypedArray())) return false
+        } else {
+            if (!actualValue.contentEqualsIfArray(other.actualValue)) return false
+        }
 
         return true
     }

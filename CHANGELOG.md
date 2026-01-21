@@ -12,6 +12,7 @@ this changelog also includes the original WARDEN changelog.
 * Provide fully-fledged Android revocation lists
 * Make attestation functions suspending and provide blocking wrappers under old `@JvmName`s
 * The Android-specific `Revoked` error now includes the revocation list entry that indicated a revocation or suspension.
+* Additional fixes to exception equality checks
 
 ## 0.9.9999.1
 * Fix missing old HW trust anchor

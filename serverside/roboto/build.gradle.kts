@@ -17,6 +17,20 @@ plugins {
     id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
 }
+val generatedSrcDir = "${project.layout.projectDirectory.dir("src")}/generated/kotlin"
+sourceSets.main {
+    kotlin.srcDir(generatedSrcDir)
+}
+File(generatedSrcDir).mkdirs()
+File("$generatedSrcDir/wardenVersion.kt").writer().apply {
+
+    write(
+        """
+package at.asitplus.attestation
+
+internal val wardenVersion: String = """" + "$version\"\n")
+    close()
+}
 
 sourceSets.main {
     java {

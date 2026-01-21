@@ -3,6 +3,7 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
+import at.asitplus.attestation.wardenVersion
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.Asn1Element
 import at.asitplus.signum.indispensable.asn1.encoding.parse
@@ -51,6 +52,12 @@ abstract class Roboto(
         }
 
         private fun getValidator() = CertPathValidator.getInstance("KeyAttestation")
+
+
+        /**
+         * Version String of the current Warden Supreme release
+         */
+        val version: String = wardenVersion
     }
 
     private val newPkixCertPathValidator = getValidator()
@@ -437,7 +444,7 @@ abstract class Roboto(
         expectedChallenge: ByteArray,
         verificationDate: Date = Date(),
     ) = AndroidDebugAttestationStatement(
-        ROBOTO_DEBUG_VERSION,
+        version,
         this,
         attestationConfiguration,
         verificationDate,

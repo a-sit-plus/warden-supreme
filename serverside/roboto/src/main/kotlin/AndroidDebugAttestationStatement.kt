@@ -8,8 +8,6 @@ import kotlinx.serialization.modules.plus
 import java.security.cert.X509Certificate
 import java.util.*
 
-internal const val ROBOTO_DEBUG_VERSION = 2
-
 private val jsonDebug by lazy {
     kotlinx.serialization.json.Json {
         encodeDefaults = true
@@ -23,7 +21,7 @@ data class ConfigWithList(val config: Configuration<*>, val list: AndroidRevocat
 
 @Serializable
 class AndroidDebugAttestationStatement(
-    val version: Int,
+    val version: String? = null,
     val kind: Type,
     val configuration: AndroidAttestationConfiguration,
     @Serializable(with = DateTimeSerializer::class) val verificationTime: Date,
@@ -58,7 +56,7 @@ class AndroidDebugAttestationStatement(
 
     companion object {
         suspend operator fun invoke(
-            version: Int,
+            version: String?,
             verifier: Roboto,
             configuration: AndroidAttestationConfiguration,
             verificationTime: Date,
