@@ -63,7 +63,7 @@ val GeneratedAttestationTests by testSuite {
 
         val dbg = attestationService.collectDebugInfo(attestationProof.map { it.encoded }, challenge).serialize()
 
-        WardenDebugAttestationStatement.deserialize(dbg).replayGenericAttestation(ignoreProxy = false)
+        WardenDebugAttestationStatement.deserialize(dbg).replayGenericAttestation()
             .shouldBeInstanceOf<AttestationResult.Android.Verified>().attestationCertificate shouldBe attestationProof.first()
     }
 

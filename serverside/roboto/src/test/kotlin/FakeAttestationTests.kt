@@ -274,7 +274,7 @@ val FakeAttestationTests by testSuite {
             )
 
             shouldThrow<CertificateInvalidException> {
-                checker.verifyAttestation(attestationProof, expectedChallenge = challenge)
+                checker.verifyAttestationBlocking(attestationProof, expectedChallenge = challenge)
             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
             "unless overridden" {
@@ -300,7 +300,7 @@ val FakeAttestationTests by testSuite {
             }
 
             shouldThrow<CertificateInvalidException> {
-                checker.verifyAttestation(attestationProof, expectedChallenge = challenge)
+                checker.verifyAttestationBlocking(attestationProof, expectedChallenge = challenge)
             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
             "but never without trust anchors" {

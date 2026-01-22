@@ -178,6 +178,8 @@ The full details on the configuration can be found in the [API documentation](..
     21. This is simply Apple's recommendation plus five minutes offset
     22. Explicitly set production trusted roots as default
     23. Account for clock drift!
+    
+    Note that revocation configuration has been revamped after 0.9.9999 (see below)!
 
 
 ??? note "A Note on Android Attestation"
@@ -188,6 +190,28 @@ The full details on the configuration can be found in the [API documentation](..
     `AndroidAttestationChecker`s from the strictest (hardware) to the least strict (software-only).
     Naturally, hardware attestation can also be disabled by setting `disableHardwareAttestation = true`, although there is probably
     no real use case for such a configuration **except for testing**.
+
+#### Flexible Android Revocation Configuration
+Warden Supreme >0.x completely revamps revocation handling.
+Instead of hardcoding a check against the official Google revocation list, it is now possible to configure an arbitrary number of
+revocation list loaders. Configuring an empty list completely disables revocation checks.
+Warden Supreme ships with three loaders by default:
+
+1. `HttpLoader`
+2. `FileLoader`
+3. `InMemoryLoader`
+
+The first two handle caching by simply re-serving a previously loaded list, until it is expired.
+The format conforms to the [revocation list schema specified by Google](https://developer.android.com/privacy-and-security/security-key-attestation)
+with the addition of `date`, `expires`, and `lastModified`.
+This allows for encoding freshness information directly into the revocation list, which is relevant when serving from the
+file system, instead of an HTTP server, where HTTP headers are used to encode these infos.  
+The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.
+
+It is also possible to create entirely new loaders and even externalise their configuration by implementing a
+`AndroidRevocationList.Loader`  for the actual loader itself and a `AndroidRevocationListLoader.Configuration`
+for the externalisable configuration. The latter must be marked as `@Serializable` and registered using the
+`AndroidRevocationList.registerConfiguration()` method **before the first configuration reading or writing happens**.
 
 ### Attestation Verifier Setup
 

@@ -1,52 +1,58 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
+import at.asitplus.attestation.wardenVersion
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.plus
 import java.security.cert.X509Certificate
 import java.util.*
 
-private val jsonDebug = kotlinx.serialization.json.Json {
-    encodeDefaults = true
-    ignoreUnknownKeys = true
+private val jsonDebug by lazy {
+    kotlinx.serialization.json.Json {
+        encodeDefaults = true
+        ignoreUnknownKeys = true
+        serializersModule += AndroidRevocationList.json.serializersModule
+    }
 }
 
 @Serializable
+data class ConfigWithList(val config: Configuration<*>, val list: AndroidRevocationList)
+
+@Serializable
 class AndroidDebugAttestationStatement(
+    val version: String? = null,
     val kind: Type,
     val configuration: AndroidAttestationConfiguration,
     @Serializable(with = DateTimeSerializer::class) val verificationTime: Date,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray,
-    val attestationStatement: List<@Serializable(with = CertPemSerializer::class) X509Certificate>
+    val attestationStatement: List<@Serializable(with = CertPemSerializer::class) X509Certificate>,
+    val revocationLists: List<ConfigWithList>,
 ) {
 
-    constructor(
-        verifier: Roboto,
-        configuration: AndroidAttestationConfiguration,
-        verificationTime: Date,
-        challenge: ByteArray,
-        attestationStatement: List<X509Certificate>
-    ) : this(
-        when (verifier) {
-            is HardwareAttestationVerifier -> Type.HARDWARE
-            is SoftwareAttestationVerifier -> Type.SOFTWARE
-            is NougatHybridAttestationVerifier -> Type.NOUGAT_HYBRID
-            else -> throw IllegalArgumentException("Unknown checker type")
-        },
-        configuration,
-        verificationTime,
-        challenge,
-        attestationStatement
-
-    )
+    init {
+        require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
+    }
 
     fun checkerFromConfig(): Roboto =
-        when (kind) {
-            Type.HARDWARE -> HardwareAttestationVerifier(configuration)
-            Type.SOFTWARE -> SoftwareAttestationVerifier(configuration)
-            Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(configuration)
+        configuration.copy(revocation = revocationLists.map { (_, list) ->
+            AndroidRevocationList.InMemoryLoader.Configuration(
+                list
+            )
+        }).let { cfg ->
+            when (kind) {
+                Type.HARDWARE -> HardwareAttestationVerifier(cfg)
+                Type.SOFTWARE -> SoftwareAttestationVerifier(cfg)
+                Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(cfg)
+            }
         }
 
-    fun replay() = checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)
+    @JvmName("replaySuspending")
+    suspend fun replay() = checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)
+
+    @JvmName("replay")
+    fun replayBlocking() = runBlocking { replay() }
 
 
     fun serialize() = jsonDebug.encodeToString(this)
@@ -57,6 +63,28 @@ class AndroidDebugAttestationStatement(
     }
 
     companion object {
+        suspend operator fun invoke(
+            version: String?,
+            verifier: Roboto,
+            configuration: AndroidAttestationConfiguration,
+            verificationTime: Date,
+            challenge: ByteArray,
+            attestationStatement: List<X509Certificate>
+        ) = AndroidDebugAttestationStatement(
+            version,
+            when (verifier) {
+                is HardwareAttestationVerifier -> Type.HARDWARE
+                is SoftwareAttestationVerifier -> Type.SOFTWARE
+                is NougatHybridAttestationVerifier -> Type.NOUGAT_HYBRID
+                else -> throw IllegalArgumentException("Unknown checker type")
+            },
+            configuration,
+            verificationTime,
+            challenge,
+            attestationStatement,
+            verifier.revocationListFromLastCall()
+        )
+
         fun deserialize(string: String) = jsonDebug.decodeFromString<AndroidDebugAttestationStatement>(string)
     }
 }

@@ -279,7 +279,6 @@ val DEFAULT_SOFTWARE_TRUST_ANCHORS = arrayOf(
 val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11: Set<TrustedRoot> =
     DEFAULT_SOFTWARE_TRUST_ANCHORS.map { TrustedRoot.PublicKey(it) }.toSet()
 
-
 /**
  * Main Android attestation configuration class serving as ground truth for all key and app attestation verifications.
  *
@@ -410,18 +409,148 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      */
     val enableSoftwareAttestation: Boolean = false,
     /**
-     * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+     * Mandates [Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
      * for attestation checks to pass
      */
     val requireRemoteKeyProvisioning: Boolean = false,
 
     /**
-     * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
+     * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+     * @see AndroidRevocationList.HttpLoader.Configuration
+     * @see AndroidRevocationList.FileLoader.Configuration
      */
-    val httpProxy: String? = null,
+    val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
 
 
-    ) {
+) {
+
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    @Deprecated("Uses raw public keys for trust anchors. To be removed in 1.0.0")
+    constructor(
+
+        /**
+         * List of applications which can be attested
+         */
+        applications: List<AppData>,
+
+        /**
+         * optional parameter. If set, attestation enforces Android version to be greater or equal to this parameter.
+         * **Caution:** Major Android versions increment in steps of ten-thousands. I.e. Android 11 is specified as `110000`
+         * Can be overridden for individual apps
+         */
+        androidVersion: Int? = null,
+
+        /**
+         * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
+         * Can be overridden for individual apps.
+         */
+        patchLevel: PatchLevel? = null,
+
+        /**
+         * Set to `true` if *StrongBox* security level should be required.
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         */
+        requireStrongBox: Boolean = false,
+
+        /**
+         * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
+         * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         */
+        allowBootloaderUnlock: Boolean = false,
+
+        /**
+         * Unsupported by most devices. See [Official Documentation](https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance)
+         */
+        requireRollbackResistance: Boolean = false,
+
+        /**
+         * Whether to ignore the timely validity of the leaf certificate
+         */
+        ignoreLeafValidity: Boolean = true,
+
+        /**
+         * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
+         * Overriding this set is useful for automated end-to-end tests, for example.
+         * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
+         */
+        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.publicKey }
+            .toTypedArray()),
+
+        /**
+         * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
+         * Overriding this set is useful for automated end-to-end tests, for example.
+         * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
+         */
+        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.publicKey }
+            .toTypedArray()),
+
+        /**
+         *  Tolerance in seconds added to verification date
+         */
+        verificationSecondsOffset: Long = 0,
+
+        /**
+         * Validity of the attestation statement in seconds. This is not the certificate validity!
+         * An attestation statement has a creation time. This value indicates how far in the past the creation time might be.
+         *
+         * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
+         */
+        attestationStatementValiditySeconds: Long? = null,
+
+        /**
+         * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
+         * you are doing!
+         * @see enableSoftwareAttestation
+         */
+        disableHardwareAttestation: Boolean = false,
+
+        /**
+         * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
+         * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
+         * devices only support hardware-backed key attestation, but provide no indication about the OS state.
+         * Hence, app-attestation cannot be trusted, but key attestation still can.
+         */
+        enableNougatAttestation: Boolean = false,
+
+        /**
+         * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
+         * Only change this flag, if you **really** know what you are doing!
+         * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
+         * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
+         */
+        enableSoftwareAttestation: Boolean = false,
+
+        /**
+         * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+         * for attestation checks to pass
+         */
+        requireRemoteKeyProvisioning: Boolean = false,
+
+        /**DON' USE! replace with flexible `revocation`*/
+        httpProxy: String?
+
+    ) : this(
+        applications = applications,
+        androidVersion = androidVersion,
+        patchLevel = patchLevel,
+        requireStrongBox = requireStrongBox,
+        allowBootloaderUnlock = allowBootloaderUnlock,
+        requireRollbackResistance = requireRollbackResistance,
+        ignoreLeafValidity = ignoreLeafValidity,
+        hardwareTrustedRoots = hardwareAttestationTrustAnchors.map { TrustedRoot.PublicKey(it) }.toSet(),
+        softwareTrustedRoots = softwareAttestationTrustAnchors.map { TrustedRoot.PublicKey(it) }.toSet(),
+        verificationSecondsOffset = verificationSecondsOffset,
+        attestationStatementValiditySeconds = attestationStatementValiditySeconds,
+        disableHardwareAttestation = disableHardwareAttestation,
+        enableNougatAttestation = enableNougatAttestation,
+        enableSoftwareAttestation = enableSoftwareAttestation,
+        revocation = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy(httpProxy)),
+        requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+    )
+
+
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @kotlin.internal.LowPriorityInOverloadResolution
     @Deprecated("Uses raw public keys for trust anchors. To be removed in 1.0.0")
@@ -527,11 +656,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         requireRemoteKeyProvisioning: Boolean = false,
 
         /**
-         * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
+         * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        httpProxy: String? = null,
+        revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
 
-        ) : this(
+    ) : this(
         applications = applications,
         androidVersion = androidVersion,
         patchLevel = patchLevel,
@@ -546,7 +677,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation = disableHardwareAttestation,
         enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
-        httpProxy = httpProxy,
+        revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
     )
 
@@ -653,7 +784,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
          */
-        httpProxy: String? = null,
+        httpProxy: String?,
 
         /**
          * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
@@ -675,7 +806,138 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation = disableHardwareAttestation,
         enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
-        httpProxy = httpProxy,
+        revocation = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy(httpProxy)),
+        requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+    )
+
+    /**
+     * Convenience constructor to attest a single app
+     */
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    @Deprecated("Uses raw public keys for trust anchors. To be removed in 1.0.0")
+    constructor(
+        /**
+         * The single application to be attested
+         */
+        singleApp: AppData,
+
+        /**
+         * optional parameter. If set, attestation enforces Android version to be greater or equal to this parameter.
+         * **Caution:** Major Android versions increment in steps of ten-thousands. I.e. Android 11 is specified as `110000`
+         * Can be overridden for individual apps
+         */
+        androidVersion: Int? = null,
+
+        /**
+         * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
+         * Can be overridden for individual apps.
+         */
+        patchLevel: PatchLevel? = null,
+
+        /**
+         * Set to `true` if *StrongBox* security level should be required.
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         */
+        requireStrongBox: Boolean = false,
+
+        /**
+         * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
+         * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         */
+        allowBootloaderUnlock: Boolean = false,
+
+        /**
+         * Unsupported by most devices. See [Official Documentation](https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance)
+         */
+        requireRollbackResistance: Boolean = false,
+
+        /**
+         * Whether to ignore the timely validity of the leaf certificate
+         */
+        ignoreLeafValidity: Boolean = true,
+
+        /**
+         * Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key.
+         * Overriding this set is useful for automated end-to-end tests, for example.
+         * The default trust anchors are accessible through [GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS]
+         */
+        hardwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.publicKey }
+            .toTypedArray()),
+
+        /**
+         * Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys.
+         * Overriding this set is useful for automated end-to-end tests, for example.
+         * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11]
+         */
+        softwareAttestationTrustAnchors: Set<PublicKey> = linkedSetOf(*GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A11.map { it.publicKey }
+            .toTypedArray()),
+
+        /**
+         *  Tolerance in seconds added to verification date
+         */
+        verificationSecondsOffset: Long = 0,
+
+        /**
+         * Validity of the attestation statement in seconds. This is not the certificate validity!
+         * An attestation statement has a creation time. This value indicates how far in the past the creation time might be.
+         *
+         * **Can be set to `null` to ignore attestation statement validity checking.** In this case, even a faulty attestation statement lacking a creation time will verify.
+         */
+        attestationStatementValiditySeconds: Long? = null,
+
+        /**
+         * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
+         * you are doing!
+         * @see enableSoftwareAttestation
+         */
+        disableHardwareAttestation: Boolean = false,
+
+        /**
+         * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
+         * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
+         * devices only support hardware-backed key attestation, but provide no indication about the OS state.
+         * Hence, app-attestation cannot be trusted, but key attestation still can.
+         */
+        enableNougatAttestation: Boolean = false,
+
+        /**
+         * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
+         * Only change this flag, if you **really** know what you are doing!
+         * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
+         * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
+         */
+        enableSoftwareAttestation: Boolean = false,
+
+        /**
+         * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
+         */
+        revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
+
+        /**
+         * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
+         * for attestation checks to pass
+         */
+        requireRemoteKeyProvisioning: Boolean = false,
+    ) : this(
+        listOf(singleApp),
+        androidVersion = androidVersion,
+        patchLevel = patchLevel,
+        requireStrongBox = requireStrongBox,
+        allowBootloaderUnlock = allowBootloaderUnlock,
+        requireRollbackResistance = requireRollbackResistance,
+        ignoreLeafValidity = ignoreLeafValidity,
+        hardwareTrustedRoots = hardwareAttestationTrustAnchors.map { TrustedRoot.PublicKey(it) }.toSet(),
+        softwareTrustedRoots = softwareAttestationTrustAnchors.map { TrustedRoot.PublicKey(it) }.toSet(),
+        verificationSecondsOffset = verificationSecondsOffset,
+        attestationStatementValiditySeconds = attestationStatementValiditySeconds,
+        disableHardwareAttestation = disableHardwareAttestation,
+        enableNougatAttestation = enableNougatAttestation,
+        enableSoftwareAttestation = enableSoftwareAttestation,
+        revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
     )
 
@@ -776,9 +1038,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation: Boolean = false,
 
         /**
-         * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
+         * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        httpProxy: String? = null,
+        revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
         /**
          * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
@@ -800,7 +1064,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation = disableHardwareAttestation,
         enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
-        httpProxy = httpProxy,
+        revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
     )
 
@@ -907,9 +1171,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         apps: List<AppData>,
 
         /**
-         * HTTP Proxy URL formatted as `http(s)://proxy-domain:port`
+         * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        httpProxy: String? = null,
+        revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
         /**
          * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
@@ -931,7 +1197,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation = disableHardwareAttestation,
         enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
-        httpProxy = httpProxy,
+        revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
     )
 
@@ -1268,7 +1534,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var disableHwAttestation: Boolean = false
         private var enableSwAttestation: Boolean = false
         private var enableNougatAttestation: Boolean = false
-        private var httpProxy: String? = null
+        private var
+                /**
+                 * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+                 * @see AndroidRevocationList.HttpLoader.Configuration
+                 * @see AndroidRevocationList.FileLoader.Configuration
+                 */
+                revocation: List<AndroidRevocationList.Loader.Configuration<*>> =
+            listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
 
         /**
@@ -1389,10 +1662,22 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         fun enableNougatAttestation() = apply { enableNougatAttestation = true }
 
+        @Deprecated(
+            "To be removed in 1.0.0",
+            replaceWith = ReplaceWith("revocation(istOf(AttestationRevocationList.HttpLoader.Configuration.GoogleDefault.withHttpProxy(url)))")
+        )
+        fun httpProxy(url: String) = apply {
+            revocation = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy(url))
+        }
+
         /**
-         * @see AndroidAttestationConfiguration.httpProxy
+         * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * @see AndroidRevocationList.HttpLoader.Configuration
+         * @see AndroidRevocationList.FileLoader.Configuration
          */
-        fun httpProxy(url: String) = apply { httpProxy = url }
+        fun revocation(revocation: List<AndroidRevocationList.Loader.Configuration<*>>) {
+            this.revocation = revocation
+        }
 
         /**
          * @see at.asitplus.attestation.android.AndroidAttestationConfiguration.requireRemoteKeyProvisioning
@@ -1414,7 +1699,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             disableHardwareAttestation = disableHwAttestation,
             enableSoftwareAttestation = enableSwAttestation,
             enableNougatAttestation = enableNougatAttestation,
-            httpProxy = httpProxy,
+            revocation = revocation,
             requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
         )
 
@@ -1436,7 +1721,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "disableHardwareAttestation=$disableHardwareAttestation, " +
                 "enableNougatAttestation=$enableNougatAttestation, " +
                 "enableSoftwareAttestation=$enableSoftwareAttestation, " +
-                "httpProxy=$httpProxy, " +
+                "revocation=$revocation, " +
                 "osPatchLevel=$osPatchLevel" +
                 ")"
     }
@@ -1462,7 +1747,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (hardwareTrustedRoots != other.hardwareTrustedRoots) return false
         if (softwareTrustedRoots != other.softwareTrustedRoots) return false
 
-        if (httpProxy != other.httpProxy) return false
+        if (revocation != other.revocation) return false
 
         if (requireRemoteKeyProvisioning != other.requireRemoteKeyProvisioning) return false
 
@@ -1485,7 +1770,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + (patchLevel?.hashCode() ?: 0)
         result = 31 * result + hardwareTrustedRoots.hashCode()
         result = 31 * result + softwareTrustedRoots.hashCode()
-        result = 31 * result + (httpProxy?.hashCode() ?: 0)
+        result = 31 * result + (revocation?.hashCode() ?: 0)
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
         return result
     }

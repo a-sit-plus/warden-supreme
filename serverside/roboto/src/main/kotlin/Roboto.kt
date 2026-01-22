@@ -3,6 +3,7 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
+import at.asitplus.attestation.wardenVersion
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.Asn1Element
 import at.asitplus.signum.indispensable.asn1.encoding.parse
@@ -13,23 +14,10 @@ import com.android.keyattestation.verifier.provisioningInfo
 import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
 import com.google.android.attestation.RootOfTrust
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.cache.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.jsonObject
-import java.io.IOException
-import java.io.InputStream
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.math.BigInteger
 import java.security.Principal
 import java.security.PublicKey
@@ -43,6 +31,8 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.security.auth.x500.X500Principal
 import kotlin.jvm.optionals.getOrNull
+import kotlin.time.ExperimentalTime
+import kotlin.time.toKotlinInstant
 
 /**
  * The object identifier containing the remote key provisioning extension.
@@ -62,14 +52,27 @@ abstract class Roboto(
         }
 
         private fun getValidator() = CertPathValidator.getInstance("KeyAttestation")
+
+
+        /**
+         * Version String of the current Warden Supreme release
+         */
+        val version: String = wardenVersion
     }
 
     private val newPkixCertPathValidator = getValidator()
 
-    private val revocationListClient = HttpClient(CIO) { setup(attestationConfiguration.httpProxy) }
+    private val revocationCheckers: List<Pair<AndroidRevocationList.Loader.Configuration<*>, AndroidRevocationList.Loader>> by lazy {
+        attestationConfiguration.revocation.map { (it to it.createLoader()) }
+    }
+
+    private val revocationMutex = Mutex()
+    private var revocationListsFromLastCall = listOf<ConfigWithList>()
+    internal suspend fun revocationListFromLastCall() = revocationMutex.withLock { revocationListsFromLastCall }
+
 
     @Throws(CertificateInvalidException::class, RevocationException::class)
-    private fun List<X509Certificate>.verifyCertificateChain(
+    private suspend fun List<X509Certificate>.verifyCertificateChain(
         verificationDate: Date,
         actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
@@ -84,13 +87,6 @@ abstract class Roboto(
                     invalidCertificate = last()
                 )
             }
-        val revocationStatusList = catchingUnwrapped { RevocationList.fromGoogleServer(client = revocationListClient) }
-            .getOrElse {
-                throw RevocationException.ListUnavailable(
-                    "could not download revocation information",
-                    it
-                )
-            }
         val certificateChain =
             if (attestationConfiguration.ignoreLeafValidity) mapIndexed { i, cert ->
                 if (i == 0) EternalX509Certificate(cert) else cert
@@ -99,7 +95,7 @@ abstract class Roboto(
 
 
         certificateChain.reversed().zipWithNext { parent, certificate ->
-            verifyCertificatePair(certificate, parent, verificationDate, revocationStatusList, certificateChain)
+            verifyCertificatePair(certificate, parent, verificationDate, certificateChain)
         }
 
         //now we double-check against the new validator to rule out manipulations of the certificate chain
@@ -133,12 +129,12 @@ abstract class Roboto(
 
     }
 
+    @OptIn(ExperimentalTime::class)
     @Throws(RevocationException::class, CertificateInvalidException::class)
-    private fun verifyCertificatePair(
+    private suspend fun verifyCertificatePair(
         certificate: X509Certificate,
         parent: X509Certificate,
         verificationDate: Date,
-        statusList: RevocationList,
         fullChainForDebugging: List<X509Certificate>
     ) {
         catchingUnwrapped {
@@ -153,20 +149,33 @@ abstract class Roboto(
                 invalidCertificate = certificate
             )
         }
-        catchingUnwrapped {
-            statusList.isRevoked(certificate.serialNumber)
-        }.onSuccess {
-            if (it)
-                throw RevocationException.Revoked(
-                    "Certificate ${certificate.serialNumber} revoked",
-                    certificateChain = fullChainForDebugging,
-                    revokedCertificate = certificate
+        if (revocationCheckers.isNotEmpty()) revocationMutex.withLock {
+            catchingUnwrapped {
+                revocationCheckers.map { (cfg, loader) ->
+                    ConfigWithList(
+                        cfg,
+                        loader.load(verificationDate.toInstant().toKotlinInstant())
+                    )
+                }
+            }.onSuccess { revocationLists ->
+                revocationListsFromLastCall = revocationLists
+                revocationLists.forEach {
+                    it.list.find(certificate.serialNumber)?.let { entry ->
+                        throw RevocationException.Revoked(
+                            "Certificate ${certificate.serialNumber} revoked",
+                            certificateChain = fullChainForDebugging,
+                            revokedCertificate = certificate,
+                            entry = entry
+                        )
+                    }
+                }
+
+            }.onFailure {
+                throw RevocationException.ListUnavailable(
+                    "Could not init revocation list",
+                    it
                 )
-        }.onFailure {
-            throw RevocationException.ListUnavailable(
-                "Could not init revocation list",
-                it
-            )
+            }
         }
     }
 
@@ -414,11 +423,28 @@ abstract class Roboto(
      *
      * into a serializable data structure for easy debugging
      */
-    fun collectDebugInfo(
+    @JvmName("collectDebugInfo")
+    fun collectDebugInfoBlocking(
+        certificates: List<X509Certificate>,
+        expectedChallenge: ByteArray,
+        verificationDate: Date = Date(),
+    ) = runBlocking { collectDebugInfo(certificates, expectedChallenge, verificationDate) }
+
+    /**
+     * Packs
+     * * the current configuration
+     * * the passed attestation proof
+     * * the passed date
+     *
+     * into a serializable data structure for easy debugging
+     */
+    @JvmName("collectDebugInfoSuspending")
+    suspend fun collectDebugInfo(
         certificates: List<X509Certificate>,
         expectedChallenge: ByteArray,
         verificationDate: Date = Date(),
     ) = AndroidDebugAttestationStatement(
+        version,
         this,
         attestationConfiguration,
         verificationDate,
@@ -439,7 +465,47 @@ abstract class Roboto(
      *
      */
     @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
-    open fun verifyAttestation(
+    @JvmName("verifyAttestation")
+    fun verifyAttestationBlocking(
+        certificates: List<X509Certificate>,
+        verificationDate: Date = Date(),
+        expectedChallenge: ByteArray
+    ): ParsedAttestationRecord = runBlocking { verifyAttestation(certificates, verificationDate, expectedChallenge) }
+
+    /**
+     * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
+     * Checks are performed according to the properties set in the [attestationConfiguration].
+     *
+     * @See [AndroidAttestationConfiguration] for details on what is and is not checked.
+     *
+     * @return [ParsedAttestationRecord] on success
+     * @throws AttestationValueException if a property fails to verify according to the current configuration
+     * @throws RevocationException if a certificate has been revoked
+     * @throws CertificateInvalidException if certificates fail to verify
+     *
+     */
+    @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
+    @JvmName("verifyAttestationSuspending")
+    suspend fun verifyAttestation(
+        certificates: List<X509Certificate>,
+        verificationDate: Date = Date(),
+        expectedChallenge: ByteArray
+    ): ParsedAttestationRecord = verifyAttestationInternal(certificates, verificationDate, expectedChallenge)
+
+    /**
+     * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
+     * Checks are performed according to the properties set in the [attestationConfiguration].
+     *
+     * @See [AndroidAttestationConfiguration] for details on what is and is not checked.
+     *
+     * @return [ParsedAttestationRecord] on success
+     * @throws AttestationValueException if a property fails to verify according to the current configuration
+     * @throws RevocationException if a certificate has been revoked
+     * @throws CertificateInvalidException if certificates fail to verify
+     *
+     */
+    @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
+    protected suspend fun verifyAttestationInternal(
         certificates: List<X509Certificate>,
         verificationDate: Date = Date(),
         expectedChallenge: ByteArray
@@ -489,36 +555,6 @@ abstract class Roboto(
 
     @Throws(AttestationValueException::class)
     protected abstract fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean? = null)
-
-    /**
-     * taken and adapted from [com.google.android.attestation.CertificateRevocationStatus] to separate downloading and checking
-     */
-    class RevocationList(json: JsonObject) {
-        private val entries by lazy { json["entries"]?.jsonObject ?: throw IOException() }
-        fun isRevoked(
-            serialNumber: BigInteger
-        ): Boolean {
-            val serialNumberNormalised = serialNumber.toString(16).lowercase(Locale.getDefault())
-            return entries[serialNumberNormalised] != null //any entry is a red flag!
-        }
-
-        companion object Companion {
-            @JvmStatic
-            private val client by lazy { HttpClient(CIO) { setup(null) } }
-
-            @OptIn(ExperimentalSerializationApi::class)
-            @JvmStatic
-            fun from(source: InputStream) = RevocationList(json.decodeFromStream(source))
-
-            @Throws(Throwable::class)
-            @JvmStatic
-            @JvmOverloads
-            fun fromGoogleServer(client: HttpClient = this.client) =
-                runBlocking {
-                    RevocationList(client.get("https://android.googleapis.com/attestation/status").body<JsonObject>())
-                }
-        }
-    }
 }
 
 
@@ -580,15 +616,6 @@ class EternalX509Certificate(private val delegate: X509Certificate) : X509Certif
     override fun getBasicConstraints(): Int = delegate.basicConstraints
 
 }
-
-internal val json = Json { ignoreUnknownKeys = true }
-
-fun HttpClientConfig<*>.setup(proxyUrl: String?) =
-    apply {
-        install(HttpCache)
-        install(ContentNegotiation) { json(json) }
-        engine { proxyUrl?.let { proxy = ProxyBuilder.http(it) } }
-    }
 
 
 /**
