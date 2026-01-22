@@ -14,6 +14,7 @@ theme:
     - search.suggest
     - search.highlight
     - content.code.annotate
+    - announce.dismiss
   icon:
     repo: fontawesome/brands/github
 
@@ -51,7 +52,7 @@ extra_css:
 repo_url: https://github.com/a-sit-plus/warden-supreme
 repo_name: a-sit-plus/warden-supreme
 
-copyright: Copyright &copy; 2025 A-SIT Plus GmbH
+copyright: Copyright &copy; 2025-2026 A-SIT Plus GmbH
 
 plugins:
   - social
@@ -117,3 +118,4 @@ nav:
         - Changelog: CHANGELOG.md
     - Glossary: glossary.md
     - API Docs: dokka/index.html
+    - 💎 Services: services.md
