@@ -54,11 +54,13 @@ constructor(
     val nonceValidity: Duration = makoto.longestValidityDuration
         ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds,
     private val nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
-    /*internal for testing*/ internal val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
+    /*internal for testing*/
+    internal val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
         makoto.clock,
         -makoto.verificationTimeOffset
     ),
 ) {
+
     /**
      *
      * @param androidAttestationConfiguration Configuration for Android key attestation.
@@ -285,6 +287,60 @@ constructor(
     ): String? = catchingUnwrapped {
         PreAttestationError.AttestationStatementExtraction(this, csr).onPreAttestationError()
     }.getOrNull()
+
+    companion object {
+        /**
+         * Configures and initializes an [AttestationVerifier] using the provided configuration, nonce generator and challenge
+         * verifier.
+         *
+         * @param configuration The [SupremeConfiguration] object containing Android and/or iOS attestation configurations, attestation proof OID,
+         * generic device name OID, default key constraints, and verification time offset.
+         * @param clock The system clock used for timestamp verification during attestation.
+         * @param nonceGenerator A [NonceGenerator] instance to generate unique challenges for verification. Defaults to [WardenDefaults.nonceGenerator].
+         * @param challengeValidator A lambda function that initializes a [ChallengeValidator], based on the provided [clock] and the verification time offset from the
+         * [configuration].
+         * Defaults to using an [InMemoryChallengeCache].
+         * @return An instance of [AttestationVerifier] configured with the provided parameters.
+         */
+        operator fun invoke(
+            configuration: SupremeConfiguration, clock: Clock.System,
+            nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
+            challengeValidator: (Clock, Duration) -> ChallengeValidator = { clock, verificationTimeOffset ->
+                InMemoryChallengeCache(clock, verificationTimeOffset)
+            }
+        ): AttestationVerifier {
+            val makoto = if (configuration.ios == null) {
+                Makoto(
+                    androidAttestationConfiguration = configuration.android!!,
+                    clock = clock,
+                    verificationTimeOffset = configuration.verificationTimeOffset
+                )
+            } else if (configuration.android == null) {
+                Makoto(
+                    iosAttestationConfiguration = configuration.ios!!,
+                    clock = clock,
+                    verificationTimeOffset = configuration.verificationTimeOffset
+                )
+            } else
+                Makoto(
+                    androidAttestationConfiguration = configuration.android,
+                    iosAttestationConfiguration = configuration.ios,
+                    clock = clock,
+                    verificationTimeOffset = configuration.verificationTimeOffset
+                )
+            return AttestationVerifier(
+                makoto,
+                attestationProofOID = configuration.attestationProofOID,
+                genericDeviceNameOID = configuration.genericDeviceNameOID,
+                defaultKeyConstraints = configuration.defaultKeyConstraints,
+                nonceValidity = makoto.longestValidityDuration
+                    ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds,
+                nonceGenerator = nonceGenerator,
+                /*internal for testing*/
+                challengeValidator = challengeValidator(clock, configuration.verificationTimeOffset),
+            )
+        }
+    }
 }
 
 /**

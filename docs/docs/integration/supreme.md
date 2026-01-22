@@ -309,61 +309,6 @@ specifies key constraints:
 This really is it! If you've made it this far, you have successfully issued certificates to mobile clients that fulfil your policy.
 The `AttestationClient` doesn't even come with any configuration options.
 
-### Externalising Configuration
-
-Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` have canonical serialised representations (JSON ans YAML) and come with the following (de)serialization functions:
-
-* `toJsonString()` and `fromJsonString()`
-* `toYamlString()` and `fromYamlString()`
-* `toJsonObject()` and `fromJsonObject()`
-
-This is useful for externalising configurations, as using Spring Boot's internal config loader to construct configurations is discouraged
-due to [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
-
-#### Android Configuration Files
-
-??? example "JSON for a Sample App"
-    The below example shows every configuration property in JSON form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-    As for deviations wrt. `revocation`:
-    
-    * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
-    * A file-based revocation list is configured to allow for manually revoking certificates.
-
-    ```json
-    --8<-- "android.json"
-    ```
-
-??? example "YAML for a Sample App"
-    The below example shows every configuration property in YAML form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-    As for deviations wrt. `revocation`:
-    
-    * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
-    * A file-based revocation list is configured to allow for manually revoking certificates.
-    
-    ```yaml
-    --8<-- "android.yaml"
-    ```
-
-#### iOS Configuration Files
-
-??? example "JSON with Defaults for a Sample App"
-    The below example shows every configuration property in JSON form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-
-    ```json
-    --8<-- "ios.json"
-    ```
-
-??? example "YAML with Defaults for a Sample App"
-    The below example shows every configuration property in YAML form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-
-    ```yaml
-    --8<-- "ios.yaml"
-    ```
-
 
 ## Beyond the Basics
 
