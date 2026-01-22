@@ -203,4 +203,37 @@ ul.emoji-list li .bullet {
     width: 1.2em;
     text-align: center;
 }
+.md-announce__inner {
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+    justify-content: center;
+    padding: .35rem .75rem;
+    flex-wrap: wrap;
+}
 
+
+.gh-sponsor-like {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+
+    height: 32px;                 /* critical */
+    padding: 0 12px;              /* GitHub-like */
+
+    font-size: 0.65rem;          /* slightly smaller than body */
+    line-height: 1;
+    color: var(--md-typeset-color)!important;
+    background-color: var(--md-code-bg-color); /* closest neutral fill */
+
+    border: 1px solid rgba(131, 135, 140, 0.5);
+    border-radius: 6px;           /* NOT full pill */
+
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+
+.gh-sponsor-like .icon {
+    font-size: 0.9em;
+}
