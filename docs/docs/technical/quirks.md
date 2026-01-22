@@ -92,7 +92,7 @@ Communicating this information to clients has the inherent benefit that large cl
 Even though the previous section dealt with a crucial Android-specific issue, there's (sadly) more, and
 Android bugs fall into three categories:
 
-1. Encoding flaws, affecting the byte representation of attestation information
+1. Encoding flaws affecting the byte representation of attestation information
 2. OS bugs, and vendor quirks, affecting the behaviour of devices
 3. Non-obvious, but deliberate design decisions
 
@@ -108,10 +108,19 @@ Some vendors encode **UTC Time vs. GeneralizedTime** incorrectly leading to year
 Only the vendor can fix this though updates. However, relying on a tight freshness window based on a cryptographic nonce
 sourced from true randomness is recommended anyway (see [Clock Drifts and Temporal Validity](#clock-drifts-and-temporal-validity)).
 
-### Vendor Patch Level Misencoding
+#### Vendor Patch Level Misencoding
 Many **Android 15** devices (even emulator images) and some Samsung devices do not conform to the ASN.1 schema for attestation data wrt. patch level encoding.
 This concerns the vendor patch level field, not the OS patch level, and requires monkey-patching Google's upstream parser code to prevent it from glitching out.
 **Warden Supreme already applies the necessary band-aids**, but enforcing vendor patch levels is generally discouraged in favour of OS patch levels.
+
+### Misleading Assumptions about ECDH
+Virtually every Android device supports hardware-backed EC crypto and EC Diffie-Hellman key agreement.
+**However**, this does not entail that it supports a combination of the two. With respect to EC keys, only ECDSA verification on NIST curves
+is guaranteed to be performed in hardware, assuming a cryptographic hardware module. This means that without explicitly specifying
+[KeyProperties.SECURITY_LEVEL_TRUSTED_ENVIRONMENT](https://developer.android.com/reference/android/security/keystore/KeyProperties#SECURITY_LEVEL_TRUSTED_ENVIRONMENT)
+during key generation, even generating an EC key pair for a curve supported in hardware may lead to a key being actually generated
+in software, as soon as [KeyProperties.PURPOSE_AGREE_KEY](https://developer.android.com/reference/android/security/keystore/KeyProperties#PURPOSE_AGREE_KEY)
+is also set.
 
 ### OS Bugs and Quirks
 
@@ -125,7 +134,7 @@ This is especially hard to swallow for device owners, since buying a new device 
 - Nothing Phone 3a
 - There are definitely others
 
-#### Keystore2 binder bug
+#### Keystore2 Binder Bug
 On rare occasions, attestation fails because the connection between the Keystore and the package manager breaks up. While the bug has been identified and fixed, it will only land in Android 17 (see commit [b0be7edbf9e3…](https://android.googlesource.com/platform/system/security/+/b0be7edbf9e34bc409c6d869f936c2eb00925b34)).
 This bug manifests itself by listing `UnknownApplication` instead of a proper application package in the attestation statement. Rebooting the device helps.
 
