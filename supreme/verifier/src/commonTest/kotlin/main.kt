@@ -50,32 +50,36 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = false)) {
             var running: Boolean? = true
 
             val attestationValidator = AttestationVerifier(
-                AndroidAttestationConfiguration.Builder(
-                    AndroidAttestationConfiguration.AppData(
-                        "at.asitplus.attestation.supreme.client.test", //automated tests
-                        listOf(
-                            "a3 e5 5b a9 45 7d e2 90 0f e8 63 03 a5 d5 56 c4 96 b6 91 af ff 2c 0d d5 04 88 be d3 e4 00 cc 6b".parseHex()
+                SupremeConfiguration(
+                    AndroidAttestationConfiguration.Builder(
+                        AndroidAttestationConfiguration.AppData(
+                            "at.asitplus.attestation.supreme.client.test", //automated tests
+                            listOf(
+                                "a3 e5 5b a9 45 7d e2 90 0f e8 63 03 a5 d5 56 c4 96 b6 91 af ff 2c 0d d5 04 88 be d3 e4 00 cc 6b".parseHex()
+                            )
+                        )
+                    ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(
+                        TrustedRoot.PublicKey(
+                            CryptoPublicKey.decodeFromPem(
+                                "-----BEGIN PUBLIC KEY-----\n" +
+                                        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
+                                        "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
+                                        "-----END PUBLIC KEY-----"
+                            ).getOrThrow().toJcaPublicKey().getOrThrow()
                         )
                     )
-                ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(
-                    TrustedRoot.PublicKey(
-                        CryptoPublicKey.decodeFromPem(
-                            "-----BEGIN PUBLIC KEY-----\n" +
-                                    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
-                                    "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
-                                    "-----END PUBLIC KEY-----"
-                        ).getOrThrow().toJcaPublicKey().getOrThrow()
-                    )
-                )
-                    .build(),
-                IosAttestationConfiguration(
-                    IosAttestationConfiguration.AppData(
-                        "9CYHJNG644",
-                        "at.asitplus.signumtest.iosApp", //to test with real app from ios
-                        sandbox = true
+                        .build(),
+                    IosAttestationConfiguration(
+                        IosAttestationConfiguration.AppData(
+                            "9CYHJNG644",
+                            "at.asitplus.signumtest.iosApp", //to test with real app from ios
+                            sandbox = true
+                        ),
                     ),
-                ),
-                clock = FixedTimeClock(2025u,1u,10u)
+                    clock = object : SupremeConfiguration.Clock {
+                        override val timeSource: Clock
+                            get() = FixedTimeClock(2025u, 1u, 10u)
+                    })
             )
 
 

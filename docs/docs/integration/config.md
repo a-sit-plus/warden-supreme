@@ -1,0 +1,98 @@
+# Externalising Configuration
+Warden Supreme configuration consists two parts
+
+1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split up into
+   * `AndroidAttestationConfiguration` for Android-specifics
+   * `IosAttestationConfiguration` for iOS-specifics
+2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs and key constraints as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup)
+
+
+To externalise such configuration in a convenient way, an umbrella `SupremeConfiguration` exists.
+This configuration class includes both the platform-specific configurations and the configuration properties related
+to fully integrated attestation.  
+`SupremeConfiguration` has canonical serialised representations (JSON and YAML) and cosme with the following (de)serialization functions:
+
+* `toJsonString()` and `fromJsonString()`
+* `toYamlString()` and `fromYamlString()`
+* `toJsonObject()` and `fromJsonObject()`
+
+This is required for externalising configurations, as using Spring Boot's internal config loader to construct configurations is discouraged
+due to [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
+
+
+??? example "YAML with Defaults for a Sample Android and iOS App"
+    The below example shows every configuration property in YAML form.
+    It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
+
+    ```json
+    --8<-- "supreme.yaml"
+    ```
+
+??? example "JSON with Defaults for a Sample Android and iOS App"
+    The below example shows every configuration property in JSON form.
+    It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
+
+    ```json
+    --8<-- "supreme.json"
+    ```
+
+It is possible to add time sources other that the system clock and exxternalise their configurations as well, by implementing
+`SupremeConfiguration.Clock` and registering the classes for serialization using `SupremeConfiguration.Clock.registry`.
+
+Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they also
+have canonical serialised representations (JSON and YAML) and expose tha same (de)serialization functions as `SupremeConfiguration`.
+In fact, all three implement the same interface tandem for consistency.
+
+
+## Android Configuration Files
+
+??? example "YAML for a Sample App"
+    The below example shows every configuration property in YAML form.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+    As for deviations wrt. `revocation`:
+    
+    * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
+    * A file-based revocation list is configured to allow for manually revoking certificates.
+    
+    ```yaml
+    --8<-- "android.yaml"
+    ```
+
+??? example "JSON for a Sample App"
+    The below example shows every configuration property in JSON form.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+    As for deviations wrt. `revocation`:
+    
+    * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
+    * A file-based revocation list is configured to allow for manually revoking certificates.
+
+    ```json
+    --8<-- "android.json"
+    ```
+
+
+It is possible to create entirely new loaders and even externalise their configuration by implementing a
+`AndroidRevocationList.Loader`  for the actual loader itself and a `AndroidRevocationListLoader.Configuration`
+for the externalisable configuration. The latter must be marked as `@Serializable` and registered using the
+`AndroidRevocationList.loaderRegistry` **before the first configuration reading or writing happens**.
+
+
+## iOS Configuration Files
+
+
+??? example "YAML with Defaults for a Sample App"
+    The below example shows every configuration property in YAML form.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+
+    ```yaml
+    --8<-- "ios.yaml"
+    ```
+
+
+??? example "JSON with Defaults for a Sample App"
+    The below example shows every configuration property in JSON form.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+
+    ```json
+    --8<-- "ios.json"
+    ```

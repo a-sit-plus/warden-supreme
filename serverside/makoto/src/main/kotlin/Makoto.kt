@@ -962,7 +962,6 @@ class Makoto
         private val appAttestReader = ObjectMapper(CBORFactory())
             .registerKotlinModule()
             .readerFor(AttestationObject::class.java)
-
     }
 
     private class IosSetup(

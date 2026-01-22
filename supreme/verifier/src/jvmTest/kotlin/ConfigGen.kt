@@ -2,9 +2,11 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.parseHex
+import at.asitplus.attestation.supreme.SupremeConfiguration
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
+import com.github.curiousoddman.rgxgen.nodes.Repeat.minimum
 import de.infix.testBalloon.framework.core.TestCompartment
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
@@ -29,13 +31,15 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
             AndroidRevocationList.FileLoader.Configuration("./localrevocation.json")
         ), // Defaults to null
     )
-    withData(
-        "android" to androidAttestationConfiguration, "ios" to IosAttestationConfiguration(
-            /*(2)!*/IosAttestationConfiguration.AppData(
-                teamIdentifier = "9CYHJNG644",
-                bundleIdentifier = "at.asitplus.attestation-client",
-            )
+    val iosAttestationConfiguration = IosAttestationConfiguration(
+        /*(2)!*/IosAttestationConfiguration.AppData(
+            teamIdentifier = "9CYHJNG644",
+            bundleIdentifier = "at.asitplus.attestation-client",
         )
+    )
+
+    withData(
+        "android" to androidAttestationConfiguration, "ios" to iosAttestationConfiguration
     ) - { (name, config) ->
         "Writing $name" {
             withClue("JSON") {
@@ -72,7 +76,6 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
                 }
             }
         }
-
     }
 
     "Manual YAML" {
@@ -98,6 +101,36 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
             """.trimIndent()
 
         AndroidAttestationConfiguration.fromYamlString(minimum) shouldBe androidAttestationConfiguration
-
     }
+
+    val config = SupremeConfiguration(androidAttestationConfiguration, iosAttestationConfiguration)
+
+    "Writing Supreme" {
+        withClue("JSON") {
+            FileWriter("$pathname/supreme.json").use { writer ->
+                writer.write(config.toJsonString())
+            }
+        }
+        withClue("YAML") {
+            FileWriter("$pathname/supreme.yaml").use { writer ->
+                writer.write(config.toYamlString())
+            }
+        }
+    }
+
+    "Reading Supreme" - {
+        "JSON" {
+            FileReader("$pathname/supreme.json").use { reader ->
+                val loaded = SupremeConfiguration.fromJsonString(reader.readText())
+                loaded shouldBe config
+            }
+        }
+        "YAML" {
+            FileReader("$pathname/supreme.yaml").use { reader ->
+                val loaded = SupremeConfiguration.fromYamlString(reader.readText())
+                loaded shouldBe config
+            }
+        }
+    }
+
 }

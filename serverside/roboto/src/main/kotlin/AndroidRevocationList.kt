@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.SerializerRegistry
 import at.asitplus.attestation.android.AndroidRevocationList.HttpLoader.Companion.GOOGLE_OFFICIAL_REVOCATION_LIST
 import at.asitplus.attestation.android.AndroidRevocationList.HttpLoader.Configuration.ProxyConfig.Type
 import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
@@ -27,10 +28,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import java.io.FileInputStream
 import java.math.BigInteger
 import java.nio.file.Files
@@ -40,7 +38,6 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.min
-import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -152,6 +149,16 @@ data class AndroidRevocationList(
 
     private fun BigInteger.normalize(): String = toString(16).lowercase(Locale.getDefault())
 
+    /**
+     * Thrown during serializer registration failures.
+     *
+     * @param message The detail message explaining the reason for the exception.
+     * @param firstAccess Contains the stack trace of the call that finalized registered serializer and prevented future
+     * registration like the illegal call that causes this exception being thrown.
+     */
+    class SerializerRegistrationException(message: String, val firstAccess: Array<StackTraceElement>) :
+        Throwable(message)
+
     companion object {
 
         @JvmField
@@ -161,40 +168,28 @@ data class AndroidRevocationList(
             preferHeaderBasedExpiry = true
         )
 
-        val configurationSerializerModules = mutableSetOf<SerializersModule>()
+        /**
+         * Use to register custom [Loader.Configuration]s, if you need custom revocation list loaders.
+         * Must be called only once before ever using the registered loaders.
+         *
+         * @See SerializerRegistry
+         */
+        val loaderRegistry = SerializerRegistry(Configuration::class)
 
 
         init {
-            registerConfiguration(InMemoryLoader.Configuration::class)
-            registerConfiguration(FileLoader.Configuration::class)
-            registerConfiguration(HttpLoader.Configuration::class)
+            loaderRegistry.register(InMemoryLoader.Configuration::class)
+            loaderRegistry.register(FileLoader.Configuration::class)
+            loaderRegistry.register(HttpLoader.Configuration::class)
         }
-
-        @PublishedApi
-        internal var inited = false
-
-        /**
-         * Can be used to register additional [Loader.Configuration]s to support custom [Loader]s.
-         * **Must be called before any serialization/deserialization**, calling afterwards throw an [IllegalArgumentException]!
-         */
-        inline fun <reified L, reified T : Configuration<L>> registerConfiguration(clazz: KClass<T>) {
-            if (inited) throw IllegalStateException("AttestationRevocationList Loader Serializers are already initialized")
-            configurationSerializerModules.add(SerializersModule {
-                polymorphic(Configuration::class) {
-                    subclass(clazz)
-                }
-            })
-        }
-
 
         internal val json by lazy {
-            inited = true
             Json {
                 ignoreUnknownKeys = true
                 isLenient = true
                 encodeDefaults = false
                 explicitNulls = false
-                serializersModule = configurationSerializerModules.reduce { acc, e -> acc + e }
+                serializersModule = loaderRegistry.modules.reduce { acc, e -> acc + e }
                 classDiscriminator = "type"
             }
         }
@@ -401,7 +396,6 @@ data class AndroidRevocationList(
         }
 
         companion object {
-
 
 
             private val httpDateFormatter =

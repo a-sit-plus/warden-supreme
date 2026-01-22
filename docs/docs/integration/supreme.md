@@ -215,11 +215,6 @@ This allows for encoding freshness information directly into the revocation list
 file system, instead of an HTTP server, where HTTP headers are used to encode these infos.  
 The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.
 
-It is also possible to create entirely new loaders and even externalise their configuration by implementing a
-`AndroidRevocationList.Loader`  for the actual loader itself and a `AndroidRevocationListLoader.Configuration`
-for the externalisable configuration. The latter must be marked as `@Serializable` and registered using the
-`AndroidRevocationList.registerConfiguration()` method **before the first configuration reading or writing happens**.
-
 ### Attestation Verifier Setup
 
 First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
@@ -252,7 +247,18 @@ to create a hardware-backed P-256 key.
     5. We want extra long nonces! (Default: 64 bytes. Max: 128 bytes)
     6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here, roll your own!)
     
-    Instead of passing a `Makoto` instance, it is also possible to directly use bare configuration parameters directly, as if configuring Makoto, to cut out the middle-man in code.
+
+Instead of passing parameters programmatically, it is also possible to externalise configuration (see [Externalising Configuration](config.md)).
+As such, an `AttestationVerifier` can also be created by passing a `SupremeConfiguration` which contains iOS and Android
+attestation policies, as well as everything needed on top (object identifiers, etc.):
+
+```kotlin
+--8<-- "Readme-Verifier-config-supreme.kt:15"
+```
+
+1. Default, secure nonce generator
+2. Default in-memory challenge validator
+
 
 
 !!! tip
@@ -308,61 +314,6 @@ specifies key constraints:
 
 This really is it! If you've made it this far, you have successfully issued certificates to mobile clients that fulfil your policy.
 The `AttestationClient` doesn't even come with any configuration options.
-
-### Externalising Configuration
-
-Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` have canonical serialised representations (JSON ans YAML) and come with the following (de)serialization functions:
-
-* `toJsonString()` and `fromJsonString()`
-* `toYamlString()` and `fromYamlString()`
-* `toJsonObject()` and `fromJsonObject()`
-
-This is useful for externalising configurations, as using Spring Boot's internal config loader to construct configurations is discouraged
-due to [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
-
-#### Android Configuration Files
-
-??? example "JSON for a Sample App"
-    The below example shows every configuration property in JSON form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-    As for deviations wrt. `revocation`:
-    
-    * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
-    * A file-based revocation list is configured to allow for manually revoking certificates.
-
-    ```json
-    --8<-- "android.json"
-    ```
-
-??? example "YAML for a Sample App"
-    The below example shows every configuration property in YAML form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-    As for deviations wrt. `revocation`:
-    
-    * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
-    * A file-based revocation list is configured to allow for manually revoking certificates.
-    
-    ```yaml
-    --8<-- "android.yaml"
-    ```
-
-#### iOS Configuration Files
-
-??? example "JSON with Defaults for a Sample App"
-    The below example shows every configuration property in JSON form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-
-    ```json
-    --8<-- "ios.json"
-    ```
-
-??? example "YAML with Defaults for a Sample App"
-    The below example shows every configuration property in YAML form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-
-    ```yaml
-    --8<-- "ios.yaml"
-    ```
 
 
 ## Beyond the Basics

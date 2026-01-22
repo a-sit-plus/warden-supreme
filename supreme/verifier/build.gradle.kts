@@ -27,6 +27,7 @@ kotlin {
 
         commonMain.dependencies {
             api(project(":supreme-common"))
+            implementation(libs.yamltk)
         }
 
         commonTest.dependencies {
