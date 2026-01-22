@@ -53,6 +53,8 @@
             </div>
         </div>
 
+        {% include "partials/funded-feature-button.html" %}
+
         <!-- Color palette toggle -->
         {% if config.theme.palette %}
         {% if not config.theme.palette is mapping %}
@@ -96,4 +98,8 @@
     {% endif %}
     {% endif %}
 </header>
+{% endblock %}
+
+{% block announce %}
+{% include "partials/announce.html" %}
 {% endblock %}
