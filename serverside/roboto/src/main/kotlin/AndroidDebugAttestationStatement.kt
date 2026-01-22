@@ -1,6 +1,7 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
+import at.asitplus.attestation.wardenVersion
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
@@ -30,14 +31,21 @@ class AndroidDebugAttestationStatement(
     val revocationLists: List<ConfigWithList>,
 ) {
 
-    fun checkerFromConfig(): Roboto =
-        configuration.copy(revocation = revocationLists.map { (_,list)-> AndroidRevocationList.InMemoryLoader.Configuration(list) }).let { cfg->
+    init {
+        require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
+    }
 
-        when (kind) {
-            Type.HARDWARE -> HardwareAttestationVerifier(cfg)
-            Type.SOFTWARE -> SoftwareAttestationVerifier(cfg)
-            Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(cfg)
-        }
+    fun checkerFromConfig(): Roboto =
+        configuration.copy(revocation = revocationLists.map { (_, list) ->
+            AndroidRevocationList.InMemoryLoader.Configuration(
+                list
+            )
+        }).let { cfg ->
+            when (kind) {
+                Type.HARDWARE -> HardwareAttestationVerifier(cfg)
+                Type.SOFTWARE -> SoftwareAttestationVerifier(cfg)
+                Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(cfg)
+            }
         }
 
     @JvmName("replaySuspending")
