@@ -109,6 +109,7 @@ nav:
     - Integration Guide:
         - Integrating Warden Supreme:
             - End-to-End Integration: integration/supreme.md
+            - Externalising Configuration: integration/config.md
             - Error Handling: integration/errorhandling.md
             - Data Model and Schema: integration/datamodel.md
         - Project Structure: integration/structure.md

@@ -3,7 +3,6 @@ package at.asitplus.attestation
 import at.asitplus.attestation.IosAttestationConfiguration.Companion.DEFAULT_VALIDITY_SECONDS
 import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromJsonObject
 import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromJsonString
-import at.asitplus.attestation.android.AndroidRevocationList.Companion.configurationSerializerModules
 import at.asitplus.attestation.android.TrustedRoot
 import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.receipt.ReceiptValidator
@@ -11,7 +10,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
-import kotlinx.serialization.modules.plus
 import net.mamoe.yamlkt.Yaml
 import net.swiftzer.semver.SemVer
 import kotlin.time.toKotlinDuration
@@ -295,7 +293,6 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
 
         private val yaml by lazy {
             Yaml {
-                serializersModule = configurationSerializerModules.reduce { acc, e -> acc + e }
             }
         }
 

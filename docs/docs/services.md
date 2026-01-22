@@ -58,7 +58,7 @@ This is why we still involve your team when it comes to integrating custom compo
 
     <div class="img-center">
 
-    <a href="mailto:office@a-sit.at?subject=Attestation%20Inquiry" class="gh-sponsor-like">
+    <a href="mailto:support.attestation@a-sit.at?subject=Attestation%20Inquiry" class="gh-sponsor-like">
     :fontawesome-solid-paper-plane: Contact us
     </a>
 

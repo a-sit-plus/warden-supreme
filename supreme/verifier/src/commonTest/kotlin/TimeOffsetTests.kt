@@ -15,6 +15,7 @@ import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import kotlin.random.Random
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
@@ -52,8 +53,12 @@ val TimeOffsetTest by testSuite(testConfig = TestConfig.testScope(isEnabled = tr
                         ?: (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET)
 
                 val expectedOffset = offset ?: Makoto.DEFAULT_TIME_OFFSET
-                val clk = FixedTimeClock(0)
 
+                val clk = FixedTimeClock(0)
+                val clkConfig = object : SupremeConfiguration.Clock {
+                    override val timeSource: Clock
+                        get() = clk
+                }
 
                 val androidAttestationConfiguration = if (validity != null) AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
@@ -100,21 +105,19 @@ val TimeOffsetTest by testSuite(testConfig = TestConfig.testScope(isEnabled = tr
                 //hence, it makes sense to contain these tests here
                 "makoto config checks" {
                     withClue("Offset for $offset") { makoto.verificationTimeOffset shouldBe expectedOffset }
-                    withClue("Validity for $validity") { makoto.shortestValidityDuration shouldBe expectedValidity}
+                    withClue("Validity for $validity") { makoto.shortestValidityDuration shouldBe expectedValidity }
                 }
 
 
                 withData(
                     mapOf(
                         "makoto" to AttestationVerifier(makoto),
-                        "bare" to if (offset == null) AttestationVerifier(
-                            androidAttestationConfiguration,
-                            iosAttestationConfiguration,
-                            clock = clk,
-                        ) else AttestationVerifier(
-                            androidAttestationConfiguration,
-                            iosAttestationConfiguration,
-                            clock = clk, verificationTimeOffset = expectedOffset
+                        "bare" to AttestationVerifier(
+                            SupremeConfiguration(
+                                androidAttestationConfiguration,
+                                iosAttestationConfiguration,
+                                clkConfig
+                            )
                         )
                     )
                 ) { verifier ->

@@ -54,32 +54,17 @@ constructor(
     val nonceValidity: Duration = makoto.longestValidityDuration
         ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds,
     private val nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
-    /*internal for testing*/ internal val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
+    /*internal for testing*/
+    internal val challengeValidator: ChallengeValidator = InMemoryChallengeCache(
         makoto.clock,
         -makoto.verificationTimeOffset
     ),
 ) {
-    /**
-     *
-     * @param androidAttestationConfiguration Configuration for Android key attestation.
-     * See [AndroidAttestationConfiguration]
-     * for details.
-     * @param iosAttestationConfiguration IOS AppAttest configuration.  See [IosAttestationConfiguration] for details.
-     * @param attestationProofOID specifies the OID be used in a CSR to convey an attestation statement. Can be overridden. It defaults to [WardenDefaults.OIDs.ATTESTATION_PROOF].
-     * @param genericDeviceNameOID specifies whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
-     * On its own, this is **not the device's nickname and therefore cannot identify a person in its own**.
-     * Defaults to [WardenDefaults.OIDs.DEVICE_NAME] as it is very useful technical, **non-personally-identifying data**.
-     * Can be set to `null` to not include device names.
-     * @param clock a clock to set the time of verification (used for certificate validity checks)
-     * @param verificationTimeOffset allows for fine-grained clock drift compensation (this offsets the certificate validity duration checks and attestation statement validity checks); can be negative. **Note that this is a real offset, shifting the time window of validity, not extending it!**
-     * @param defaultKeyConstraints allows for specifying key constraints to the client. Not all platforms can restrict key usage and properties!
-     * @param nonceValidity indicates how long issued nonces remain valid. This defaults to the maximum of the passed
-     * [IosAttestationConfiguration.attestationStatementValiditySeconds] and [AndroidAttestationConfiguration.attestationStatementValiditySeconds].
-     * @param nonceGenerator responsible for generating nonces to ensure freshness of issues challenges. Defaults to [WardenDefaults.nonceGenerator],
-     *  which generates secure, random 64-byte nonces
-     * @param challengeValidator lambda checking challenges validity and invalidating it once used
-     * validity checks); can be negative.
-     */
+
+    @Deprecated(
+        "Use `SupremeConfiguration` instead. To be removed in 1.1 due to inherent footguns",
+        level = DeprecationLevel.ERROR
+    )
     @OptIn(ExperimentalTime::class)
     @Throws(AttestationException.Configuration::class, IllegalArgumentException::class)
     constructor(
@@ -285,6 +270,45 @@ constructor(
     ): String? = catchingUnwrapped {
         PreAttestationError.AttestationStatementExtraction(this, csr).onPreAttestationError()
     }.getOrNull()
+
+    companion object {
+        /**
+         * Configures and initializes an [AttestationVerifier] using the provided configuration, nonce generator, and challenge
+         * verifier.
+         *
+         * Note that the nonce validity will always be the longest validity duration over [SupremeConfiguration.android] and [SupremeConfiguration.ios].
+         * If only an Android configuration without a nonce validity duration is provided, this will default to [IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS].
+         *
+         * @param configuration The [SupremeConfiguration] object containing Android and/or iOS attestation configurations, attestation proof OID,
+         * generic device name OID, default key constraints, and verification time offset.
+         * @param nonceGenerator A [NonceGenerator] instance to generate unique challenges for verification. Defaults to [WardenDefaults.nonceGenerator].
+         * @param challengeValidator A lambda function that initializes a [ChallengeValidator], based on the provided [SupremeConfiguration.Clock.timeSource] and the verification time offset from the
+         * [configuration].
+         * Defaults to using an [InMemoryChallengeCache].
+         * @return An instance of [AttestationVerifier] configured with the provided parameters.
+         */
+        operator fun invoke(
+            configuration: SupremeConfiguration,
+            nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
+            challengeValidator: (Clock, Duration) -> ChallengeValidator = { clock, verificationTimeOffset ->
+                InMemoryChallengeCache(clock, verificationTimeOffset)
+            }
+        ): AttestationVerifier = Makoto(configuration).let { makoto ->
+            AttestationVerifier(
+                makoto,
+                attestationProofOID = configuration.attestationProofOID,
+                genericDeviceNameOID = configuration.genericDeviceNameOID,
+                defaultKeyConstraints = configuration.defaultKeyConstraints,
+                nonceValidity = makoto.longestValidityDuration
+                    ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds,
+                nonceGenerator = nonceGenerator,
+                challengeValidator = challengeValidator(
+                    configuration.clock.timeSource,
+                    configuration.verificationTimeOffset
+                ),
+            )
+        }
+    }
 }
 
 /**

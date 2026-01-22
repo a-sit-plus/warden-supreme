@@ -3,7 +3,6 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.AttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonObject
 import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonString
-import at.asitplus.attestation.android.AndroidRevocationList.Companion.configurationSerializerModules
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
@@ -1183,7 +1182,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         private val yaml by lazy {
             Yaml {
-                serializersModule = configurationSerializerModules.reduce { acc, e -> acc + e }
+                serializersModule = AndroidRevocationList.loaderRegistry.modules.reduce { acc, e -> acc + e }
             }
         }
 
