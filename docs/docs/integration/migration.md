@@ -76,11 +76,19 @@ those configuration files being read and their contents being fed into `fromYaml
 Aside from changes to config loading, the actual configuration parameters and some defaults have changed between the last
 stable WARDEN / WARDEN-roboto releases and Warden Supreme 1.0.0
 
-- **Android schema:** Trust anchors are now `TrustedRoot`s (`hardwareTrustedRoots` / `softwareTrustedRoots`); per‑app trust anchor overrides moved to `AppData.trustedRootOverrides`; `signatureDigests` is now `signerFingerprints`; `attestationStatementValiditySeconds` uses `Long` and can be `null`. See [Externalised Configuration](config.md) and [Android technical notes](../technical/android.md).
-- **iOS schema:** iOS versions now require both SemVer and build number (`OsVersions`); per‑app trust anchor overrides use `TrustedRootPair`. See [Externalised Configuration](config.md) and [iOS technical notes](../technical/ios.md).
+- **Android:**
+    * Trust anchors are now `TrustedRoot`s and are split into `hardwareTrustedRoots` / `softwareTrustedRoots`. See [Externalised Configuration](config.md) and [Android technical notes](../technical/android.md).
+    * Per‑app trust anchor overrides moved to `AppData.trustedRootOverrides`.
+    * `signatureDigests` is now `signerFingerprints`.
+    * `attestationStatementValiditySeconds` uses `Long` and can be `null`.
+- **iOS:**
+    * iOS versions now require both SemVer and build number (`OsVersions`). See [Externalised Configuration](config.md) and [iOS technical notes](../technical/ios.md).
+    * Per‑app trust anchor overrides use `TrustedRootPair`.
 
 
 
 !!! info "Need more migration depth?"
     If you require a step‑by‑step migration playbook or have edge cases not covered here, please [file an issue](https://github.com/a-sit-plus/warden-supreme/issues/new)
     or upvote an existing one in the tracker so we can prioritise expanding this guide.
+    
+    If you need personalised support, see our [&nbsp;💎 Services](../services.md).
