@@ -58,7 +58,7 @@ This is a simple either class, branching as follows:
         - `TIME`: timing and validity issues, such as:
             - Challenge expired, not yet valid, or excessive clock skew between client and server.
             - Certificate/statement outside its validity window.
-        - `CONTENT`: malformed or missing attestation proof (CSR) content, such as:
+        - `CONTENT`: malformed or missing attestation proof (CSR) or attestationcontent, such as:
             - CSR missing the expected attribute (proofOID) or unparsable payload.
             - Nonce binding absent or incorrect; unexpected or invalid structure in the attestation statement.
         - `INTERNAL`: server-side processing failures, such as:
