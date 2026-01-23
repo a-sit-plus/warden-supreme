@@ -125,7 +125,7 @@ to customise the error message / error code conveyed to the client.
 
 ## Client Side (Generic, High-Level Error Categories)
 Using fully integrated attestation only ever returns either an `AttestationResponse.Success`
-or an `AttestationResponse.Error`. The latter of which indicates one of four error reasons:
+or an `AttestationResponse.Failure`. The latter of which indicates one of four error reasons:
 
 1. `TRUST` encompassing untrusted roots, revoked certificates, or invalid certificate chains
 2. `TIME` encompassing temporal validity errors wrt. certificates and attestation statements 

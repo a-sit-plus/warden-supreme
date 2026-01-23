@@ -89,7 +89,7 @@ revocation checks. The only difference is in the configuration, as shown in the 
     ```
 
 It is possible to create entirely new loaders and even externalise their configuration by implementing an
-`AndroidRevocationList.Loader`  for the actual loader itself and an `AndroidRevocationListLoader.Configuration`
+`AndroidRevocationList.Loader`  for the actual loader itself and an `AndroidRevocationList.Loader.Configuration`
 for the externalisable configuration. The latter must be marked as `@Serializable` and registered using the
 `AndroidRevocationList.loaderRegistry` **before the first configuration reading or writing happens**.
 

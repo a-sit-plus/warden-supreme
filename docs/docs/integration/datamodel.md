@@ -30,7 +30,7 @@ Please note that these schemas really are experimental as of now.
         - the `attestationEndpoint` to submit the attestation proof to
         - `proofOID` that identifies the CSR attribute to hold the attestation statement payload inside the CSR produced by the client,
           which serves as the attestation proof.
-        - `includeGenericDeviceName` to indicate whether the make and model of the client device (not the user-assignable name) should be included in the CSR
+        - `genericDeviceNameOID` to indicate whether the make and model of the client device (not the user-assignable name) should be included in the CSR
         - `version` to indicate the data format version
         - `keyConstraints` to tell the client which kind of key to create and attest.
     - Purpose: binds the proof to a fresh, server-originating value; communicates where and how to submit the
