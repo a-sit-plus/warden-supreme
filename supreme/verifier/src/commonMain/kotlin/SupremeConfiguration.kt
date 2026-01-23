@@ -5,15 +5,21 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifierStringSerializer
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import net.mamoe.yamlkt.Yaml
-import kotlin.time.Clock
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Integrated attestation configuration for the Supreme attestation verifier
@@ -156,6 +162,7 @@ private constructor(
     /**
      * Configures the time source of a [SupremeConfiguration]
      */
+    @Serializable(with = Clock.Serializer::class)
     interface Clock {
 
         /**
@@ -167,11 +174,11 @@ private constructor(
 
         @Serializable
         @SerialName("system")
-        class SystemClock : Clock {
+        object System : Clock {
             override val timeSource get() = kotlin.time.Clock.System
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
-                if (other !is SystemClock) return false
+                if (other !is System) return false
 
                 if (timeSource != other.timeSource) return false
 
@@ -184,9 +191,29 @@ private constructor(
             override fun toString(): String = "System"
         }
 
-        companion object {
+        object Serializer : KSerializer<Clock> {
+            override val descriptor: SerialDescriptor =
+                PrimitiveSerialDescriptor("SupremeConfiguration.Clock", PrimitiveKind.STRING)
 
-            val System = SystemClock()
+            override fun serialize(encoder: Encoder, value: Clock) {
+                if (value is System) {
+                    encoder.encodeString("system")
+                    return
+                }
+                encoder.encodeSerializableValue(PolymorphicSerializer(Clock::class), value)
+            }
+
+            override fun deserialize(decoder: Decoder): Clock {
+                val scalar = runCatching { decoder.decodeString() }.getOrNull()
+                if (scalar != null) {
+                    if (scalar.equals("system", ignoreCase = true)) return System
+                    throw SerializationException("Unknown clock value: $scalar")
+                }
+                return decoder.decodeSerializableValue(PolymorphicSerializer(Clock::class))
+            }
+        }
+
+        companion object {
             /**
              * Use to register custom [SupremeConfiguration.Clock]s, if you need custom externalised clock configuration.
              * Must be called only once before ever using the registered clock configs.
@@ -196,7 +223,8 @@ private constructor(
             val registry = SerializerRegistry(SupremeConfiguration.Clock::class)
 
             init {
-                registry.register(SupremeConfiguration.Clock.SystemClock::class)
+                //NOOP for our process but useful to keep everything neatly tracked
+                registry.register(SupremeConfiguration.Clock.System::class)
             }
         }
     }
