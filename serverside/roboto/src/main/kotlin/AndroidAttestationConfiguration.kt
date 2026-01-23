@@ -1063,7 +1063,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * @see AndroidRevocationList.HttpLoader.Configuration
          * @see AndroidRevocationList.FileLoader.Configuration
          */
-        fun revocation(revocation: List<AndroidRevocationList.Loader.Configuration<*>>) {
+        fun revocation(revocation: List<AndroidRevocationList.Loader.Configuration<*>>) = apply {
             this.revocation = revocation
         }
 
