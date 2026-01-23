@@ -48,6 +48,7 @@ import java.security.spec.ECGenParameterSpec
 import java.security.spec.RSAKeyGenParameterSpec
 import java.time.Instant
 import java.util.Date
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.text.HexFormat
 import kotlin.time.Duration.Companion.hours
@@ -78,6 +79,7 @@ internal val verificationOffset = 12.hours + 45.minutes
 internal val fakeAndroidPackage = "com.example.fake.android"
 internal val fakeAndroidSignerDigest = MessageDigest.getInstance("SHA-256")
     .digest("fake-signer".encodeToByteArray())
+internal const val attestationEndpoint = "https://example.invalid/attest"
 
 internal val androidConfig = AndroidAttestationConfiguration.Builder(
     AndroidAttestationConfiguration.AppData(
@@ -128,6 +130,9 @@ internal fun verifierForNonce(
     nonceGenerator = suspend { nonce },
     challengeValidator = challengeValidator,
 )
+
+internal fun fixedMakoto(androidConfig: AndroidAttestationConfiguration): Makoto =
+    Makoto(androidConfig, clock = fixedClock, verificationTimeOffset = 0.seconds)
 
 internal fun loadResourceText(name: String): String =
     requireNotNull(Thread.currentThread().contextClassLoader.getResourceAsStream(name)) {
@@ -235,6 +240,9 @@ internal data class FakeAndroidAttestation(
     val certificateChain: List<JcaX509Certificate>,
     val leafKeyPair: KeyPair,
     val rootCertificate: JcaX509Certificate,
+    val rootKeyPair: KeyPair,
+    val intermediateCertificate: JcaX509Certificate,
+    val intermediateKeyPair: KeyPair,
 )
 
 internal fun FakeAndroidAttestation.attestationJson(): String =
@@ -242,6 +250,56 @@ internal fun FakeAndroidAttestation.attestationJson(): String =
 
 internal fun List<JcaX509Certificate>.toSignumChain(): List<SignumX509Certificate> =
     map { SignumX509Certificate.decodeFromDer(it.encoded) }
+
+internal data class AndroidFixture(
+    val nonce: ByteArray,
+    val fake: FakeAndroidAttestation,
+) {
+    fun verifier(config: AndroidAttestationConfiguration): AttestationVerifier =
+        verifierForNonce(fixedMakoto(config), nonce)
+
+    suspend fun issueCsr(
+        verifier: AttestationVerifier,
+        attestationJson: String = fake.attestationJson(),
+        keyPair: KeyPair = fake.leafKeyPair,
+    ): Pkcs10CertificationRequest {
+        val challenge = verifier.issueChallenge(attestationEndpoint)
+        return createCsr(challenge, attestationJson, keyPair)
+    }
+
+    suspend fun issueCsrWithoutAttestationProof(verifier: AttestationVerifier): Pkcs10CertificationRequest {
+        val challenge = verifier.issueChallenge(attestationEndpoint)
+        return createCsrWithAttributes(challenge, fake.leafKeyPair, attributes = emptyList())
+    }
+
+    fun trustedConfig(
+        packageName: String = fakeAndroidPackage,
+        signatureDigest: ByteArray = fakeAndroidSignerDigest,
+        attestationStatementValiditySeconds: Long? = 300,
+        enforceLeafValidity: Boolean = false,
+        allowBootloaderUnlock: Boolean = false,
+    ): AndroidAttestationConfiguration = androidConfigForFake(
+        packageName = packageName,
+        signatureDigest = signatureDigest,
+        trustedRoots = setOf(TrustedRoot.Certificate(fake.rootCertificate)),
+        attestationStatementValiditySeconds = attestationStatementValiditySeconds,
+        enforceLeafValidity = enforceLeafValidity,
+        allowBootloaderUnlock = allowBootloaderUnlock,
+    )
+}
+
+private val fixtureSeed = AtomicInteger(900)
+
+internal fun generateAndroidFixture(): AndroidFixture {
+    val seed = fixtureSeed.incrementAndGet()
+    val nonce = Random(seed).nextBytes(16)
+    val fake = createFakeAndroidAttestation(
+        challenge = nonce,
+        packageName = fakeAndroidPackage,
+        signatureDigest = fakeAndroidSignerDigest,
+    )
+    return AndroidFixture(nonce, fake)
+}
 
 internal fun createFakeAndroidAttestation(
     challenge: ByteArray,
@@ -312,7 +370,77 @@ internal fun createFakeAndroidAttestation(
         keyAttestation.toSequence()
     ).build(intermediateKeyPair.contentSigner()).toX509Certificate()
 
-    return FakeAndroidAttestation(listOf(leafCert, intermediateCert, rootCert), leafKeyPair, rootCert)
+    return FakeAndroidAttestation(
+        listOf(leafCert, intermediateCert, rootCert),
+        leafKeyPair,
+        rootCert,
+        rootKeyPair,
+        intermediateCert,
+        intermediateKeyPair,
+    )
+}
+
+internal fun createFakeAndroidAttestationWithRoots(
+    challenge: ByteArray,
+    packageName: String,
+    signatureDigest: ByteArray,
+    creationTime: Date,
+    deviceLocked: Boolean,
+    verifiedBootState: BootState,
+    rootKeyPair: KeyPair,
+    rootCertificate: JcaX509Certificate,
+    intermediateKeyPair: KeyPair,
+    intermediateCertificate: JcaX509Certificate,
+): FakeAndroidAttestation {
+    val keyAttestation = KeyAttestationDefs(
+        attestationVersion = 4,
+        attestationSecurityLevel = SecurityLevel.TEE,
+        keymasterVersion = 4,
+        keymasterSecurityLevel = SecurityLevel.TEE,
+        attestationChallenge = challenge,
+        uniqueId = byteArrayOf(),
+        softwareEnforced = SecurityProperties(
+            creationDateTime = Instant.ofEpochMilli(creationTime.time),
+            applicationInfo = KeyAttestationApplicationInfo(
+                packageName = packageName,
+                version = 1,
+                signatureDigests = listOf(signatureDigest)
+            )
+        ),
+        teeEnforced = SecurityProperties(
+            keySize = 256,
+            rootOfTrust = RootOfTrust(
+                verifiedBootKey = Random.nextBytes(32),
+                deviceLocked = deviceLocked,
+                verifiedBootState = verifiedBootState,
+                verifiedBootHash = Random.nextBytes(32),
+            ),
+            androidVersion = 11,
+            androidPatchLevel = 202108,
+        )
+    )
+    val leafKeyPair = KeyPairGenerator.getInstance("EC").also { it.initialize(256) }.genKeyPair()
+    val leafCert = X509v3CertificateBuilder(
+        X500Name("CN=Intermediate"),
+        BigInteger.valueOf(Random.nextLong()),
+        creationTime,
+        Date(creationTime.time + 1000L * 60L * 60L),
+        X500Name("CN=Subject"),
+        leafKeyPair.subjectPublicKeyInfo()
+    ).addExtension(
+        ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17"),
+        false,
+        keyAttestation.toSequence()
+    ).build(intermediateKeyPair.contentSigner()).toX509Certificate()
+
+    return FakeAndroidAttestation(
+        listOf(leafCert, intermediateCertificate, rootCertificate),
+        leafKeyPair,
+        rootCertificate,
+        rootKeyPair,
+        intermediateCertificate,
+        intermediateKeyPair,
+    )
 }
 
 internal fun X509CertificateHolder.toX509Certificate(): JcaX509Certificate =

@@ -2,12 +2,14 @@
 
 package at.asitplus.attestation.supreme
 
+import at.asitplus.testballoon.checkAll
 import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.property.Gen
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import java.util.concurrent.atomic.AtomicInteger
@@ -18,7 +20,7 @@ val AttestationVerifierChallengeTest by testSuite {
     "issueChallenge encodes inverse offset" {
         val nonce = Random.Default.nextBytes(16)
         val verifier = verifierForNonce(nonce)
-        val challenge = verifier.issueChallenge("https://example.invalid/attest")
+        val challenge = verifier.issueChallenge(attestationEndpoint)
         challenge.issuedAt shouldBe (fixedClock.now() - verificationOffset)
     }
 
@@ -27,7 +29,7 @@ val AttestationVerifierChallengeTest by testSuite {
         repeat(25) {
             val nonce = random.nextBytes(random.nextInt(1, 129))
             val verifier = verifierForNonce(nonce)
-            val challenge = verifier.issueChallenge("https://example.invalid/attest")
+            val challenge = verifier.issueChallenge(attestationEndpoint)
             challenge.nonce.contentEquals(nonce) shouldBe true
             verifier.challengeValidator.validate(nonce)
                 .shouldBeInstanceOf<ChallengeValidationResult.Success>()
@@ -40,7 +42,7 @@ val AttestationVerifierChallengeTest by testSuite {
         val case = e2eCases.first()
         val nonce = case.nonceHex.hexToByteArray(HexFormat.UpperCase)
         val verifier = verifierForNonce(nonce)
-        val challenge = verifier.issueChallenge("https://example.invalid/attest")
+        val challenge = verifier.issueChallenge(attestationEndpoint)
         val attestationJson = loadResourceText(case.attestationResource)
         val csr = createCsr(challenge, attestationJson, keyPairForAttestation(attestationJson))
 
