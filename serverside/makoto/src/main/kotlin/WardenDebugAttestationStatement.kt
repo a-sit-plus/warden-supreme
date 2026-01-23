@@ -3,7 +3,7 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.AndroidRevocationList.Companion.configurationSerializerModules
+import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
@@ -20,7 +20,7 @@ internal val jsonDebug by lazy {
         encodeDefaults = true
         ignoreUnknownKeys = true
         prettyPrint = true
-        serializersModule = configurationSerializerModules.reduce { acc, e -> acc + e }
+        serializersModule = AndroidRevocationList.loaderRegistry.modules.reduce { acc, e -> acc + e }
         classDiscriminator = "type"
     }
 }
@@ -30,7 +30,7 @@ private val jsonCompact by lazy {
         encodeDefaults = true
         ignoreUnknownKeys = true
         prettyPrint = false
-        serializersModule = configurationSerializerModules.reduce { acc, e -> acc + e }
+        serializersModule = AndroidRevocationList.loaderRegistry.modules.reduce { acc, e -> acc + e }
         classDiscriminator = "type"
     }
 }

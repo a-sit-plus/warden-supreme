@@ -215,11 +215,6 @@ This allows for encoding freshness information directly into the revocation list
 file system, instead of an HTTP server, where HTTP headers are used to encode these infos.  
 The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.
 
-It is also possible to create entirely new loaders and even externalise their configuration by implementing a
-`AndroidRevocationList.Loader`  for the actual loader itself and a `AndroidRevocationListLoader.Configuration`
-for the externalisable configuration. The latter must be marked as `@Serializable` and registered using the
-`AndroidRevocationList.registerConfiguration()` method **before the first configuration reading or writing happens**.
-
 ### Attestation Verifier Setup
 
 First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
@@ -252,7 +247,18 @@ to create a hardware-backed P-256 key.
     5. We want extra long nonces! (Default: 64 bytes. Max: 128 bytes)
     6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here, roll your own!)
     
-    Instead of passing a `Makoto` instance, it is also possible to directly use bare configuration parameters directly, as if configuring Makoto, to cut out the middle-man in code.
+
+Instead of passing parameters programmatically, it is also possible to externalise configuration (see [Externalising Configuration](config.md)).
+As such, an `AttestationVerifier` can also be created by passing a `SupremeConfiguration` which contains iOS and Android
+attestation policies, as well as everything needed on top (object identifiers, etc.):
+
+```kotlin
+--8<-- "Readme-Verifier-config-supreme.kt:15"
+```
+
+1. Default, secure nonce generator
+2. Default in-memory challenge validator
+
 
 
 !!! tip

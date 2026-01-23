@@ -1,15 +1,16 @@
 # Externalising Configuration
-
 Warden Supreme configuration consists two parts
 
-1. Attestation policy configuration split up into
+1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split up into
    * `AndroidAttestationConfiguration` for Android-specifics
    * `IosAttestationConfiguration` for iOS-specifics
-2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs and key constraints (see [End-to-End Integration](supreme.md))
+2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs and key constraints as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup)
 
 
-Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they
-have canonical serialised representations (JSON and YAML) and come with the following (de)serialization functions:
+To externalise such configuration in a convenient way, an umbrella `SupremeConfiguration` exists.
+This configuration class includes both the platform-specific configurations and the configuration properties related
+to fully integrated attestation.  
+`SupremeConfiguration` has canonical serialised representations (JSON and YAML) and cosme with the following (de)serialization functions:
 
 * `toJsonString()` and `fromJsonString()`
 * `toYamlString()` and `fromYamlString()`
@@ -17,6 +18,31 @@ have canonical serialised representations (JSON and YAML) and come with the foll
 
 This is required for externalising configurations, as using Spring Boot's internal config loader to construct configurations is discouraged
 due to [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
+
+
+??? example "YAML with Defaults for a Sample Android and iOS App"
+    The below example shows every configuration property in YAML form.
+    It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
+
+    ```json
+    --8<-- "supreme.yaml"
+    ```
+
+??? example "JSON with Defaults for a Sample Android and iOS App"
+    The below example shows every configuration property in JSON form.
+    It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
+
+    ```json
+    --8<-- "supreme.json"
+    ```
+
+It is possible to add time sources other that the system clock and exxternalise their configurations as well, by implementing
+`SupremeConfiguration.Clock` and registering the classes for serialization using `SupremeConfiguration.Clock.registry`.
+
+Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they also
+have canonical serialised representations (JSON and YAML) and expose tha same (de)serialization functions as `SupremeConfiguration`.
+In fact, all three implement the same interface tandem for consistency.
+
 
 ## Android Configuration Files
 
@@ -45,6 +71,12 @@ due to [issues with handling nullable properties](https://docs.spring.io/spring-
     ```
 
 
+It is possible to create entirely new loaders and even externalise their configuration by implementing a
+`AndroidRevocationList.Loader`  for the actual loader itself and a `AndroidRevocationListLoader.Configuration`
+for the externalisable configuration. The latter must be marked as `@Serializable` and registered using the
+`AndroidRevocationList.loaderRegistry` **before the first configuration reading or writing happens**.
+
+
 ## iOS Configuration Files
 
 
@@ -63,27 +95,4 @@ due to [issues with handling nullable properties](https://docs.spring.io/spring-
 
     ```json
     --8<-- "ios.json"
-    ```
-
-## Supreme (fully integrated) Configuration
-
-For maximum convenience, an umbrella `SupremeConfiguration` exists, which exposes the same three (de)serialisation functions.
-This configuration class includes both the platform-specific configurations and the configuration properties related
-to fully integrated attestation.
-
-
-??? example "YAML with Defaults for a Sample Android and iOS App"
-    The below example shows every configuration property in YAML form.
-    It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
-
-    ```json
-    --8<-- "supreme.yaml"
-    ```
-
-??? example "JSON with Defaults for a Sample Android and iOS App"
-    The below example shows every configuration property in JSON form.
-    It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
-
-    ```json
-    --8<-- "supreme.json"
     ```

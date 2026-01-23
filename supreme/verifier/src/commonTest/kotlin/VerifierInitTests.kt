@@ -9,10 +9,15 @@ import at.asitplus.attestation.android.*
 import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.shouldBe
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 val initTests by testSuite {
     val clock = FixedTimeClock(78452137)
+    val clockCfg = object: SupremeConfiguration.Clock {
+        override val timeSource: Clock
+            get() = clock
+    }
     val offset = 456.seconds
 
     val androidAttestationConfiguration = AndroidAttestationConfiguration(
@@ -75,11 +80,9 @@ val initTests by testSuite {
     )
 
     val verifierFromMakoto = AttestationVerifier(makoto)
-    val verifierFromConfigs = AttestationVerifier(
-        androidAttestationConfiguration = androidAttestationConfiguration,
-        iosAttestationConfiguration = iosAttestationConfiguration,
-        clock = clock,
-        verificationTimeOffset = offset,
+    val verifierFromConfigs = AttestationVerifier(SupremeConfiguration( androidAttestationConfiguration,
+        iosAttestationConfiguration,
+        clock = clockCfg,)
     )
 
     "same makoto properties" {
