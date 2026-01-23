@@ -85,11 +85,9 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
                 signerFingerprints: 
                   - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
             revocation: 
-              - type: http
+              - type: google
                 value: 
-                  url: 'https://android.googleapis.com/attestation/status'
                   fallbackRevocationListValiditySeconds: 60
-                  preferHeaderBasedExpiry: true
                   proxyConfig: 
                     type: HTTP
                     url: 'https://localhost:2345'
