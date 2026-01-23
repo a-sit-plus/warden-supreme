@@ -13,7 +13,7 @@ policy design and the construction of robust trust and key-management concepts, 
 
 We support teams at different levels of involvement, depending on experience, internal capacity, and long-term goals.
 
-We have rolled out mobile client attestation solutions in multiple large-scale production services, including deployments in both public-sector and private-sector environments, serving millions of users.
+We have rolled out mobile client attestation solutions in multiple large-scale production services, including deployments public-sector environments, serving millions of users.
 
 This experience informs our work: not just what is theoretically correct, but what is operable, maintainable, and practical for users in real-world systems.
 
