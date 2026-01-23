@@ -116,7 +116,8 @@ val TimeOffsetTest by testSuite(testConfig = TestConfig.testScope(isEnabled = tr
                             SupremeConfiguration(
                                 androidAttestationConfiguration,
                                 iosAttestationConfiguration,
-                                clkConfig
+                                clkConfig,
+                                verificationTimeOffset = expectedOffset,
                             )
                         )
                     )
