@@ -1,13 +1,13 @@
 # Externalising Configuration
-Warden Supreme configuration consists of two parts
+Warden Supreme configuration consists of two parts:
 
 1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split into
    * `AndroidAttestationConfiguration` for Android specifics
    * `IosAttestationConfiguration` for iOS specifics
-2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs (CSRs) and key constraints as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup)
+2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs (CSRs) and key constraints, as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup).
 
 
-To externalise such configuration in a convenient way, an umbrella `SupremeConfiguration` exists.
+To externalise such configuration in a convenient way, there is an umbrella `SupremeConfiguration`.
 This configuration class includes both the platform-specific configurations and the configuration properties related
 to fully integrated attestation.  
 `SupremeConfiguration` has canonical serialised representations (JSON and YAML) and comes with the following (de)serialisation functions:
@@ -38,12 +38,12 @@ due to [issues with handling nullable properties](https://docs.spring.io/spring-
     --8<-- "supreme.json"
     ```
 
-It is possible to add time sources other than the system clock and externalise their configurations as well, by implementing
+It is possible to add time sources other than the system clock and externalise their configurations as well by implementing
 `SupremeConfiguration.Clock` and registering the classes for serialisation using `SupremeConfiguration.Clock.registry`.
 
 Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they also
 have canonical serialised representations (JSON and YAML) and expose the same (de)serialisation functions as `SupremeConfiguration`.
-In fact, all three implement the same interface tandem for consistency.
+All three and their companion objects implement the same interface tandem to keep the API consistent.
 
 
 ## Android Configuration Files
@@ -51,7 +51,7 @@ In fact, all three implement the same interface tandem for consistency.
 ??? example "YAML for a Sample App"
     The below example shows every configuration property in YAML form.
     Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-    As for deviations wrt. `revocation`:
+    As for deviations with respect to `revocation`:
     
     * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
     * A file-based revocation list is configured to allow for manually revoking certificates.
@@ -63,7 +63,7 @@ In fact, all three implement the same interface tandem for consistency.
 ??? example "JSON for a Sample App"
     The below example shows every configuration property in JSON form.
     Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
-    As for deviations wrt. `revocation`:
+    As for deviations with respect to `revocation`:
     
     * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
     * A file-based revocation list is configured to allow for manually revoking certificates.

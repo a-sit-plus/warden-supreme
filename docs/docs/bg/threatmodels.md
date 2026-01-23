@@ -1,8 +1,8 @@
 # Threat Models and Risks
 
 !!! bug inline end "Android Private Key Extraction"
-    A small percentage of vendors store private key material in plain that should only be accessible
-    inside secure hardware. See
+    Some OEM implementations have shipped key isolation bugs where keys were not fully confined to secure hardware.
+    Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., [Android Security Bulletin](https://source.android.com/docs/security/bulletin)).
 
 Attestation is not a panacea—nothing ever is.
 Attestation is, however, a powerful mechanism that significantly raises the security bar for clients that would
@@ -11,7 +11,7 @@ This page outlines common threats and how attestation helps mitigate them, with 
 
 ## Threat Model A — Everyday Tampering and Rooted Devices
 
-This scenario covers mainstream, widely available tampering done at scale using off‑the‑shelf tools and tutorials:
+This scenario covers mainstream, widely available tampering done at scale using off-the-shelf tools and tutorials:
 
 - Rooting
 - Unlocking the bootloader

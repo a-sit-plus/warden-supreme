@@ -1,15 +1,15 @@
 # Using _Warden makoto_ / _Warden roboto_<br>without Integrated Clients
 
-!!! danger "Warden Supreme 0.9.99 Changed Defaults"
+!!! danger "Warden Supreme 0.9.99: Changed Defaults"
     
-    * Android leaf cert validity is ignored by default, because Warden Supreme (by default) uses random cryptographic nonces.
-        * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is now a deprecated NOOP to be removed.
-        * `enforceLeafValidity()` (without typo!) function was introduced
-    * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
-    * Attestation verification time offset now defaults to five minutes to account for clock drift
-    * iOS attestation validity is increased by said five minutes
+    * Android leaf cert validity is ignored by default because Warden Supreme uses random cryptographic nonces.
+        * The `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is now a deprecated NOOP to be removed.
+        * The `enforceLeafValidity()` (without typo!) function was introduced.
+    * Android `attestationStatementValiditySeconds` defaults to `null` because Warden Supreme uses random cryptographic nonces.
+    * Attestation verification time offset now defaults to five minutes to account for clock drift.
+    * iOS attestation validity is increased by those five minutes.
     
-    **Ignoring these changes coming from legacy deployments can result in a total security failure if you do not ensure freshness through means of feeding random cryptographic nonces into attestation statement creation and properly checking them!**
+    **Ignoring these changes from legacy deployments can result in a security failure if you do not ensure freshness by feeding random cryptographic nonces into attestation statement creation and properly checking them.**
 
 !!! tip inline end
     Both [WARDEN](https://github.com/a-sit-plus/warden) and [WARDEN-roboto](https://github.com/a-sit-plus/warden-roboto)
@@ -21,7 +21,7 @@ Kotlin Multiplatform. At the same time, it is clear that not every iOS app will 
 will want to pull in Signum as a dependency.
 
 In addition, legacy deployments that cannot yet transition to the new integrated Warden Supreme attestation flows are
-still and will remain operational. Until a migration is possible (see [migration notes](migration.md)), this page serves
+still operational and will remain so. Until a migration is possible (see [migration notes](migration.md)), this page serves
 as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (previously WARDEN‑roboto).
 
 !!! tip "Hybrid Integration"
@@ -37,7 +37,7 @@ as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (pr
 - Choose Warden makoto if you need both Android and iOS support or want a single, streamlined back-end interface.
 - Choose Warden roboto if you truly only need Android and want minimal dependencies.
 
-In both cases, refer to Warden Supreme's [Back-End Configuration](supreme.md#warden-supreme-step-by-step-guide) guide, as it lists and explains
+In both cases, refer to Warden Supreme's [back-end configuration](supreme.md#warden-supreme-step-by-step-guide) guide, as it lists and explains
 configuration properties for iOS and Android. This page focuses on behaviour, inputs/outputs, and expected client responsibilities.
 
 
@@ -74,13 +74,13 @@ When not using the integrated clients, you define the wire format.
 Hence, you need to come up with a format that conveys at least the following recommended properties:
 
 - Challenge: Base64URL-encoded bytes issued by the server.
-- Platform: iOS / Android; either implicitly using legacy WARDEN endpoints (intentionally not documented here. See [legacy API docs](https://a-sit-plus.github.io/warden/warden/at.asitplus.attestation/-warden/index.html#-1296395129%2FFunctions%2F-2065255732).)
+- Platform: iOS / Android; either implicitly using legacy WARDEN endpoints (intentionally not documented here). See [legacy API docs](https://a-sit-plus.github.io/warden/warden/at.asitplus.attestation/-warden/index.html#-1296395129%2FFunctions%2F-2065255732).
 - Key material:
     - Android: attestation certificate chain (leaf → intermediates), plus the attested key’s public key if not derivable
       from the leaf.
     - iOS:
-        - App Attest attestation object (CBOR, with x5c in attStmt) on registration
-        - key attestation emulation needs to follow the Supreme attestation format, or the legacy attestation format
+        - App Attest attestation object (CBOR, with `x5c` in `attStmt`) on registration
+        - Key attestation emulation needs to follow the Supreme attestation format, or the legacy attestation format
           as described in the original [WARDEN example usage](https://github.com/a-sit-plus/warden#example-usage).
 - Binding:
     - If you emulate unified binding (recommended), define a mechanism and format to convey an equivalent to Warden Supreme's binding certificate.
@@ -93,7 +93,7 @@ Warden makoto is the modernised variant of legacy WARDEN, sharing the same API:
 - iOS App Attest verification, including unified key-binding semantics (challenge + public key in clientDataHash),
   assertions with counters, AAGUID enforcement, and trust anchor validation.
 
-!!! tip Platform Specifics
+!!! tip "Platform Specifics"
     Like legacy WARDEN, Warden makoto also exposes OS-specific endpoints for more fine-grained app attestation on iOS,
     and a more low-level API for Android targets. Refer to the respective platform-specific APIs, both of which are exposed by
     [`Makoto`](../dokka/makoto/at.asitplus.attestation/-makoto/index.html):
@@ -111,7 +111,7 @@ Recommended endpoints:
 - POST `/attestation/assert` (if iOS assertion is required)
     - iOS only: submit assertion bound to a fresh challenge; enforce monotonic counters and receipt if used.
 
-General tips/requirements apply:
+General tips and requirements:
 - Require challenge freshness and correct nonce/challenge echo in the platform-specific mechanism.
 - Replay: Reject reused challenges; on iOS, also enforce increasing counters per key.
 - Stage alignment: Configure sandbox vs. production AAGUID correctly on iOS.

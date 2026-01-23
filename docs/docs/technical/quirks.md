@@ -1,26 +1,26 @@
 # Quirks, Bugs, Workarounds, and Hints
 
 Warden Supreme's unified Android and iOS attestation core, _Makoto_ (formerly _WARDEN_), has been used in production for years and attested millions of clients.
-Naturally, this caused hiccups but also enabled the collection of these hiccups' causes.
-Due to the diversity of its device landscape, Android is most affected by this. iOS, however, is also not without flaws.
+Naturally, this caused hiccups and also helped identify their causes.
+Due to the diversity of its device landscape, Android is most affected. iOS, however, is also not without flaws.
 
-This page lists known quirks and bugs, and discusses how to deal with them.
-First, however, some general hints that apply regardlessly are discussed.
+This page lists known quirks and bugs and discusses how to deal with them.
+First, some general hints that apply regardless are discussed.
 
 ## General Hints
 Using attestation to strongly enforce policies and to remotely establish trust in mobile clients is rooted in cryptographic
 mechanisms and PKI procedures.
-Hence, timeliness is of the essence, freshness windows and temporal checks are crucial.
-As a logical consequence, the clocks between a service and to-be-attested clients need to be in sync.
+Hence, timeliness is of the essence; freshness windows and temporal checks are crucial.
+As a logical consequence, the clocks between a service and the clients being attested need to be in sync.
 
-Given that the service owner is very much not the device owner, clock drifts and even timezone differences causing hours of
+Given that the service owner is very much not the device owner, clock drifts and even time zone differences causing hours of
 offset are not uncommon.
 Warden Supreme allows for sending server time zone (and even clock drift information) to clients along with a cryptographic nonce
 at the start of an attestation procedure.
 However, cryptographic operations are performed in hardware and are thus not controlled by the application that receives
 the attestation challenge.
-A timezone offset and a time drift will therefore result in a certificate chain carrying attestation statements that will
-error out due to temporal offsets (see below).
+A time zone offset or clock drift can result in a certificate chain carrying attestation statements that fail temporal checks
+(see below).
 
 ### Clock Drifts and Temporal Validity
 !!! danger "Time is relative (literally)!"
@@ -28,26 +28,26 @@ error out due to temporal offsets (see below).
         
     * iOS attestation verification
     * Android attestation verification
-    * The component ensuring freshness guarding both of the previous
+    * The component ensuring freshness, guarding both of the above
     
     Of course, this still leaves two entities with system clocks that are isolated from each other:
     
     * The back-end, verifying attestation proofs (CSRs)
     * Mobile clients, issuing those proofs to begin with
     
-    **Theis complexity is inherent** and nothing can be done to simplify this situation on a conceptual level, but
+    **This complexity is inherent** and nothing can be done to simplify this situation on a conceptual level, but
     Warden Supreme provides sane defaults that have proven to work well in practice.  
     This means that for 99% of all deployments, this complexity is hidden away, but if you need to change the defaults
     **you will need to get your hands dirty and entertain thoughts about this mess!**
 
-Warden's Supreme verifier allows for setting a global verification clock offset through the parameter `verificationTimeOffset`.
+Warden Supreme's verifier allows for setting a global verification clock offset through the parameter `verificationTimeOffset`.
 
 * **This defaults to five minutes, because even one millisecond of clock drift can cause otherwise perfectly valid attestations to error out!**
 * Those five minutes are added to Apple's recommended default lifetime of an iOS attestation, effectively increasing the
   maximum age of an attestation that is still considered valid by five minutes.
 
 
-!!! danger "The two Sources of Attestation Creation Time"
+!!! danger "The Two Sources of Attestation Creation Time"
     (Yes, things get even more complex!)  
     iOS and Android attestation statements come with two kinds of temporal validity:
 
@@ -62,11 +62,11 @@ that undermines some requirements for attestation checks.
 In fact, many Android devices mess up a correctly encoded certificate validity, or the
 attestation statement validity, **or both**.
 
-Luckily, this can be worked around **iff challenges issued by the back-end expire after a couple of minutes, and iff they are rooted in a truly random value only used once,
-that is invalidated once used!**
+Luckily, this can be worked around **if and only if challenges issued by the back-end expire after a couple of minutes and are rooted in a truly random value only used once,
+that is invalidated once used.**
 
 !!! note "Warden Supreme Default Behaviour"
-    Warden supreme also ships with a default nonce generation service and a challenge validation component that follows this strategy.
+    Warden Supreme also ships with a default nonce generation service and a challenge validation component that follows this strategy.
     Hence, Warden Supreme behaves as follows by default:
     
     * Adding a five-minute verification time offset
@@ -77,7 +77,7 @@ that is invalidated once used!**
 The Warden Supreme defaults do not have any adverse impact on security that matters in practice
 because Warden Supreme checks the validity of challenges **before an attestation proof is even parsed**.
 In addition, Warden Supreme communicates nonce validity periods to clients.
-The validity period encoded into challenges is shifted by the inverse verification time offset, as the clients have an inverse view on relative clock drifts between back-end and themselves.
+The validity period encoded into challenges is shifted by the inverse verification time offset, because clients see the drift in the opposite direction.
 Communicating this information to clients has the inherent benefit that large clock drifts can be caught right away and communicated to the user.
 
 ??? warning "Changing Defaults"
@@ -105,11 +105,11 @@ continue to do this, even though they should very much not.
 
 #### ASN.1 Time Bugs
 Some vendors encode **UTC Time vs. GeneralizedTime** incorrectly leading to years of temporal offset.
-Only the vendor can fix this though updates. However, relying on a tight freshness window based on a cryptographic nonce
+Only the vendor can fix this through updates. However, relying on a tight freshness window based on a cryptographic nonce
 sourced from true randomness is recommended anyway (see [Clock Drifts and Temporal Validity](#clock-drifts-and-temporal-validity)).
 
 #### Vendor Patch Level Misencoding
-Many **Android 15** devices (even emulator images) and some Samsung devices do not conform to the ASN.1 schema for attestation data wrt. patch level encoding.
+Many **Android 15** devices (even emulator images) and some Samsung devices do not conform to the ASN.1 schema for attestation data with respect to patch level encoding.
 This concerns the vendor patch level field, not the OS patch level, and requires monkey-patching Google's upstream parser code to prevent it from glitching out.
 **Warden Supreme already applies the necessary band-aids**, but enforcing vendor patch levels is generally discouraged in favour of OS patch levels.
 
@@ -125,14 +125,14 @@ is also set.
 ### OS Bugs and Quirks
 
 #### Bootloader Unlock Destroying Keys
-Many devices **destroy keys** or make attestation impossible after a bootloader unlock. There is nothing to be done about this, and even relocking typically cannot bring back
-cryptographic keys sent to nirvana! Hence, this issue manifests itself **on the client device**.
+Many devices **destroy keys** or make attestation impossible after a bootloader unlock. There is nothing to be done about this, and even relocking typically cannot restore
+cryptographic keys. Hence, this issue manifests itself **on the client device**.
 While **technically** not a violation of the Android certification requirements, it very much is bad practice at the vendor's end.
 This is especially hard to swallow for device owners, since buying a new device is the only thing that can be done about this. Known affected devices:
 
 - Fairphone 2
 - Nothing Phone 3a
-- There are definitely others
+- There are likely others
 
 #### Keystore2 Binder Bug
 On rare occasions, attestation fails because the connection between the Keystore and the package manager breaks up. While the bug has been identified and fixed, it will only land in Android 17 (see commit [b0be7edbf9e3…](https://android.googlesource.com/platform/system/security/+/b0be7edbf9e34bc409c6d869f936c2eb00925b34)).
