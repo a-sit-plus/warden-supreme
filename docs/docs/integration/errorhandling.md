@@ -72,7 +72,7 @@ to customise the error message /error code conveyed to the client.
 5. The client OS is too old (wrt. to the configured minimum OS version)
 6. The attestation statement creation timestamp (not the certificate validity!) is too far in the past or absent.  
    Note that Warden Supreme's sane defaults prevent this from happening.
-7. The challenge encoded into the attestation proof does not match the expected challenge.
+7. The challenge encoded into the attestation statement payload does not match the expected challenge.
 8. The app's package name does not match the expected package name.  
    I.e., an unauthorised app is trying to attest to the back-end.
 9. The app was signed with an unknown key.  
@@ -89,11 +89,11 @@ to customise the error message /error code conveyed to the client.
 15. Minimum iOS version / build number not satisfied.
 16. The attestation statement creation timestamp (not the certificate validity!) is too far in the past. This is usually due to a clock drift between client and server.  
     The Supreme Verifier prevents the client from even attempting to send an attestation, as clock drift detection is implemented as client-side functionality.
-17. The challenge encoded into the attestation proof does not match the expected challenge.
+17. The challenge encoded into the attestation statement payload does not match the expected challenge.
 18. The team ID and/or bundle identifier and/or stage (sandbox vs. production) of the client app do not match.
 19. The signature counter encoded into the assertion is too high. See [iOS technical deep dive](../technical/ios.md).
 20. This usually indicates a structural error in the attestation statement and therefore requires manual debugging to make sense of.
-21. This is usually triggered by structurally invalid input (empty attestation proof, misencoded certificates, …) and is also a hot take for a manual session debugging.  
+21. This is usually triggered by structurally invalid input (empty attestation proof/CSR, misencoded certificates, …) and is also a hot take for a manual session debugging.  
     Experience shows, however, that this never happens in production when a legit client app is used.
 
 !!! tip inline end "Debugging"
@@ -106,7 +106,7 @@ offline analysis.
 
 ### Pre-Attestation Errors
 When using fully integrated attestation, preprocessing steps are automatically performed to extract, check, and invalidate
-the received challenge, parse the received CSR, extract the attestation proof, and so forth.
+the received challenge, parse the received CSR, extract the attestation proof (CSR), and so forth.
 Naturally, this does not always work as arbitrary data can be sent to the verifier, which means pre-attestation
 errors can occur.  
 The following snippet shows how to react to such errors.

@@ -44,7 +44,7 @@ state with the help of the Secure Enclave on the device and determines whether t
 This fact needs to be observed in data protection and privacy discussions!
 On the back-end, however, no contact with Apple services is required, since no revocation checks are possible, as the attestation itself is freshly provided by Apple.
 
-Moreover, the hardware-bound key used to create an attestation statement cannot be used by the app for any cryptographic operations.
+Moreover, the hardware-bound key used to create an attestation statement cannot be used by the app for general-purpose cryptographic operations outside App Attest assertions.
 Hence, there is no key attestation on iOS, but it can be emulated by creating a fresh key pair inside the Secure Enclave and feeding its public part into the data sent to Apple for attestation.
 If a valid attestation statement is received that is bound to the key in this matter, the key can also be trusted to be created inside the Secure Enclave if the attestation statement indicates
 

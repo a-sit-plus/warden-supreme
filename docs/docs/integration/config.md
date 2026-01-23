@@ -4,7 +4,7 @@ Warden Supreme configuration consists of two parts
 1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split into
    * `AndroidAttestationConfiguration` for Android specifics
    * `IosAttestationConfiguration` for iOS specifics
-2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs and key constraints as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup)
+2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs (CSRs) and key constraints as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup)
 
 
 To externalise such configuration in a convenient way, an umbrella `SupremeConfiguration` exists.

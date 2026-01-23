@@ -82,7 +82,7 @@ and feeds the public key's hash into `clientDataHash`, to bind the public key to
 Since Apple platforms do not allow for attesting keys (the hardware-backed keys used for attestation cannot be used), this
 way of binding a usable key to an attestation is used to emulate key attestation (see [Emulating Key Attestation](#emulating-key-attestation)).
 
-Warden Supreme does not natively support assertion (for reasons explained [below](#assertion-wrap-up)) and relies on attestation, and emulating key attestation to replicate
+Warden Supreme does not natively support assertions in the fully integrated flow (for reasons explained [below](#assertion-wrap-up)) and relies on attestation, and emulating key attestation to replicate
 Android's behaviour for a consistent UX across both platforms.
 
 ## Attestation Validation

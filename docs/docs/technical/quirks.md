@@ -32,7 +32,7 @@ error out due to temporal offsets (see below).
     
     Of course, this still leaves two entities with system clocks that are isolated from each other:
     
-    * The back-end, verifying attestation proofs
+    * The back-end, verifying attestation proofs (CSRs)
     * Mobile clients, issuing those proofs to begin with
     
     **Theis complexity is inherent** and nothing can be done to simplify this situation on a conceptual level, but
@@ -72,7 +72,7 @@ that is invalidated once used!**
     * Adding a five-minute verification time offset
     * Using the recommended default validity of iOS attestation statements **plus that five-minute offset**
     * Generating truly random nonces that expire after this very same iOS validity
-    * Completely disabling the validity checks on the leaf certificate and the encoded attestation proof validity period on Android.
+    * Completely disabling the validity checks on the leaf certificate and the encoded attestation statement validity period on Android.
 
 The Warden Supreme defaults do not have any adverse impact on security that matters in practice
 because Warden Supreme checks the validity of challenges **before an attestation proof is even parsed**.

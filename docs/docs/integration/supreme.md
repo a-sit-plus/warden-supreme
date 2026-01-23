@@ -48,8 +48,8 @@ An attestation flow works as follows, in accordance with Figure&nbsp;1:
 
 1. The client fetches a challenge from the back-end.
 2. The client feeds the challenge into hardware-backed key generation to create an attestation statement.
-3. The client sends the attestation statement back to the back-end.
-    * **Wire-format-wise this is a CSR, with a custom attribute carrying the actual attestation proof**
+3. The client sends the attestation proof (CSR) back to the back-end.
+    * **Wire-format-wise this is a CSR, with a custom attribute carrying the attestation statement payload**
     * CSRs were chosen as their canonical encoding is precisely specified and because they inherently come with a proof of possession of the private key
     * CSRs freely allow defining arbitrary extensions and attributes, which is a perfect fit for Warden Supreme's usage scenario
     * Finally, the PKIX context is the natural habitat of a CSR
@@ -143,7 +143,7 @@ The full details on the configuration can be found in the [API documentation](..
     with much tighter security constraints. This makes no sense when Warden Supreme is integrated into a back-end.
     If, however, a dedicated attestation service is deployed that is then used to issue certificates for apps used by different services, this can be legitimate. 
     A single iOS-app is configured for test purposes only. In this example, the iOS app has not yet launched and is purely simulated.
-    To still be able to test the attestation code path for iOS, custom trusted roots are set and all iOS attestation proofs
+    To still be able to test the attestation code path for iOS, custom trusted roots are set and all iOS attestation statements
     sent to the back-end are created in software, purely for evaluation purposes.
     
     **Be sure to check the annotations!**
@@ -173,7 +173,7 @@ The full details on the configuration can be found in the [API documentation](..
     16. A single iOS app for evaluation purposes.
     17. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
     18. Uses the test stage
-    19. Custom trusted root is set, to enable generating iOS attestation proofs in software for evaluation purposes.
+    19. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
     20. This could already be a production value, in preparation for the real iOS app
     21. This is simply Apple's recommendation plus five minutes offset
     22. Explicitly set production trusted roots as default
@@ -184,7 +184,7 @@ The full details on the configuration can be found in the [API documentation](..
 
 Starting with Warden Supreme 1.0.0, it is possible to configure attestation only for iOS or only for Android by simply omitting
 either the `androidAttestationConfiguration` or the `iosAttestationConfiguration`, respectively.  
-In such cases, trying to verify an attestation proof for the not-configured platform will always return an error.
+In such cases, trying to verify an attestation statement for the not-configured platform will always return an error.
 The shorthand `AttestationVerifier` constructor that directly accepts `androidAttestationConfiguration` and `iosAttestationConfiguration` properties
 instead of a pre-configured `Makoto` instance does not support such omissions.
 
@@ -236,7 +236,7 @@ to create a hardware-backed P-256 key.
     --8<-- "Readme-Verifier.kt:20"
     ```
     
-    1. We want Warden Supreme to convey the attestation proof inside the CSR using a custom OID.
+    1. We want Warden Supreme to convey the attestation statement payload inside the CSR using a custom OID.
     2. We don't care about device names in this example
     3. We explicitly specify the key we want to have created on the client.  
     The values shown here correspond to the defaults, as this is supported by Android and iOS.
@@ -278,7 +278,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 2. Endpoint to serve challenges to clients
 3. It does nothing but issuing challenges
 4. The full URL to post the attestation proof to
-5. Endpoint expecting CSRs containing attestation proofs
+5. Endpoint expecting CSRs containing attestation statement payloads
 6. Read the raw CSR from the HTTP body
 7. Here, inside the `verifyAttestation` lambda, we already have a verified attestation according to the configured `makoto` instance.
 8. Signing a `TbsCertificate` automatically creates an X.509 certificate
@@ -306,8 +306,8 @@ specifies key constraints:
 1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
 2. Perform the fully integrated attestation flow **iff key constraints are defined in the challenge** consisting of the following steps:
     1. Fetches the challenge from `ENDPOINT_CHALLENGE` 
-    2. Automatically creates a key for `ALIAS` and an accompanying attestation proof. **Beware:** if a key for this alias exists, this will fail!
-    3. Creates and signs a CSR, feeding the challenge and attestation proof into it.
+    2. Automatically creates a key for `ALIAS` and an accompanying attestation statement payload. **Beware:** if a key for this alias exists, this will fail!
+    3. Creates and signs a CSR, feeding the challenge and attestation statement payload into it.
     4. Sends it to the endpoint encodes into the received challenge.
 3. If everything worked out, store the received certificate chain using whatever means you decide on
 4. The kind of error tells you what went wrong. An `AttestationResponse.Failure` **may** also contain a string explaining further details.

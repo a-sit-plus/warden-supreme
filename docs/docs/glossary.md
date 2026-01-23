@@ -9,6 +9,9 @@ This glossary centralises terms used across the documentation. Each entry is con
 - **Attestation** — A cryptographically signed statement about a key and its execution environment (device/app state).
     - **Key Attestation** — A statement about the key (e.g., stored in secure hardware; non‑extractable).
     - **App Attestation** — A statement about the app (e.g., unmodified app, signed by the developer, running on an unmodified OS).
+- **Attestation Statement** — The platform-generated attestation payload (Android: X.509 chain with KeyDescription; iOS: App Attest payload).
+- **Attestation Object (iOS)** — Apple’s App Attest CBOR structure (`authenticatorData`, `attStmt`, `x5c`) returned by `attestKey`.
+- **Attestation Proof** — The transport container sent to the server, typically a CSR carrying the attestation statement payload.
 - **Challenge / Nonce** — A server‑generated, unpredictable byte string used exactly once to guarantee freshness and prevent replay. Android embeds it in the attestation extension; iOS mixes it into the attestation nonce via `clientDataHash` (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation), [Attestation Object Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
 - **Binding** — Cryptographically tying data (e.g., public key bytes + challenge) into an attested statement so the verifier can trust their association.
 
