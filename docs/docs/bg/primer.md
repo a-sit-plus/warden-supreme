@@ -68,12 +68,12 @@ re-attest:
 
 - **Verified Boot** — Android’s secure boot chain that verifies each boot stage and enforces **locked bootloader**
   policies. An attestation statement exposes the `verifiedBootState`.  
-  Apple devices behave similartly, but imply a verified boot process through the mere presence of an Apple-signed
+  Apple devices behave similarly, but imply a verified boot process through the mere presence of an Apple-signed
   attestation statement.
 - **TEE (Trusted Execution Environment)** — Hardware‑isolated environment **inside the CPU/SoC** (e.g., ARM TrustZone)
   securely storing unextractable keys and performing cryptographic operations (see [Extraction prevention](https://developer.android.com/privacy-and-security/keystore#ExtractionPrevention)).
 - **StrongBox** — (Android only) A separate secure element with dedicated CPU/RAM, providing stronger physical attack
-  resistance than a TEE. Only few devices are manufactured with it (see [StrongBox](https://developer.android.com/privacy-and-security/keystore#StrongBoxKeyMint)).
+  resistance than a TEE. Very few devices are manufactured with it (see [StrongBox](https://developer.android.com/privacy-and-security/keystore#StrongBoxKeyMint)).
 - **Secure Enclave** - Apple’s secure coprocessor (a secure element, like StrongBox) providing hardware key isolation,
   implementation of cryptographic procedures and counters inside dedicated hardware (see [Secure Enclave](https://support.apple.com/guide/security/secure-enclave-sec59b0b31ff/web)).
 - **Key Attestation (Android)** — X.509 cert chain with an Android‑specific ASN.1 extension (*KeyDescription*) that
@@ -86,10 +86,9 @@ re-attest:
   attestation roots; for iOS, Apple’s App Attest root. (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)
   and [Apple Attestation Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
 - **User Authentication bound Keys** — Android keys can require user presence (biometrics/PIN) per‑use; Warden can
-  enforce or read these authorizations. (see [Android Keystore](https://developer.android.com/privacy-and-security/keystore)).
+  enforce or read these authorisations. (see [Android Keystore](https://developer.android.com/privacy-and-security/keystore)).
 - **Remote provisioning** — Newer Androids provision attestation/identities over the air; offline devices can **exhaust
   key pools** until connectivity returns. Plan for this in testing. (see conceptual notes
   in [AOSP Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)).
 - **App vs. Key Attestation (iOS)** — iOS does **app** attestation. **Key‑attestation emulation** is possible by
   embedding the public key bytes into the Apple‑signed attestation format (using our unified format). (see [Signum Supreme](https://a-sit-plus.github.io/signum/supreme/)).
-

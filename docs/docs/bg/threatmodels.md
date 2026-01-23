@@ -33,13 +33,13 @@ To keep such devices and apps out, require strong, cryptographic platform guaran
 
 Since software‑only Android attestation can be forged on rooted devices, the policy decision is simple:  
 **Accept hardware‑backed attestation only; reject software attestation.** This preserves access for honest users while
-filtering out cheap, commoditized attacks.
+filtering out cheap, commoditised attacks.
 
 !!! example "Example Repackaging Attacks"
     Attestation thwarts common repackaging patterns such as:
 
     - Modifying network calls to bypass server‑side checks and resigning the app with an attacker key.
-    - Injecting ad‑fraud or click‑spam SDKs into a popular app to monetize traffic.
+    - Injecting ad‑fraud or click‑spam SDKs into a popular app to monetise traffic.
     - Stripping certificate pinning hooks and shipping a “patched” build to enable man-in-the-middle attacks.
     - Inject malicious code to exfiltrate sensitive data.
     
@@ -51,7 +51,7 @@ The goals of using off-the-shelf methods to tamper with apps are twofold:
 1. Circumvent root checks and modify app logic on one's own device
 2. Distribute malware inside repackaged apps through unofficial app stores
 
-The first class of "attackers" can be treated as an untrusted client a user deliberately employs themself.
+The first class of "attackers" can be treated as an untrusted client a user deliberately employs.
 Assuming that a user only has access to their own data, this does not pose privacy risks or endanger other users.
 It **can** be an issue in multiplayer games, for example, as it will allow cheating. **Even sophisticated means
 to circumvent attestation (see [Threat Model&nbsp;C](#threat-model-c-targeted-attackers-with-physical-device-access)) will still keep other users safe!**
@@ -59,7 +59,7 @@ to circumvent attestation (see [Threat Model&nbsp;C](#threat-model-c-targeted-at
 The second class of attackers has malicious intent and tries to harm legitimate users at scale. They do not have access
 to their victims' devices and thus cannot modify the operating system.
 Hence, these attackers are limited to modifying the actual application they distribute, and any invasive changes to a device
-or the operating system are irrelevant for such scenarios. **If you back-end enforces and properly checks attestation, your users are safe**,
+or the operating system are irrelevant for such scenarios. **If your back-end enforces and properly checks attestation, your users are safe**,
 because sophisticated means to circumvent attestation require physical access to a victim's device
 (see [Threat Model&nbsp;C](#threat-model-c-targeted-attackers-with-physical-device-access)).
 
@@ -111,7 +111,7 @@ In addition, bot operators often modify or instrument Android builds on physical
 engineering/rooting ROMs, or repackaging apps to expose hooks and bypass certificate
 pinning).
 
-Defense therefore focuses on distinguishing real, unique devices and making horizontal scaling expensive, while selectively excluding low‑cost hardware classes:
+Defence therefore focuses on distinguishing real, unique devices and making horizontal scaling expensive, while selectively excluding low‑cost hardware classes:
 
 - **Attestation requirements:**
     - Demand hardware‑backed attestation. For sensitive workflows on known device fleets, consider requiring StrongBox on Android 9+ if your user base supports it (this excludes most budget and many older devices).

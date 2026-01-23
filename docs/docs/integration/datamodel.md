@@ -1,6 +1,6 @@
 # Data Model and Wire Format
 
-Warden Supreme standardizes how attestation challenges, proofs, and outcomes are represented across platforms, based
+Warden Supreme standardises how attestation challenges, proofs, and outcomes are represented across platforms, based
 [Signum's multiplatform attestation data model](https://a-sit-plus.github.io/signum/dokka/indispensable/at.asitplus.signum.indispensable/-attestation/index.html).
 The chosen data model achieves the following:
 
@@ -14,12 +14,12 @@ The chosen data model achieves the following:
     * [AttestationResponse](../schemas/AttestationResponse.json)
 
 
-Warden Supreme does not specify an encoding for its wire format. However, JSON has become the de-facto standard for many
-HTTP-based APIs. We therefore provide **experimental**, auto-generated schemas for Warden Supreme's datatypes.
+Warden Supreme does not specify an encoding for its wire format. However, JSON has become the de facto standard for many
+HTTP-based APIs. We therefore provide **experimental**, auto-generated schemas for Warden Supreme's data types.
 These can be helpful for integrating third-party clients.  
 Please note that these schemas really are experimental as of now.
 
-## Core Artifacts
+## Core Artefacts
 
 - Challenge (Server → Client)
     - Contents:
@@ -28,27 +28,28 @@ Please note that these schemas really are experimental as of now.
         - optional `timeZone`
         - a server-chosen `nonce` (≤128 bytes)
         - the `attestationEndpoint` to submit the attestation proof to
-        - `proofOID` that identifies the CSR attribute to hold the attestation statement inside the CSR produced by the client
-          serving as attestation proof.
-        - `includeGenericDeviceName` to indicate whether the make and model if the client device (not the user-assignable name) should be included in the CSR
+        - `proofOID` that identifies the CSR attribute to hold the attestation statement payload inside the CSR produced by the client,
+          which serves as the attestation proof.
+        - `includeGenericDeviceName` to indicate whether the make and model of the client device (not the user-assignable name) should be included in the CSR
         - `version` to indicate the data format version
         - `keyConstraints` to tell the client which kind of key to create and attest.
     - Purpose: binds the proof to a fresh, server-originating value; communicates where and how to submit the
       attestation.
 
 - Proof Transport (Client → Server)
-    - The platform-specific attestation statement (Android Key/ID Attestation, iOS App Attest) is embedded into a
+    - The platform-specific attestation payload (Android Key/ID Attestation, iOS App Attest) is embedded into a
       PKCS#10 Certification Request (CSR) attribute identified by the provided `proofOID`.  
       It is represented as a JSON-encoded UTF-8 string inside the extension
     - The CSR subject encodes the challenge nonce in a serialNumber RDN.
     - This yields a single, signed container that carries both the device/app attestation and linkage to the server’s
-      challenge.
+      challenge. In this documentation, "attestation statement" means the platform payload, "attestation proof" means the
+      transport container (CSR), and "attestation object" refers specifically to iOS App Attest.
 
 - Server Response (Server → Client)  
-This is a simple either-class, branching as follows:
-    - **Success** contains a single property: a `certificateChain` (X.509). This enables immediate consumption by the arbitrary applications (mTLS, signed requests), regardless of platform specifics.
+This is a simple either class, branching as follows:
+    - **Success** contains a single property: a `certificateChain` (X.509). This enables immediate consumption by arbitrary applications (mTLS, signed requests), regardless of platform specifics.
         - The leaf is a binding certificate issued for the attested key by the back-end.
-        - The root is indended to be the root CA for the binding PKI configured at the back-end. However, the semantics can be adapted as desired.
+        - The root is intended to be the root CA for the binding PKI configured at the back-end. However, the semantics can be adapted as desired.
     - **Failure** is a typed error with an optional explanation. Categories:
         - `TRUST`: trust or policy violations, such as:
             - Untrusted or mismatched root/intermediate (e.g., wrong environment or CA).
@@ -57,11 +58,11 @@ This is a simple either-class, branching as follows:
         - `TIME`: timing and validity issues, such as:
             - Challenge expired, not yet valid, or excessive clock skew between client and server.
             - Certificate/statement outside its validity window.
-        - `CONTENT`: malformed or missing attestation proof content, such as:
+        - `CONTENT`: malformed or missing attestation proof (CSR) content, such as:
             - CSR missing the expected attribute (proofOID) or unparsable payload.
             - Nonce binding absent or incorrect; unexpected or invalid structure in the attestation statement.
         - `INTERNAL`: server-side processing failures, such as:
-            - Deserialization or I/O errors during verification.
+            - Deserialisation or I/O errors during verification.
             - Transient infrastructure issues or unexpected exceptions not attributable to client input.
 
 ## Validation Linkage

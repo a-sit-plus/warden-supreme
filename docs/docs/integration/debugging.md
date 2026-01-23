@@ -7,9 +7,9 @@ Hence, two pieces of information are available to aid debugging:
 
 ## Debugging Integrated Attestation
 
-The `WardenDebugAttestationStatement` can be serialized to JSON by invoking `.serialize()` (or `serializeCompact()`) on it.
-It can later be deserialized by calling `deserialize()` (or `deserializeCompact()`) on its companion.
-By finally calling `replaySmart()` on such a deserialized debug info object, the whole attestation verification process is replayed.
+The `WardenDebugAttestationStatement` can be serialised to JSON by invoking `.serialize()` (or `serializeCompact()`) on it.
+It can later be deserialised by calling `deserialize()` (or `deserializeCompact()`) on its companion.
+By finally calling `replaySmart()` on such a deserialised debug info object, the whole attestation verification process is replayed.
 
 Attaching a debugger allows for step-by-step debugging of any attestation errors encountered.
 For the most straightforward debugging experience:
@@ -18,7 +18,7 @@ For the most straightforward debugging experience:
 * add a breakpoint [here in line 19](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt#L19)
 * and run it in debug mode.
 
-Just be sure to add a single argument pointing to a file as described in [Diag.kt](https://github.com/a-sit-plus/warden-supreme/tree/mainutils/makoto-diag/src/main/kotlin/Diag.kt)!
+Just be sure to add a single argument pointing to a file as described in [Diag.kt](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt)!
 
 ## Debugging Raw Android Attestations
 A similar utility exists for printing the contents of an Android attestation statement, located in [/utils/roboto-diag](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/roboto-diag).

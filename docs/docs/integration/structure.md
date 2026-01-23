@@ -3,7 +3,7 @@ Warden Supreme is structured into four groups:
 
 1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2.
 2. `/serverside` contains the server-side foundations with all the low-level logic to verify attestations
-3. `/utils` contains unpublished utility helpers aimed at aiding attestation errors. Those are to be used inside an IDE with a debugger attached to it
+3. `/utils` contains unpublished utility helpers aimed at aiding analysis of attestation errors. Those are to be used inside an IDE with a debugger attached to it
 4. `/dependencies` contains external dependencies that are not published to Maven Central or anywhere else and are thus compiled into group&nbsp;2 or used for testing.
 
 ## /supreme
@@ -29,6 +29,6 @@ This group houses the debugging/examination utils described in [Debugging](debug
 
 ## /dependencies
 Teams at Google released reference Android attestation parsers (not full attestation checkers to remotely establish trust in Android devices!) and PKIX certificate path validators to complement parsing.
-They did not, however, publish those artifacts to Maven Central. Hence, Warden Supreme integrates them as git submodules and compiles them into _Warden roboto_.
+They did not, however, publish those artefacts to Maven Central. Hence, Warden Supreme integrates them as git submodules and compiles them into _Warden roboto_.
 
-In addition, an HTTP proxy is present to facilitate testing. It is not, however, shipped with any artifact.
+In addition, an HTTP proxy is present to facilitate testing. It is not, however, shipped with any artefact.
