@@ -282,7 +282,10 @@ constructor(
          * @param configuration The [SupremeConfiguration] object containing Android and/or iOS attestation configurations, attestation proof OID,
          * generic device name OID, default key constraints, and verification time offset.
          * @param nonceGenerator A [NonceGenerator] instance to generate unique challenges for verification. Defaults to [WardenDefaults.nonceGenerator].
-         * @param challengeValidator A lambda function that initializes a [ChallengeValidator], based on the provided [SupremeConfiguration.Clock.timeSource] and the verification time offset from the
+         * @param challengeValidator A lambda function that initializes a [ChallengeValidator] based on:
+         *  * the provided [SupremeConfiguration.Clock.timeSource]
+         *  * the **negative** [SupremeConfiguration.verificationTimeOffset] (because otherwise, challenges would always be temporally invalid!)
+         *
          * [configuration].
          * Defaults to using an [InMemoryChallengeCache].
          * @return An instance of [AttestationVerifier] configured with the provided parameters.
@@ -304,7 +307,7 @@ constructor(
                 nonceGenerator = nonceGenerator,
                 challengeValidator = challengeValidator(
                     configuration.clock.timeSource,
-                    configuration.verificationTimeOffset
+                    -makoto.verificationTimeOffset
                 ),
             )
         }

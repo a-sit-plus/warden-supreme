@@ -82,7 +82,8 @@ val initTests by testSuite {
     val verifierFromMakoto = AttestationVerifier(makoto)
     val verifierFromConfigs = AttestationVerifier(SupremeConfiguration( androidAttestationConfiguration,
         iosAttestationConfiguration,
-        clock = clockCfg,)
+        clock = clockCfg,
+        offset)
     )
 
     "same makoto properties" {
