@@ -1,11 +1,10 @@
 # Android Attestation Deep Dive
 
-This page explains **how trust is established from boot through app installation** and how that state is **proven** to a
-back-end service via Android hardware attestation. It expands on certificate chains, the `KeyDescription` schema,
-verification steps, and **edge cases**, and it ties these to the Android Verified Boot (AVB) chain and APK signing.
+This page explains how trust is established from boot through app installation and how that state is proven to a back-end
+service via Android hardware attestation. It expands on certificate chains, the `KeyDescription` schema, verification
+steps, and edge cases, and ties these to Android Verified Boot (AVB) and APK signing.
 
-[In contrast to iOS](ios.md#setup), Android requires no special setup procedure, and an app can use attestation
-
+Android requires no special setup procedure for attestation compared to iOS. See also [iOS App Attest Deep Dive](ios.md).
 
 <figure>
 <picture>
@@ -34,9 +33,7 @@ verification steps, and **edge cases**, and it ties these to the Android Verifie
     Keep Figure&nbsp;1 at your ready while digging through this page, as it will be referenced throughout!
 
 
-## How Platform Trust is Established during Boot
-
-
+## Boot-Time Trust Chain
 1. **Boot ROM** (immutable in SoC) verifies the **first-stage bootloader** using SoC fuses / OEM root.
 2. Bootloader verifies **`vbmeta`** and the **partition chain** via **AVB**. `vbmeta` contains the **public key** (or
    hash thereof) authorising images and **rollback indexes**.
@@ -46,7 +43,7 @@ verification steps, and **edge cases**, and it ties these to the Android Verifie
 5. **Rollback protection**: bootloader maintains **rollback index slots** in tamper-resistant storage; images signed
    with **older rollback index** are rejected. Not all devices advertise this.
 
-### What Attestation proves about System State
+### Attested System State
 
 The **`RootOfTrust`** structure in the attestation extension contains:
 
@@ -60,12 +57,12 @@ levels; optionally pin the **expected `verifiedBootKey`** (accept OEM keys only,
 AVB key(s) if you operate a trusted ROM programme).
 
 
-## How Trust is Established for the App at Install Time
+## App Identity at Install Time
 
 - **Signature Scheme v2/v3/v4** embeds signatures over the app contents at the APK level (post-Android 7).
 - The platform verifies the **signing certificate(s)** when installing/updating an app.
 
-### What Attestation proves about the App
+### Attested App Identity
 
 The **`AttestedApplicationId`** section contains:
 - `package_infos`
@@ -77,9 +74,9 @@ The **`AttestedApplicationId`** section contains:
 **Policy implication:** Your server must check against the package name and **signer digest(s)** of your **release**
 build(s). If you use key rotation, store and accept **all legitimate digests**. Re-attest while enforcing application versions to enforce updates.
 
-## How an Attestation is Produced (On-Device) and Verified (Server-Side)
+## Attestation Flow (Device and Server)
 
-### On-device production
+### On-Device Production
 
 1. App requests a **new key** from **KeyMint/StrongBox** with required properties (algorithm, size, purposes, user-auth
    requirements).
@@ -90,10 +87,10 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
     - Intermediates up to a **Google Attestation Root** (for hardware attestation on certified devices).
 4. App sends **{certChain, challenge, metadata}** to your back-end.
 
-### Server-Side Verification Pipeline (normative Checklist)
+### Server-Side Verification Checklist
 
 1. **Chain validation**: X.509 path build and verify (signatures, BasicConstraints, EKU if present, issuer/subject continuity).
-2. **Time validity**: validate NotBefore / NotAfter on intermediates; tolerate known **leaf-time quirks** only if you apply strict freshness windows (see §6).
+2. **Time validity**: validate NotBefore/NotAfter on intermediates; tolerate known **leaf-time quirks** only if you apply strict freshness windows (see §6).
 3. **Attestation root**: anchor in Google’s published **attestation-root set** (keep updated).
 4. **Extension parse**: parse **`KeyDescription`** with a standards-compliant ASN.1/DER library; **respect DER sorting for SET OF**.
 5. **Challenge**: exact match to your **one-time** challenge; reject reuse or replay.
@@ -104,7 +101,7 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 10. **Decision & logging**: produce an auditable decision with specific reasons (e.g., “boot not verified”, “signer mismatch”, “patch too old”).
 
 
-## User Authentication and Key Lifecycle in Attestation
+## User Authentication and Key Lifecycle
 
 - **User presence / authorisation**: If `userAuth` is required, KeyMint enforces biometric/PIN **at key use**. The
   authorisation policy (per-use, validity window) appears in the AuthorizationLists and is **remotely checkable**.
@@ -133,14 +130,16 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 - **Accepting SELF_SIGNED states**: only acceptable for tightly scoped test channels.
 - **Relying solely on patch level**: combine with verified boot, device lock, and (optionally) pinned `verifiedBootKey`.
 - **Using too strict ASN.1 parsers and validation logic**: Android devices come with encoding flaws that need to be accounted for.
-See [Android-specific quirks](quirks.md#android).
+  See [Android-specific quirks](quirks.md#android).
 - **Time Drift**: Out-of-sync clocks between clients and server can cause the PKIX validation part to fail.
-See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-temporal-validity).
+  See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-temporal-validity).
 
-## References an Libraries
+## References and Libraries
 
-- [Developer guide (Key Attestation)](https://developer.android.com/privacy-and-security/security-key-attestation)
-- [AOSP schema & extension documentation](https://source.android.com/docs/security/features/keystore/attestation#schema)
-- [Libraries (legacy)](https://github.com/google/android-key-attestation)
-- [Libraries (current)](https://github.com/android/keyattestation)
-- [Warden Supreme integration guide](../integration/supreme.md)
+See the consolidated [References](../refs.md):
+
+- [Android Key Attestation (Developer Guide)](../refs.md#ref-android-key-attestation)
+- [Android Key and ID Attestation (AOSP Spec)](../refs.md#ref-android-key-id-attestation)
+- [Android Keystore and StrongBox](../refs.md#ref-android-keystore-strongbox)
+- [Android Attestation Libraries (legacy/current)](../refs.md#ref-android-attestation-lib-legacy)
+- [Android Security Bulletin](../refs.md#ref-android-security-bulletin)

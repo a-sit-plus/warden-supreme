@@ -1,6 +1,6 @@
 # Data Model and Wire Format
 
-Warden Supreme standardises how attestation challenges, proofs, and outcomes are represented across platforms, based
+Warden Supreme standardises how attestation challenges, proofs, and outcomes are represented across platforms, based on
 [Signum's multiplatform attestation data model](https://a-sit-plus.github.io/signum/dokka/indispensable/at.asitplus.signum.indispensable/-attestation/index.html).
 The chosen data model achieves the following:
 
@@ -38,10 +38,10 @@ to respond.
 
 ### Proof Transport (Client → Server)
 The platform-specific attestation payload (Android Key/ID Attestation, iOS App Attest) is embedded into a PKCS#10
-Certification Request (CSR) attribute identified by the provided `proofOID`. It is represented as a JSON-encoded UTF-8
+Certificate Signing Request (CSR) attribute identified by the provided `proofOID`. It is represented as a JSON-encoded UTF-8
 string inside the extension.
 
-The CSR subject encodes the challenge nonce in a serialNumber RDN. This yields a single, signed container that carries
+The CSR subject encodes the challenge nonce in a `serialNumber` RDN. This yields a single, signed container that carries
 both the device/app attestation and linkage to the server’s challenge. In this documentation, "attestation statement"
 means the platform payload, "attestation proof" means the transport container (CSR), and "attestation object" refers
 specifically to iOS App Attest.

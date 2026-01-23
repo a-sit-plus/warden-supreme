@@ -49,9 +49,9 @@ fields.
 
 ### Data Flow (Who Learns What)
 
-| From         | To                                   | Data / Action                                                                                                                                                          |
-|--------------|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| App          | Your back-end  (per&nbsp;attestation) | Attestation certificate chain (leaf, intermediates, root), echoed challenge, app binding, boot- and patch-level claims, key metadata                                   |
+| From          | To                                   | Data / Action                                                                                                                                                          |
+|---------------|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| App           | Your back-end (per&nbsp;attestation) | Attestation certificate chain (leaf, intermediates, root), echoed challenge, app binding, boot- and patch-level claims, key metadata                                   |
 | Your back-end | Google servers (periodic)            | Download revocation lists and cache them privately. No per-request contact with Google occurs during verification. |
 
 !!! info "Privacy posture"
@@ -103,9 +103,9 @@ having the server verify that binding.
 
 ### Data Flow (Who Learns What)
 
-| From | To                                  | Data / Action                                                                                                             |
-|------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| App  | Apple (per&nbsp;attestation)        | Device contacts Apple to obtain or refresh attestation artefacts. Apple learns that an attestation occurred for your app. |
+| From | To                                   | Data / Action                                                                                                             |
+|------|--------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| App  | Apple (per&nbsp;attestation)         | Device contacts Apple to obtain or refresh attestation artefacts. Apple learns that an attestation occurred for your app. |
 | App  | Your back-end (per&nbsp;attestation) | Apple-signed attestation and assertion artefacts are evaluated. No revocation checks towards Apple are needed.            |
 
 !!! info "Privacy posture"
@@ -136,9 +136,9 @@ more** than trust the embedded labels and apply hard-coded gating logic.
 
 ### Data Flow (Who Learns What)
 
-| From | To                              | Data / Action                                                                                                                                  |
-|------|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| App  | Google (per&nbsp;request)       | Sends nonce or request-hash inputs, app metadata, device-integrity information, and account/licensing signals so Google can compute a verdict. |
+| From | To                               | Data / Action                                                                                                                                  |
+|------|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| App  | Google (per&nbsp;request)        | Sends nonce or request-hash inputs, app metadata, device-integrity information, and account/licensing signals so Google can compute a verdict. |
 | App  | Your back-end (per&nbsp;request) | Passes the resulting token; your back-end validates and interprets it, then applies policy.                                                     |
 
 !!! info "Privacy posture"
@@ -199,14 +199,14 @@ Moreover, the service runs in Google’s hot path **for every request**:
 |----------------|----------------------------------|-----------------------------------------------|
 | Android “pure” | App → Your back-end               | Hardware-backed attestation evidence          |
 |                | Your back-end → Android endpoints | Periodic download of public roots and CRLs    |
-| iOS App Attest | App ↔ Apple                      | Attestation creation and assertion refresh    |
+| iOS App Attest | App ↔ Apple                       | Attestation creation and assertion refresh    |
 |                | App → Your back-end               | Apple-signed attestation / assertion evidence |
-| Play Integrity | App ↔ Google                     | Per-request exchange to obtain a verdict      |
+| Play Integrity | App ↔ Google                      | Per-request exchange to obtain a verdict      |
 |                | App → Your back-end               | Google-signed verdict token                   |
 
 ---
 
-## Implementation guidance that preserves privacy
+## Implementation Guidance That Preserves Privacy
 
 1. Always bind a fresh, single-use server challenge and enforce short freshness windows; never accept attestations with
    mismatched or stale challenges.
@@ -226,11 +226,11 @@ Moreover, the service runs in Google’s hot path **for every request**:
 7. For testing and CI, use captured, known-good attestation artefacts and negative cases to exercise parsing, policy
    evaluation, and error reporting; cover edge cases such as timestamp encoding quirks, misencoded patch levels, and
    leaf-certificate validity anomalies on certain vendors.
-8. Consider Remote Key Provisioning pool behaviour on Android when Google provisioning services may not be available
+8. Consider Remote Key Provisioning pool behaviour on Android when Google provisioning services may not be available.
 
 ---
 
-## Practical coexistence patterns
+## Practical Coexistence Patterns
 
 * Evidence-first: make Android “pure” attestation and iOS App Attest your root of trust. This keeps decisions
   explainable and privacy-minimal (Android) while acknowledging iOS’s provider contact.

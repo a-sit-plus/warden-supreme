@@ -3,7 +3,7 @@
 !!! danger "Read This First: Footguns"
     The biggest upgrade hazards are about configuration loading and time checks:
 
-    * Configuration loading through Hoplite/Spring Boot is no longer supported and can silently misconfigure checks. Use canonical config loading only. See [Externalised Configuration](config.md).
+    * Configuration loading through Hoplite/Spring Boot is no longer supported and can silently misconfigure checks. Use canonical config loading only. See [Externalising Configuration](config.md).
     * Android leaf certificate validity is ignored by default and Android attestation statement validity defaults to `null`; ensure freshness through your challenge/nonce handling. See [raw flow](raw.md).
     * Verification time offset now defaults to five minutes and is applied to certificate and attestation time checks on both platforms.
 
@@ -28,7 +28,7 @@ This section focuses on upgrades that keep using Makoto/Roboto directly, without
 - `AttestationResult` gains a `Verified` marker; NOOP results are distinct.
 - `AttestationResult.Error` always carries a `cause`.
 - `AttestationValueException.Reason.TIME` is renamed to `STATEMENT_TIME`.
-- Non-configured platforms return `AttestationResult.Error` with a configuration cause. See above and/or [Error Handling](errorhandling.md).
+- Non-configured platforms return `AttestationResult.Error` with a configuration cause. See [Error Handling](errorhandling.md).
 
 ### Time Handling and Validity
 - Verification time offset defaults to five minutes and is applied to certificate and attestation time checks.
@@ -46,10 +46,10 @@ This section focuses on upgrades that keep using Makoto/Roboto directly, without
 See also the [data model](datamodel.md), [Error Handling](errorhandling.md), and the authoritative configuration example in the [Warden Supreme integration guide](supreme.md#config-options-example).
 
 
-## Externalised Configuration
+## Externalising Configuration
 
 !!! tip inline end "List of Configuration Properties"
-    See [Externalised Configuration](config.md) for an up-to-date list of all configuration properties.
+    See [Externalising Configuration](config.md) for an up-to-date list of all configuration properties.
 
 
 Migrating code from WARDEN / WARDEN-roboto is rather smooth because the compiler and the IDE will scream at you
@@ -58,7 +58,7 @@ Far more tricky is correct migration of externalised configuration.
 
 Warden Supreme 1.0 introduces canonical serialised representations of Android- and iOS-specific attestation configurations.
 Previously, Spring Boot and Hoplite could be used to load configurations directly.
-However, the introduced flexibility of Warden Supreme wrt. Android revocation checks, in particular, means that
+However, the introduced flexibility of Warden Supreme with respect to Android revocation checks, in particular, means that
 verifying and sanity-checking externalised configuration is only possible through code paths that are part of Warden
 Supreme.
 Hence, loading configurations must only be done through one of the following functions:
@@ -74,15 +74,15 @@ those configuration files being read and their contents being fed into `fromYaml
 
 ### Configuration Differences
 Aside from changes to config loading, the actual configuration parameters and some defaults have changed between the last
-stable WARDEN / WARDEN-roboto releases and Warden Supreme 1.0.0
+stable WARDEN / WARDEN-roboto releases and Warden Supreme 1.0.0.
 
 - **Android:**
-    * Trust anchors are now `TrustedRoot`s and are split into `hardwareTrustedRoots` / `softwareTrustedRoots`. See [Externalised Configuration](config.md) and [Android technical notes](../technical/android.md).
+    * Trust anchors are now `TrustedRoot`s and are split into `hardwareTrustedRoots` / `softwareTrustedRoots`. See [Externalising Configuration](config.md) and [Android technical notes](../technical/android.md).
     * Per‑app trust anchor overrides moved to `AppData.trustedRootOverrides`.
     * `signatureDigests` is now `signerFingerprints`.
     * `attestationStatementValiditySeconds` uses `Long` and can be `null`.
 - **iOS:**
-    * iOS versions now require both SemVer and build number (`OsVersions`). See [Externalised Configuration](config.md) and [iOS technical notes](../technical/ios.md).
+    * iOS versions now require both SemVer and build number (`OsVersions`). See [Externalising Configuration](config.md) and [iOS technical notes](../technical/ios.md).
     * Per‑app trust anchor overrides use `TrustedRootPair`.
 
 
