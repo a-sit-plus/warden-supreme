@@ -67,10 +67,10 @@ that is invalidated once used!**
 
 !!! note "Warden Supreme Default Behaviour"
     Warden supreme also ships with a default nonce generation service and a challenge validation component that follows this strategy.
-    Hence, Warden Supreme behave as follows by default:
+    Hence, Warden Supreme behaves as follows by default:
     
-    * Adding a five minute verification time offset
-    * Using the recommended default validity of iOS attestation statements **plus that five minute offset**
+    * Adding a five-minute verification time offset
+    * Using the recommended default validity of iOS attestation statements **plus that five-minute offset**
     * Generating truly random nonces that expire after this very same iOS validity
     * Completely disabling the validity checks on the leaf certificate and the encoded attestation proof validity period on Android.
 
@@ -93,7 +93,7 @@ Even though the previous section dealt with a crucial Android-specific issue, th
 Android bugs fall into three categories:
 
 1. Encoding flaws affecting the byte representation of attestation information
-2. OS bugs, and vendor quirks, affecting the behaviour of devices
+2. OS bugs and vendor quirks affecting the behaviour of devices
 3. Non-obvious, but deliberate design decisions
 
 ### Encoding Flaws

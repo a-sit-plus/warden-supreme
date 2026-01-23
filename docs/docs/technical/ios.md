@@ -1,7 +1,7 @@
 # Technical — iOS App Attest Deep Dive
 
 This page explains **how trust is established for an iOS app instance** using **App Attest**, from key creation in the
-Secure Enclave to attestation and ongoing assertions, and how a service verifies those artifacts. It links to
+Secure Enclave to attestation and ongoing assertions, and how a service verifies those artefacts. It links to
 Apple’s canonical sequence diagrams and focuses on **how App Attest works**, not on client library configuration.
 
 
@@ -123,7 +123,7 @@ App Attest natively attests **the app instance** (App ID) and the Apple‑manage
 1. Your client builds `clientDataBytes` that includes your **public key bytes** (to be used for subsequent
    protocol steps) and the **server challenge**.
 2. Compute `clientDataHash = SHA256(clientDataBytes)` and pass it into **`attestKey`** / **`generateAssertion`**.
-3. On the server, after validating the Apple artifacts, extract and validate the **public key bytes** embedded in your
+3. On the server, after validating the Apple artefacts, extract and validate the **public key bytes** embedded in your
    client‑data.
 4. This binds Apple’s attestation to your application key, yielding **verifiable linkage** similar to Android key
    attestation.
@@ -134,8 +134,8 @@ Hence, no custom logic is required on clients and on the back-end.
 
 ## Assertion Details and Usage Model
 
-As touched, Apple platofrms allow _asserting_ an app's and device's state after an initial attestation has been performed
-and recorded. This section subsumes the intended usage modle as postulated by Apple.
+As touched, Apple platforms allow _asserting_ an app's and device's state after an initial attestation has been performed
+and recorded. This section subsumes the intended usage model as postulated by Apple.
 
 ### Assertion Contents
 An assertion from `generateAssertion(keyId, clientDataHash)` yields:
@@ -188,7 +188,7 @@ Using assertions as “re-attestation” has two notable downsides:
     - Assertions require contacting Apple services. This creates additional metadata exposure to Apple (time, frequency,
       success/failure of assertions) and can enable cross-session correlation via stable keyIds if you don’t carefully
       scope/rotate them. On your side, the very act of frequent assertions encourages building long-lived device-level
-      identifiers and histories, which can increase linkability of user behavior. Minimizing assertion cadence, scoping
+      identifiers and histories, which can increase linkability of user behaviour. Minimising assertion cadence, scoping
       identifiers, and separating environments reduces—but does not eliminate—these privacy risks.
 
 For these reasons, Warden Supreme does not natively support it, but rather relies on attestation with emulated key attestation
@@ -254,4 +254,3 @@ See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-tempora
 - [Apple — Establishing your app’s integrity (client-side)](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity)
 - [Server validation library (Kotlin)](https://github.com/veehaitch/devicecheck-appattest)
 - [Warden Supreme integration guide](../integration/supreme.md)
-

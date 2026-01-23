@@ -1,7 +1,7 @@
 # Error Handling
 
 !!! tip inline end "Project Structure"
-    See [project structure details](structure.md) for infos on components, their names, functionality and inter-dependencies.
+    See [project structure details](structure.md) for info on components, their names, functionality, and inter-dependencies.
 
 Attestation can fail for a variety of (expected) reasons.
 Makoto (the unified server-side Android and iOS attestation library at the core of Warden Supreme) buckets errors
@@ -10,7 +10,7 @@ across iOS and Android attestation checks into semantic categories to streamline
 When opting for fully integrated attestation flows (Supreme Verifier and Supreme Client), attestation statements received
 from clients may not even come this far and might be rejected before being fed into Makoto for verification.
 
-An in-depth understanding of all nitty-gritty details on this matter (i.e, when, how and why attestation may fail) is important
+An in-depth understanding of all nitty-gritty details on this matter (i.e., when, how, and why attestation may fail) is important
 for anyone integrating attestation checks on the back-end.
 This is true **even when using the fully integrated Supreme verifier and client** solution, 
 because it makes sense to define and communicate (opaque) error codes and convey them to the client to debug issues in
@@ -33,7 +33,7 @@ semantic bucketing.
 
 Every such exception features:
 
-* **a `platform` property** indicating whether an iOS or and Android attestation failed to verify
+* **a `platform` property** indicating whether an iOS or Android attestation failed to verify
 * **a nullable `message`** providing human-readable context aimed at a smooth debugging experience (not at the end-user)
 * **a `cause`** carrying the underlying platform-specific exception
 
@@ -59,7 +59,7 @@ and Android:
 The snippet below shows all possible attestation exceptions that might be thrown.
 For details, just click on the annotations inside the code below.
 Note that the `onAttestationError` callback is side-effect-free except that it allows for returning a (nullable) string
-to customize the error message /error code conveyed to the client.
+to customise the error message /error code conveyed to the client.
 
 ```kotlin
 --8<-- "Readme-Backend-errorhandling.kt:15:60"
@@ -67,14 +67,14 @@ to customize the error message /error code conveyed to the client.
 
 1. Refer to [Debugging](debugging.md)
 2. Certificate is not yet valid or expired. Clock drift is the main source for this error.
-3. An untrusted root certificate was encountered. E.g, an Android Emulator was used in production.
+3. An untrusted root certificate was encountered. E.g., an Android Emulator was used in production.
 4. Thrown when an attestation statement is received for a platform that is not configured.
 5. The client OS is too old (wrt. to the configured minimum OS version)
 6. The attestation statement creation timestamp (not the certificate validity!) is too far in the past or absent.  
    Note that Warden Supreme's sane defaults prevent this from happening.
 7. The challenge encoded into the attestation proof does not match the expected challenge.
 8. The app's package name does not match the expected package name.  
-   I.e., an unauthorized app is trying to attest to the back-end.
+   I.e., an unauthorised app is trying to attest to the back-end.
 9. The app was signed with an unknown key.  
    Could be an indicator for a repackaging attack.
 10. The client app is too old (i.e., minimum version constraint not fulfilled).
@@ -107,11 +107,11 @@ offline analysis.
 ### Pre-Attestation Errors
 When using fully integrated attestation, preprocessing steps are automatically performed to extract, check, and invalidate
 the received challenge, parse the received CSR, extract the attestation proof, and so forth.
-Naturally, this does not always work as arbitrary data can be sent to the verifier, which is pre-attestation
+Naturally, this does not always work as arbitrary data can be sent to the verifier, which means pre-attestation
 errors can occur.  
 The following snippet shows how to react to such errors.
 Note that the `onPreAttestationError` callback is side-effect-free except that it allows for returning a (nullable) string
-to customize the error message / error code conveyed to the client.
+to customise the error message / error code conveyed to the client.
 
 ```kotlin
 --8<-- "Readme-Backend-preerrorhandling.kt:15:40"
@@ -119,7 +119,7 @@ to customize the error message / error code conveyed to the client.
 
 1. Refer to [Debugging](debugging.md)
 2. Certificate is not yet valid or expired. Clock drift is the main source for this error.
-3. An untrusted root certificate was encountered. E.g, an Android Emulator was used in production.
+3. An untrusted root certificate was encountered. E.g., an Android Emulator was used in production.
 4. Thrown when an attestation statement is received for a platform that is not configured.
 
 
@@ -129,10 +129,10 @@ or an `AttestationResponse.Error`. The latter of which indicates one of four err
 
 1. `TRUST` encompassing untrusted roots, revoked certificates, or invalid certificate chains
 2. `TIME` encompassing temporal validity errors wrt. certificates and attestation statements 
-3. `CONTENT` encompassing all cases where the attestation statement itself falied to parse or verify against the policy
+3. `CONTENT` encompassing all cases where the attestation statement itself failed to parse or verify against the policy
    (i.e. Android devices having an unlocked bootloader, even though the policy mandates a locked bootloader and a factory image)
 4. `INTERNAL` encompassing errors on a more fundamental level, such as a structurally valid CSR, but using unsupported signature algorithms, for example,
-   our outright implementation issues in Warden Supreme.
+   or outright implementation issues in Warden Supreme.
 
 At no point are exceptions related to attestations transmitted to the client.
 Instead, a nullable `explanation` string property is present, which can be used to convey context and/or error codes and

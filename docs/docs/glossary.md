@@ -1,6 +1,6 @@
 # Glossary
 
-This glossary centralizes terms used across the documentation. Each entry is concise and self‑contained; where useful, links to authoritative sources are included.
+This glossary centralises terms used across the documentation. Each entry is concise and self‑contained; where useful, links to authoritative sources are included.
 
 ## Core Concepts
 - **TEE (Trusted Execution Environment)** — Hardware‑isolated environment inside the CPU/SoC (e.g., ARM TrustZone) that securely stores unextractable keys and performs cryptographic operations (see [Extraction Prevention](https://developer.android.com/privacy-and-security/keystore#ExtractionPrevention)).
@@ -28,7 +28,7 @@ This glossary centralizes terms used across the documentation. Each entry is con
 
 ## Android Specifics
 - **Key Attestation (Android)** — X.509 chain with an Android‑specific ASN.1 extension (KeyDescription) encoding device/app state (OS version, patch level, verified boot, app package/signing digest, etc.) (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation), [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
-- **KeyDescription (Attestation Extension)** — Android’s ASN.1 structure embedded in the leaf certificate containing RootOfTrust, authorization lists, challenge, app identity, OS version, patch level, and more (see [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
+- **KeyDescription (Attestation Extension)** — Android’s ASN.1 structure embedded in the leaf certificate containing RootOfTrust, authorisation lists, challenge, app identity, OS version, patch level, and more (see [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
 - **RootOfTrust** — Sub‑structure exposing verified boot state, device lock, and related boot verification data (see [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
 - **Verified Boot** — Android’s secure boot chain enforcing locked bootloader policies. The attestation exposes `verifiedBootState`.  
   Apple devices behave similarly, but verified boot is implied by the presence of an Apple‑signed attestation.

@@ -2,14 +2,14 @@
 
 
 Proving the integrity of mobile clients is essential for systems built around trusted apps, including mobile banking and digital identity solutions such as the EU Digital Identity Wallet.
-Integrating libraries and APIs is usually straightforward, designing an attestation system that is meaningful, robust, and sustainable requires considerably more than writing code.
+Integrating libraries and APIs is usually straightforward; designing an attestation system that is meaningful, robust, and sustainable requires considerably more than writing code.
 
 
 **This is where we come in.** We support teams in making informed decisions about the application of mobile client attestation,
-policy design, and the construction of robust trust and key-management concepts, with a focus on solutions that remain understandable and sustainable in long-term operation.
+policy design and the construction of robust trust and key-management concepts, with a focus on solutions that remain understandable and sustainable in long-term operation.
 
 
-## 📌 What we Offer
+## 📌 What we offer
 
 We support teams at different levels of involvement, depending on experience, internal capacity, and long-term goals.
 
@@ -23,13 +23,13 @@ We help you make the right architectural and security decisions. Typical topics 
 
 - Where and how mobile client attestation adds real value
 - Attestation policy design and residual risk assessment
-- PKI design, and key lifecycles, end-to-end cryptography concept
-- Integration into existing authentication and authorization flows
+- PKI design, key lifecycles, and end-to-end cryptography concepts
+- Integration into existing authentication and authorisation flows
 
 ### 🔧 Implementation Support
 
-Your team still keeps doing most of the implementation work, and you definitely get to own all the code and gather all the expertise you need, avoiding costly mistakes.
-We support you with targeted expertise during design, integration, and rollout and assistance in coding.
+Your team still does most of the implementation work, and you get to own all the code and gather the expertise you need, avoiding costly mistakes.
+We support you with targeted expertise during design, integration, and rollout, and assistance with coding.
 
 
 ### 🚀 Turnkey Integration
@@ -46,7 +46,7 @@ This is why we still involve your team when it comes to integrating custom compo
 
     ---
 
-    If you know your attestation, and you want to ensure the continued development of **Warden Supreme** and the surrounding documentation hub for mobile client attestation, you can do so via GitHub Sponsors.
+    If you know your attestation and want to ensure the continued development of **Warden Supreme** and the surrounding documentation hub for mobile client attestation, you can do so via GitHub Sponsors.
 
     <iframe class="img-center" src="https://github.com/sponsors/a-sit-plus/button" title="Sponsor a-sit-plus" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
 

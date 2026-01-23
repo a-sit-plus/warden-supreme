@@ -16,7 +16,7 @@ It explains
 
 Mobile attestation systems fall into two categories:
 
-* **Evidence-based** attestation returns cryptographic statements you verify yourself. This favors data minimization,
+* **Evidence-based** attestation returns cryptographic statements you verify yourself. This favours data minimisation,
   explainability, and local policy control because your back-end decides based on attested fields rather than third-party
   verdicts.
 * **Verdict-based** services return labels (for example, “meets device integrity”) computed by a provider from telemetry you
@@ -42,7 +42,7 @@ Android attestation extension. This extension encodes, among other fields:
   presence or auth-per-use)
 * A server-provided challenge to guarantee freshness and prevent replay
 
-Your server validates the chain to recognized Android attestation roots, parses the extension, and evaluates your
+Your server validates the chain to recognised Android attestation roots, parses the extension, and evaluates your
 acceptance policy. The policy can be strict (e.g., require StrongBox, recent patch levels)
 or flexible (e.g., allow some legacy devices and don't require strict app integrity), but the decision is yours and is explainable from attested
 fields.
@@ -65,9 +65,9 @@ Because verification and policy live on your back-end, you define and transparen
 * Boot integrity: require verified boot and a locked bootloader
 * Minimum platform state: reject OS versions or patch levels below a floor you set (for example, year-month)
 * Hardware quality: optionally require StrongBox where available; optionally record TEE versus StrongBox origin
-* App identity: specify allows package name(s) and signing certificate digest(s); optionally enforce minimum app version
+* App identity: specify allowed package name(s) and signing certificate digest(s); optionally enforce minimum app version
   code
-* User-auth semantics: require user presence/authorization for key use where appropriate (for example, high-risk
+* User-auth semantics: require user presence/authorisation for key use where appropriate (for example, high-risk
   actions)
 
 ### Custom Firmware and Sovereignty
@@ -78,10 +78,10 @@ Integrity’s official verdicts.
 
 ### Key Lifecycle and User-Auth Privacy Nuances
 
-* Keys configured to require user authentication provide user-presence or authorization guarantees at use time without
+* Keys configured to require user authentication provide user-presence or authorisation guarantees at use time without
   sending personal data to third parties.
 * Local state changes can permanently invalidate keys: disabling or resetting the secure lock screen; biometric
-  enrollment changes when keys are configured to invalidate on enrollment; unlocking the bootloader (which typically
+  enrolment changes when keys are configured to invalidate on enrolment; unlocking the bootloader (which typically
   wipes
   keys and flips verified-boot state). These are enforced by the device and do not require external telemetry.
 * When keys are invalidated by policy, subsequent operations bound to the key, such as signatures, fail, and your server
@@ -105,8 +105,8 @@ having the server verify that binding.
 
 | From | To                                  | Data / Action                                                                                                             |
 |------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| App  | Apple (per&nbsp;attestation)        | Device contacts Apple to obtain or refresh attestation artifacts. Apple learns that an attestation occurred for your app. |
-| App  | Your back-end (per&nbsp;attestation) | Apple-signed attestation and assertion artifacts are evaluated. No revocation checks towards Apple are needed.            |
+| App  | Apple (per&nbsp;attestation)        | Device contacts Apple to obtain or refresh attestation artefacts. Apple learns that an attestation occurred for your app. |
+| App  | Your back-end (per&nbsp;attestation) | Apple-signed attestation and assertion artefacts are evaluated. No revocation checks towards Apple are needed.            |
 
 !!! info "Privacy posture"
     Apple is in the hot path by design. Your back-end still makes the pass/fail decision from signed evidence, but Apple
@@ -127,7 +127,7 @@ labels such as
 
 * Device and integrity tiers (locked boot-loader on OEM-certified firmware; higher tiers additionally demand recent
   patch levels)
-* App Integrity (whether Google recognizes the exact APK that is installed)
+* App Integrity (whether Google recognises the exact APK that is installed)
 * Account or licensing context (ties the verdict to the signed-in Play account)
 * Optional environment signals (for example, Play Protect status, screen-overlay risk, device-recall flags)
 
@@ -163,9 +163,9 @@ black-box verdict service.
 
 ### Why Pure Attestation Gives You Stronger Guarantees
 
-With remote attestation you receive a *cryptographically verifiable* statement that you can parse, audit and store
+With remote attestation you receive a *cryptographically verifiable* statement that you can parse, audit, and store
 independently of the platform vendor.  
-You decide which boot state, patch level or package signature is acceptable—and you can prove that decision later.
+You decide which boot state, patch level, or package signature is acceptable—and you can prove that decision later.
 
 Play Integrity, by contrast, offers **no raw evidence**. Google’s back-end hides the actual attestation chain, performs
 the
@@ -186,12 +186,12 @@ Moreover, the service runs in Google’s hot path **for every request**:
 |----------------------------------|------------------------------------------|------------------------------------------------|-----------------------------------------------|
 | Per-request third-party contact  | None                                     | Apple required                                 | Google required                               |
 | Who learns per-request events    | Only you                                 | Apple and you                                  | Google and you                                |
-| Return type                      | Evidence (X.509 plus attestation fields) | Evidence (Apple-signed artifacts)              | Verdict (labels or tiers)                     |
+| Return type                      | Evidence (X.509 plus attestation fields) | Evidence (Apple-signed artefacts)              | Verdict (labels or tiers)                     |
 | Policy ownership                 | You (field-level rules)                  | You (verify evidence; service is Apple-hosted) | Google (definitions behind labels)            |
 | Custom AVB roots or trusted ROMs | Allowed (you can admit your keys)        | Not applicable                                 | Not allowed (OEM-certified firmware required) |
 | Distribution coupling            | None                                     | None (service dependency on Apple)             | Tight to Play ecosystem or licensing          |
 | Availability and quotas          | Your back-end; cacheable roots and CRLs   | Apple in the hot path                          | Google in the hot path; quotas                |
-| Data minimization                | Maximal                                  | Moderate                                       | Least                                         |
+| Data minimisation                | Maximal                                  | Moderate                                       | Least                                         |
 
 ### Data-Flow Sketches (At a Glance)
 
@@ -213,9 +213,9 @@ Moreover, the service runs in Google’s hot path **for every request**:
 2. On Android, verify verified-boot and lock state; set patch-level floors; pin package name(s) and signing certificate
    digest(s). Where governance requires sovereign control,
    admit your own AVB root(s) and verify the attested boot chain accordingly.
-3. On iOS, minimize assertion frequency to what your risk posture and UX require; document the online dependency and
+3. On iOS, minimise assertion frequency to what your risk posture and UX require; document the online dependency and
    provider metrics; use sandbox in development; queue and retry around transient provider outages.
-4. If you must integrate Play Integrity, **beware of the dependencies and privacy implications** treat it as a
+4. If you must integrate Play Integrity, **beware of the dependencies and privacy implications**; treat it as a
    supplementary anti-abuse signal. Budget for quotas and outages; hash or
    encrypt nonce inputs if they might contain sensitive identifiers; do not let provider verdicts replace your
    cryptographic evidence as the root of trust where privacy or sovereignty is required.
@@ -223,10 +223,10 @@ Moreover, the service runs in Google’s hot path **for every request**:
    ID binding, counters) without storing more personal data than necessary.
 6. Refresh public revocation lists out of band and cache them; avoid per-request calls to external endpoints
    for verification.
-7. For testing and CI, use captured, known-good attestation artifacts and negative cases to exercise parsing, policy
+7. For testing and CI, use captured, known-good attestation artefacts and negative cases to exercise parsing, policy
    evaluation, and error reporting; cover edge cases such as timestamp encoding quirks, misencoded patch levels, and
    leaf-certificate validity anomalies on certain vendors.
-8. Consider Remote Key Provisioning pool behavior on Android when Google provisioning services may not be available
+8. Consider Remote Key Provisioning pool behaviour on Android when Google provisioning services may not be available
 
 ---
 
@@ -243,7 +243,7 @@ Moreover, the service runs in Google’s hot path **for every request**:
 
 ## Conclusion
 
-If your priorities include data minimization, explainability, local policy control, and the option to trust devices that
+If your priorities include data minimisation, explainability, local policy control, and the option to trust devices that
 boot images signed under your own verified-boot keys, ground your mobile trust in Android “pure” attestation and
 use iOS App Attest (given that there are no alternatives on Apple platforms).
 Forego Play Integrity. This keeps per-request telemetry with providers to the minimum required, preserves

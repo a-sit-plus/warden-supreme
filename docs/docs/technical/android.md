@@ -39,7 +39,7 @@ verification steps, and **edge cases**, and it ties these to the Android Verifie
 
 1. **Boot ROM** (immutable in SoC) verifies the **first-stage bootloader** using SoC fuses / OEM root.
 2. Bootloader verifies **`vbmeta`** and the **partition chain** via **AVB**. `vbmeta` contains the **public key** (or
-   hash thereof) authorizing images and **rollback indexes**.
+   hash thereof) authorising images and **rollback indexes**.
 3. If verification passes and the **bootloader is locked**, boot proceeds with **`verifiedBootState = VERIFIED`**;
    otherwise `SELF_SIGNED`, `UNVERIFIED`, or `FAILED` states are signaled.
 4. **dm-verity** ensures runtime integrity of verified partitions (system/vendor/product).
@@ -50,14 +50,14 @@ verification steps, and **edge cases**, and it ties these to the Android Verifie
 
 The **`RootOfTrust`** structure in the attestation extension contains:
 
-- `verifiedBootKey`: hash of the **AVB root** public key that authorized the boot images.
+- `verifiedBootKey`: hash of the **AVB root** public key that authorised the boot images.
 - `deviceLocked`: boolean derived from bootloader lock state.
 - `verifiedBootState`: one of `VERIFIED`, `SELF_SIGNED`, `UNVERIFIED`, `FAILED`.
 - Patch claims: `osVersion`, `osPatchLevel`, and (on newer devices) `bootPatchLevel`/`vendorPatchLevel`.
 
 **Policy implication:** Your server can require `deviceLocked=true`, `verifiedBootState=VERIFIED`, and minimum patch
 levels; optionally pin the **expected `verifiedBootKey`** (accept OEM keys only, or accept **your** enterprise/sovereign
-AVB key(s) if you operate a trusted ROM program).
+AVB key(s) if you operate a trusted ROM programme).
 
 
 ## How Trust is Established for the App at Install Time
@@ -106,8 +106,8 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 
 ## User Authentication and Key Lifecycle in Attestation
 
-- **User presence / authorization**: If `userAuth` is required, KeyMint enforces biometric/PIN **at key use**. The
-  authorization policy (per-use, validity window) appears in the AuthorizationLists and is **remotely checkable**.
+- **User presence / authorisation**: If `userAuth` is required, KeyMint enforces biometric/PIN **at key use**. The
+  authorisation policy (per-use, validity window) appears in the AuthorizationLists and is **remotely checkable**.
 - **Invalidation triggers** (enforced by Android, no server telemetry needed):
     - Disable/reset of secure **lock screen** → auth-bound keys invalidated.
     - **Biometric enrollment** changes (if so configured) → invalidate.

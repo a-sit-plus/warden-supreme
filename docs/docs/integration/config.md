@@ -1,16 +1,16 @@
 # Externalising Configuration
-Warden Supreme configuration consists two parts
+Warden Supreme configuration consists of two parts
 
-1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split up into
-   * `AndroidAttestationConfiguration` for Android-specifics
-   * `IosAttestationConfiguration` for iOS-specifics
+1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split into
+   * `AndroidAttestationConfiguration` for Android specifics
+   * `IosAttestationConfiguration` for iOS specifics
 2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs and key constraints as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup)
 
 
 To externalise such configuration in a convenient way, an umbrella `SupremeConfiguration` exists.
 This configuration class includes both the platform-specific configurations and the configuration properties related
 to fully integrated attestation.  
-`SupremeConfiguration` has canonical serialised representations (JSON and YAML) and cosme with the following (de)serialization functions:
+`SupremeConfiguration` has canonical serialised representations (JSON and YAML) and comes with the following (de)serialisation functions:
 
 * `toJsonString()` and `fromJsonString()`
 * `toYamlString()` and `fromYamlString()`
@@ -36,11 +36,11 @@ due to [issues with handling nullable properties](https://docs.spring.io/spring-
     --8<-- "supreme.json"
     ```
 
-It is possible to add time sources other that the system clock and exxternalise their configurations as well, by implementing
-`SupremeConfiguration.Clock` and registering the classes for serialization using `SupremeConfiguration.Clock.registry`.
+It is possible to add time sources other than the system clock and externalise their configurations as well, by implementing
+`SupremeConfiguration.Clock` and registering the classes for serialisation using `SupremeConfiguration.Clock.registry`.
 
 Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they also
-have canonical serialised representations (JSON and YAML) and expose tha same (de)serialization functions as `SupremeConfiguration`.
+have canonical serialised representations (JSON and YAML) and expose the same (de)serialisation functions as `SupremeConfiguration`.
 In fact, all three implement the same interface tandem for consistency.
 
 
@@ -71,8 +71,8 @@ In fact, all three implement the same interface tandem for consistency.
     ```
 
 
-It is possible to create entirely new loaders and even externalise their configuration by implementing a
-`AndroidRevocationList.Loader`  for the actual loader itself and a `AndroidRevocationListLoader.Configuration`
+It is possible to create entirely new loaders and even externalise their configuration by implementing an
+`AndroidRevocationList.Loader`  for the actual loader itself and an `AndroidRevocationListLoader.Configuration`
 for the externalisable configuration. The latter must be marked as `@Serializable` and registered using the
 `AndroidRevocationList.loaderRegistry` **before the first configuration reading or writing happens**.
 

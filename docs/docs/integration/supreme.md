@@ -212,7 +212,7 @@ The first two handle caching by simply re-serving a previously loaded list, unti
 The format conforms to the [revocation list schema specified by Google](https://developer.android.com/privacy-and-security/security-key-attestation)
 with the addition of `date`, `expires`, and `lastModified`.
 This allows for encoding freshness information directly into the revocation list, which is relevant when serving from the
-file system, instead of an HTTP server, where HTTP headers are used to encode these infos.  
+file system, instead of an HTTP server, where HTTP headers are used to encode this info.  
 The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.
 
 ### Attestation Verifier Setup
