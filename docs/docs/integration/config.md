@@ -24,7 +24,7 @@ due to [issues with handling nullable properties](https://docs.spring.io/spring-
     The below example shows every configuration property in YAML form.
     It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
 
-    ```json
+    ```yaml
     --8<-- "supreme.yaml"
     ```
 

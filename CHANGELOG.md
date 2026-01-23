@@ -39,6 +39,7 @@ this changelog also includes the original WARDEN changelog.
 * The Android-specific `Revoked` error now includes the revocation list entry that indicated a revocation or suspension.
 * Make Makoto configs publicly accessible
 * Additional fixes to exception equality checks
+* Fix glaring signature verification bug
 * Gradle 9 + Kotlin 2.3
     * Return value checker defaults to `check`
 * Dependency updates:
