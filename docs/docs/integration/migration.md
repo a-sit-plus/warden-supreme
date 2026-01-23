@@ -1,14 +1,13 @@
 # Migration from WARDEN / WARDEN‑roboto
 
-!!! danger "Warden Supreme Changed Defaults"
-    Warden Supreme introduces behavioural changes compared to WARDEN / WARDEN-roboto:
+!!! danger "Read This First: Footguns"
+    The biggest upgrade hazards are about configuration loading and time checks:
 
-    * Loading configurations through Hoplite and Spring Boot is no longer supported and can silently misconfigure checks; use canonical config loading instead. [Externalise](config.md) configs into a discrete file and load them explicitly.
-    * Android leaf certificate validity is ignored by default; enable leaf validity enforcement if you depend on it. See [Externalised Configuration](config.md).
-    * Android attestation statement validity defaults to `null`; ensure freshness via your challenge/nonce handling. See [raw flow](raw.md).
-    * Verification time offset now defaults to five minutes and affects attestation time checks on both platforms.
+    * Configuration loading through Hoplite/Spring Boot is no longer supported and can silently misconfigure checks. Use canonical config loading only. See [Externalised Configuration](config.md).
+    * Android leaf certificate validity is ignored by default and Android attestation statement validity defaults to `null`; ensure freshness through your challenge/nonce handling. See [raw flow](raw.md).
+    * Verification time offset now defaults to five minutes and is applied to certificate and attestation time checks on both platforms.
 
-    **Ignoring these changes can cause verification to accept stale attestations if you do not ensure freshness with nonces and checks.**
+    **If you do not handle freshness explicitly, you can accidentally accept stale attestations.**
 
 Warden Supreme enforces unified flows and a unified data model. Migration primarily means:
 
@@ -16,22 +15,33 @@ Warden Supreme enforces unified flows and a unified data model. Migration primar
 - Use the consolidated back‑end configuration (trust anchors, identities, policies).
 - Retain functionality via the integrated modules; legacy artefacts exist under new names — see [Project Structure](structure.md).
 
-## API Changes (Makoto + Roboto)
-The following changes affect upgrades that keep using the Makoto/Roboto libraries without adopting the integrated model.
+## Changes (Makoto + Roboto)
+This section focuses on upgrades that keep using Makoto/Roboto directly, without adopting the integrated model.
 
-- **Renames:** `Warden` → `Makoto` and `AndroidAttestationChecker` → `Roboto` (deprecated typealiases remain for now). Android verifier types renamed to `HardwareAttestationVerifier`, `NougatHybridAttestationVerifier`, `SoftwareAttestationVerifier`.
-- **Makoto construction:** Makoto can now be configured for Android‑only or iOS‑only verification; attestations for non‑configured platforms are treated as content errors. See [Error Handling](errorhandling.md).
-- **Attestation challenge:** `includeGenericDeviceName` is replaced by `genericDeviceNameOID`; old constructors removed; challenge version bumped to `2`. See [attestation schema](../schemas/AttestationChallenge.json) and [data model](datamodel.md).
-- **Challenge validity:** challenge validity is configured as a duration only; instant-based validity inputs were removed.
-- **Results and exceptions:** `AttestationResult` gains a `Verified` marker; NOOP results are distinct; `AttestationResult.Error` always carries a `cause`; `AttestationValueException.Reason.TIME` is renamed to `STATEMENT_TIME`; `AttestationResult.Error.CONTENT` is returned for non-configured platforms. See [Error Handling](errorhandling.md).
-- **Async verification:** Attestation verification functions are suspending; blocking wrappers remain under the legacy `@JvmName`s. See [raw flow](raw.md).
-- **Configuration APIs:** New `AndroidAttestationConfiguration` and `IosAttestationConfiguration` with JSON/YAML (de)serialization; trust anchors now use `TrustedRoot`/`TrustedRootPair`. See [Externalised Configuration](config.md) and [Project Structure](structure.md).
+### Names, Entry Points, and Flow
+- `Warden` → `Makoto` and `AndroidAttestationChecker` → `Roboto`.
+- Android verifier types renamed to `HardwareAttestationVerifier`, `NougatHybridAttestationVerifier`, and `SoftwareAttestationVerifier`.
+- Makoto can be configured for Android‑only or iOS‑only verification; attestations received from non‑configured platforms are treated as configuration errors. See [Error Handling](errorhandling.md).
+- Attestation verification functions are suspending; blocking wrappers remain under legacy `@JvmName`s. See [raw flow](raw.md).
 
-## Behaviour Changes (Makoto + Roboto)
-- **Time handling:** Verification time offset defaults to five minutes and is applied to certificate and attestation time checks; iOS attestation validity now uses the same `attestationStatementValiditySeconds` model as Android and rejects future‑dated statements; iOS verification time offset is no longer auto‑compensated, so increase `attestationStatementValiditySeconds` if you relied on the old behavior.
-- **Android defaults:** Android leaf certificate validity is ignored by default; `attestationStatementValiditySeconds` defaults to `null` (no statement time check); if configured, Android attestation creation time is verified; patch level checks now reject patch levels too far in the future (default leeway: one month).
-- **Revocation and trust anchors:** Revocation checks are configurable and chainable (HTTP/file/in‑memory loaders) and return richer details; revocation errors are classified under certificate trust errors rather than content errors and include the revocation list entry; per‑app trust anchor overrides change the order of checks so app metadata is validated before certificate chain validation. See [Android technical notes](../technical/android.md).
-- **Remote Key Provisioning:** RKP checks are supported and can be required; failure yields a dedicated value error. See [Android technical notes](../technical/android.md).
+### Results and Exceptions
+- `AttestationResult` gains a `Verified` marker; NOOP results are distinct.
+- `AttestationResult.Error` always carries a `cause`.
+- `AttestationValueException.Reason.TIME` is renamed to `STATEMENT_TIME`.
+- Non-configured platforms return `AttestationResult.Error` with a configuration cause. See above and/or [Error Handling](errorhandling.md).
+
+### Time Handling and Validity
+- Verification time offset defaults to five minutes and is applied to certificate and attestation time checks.
+- iOS attestation validity now uses the same `attestationStatementValiditySeconds` model as Android and rejects future‑dated statements.
+- iOS verification time offset is no longer auto‑compensated, but the new defaults take this into account; increase `attestationStatementValiditySeconds` if you relied on the old behavior.
+- Android leaf certificate validity is ignored by default; Android's `attestationStatementValiditySeconds` defaults to `null` (no statement time check). If configured, Android attestation creation time is verified.
+- Patch level checks reject patch levels too far in the future (default leeway: one month).
+
+### Revocation, Trust Anchors, and RKP
+- Revocation checks are configurable and chainable (HTTP/file/in‑memory loaders) and return richer details.
+- Revocation errors are classified under certificate trust errors rather than content errors and include the revocation list entry.
+- Per‑app trust anchor overrides change the order of checks so app metadata is validated before certificate chain validation. See [Android technical notes](../technical/android.md).
+- Remote Key Provisioning checks are supported and can be required; failure yields a dedicated value error. See [Android technical notes](../technical/android.md).
 
 See also the [data model](datamodel.md), [Error Handling](errorhandling.md), and the authoritative configuration example in the [Warden Supreme integration guide](supreme.md#config-options-example).
 
