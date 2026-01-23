@@ -3,6 +3,8 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.Makoto
+import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.withData
@@ -11,6 +13,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.security.MessageDigest
 import java.util.Date
+import java.util.Locale
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -95,6 +98,37 @@ val AttestationVerifierErrorMappingTest by testSuite {
             },
         ),
         MappingCase(
+            name = "maps revocation list hits to TRUST",
+            expected = AttestationResponse.Failure.Type.TRUST,
+            run = {
+                withFixture { fixture ->
+                    val revokedSerial = fixture.fake.intermediateCertificate.serialNumber
+                        .toString(16)
+                        .lowercase(Locale.getDefault())
+                    val revocationList = AndroidRevocationList(
+                        entries = mapOf(
+                            revokedSerial to AndroidRevocationList.Entry(
+                                status = AndroidRevocationList.RevocationStatus.REVOKED
+                            )
+                        ),
+                        expires = fixedClock.now() + 1.hours,
+                    )
+                    val appData = AndroidAttestationConfiguration.AppData.Builder(
+                        fakeAndroidPackage,
+                        fakeAndroidSignerDigest,
+                    ).build()
+                    val config = AndroidAttestationConfiguration.Builder(appData)
+                        .hardwareTrustedRoots(setOf(TrustedRoot.Certificate(fixture.fake.rootCertificate)))
+                        .attestationStatementValiditySeconds(300)
+                        .revocation(listOf(AndroidRevocationList.InMemoryLoader.Configuration(revocationList)))
+                        .build()
+                    val verifier = fixture.verifier(config)
+                    val csr = fixture.issueCsr(verifier)
+                    verifier.verifyAttestation(csr, certificateIssuer = { emptyList() })
+                }
+            },
+        ),
+        MappingCase(
             name = "maps certificate time errors to TIME",
             expected = AttestationResponse.Failure.Type.TIME,
             run = {
@@ -166,7 +200,7 @@ val AttestationVerifierErrorMappingTest by testSuite {
             },
         ),
         MappingCase(
-            name = "maps bootloader state violations to CONTENT",
+            name = "maps verified boot state violations to CONTENT",
             expected = AttestationResponse.Failure.Type.CONTENT,
             run = {
                 withFixture { fixture ->
@@ -175,7 +209,7 @@ val AttestationVerifierErrorMappingTest by testSuite {
                         packageName = fakeAndroidPackage,
                         signatureDigest = fakeAndroidSignerDigest,
                         creationTime = Date(fixedClock.now().toEpochMilliseconds()),
-                        deviceLocked = false,
+                        deviceLocked = true,
                         verifiedBootState = BootState.UNVERIFIED,
                         rootKeyPair = fixture.fake.rootKeyPair,
                         rootCertificate = fixture.fake.rootCertificate,
