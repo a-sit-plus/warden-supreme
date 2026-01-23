@@ -247,9 +247,10 @@ See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-tempora
 
 ## References and Libraries
 
-- [Apple — DeviceCheck (App Attest landing)](https://developer.apple.com/documentation/devicecheck)
-- [Apple — Validating apps that connect to your server (with diagrams)](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)
-- [Apple — Attestation Object Validation Guide (validation details)](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)
-- [Apple — Establishing your app’s integrity (client-side)](https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity)
-- [Server validation library (Kotlin)](https://github.com/veehaitch/devicecheck-appattest)
-- [Warden Supreme integration guide](../integration/supreme.md)
+See the consolidated [References](../refs.md):
+
+- [DeviceCheck / App Attest overview](../refs.md#ref-ios-devicecheck-overview)
+- [Validating apps that connect to your server](../refs.md#ref-ios-validating-apps)
+- [Attestation Object Validation Guide](../refs.md#ref-ios-attestation-validation)
+- [Preparing to use App Attest](../refs.md#ref-ios-app-attest-setup)
+- [DeviceCheck / App Attest library (Kotlin)](../refs.md#ref-ios-devicecheck-lib)

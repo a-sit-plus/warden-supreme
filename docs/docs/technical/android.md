@@ -136,8 +136,9 @@ See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-tempora
 
 ## References and Libraries
 
-- [Developer guide (Key Attestation)](https://developer.android.com/privacy-and-security/security-key-attestation)
-- [AOSP schema & extension documentation](https://source.android.com/docs/security/features/keystore/attestation#schema)
-- [Libraries (legacy)](https://github.com/google/android-key-attestation)
-- [Libraries (current)](https://github.com/android/keyattestation)
-- [Warden Supreme integration guide](../integration/supreme.md)
+See the consolidated [References](../refs.md):
+
+- [Android Key Attestation (Developer Guide)](../refs.md#ref-android-key-attestation)
+- [Android Key and ID Attestation (AOSP Spec)](../refs.md#ref-android-key-id-attestation)
+- [Android Keystore and StrongBox](../refs.md#ref-android-keystore-strongbox)
+- [Android Attestation Libraries (legacy/current)](../refs.md#ref-android-attestation-lib-legacy)
