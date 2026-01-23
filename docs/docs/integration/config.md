@@ -22,16 +22,18 @@ due to [issues with handling nullable properties](https://docs.spring.io/spring-
 
 ??? example "YAML with Defaults for a Sample Android and iOS App"
     The below example shows every configuration property in YAML form.
-    It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
-
+    It uses a single Android app and a single iOS app. Android revocation checks use the default Google revocation list,
+    as well as a custom file-based revocation list. All other properties show their default values.
+    
     ```yaml
     --8<-- "supreme.yaml"
     ```
 
 ??? example "JSON with Defaults for a Sample Android and iOS App"
     The below example shows every configuration property in JSON form.
-    It uses the same Android and iOS specifics as the discrete examples above. All other properties show their default values.
-
+    It uses a single Android app and a single iOS app. Android revocation checks use the default Google revocation list,
+    as well as a custom file-based revocation list. All other properties show their default values.
+    
     ```json
     --8<-- "supreme.json"
     ```
@@ -70,6 +72,21 @@ In fact, all three implement the same interface tandem for consistency.
     --8<-- "android.json"
     ```
 
+The HTTP loader used to fetch Google-official revocation lists can also be used generically for any HTTP-based
+revocation checks. The only difference is in the configuration, as shown in the example below.
+
+??? example "Custom HTTP Revocation List Loader Configuration"
+    
+    ```yaml
+    - type: http
+      value: 
+        url: 'https://superstrict.revocation.example.org/json'
+        fallbackRevocationListValiditySeconds: 60
+        preferHeaderBasedExpiry: false
+        proxyConfig: 
+          type: HTTP
+          url: 'https://localhost:2345'
+    ```
 
 It is possible to create entirely new loaders and even externalise their configuration by implementing an
 `AndroidRevocationList.Loader`  for the actual loader itself and an `AndroidRevocationList.Loader.Configuration`

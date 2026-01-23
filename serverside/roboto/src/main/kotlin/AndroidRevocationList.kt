@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -162,11 +163,7 @@ data class AndroidRevocationList(
     companion object {
 
         @JvmField
-        val GoogleDefaultLoaderConfig = HttpLoader.Configuration(
-            url = GOOGLE_OFFICIAL_REVOCATION_LIST,
-            fallbackRevocationListValiditySeconds = 60 /*to prevent rate limiting*/,
-            preferHeaderBasedExpiry = true
-        )
+        val GoogleDefaultLoaderConfig = HttpLoader.GoogleOfficial()
 
         /**
          * Use to register custom [Loader.Configuration]s, if you need custom revocation list loaders.
@@ -180,7 +177,8 @@ data class AndroidRevocationList(
         init {
             loaderRegistry.register(InMemoryLoader.Configuration::class)
             loaderRegistry.register(FileLoader.Configuration::class)
-            loaderRegistry.register(HttpLoader.Configuration::class)
+            loaderRegistry.register(HttpLoader.Generic::class)
+            loaderRegistry.register(HttpLoader.GoogleOfficial::class)
         }
 
         internal val json by lazy {
@@ -350,26 +348,15 @@ data class AndroidRevocationList(
 
 
         @Serializable
-        @SerialName("http")
-        data class Configuration(
-            val url: String = GOOGLE_OFFICIAL_REVOCATION_LIST,
-            override val fallbackRevocationListValiditySeconds: Long = 0,
-            val preferHeaderBasedExpiry: Boolean = true,
-            val proxyConfig: ProxyConfig? = null
-        ) : Loader.Configuration<HttpLoader<HttpClientEngineConfig>> {
+        abstract class Configuration : Loader.Configuration<HttpLoader<HttpClientEngineConfig>> {
+            abstract val url: String
+            abstract override val fallbackRevocationListValiditySeconds: Long
+            abstract val preferHeaderBasedExpiry: Boolean
+            abstract val proxyConfig: ProxyConfig?
 
             override fun createLoader(): HttpLoader<HttpClientEngineConfig> =
                 HttpLoader(CIO, url, fallbackRevocationListValiditySeconds, preferHeaderBasedExpiry) {
-                    proxyConfig?.let { cfg ->
-                        when (cfg.type) {
-                            ProxyConfig.Type.SOCKS -> {
-                                val hostAndPort = proxyConfig.url.split(":")
-                                engine { proxy = ProxyBuilder.socks(hostAndPort.first(), hostAndPort.last().toInt()) }
-                            }
-
-                            ProxyConfig.Type.HTTP -> engine { proxy = ProxyBuilder.http(proxyConfig.url) }
-                        }
-                    }
+                    applyProxy(proxyConfig)
                 }
 
 
@@ -387,16 +374,58 @@ data class AndroidRevocationList(
              * * if [url] is `null`, no proxy will be configured
              * * otherwise an HTTP proxy will be configured based on [url]
              */
-            fun withHttpProxy(url: String?) = copy(proxyConfig = url?.let {
-                ProxyConfig(
-                    type = Type.HTTP,
-                    it
-                )
-            })
+            abstract fun withHttpProxy(url: String?): Configuration
+        }
+
+        /**
+         * Uses the official Google revocation list and always prefers header-derived expiry.
+         */
+        @Serializable
+        @SerialName("google")
+        data class GoogleOfficial(
+            override val fallbackRevocationListValiditySeconds: Long = 60 /*To avoid rate limiting issues, should the server transmit a short-lived list for whatever reasons*/,
+            override val proxyConfig: Configuration.ProxyConfig? = null,
+        ) : Configuration() {
+            @Transient
+            override val url: String = GOOGLE_OFFICIAL_REVOCATION_LIST
+            @Transient
+            override val preferHeaderBasedExpiry: Boolean = true
+
+            override fun withHttpProxy(url: String?): Configuration =
+                copy(proxyConfig = url?.let { ProxyConfig(type = Type.HTTP, it) })
+        }
+
+        /**
+         * Generic HTTP loader configuration.
+         */
+        @Serializable
+        @SerialName("http")
+        data class Generic(
+            override val url: String = GOOGLE_OFFICIAL_REVOCATION_LIST,
+            override val fallbackRevocationListValiditySeconds: Long = 0,
+            override val preferHeaderBasedExpiry: Boolean = true,
+            override val proxyConfig: Configuration.ProxyConfig? = null
+        ) : Configuration() {
+            override fun withHttpProxy(url: String?): Configuration =
+                copy(proxyConfig = url?.let { ProxyConfig(type = Type.HTTP, it) })
         }
 
         companion object {
 
+            internal fun <T : HttpClientEngineConfig> HttpClientConfig<T>.applyProxy(
+                proxyConfig: Configuration.ProxyConfig?
+            ) {
+                proxyConfig?.let { cfg ->
+                    when (cfg.type) {
+                        Type.SOCKS -> {
+                            val hostAndPort = cfg.url.split(":")
+                            engine { proxy = ProxyBuilder.socks(hostAndPort.first(), hostAndPort.last().toInt()) }
+                        }
+
+                        Type.HTTP -> engine { proxy = ProxyBuilder.http(cfg.url) }
+                    }
+                }
+            }
 
             private val httpDateFormatter =
                 DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC)
