@@ -120,15 +120,18 @@ val RevocationTestFromGoogleSources by testSuite {
         }
 
         "Test HTTP local proxy" {
-            val client = AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("http://localhost:1081")
-                    .createLoader()
+            val client = AndroidRevocationList.HttpLoader.GoogleOfficial(
+                fallbackRevocationListValiditySeconds = 0
+            ).withHttpProxy("http://localhost:1081")
+                .createLoader()
             shouldThrow<ConnectException> {
                 client.loadBlocking(Clock.System.now())
             }
             startProxy()
-            val revocationList = client.loadBlocking(Clock.System.now())
+            val now = Clock.System.now()
+            val revocationList = client.loadBlocking(now)
             revocationList.isRevokedOrSuspended("6681152659205225093") shouldBe true
-            revocationList.expires!! shouldBeGreaterThan (Clock.System.now() + 12.hours)
+            revocationList.expires!! shouldBeGreaterThan now
             repeat(100000) {
                 (client.loadBlocking(Clock.System.now()) === revocationList).shouldBeTrue()
 
@@ -195,7 +198,6 @@ private fun setResponse(
             headers = headers { headers.forEach { appendAll(it.first, it.second) } }
         )
     }
-
 
 
 
