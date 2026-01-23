@@ -4,7 +4,7 @@
     Warden Supreme introduces behavioural changes compared to WARDEN / WARDEN-roboto:
 
     * Loading configurations through Hoplite and Spring Boot is not supported any more and may lead to sublte, but critical 
-      misconigurations without raising any apparent errors during startup! Externalise Warden Supreme configs into a discrete file
+      misconfigurations without raising any apparent errors during startup! [Externalise](config.md) Warden Supreme configs into a discrete file
       and reference it inside your Spring Boot or Hoplite Configuration.
     * Android leaf cert validity is ignored by default, because Warden Supreme (by default) uses random cryptographic nonces.
         * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is now a deprecated NOOP to be removed.
@@ -13,7 +13,8 @@
     * Attestation verification time offset now defaults to five minutes to account for clock drift
     * iOS attestation validity is increased by said five minutes
     
-    **Ignoring these changes can result in a total security failure if you do not ensure freshness through means of feeding random cryptographic nonces into attestation statement creation and properly checking them!**
+    **Ignoring these changes can result in a total security failure if you do not ensure freshness through means of feeding
+    random cryptographic nonces into attestation statement creation and properly checking them!**
 
 Warden Supreme enforces unified flows and a unified data model. Migration primarily means:
 
@@ -27,7 +28,7 @@ See also the [data model](datamodel.md) and the authoritative configuration exam
 ## Externalised Configuration
 
 !!! tip inline end "List of Configuration Properties"
-    See [Externalised Configuration](config.md) for a an up-to-date list of all configuration properties.
+    See [Externalised Configuration](config.md) for an up-to-date list of all configuration properties.
 
 
 Migrating code from WARDEN / WARDEN-roboto is rather smooth because the compiler and the IDE will scream at you
