@@ -199,6 +199,7 @@ constructor(
                     catchingUnwrapped {
                         csr.jcaSignature().getOrThrow().apply {
                             initVerify(pubKey)
+                            update(csr.tbsCsr.encodeToDer())
                             if (!verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)) {
                                 return Failure(Type.TRUST, csrReason(onAttestationError, attestationStatement, nonce))
                             }

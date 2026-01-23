@@ -166,7 +166,7 @@ private constructor(
         val timeSource: kotlin.time.Clock
 
         @Serializable
-        @SerialName("System")
+        @SerialName("system")
         class SystemClock : Clock {
             override val timeSource get() = kotlin.time.Clock.System
             override fun equals(other: Any?): Boolean {
