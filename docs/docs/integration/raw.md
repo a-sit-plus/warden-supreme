@@ -17,7 +17,7 @@
     maintained and published to Maven Central. See [Project Structure](structure.md).
 
 Warden Supreme aims to make remote attestation across Android and iOS as smooth and consistent as possible via
-Kotlin Multiplatform. Ath the same time, it is clear that not every iOS app will be written in Kotlin, and not every Android application
+Kotlin Multiplatform. At the same time, it is clear that not every iOS app will be written in Kotlin, and not every Android application
 will want to pull in Signum as a dependency.
 
 In addition, legacy deployments that cannot yet transition to the new integrated Warden Supreme attestation flows are
@@ -37,8 +37,8 @@ as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (pr
 - Choose Warden makoto if you need both Android and iOS support or want a single, streamlined back-end interface.
 - Choose Warden roboto if you truly only need Android and want minimal dependencies.
 
-In both cases, refer Warden Supreme's [Back-End Configuration](supreme.md#warden-supreme-step-by-step-guide) guide, as it lists and explains
-configuration properties for iOS and Android. This page focuses on behavior, inputs/outputs, and expected client responsibilities.
+In both cases, refer to Warden Supreme's [Back-End Configuration](supreme.md#warden-supreme-step-by-step-guide) guide, as it lists and explains
+configuration properties for iOS and Android. This page focuses on behaviour, inputs/outputs, and expected client responsibilities.
 
 
 !!! warning "Additional Setup Required"
@@ -71,7 +71,7 @@ Your server must:
 ## Common Data Model (Wire Format Responsibilities)
 
 When not using the integrated clients, you define the wire format.
-Hence, you need to come op with a format that conveys at least the following recommended properties:
+Hence, you need to come up with a format that conveys at least the following recommended properties:
 
 - Challenge: Base64URL-encoded bytes issued by the server.
 - Platform: iOS / Android; either implicitly using legacy WARDEN endpoints (intentionally not documented here. See [legacy API docs](https://a-sit-plus.github.io/warden/warden/at.asitplus.attestation/-warden/index.html#-1296395129%2FFunctions%2F-2065255732).)
@@ -87,7 +87,7 @@ Hence, you need to come op with a format that conveys at least the following rec
 
 ## Warden makoto<br>(Unified Android + iOS Attestation)
 
-Warden makoto is the modernized variant of legacy WARDEN, sharing the same API:
+Warden makoto is the modernised variant of legacy WARDEN, sharing the same API:
 
 - Android key attestation verification with policy enforcement.
 - iOS App Attest verification, including unified key-binding semantics (challenge + public key in clientDataHash),
@@ -95,7 +95,7 @@ Warden makoto is the modernized variant of legacy WARDEN, sharing the same API:
 
 !!! tip Platform Specifics
     Like legacy WARDEN, Warden makoto also exposes OS-specific endpoints for more fine-grained app attestation on iOS,
-    and a more low-level API for Android targets. Refer to the respective platform-sepcific APIs, both of which are exposed by
+    and a more low-level API for Android targets. Refer to the respective platform-specific APIs, both of which are exposed by
     [`Makoto`](../dokka/makoto/at.asitplus.attestation/-makoto/index.html):
     
     * [iOS](../dokka/makoto/at.asitplus.attestation/-makoto/ios.html)

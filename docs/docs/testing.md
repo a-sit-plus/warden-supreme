@@ -1,6 +1,6 @@
 # Testing Strategy
 
-A sound attestation test strategy exercises the full pipeline without weakening production policy. Core ideas: strict separation of trust, realistic artifacts for automation, and staged environments that mirror production behavior.
+A sound attestation test strategy exercises the full pipeline without weakening production policy. Core ideas: strict separation of trust, realistic artefacts for automation, and staged environments that mirror production behaviour.
 
 ## Principles
 
@@ -26,7 +26,7 @@ Approach: Introduce a test app identity that is cryptographically distinct from 
 - Admit exactly two identities at the service:
     - The production app under the normal policy and roots
     - The test app under the test root and explicit allowlist
-- Protect the test root private key rigorously; never issue test binding certificates that could be confused with production artifacts or grant production access.
+- Protect the test root private key rigorously; never issue test binding certificates that could be confused with production artefacts or grant production access.
 
 This preserves strict production posture while enabling full‑fidelity testing, including binding, boot state enforcement, and app identity checks. Often Android‑only testing suffices because iOS devices behave consistently.
 
@@ -36,7 +36,7 @@ This preserves strict production posture while enabling full‑fidelity testing,
     See the dedicated [Debugging](integration/debugging.md) page for practical details on diagnosing attestation errors.
 
 - Use Warden Supreme’s `collectDebugInfo(...)` on attestation errors to capture inputs, parsed fields, decisions, and failure reasons.
-- Persist artifacts via `serialize()` / `serializeCompact()` to logs.
+- Persist artefacts via `serialize()` / `serializeCompact()` to logs.
 - Aggregate captures for offline analyses using smart replay to reproduce failures outside production.  
   Ideal for triaging field issues, validating fixes, and building CI regression suites.
 - Enrich logs with device make/model, OS and patch levels, and boot state so OEM‑specific quirks can be correlated over time.
