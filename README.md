@@ -12,6 +12,9 @@
 
 </div>
 
+> [!TIP]
+> Need help tailored to your needs? See our [💎 Services](https://a-sit-plus.github.io/warden-supreme/services/)
+
 _Warden Supreme_ is a fully integrated key and app attestation suite consisting of:
 1. Mobile (iOS and Android) client library to generate attestation statements
 2. Unified server-side key and app attestation verification library
@@ -25,13 +28,10 @@ It now lives on as [Warden makoto](serverside/makoto) and continues to be publis
 
 
 > [!WARNING]  
-> **Warden Supreme 0.9.99 introduces behavioural changes to attestation defaults:**
-> * Ignore Android leaf cert validity by default, because Warden Supreme, by default, uses random cryptographic nonces.
->    * `ingoreLeafValidity()` (yes, with typo!) function of the `AndroidAttestationConfiguration.Builder` is now a deprecated NOOP to be removed.
->    * `enforceLeafValidity()` (without typo!) function was introduced
-> * Android `attestationStatementValiditySeconds` defaults to `null`, because Warden Supreme, by default, uses random cryptographic nonces.
-> * Attestation verification time offset now defaults to five minutes to account for clock drift
-> * iOS attestation validity is increased by said five minutes
+> **Warden Supreme changed some defaults compared to previous WARDEN / WARDEN-roboto**
+> 
+> Most prominently, there is no Nougat hybrid attestation any more and trust anchor management was completely revamped!  
+> Do check out the [full migration guide](https://a-sit-plus.github.io/warden-supreme/integration/migration/).
 > 
 > **Ignoring these changes can result in a total security failure if you do not ensure freshness through means of feeding random cryptographic nonces into attestation statement creation and properly checking them!**
 
