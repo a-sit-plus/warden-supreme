@@ -1,6 +1,4 @@
 # Warden Supreme Integration
-
-
 [![A-SIT Plus Official](https://img.shields.io/badge/A--SIT_Plus-official-005b79?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDMuNzYyODYgMTg0LjgxOTk5Ij48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiIGNsaXBQYXRoVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMCA1OTUuMjhoODQxLjg5VjBIMFoiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyBjbGlwLXBhdGg9InVybCgjYSkiIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMyAwIDAgLTEuMzMzMzMzMyAtNDgyLjI1IDUxNy41MykiPjxwYXRoIGZpbGw9IiMwMDViNzkiIGQ9Ik00MTUuNjcgMjQ5LjUzYy03LjE1LjA4LTEzLjk0IDEtMjAuMTcgMi43NWE1Mi4zMyA1Mi4zMyAwIDAgMC0xNy40OCA4LjQ2IDQwLjQzIDQwLjQzIDAgMCAwLTExLjk2IDE0LjU2Yy0yLjY4IDUuNDEtNC4xNCAxMS44NC00LjM1IDE5LjA5bC0uMDIgNi4xMnYyLjE3YS43MS43MSAwIDAgMCAuNy43M2gxNi41MmMuMzkgMCAuNy0uMzIuNzEtLjdsLjAxLTIuMmMwLTIuNi4wMi01LjgyLjAzLTYuMDcuMi00LjYgMS4yNC04LjY2IDMuMDgtMTIuMDZhMjguNTIgMjguNTIgMCAwIDEgOC4yMy05LjU4IDM1LjI1IDM1LjI1IDAgMCAxIDExLjk2LTUuNTggNTUuMzggNTUuMzggMCAwIDEgMTIuNTgtMS43NmM0LjMyLjEgOC42LjcgMTIuNzQgMS44YTM1LjA3IDM1LjA3IDAgMCAxIDExLjk2IDUuNTcgMjguNTQgMjguNTQgMCAwIDEgOC4yNCA5LjU3YzEuOTYgMy42NCAzIDguMDIgMy4xMiAxMy4wMnYyNC4wOUgzNjIuNGEuNy43IDAgMCAwLS43MS43VjMzNWMwIDguNDMuMDEgOC4wNS4wMSA4LjE0LjIgNy4zIDEuNjcgMTMuNzcgNC4zNiAxOS4yMmE0MC40MyA0MC40MyAwIDAgMCAxMS45NiAxNC41N2M1IDMuNzYgMTAuODcgNi42MSAxNy40OCA4LjQ2YTc3LjUgNzcuNSAwIDAgMCAyMC4wMiAyLjc3YzcuMTUtLjA3IDEzLjk0LTEgMjAuMTctMi43NGE1Mi4zIDUyLjMgMCAwIDAgMTcuNDgtOC40NiA0MC40IDQwLjQgMCAwIDAgMTEuOTUtMTQuNTdjMS42Mi0zLjI2IDMuNzctMTAuMDQgMy43Ny0xNC42OCAwLS4zOC0uMTctLjc0LS41NC0uODJsLTE2Ljg5LS40Yy0uMi0uMDQtLjM0LjM0LS4zNC41NCAwIC4yNy0uMDMuNC0uMDYuNi0uNSAyLjgyLTEuMzggNS40LTIuNjEgNy42OWEyOC41MyAyOC41MyAwIDAgMS04LjI0IDkuNTggMzUuMDEgMzUuMDEgMCAwIDEtMTEuOTYgNS41NyA1NS4yNSA1NS4yNSAwIDAgMS0xMi41NyAxLjc3Yy00LjMyLS4xLTguNjEtLjcxLTEyLjc1LTEuOGEzNS4wNSAzNS4wNSAwIDAgMS0xMS45Ni01LjU3IDI4LjUyIDI4LjUyIDAgMCAxLTguMjMtOS41OGMtMS44Ni0zLjQ0LTIuOS03LjU1LTMuMDktMTIuMmwtLjAxLTcuNDdoODkuMTZhLjcuNyAwIDAgMCAuNy0uNzJ2LTM5LjVjLS4xLTcuNjUtMS41OC0xNC40LTQuMzgtMjAuMDZhNDAuNCA0MC40IDAgMCAwLTExLjk1LTE0LjU2IDUyLjM3IDUyLjM3IDAgMCAwLTE3LjQ4LTguNDcgNzcuNTYgNzcuNTYgMCAwIDAtMjAuMDEtMi43N1oiLz48cGF0aCBmaWxsPSIjY2U0OTJlIiBkPSJNNDE5LjM4IDI4MC42M2gtNy41N2EuNy43IDAgMCAwLS43MS43MXYxNS40MmE4LjE3IDguMTcgMCAwIDAtMy43OCA2LjkgOC4yOCA4LjI4IDAgMCAwIDE2LjU0IDAgOC4yOSA4LjI5IDAgMCAwLTMuNzYtNi45di0xNS40MmEuNy43IDAgMCAwLS43Mi0uNzEiLz48L2c%2BPC9zdmc%2B&logoColor=white&labelColor=white)](https://a-sit-plus.github.io)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-brightgreen.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Kotlin](https://img.shields.io/badge/kotlin-2.3.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
@@ -11,13 +9,13 @@
 
 _Warden Supreme_ is a fully integrated key and app attestation suite consisting of:
 
-1. Mobile (iOS and Android) client library to generate attestation statements
-2. Unified server-side key and app attestation verification library
-3. Agnostic communication logic, taking care of process flows and wire format
+1. A mobile client library (iOS and Android) to generate attestation statements
+2. A unified server-side key and app attestation verification library
+3. Agnostic communication logic for process flows and wire format
 
 !!! bug inline end "Bugs Ahead!"
-    Several devices and OS versions in the field come with bugs and quirks! Warden Supreme's docs hub discusses them [here](../technical/quirks.md).
-    Be sure to read up on them, **before** integrating attestation into your services!
+    Several devices and OS versions in the field come with bugs and quirks. Warden Supreme's docs hub discusses them [here](../technical/quirks.md).
+    Be sure to read up on them **before** integrating attestation into your services.
 
 Put differently, Warden Supreme is the evolution of the battle-tested [WARDEN](https://github.com/a-sit-plus/warden) server-side key and app attestation library,
 augmented by Signum's [_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/) for a consistent UX across Android and iOS.
@@ -49,13 +47,13 @@ An attestation flow works as follows, in accordance with Figure&nbsp;1:
 1. The client fetches a challenge from the back-end.
 2. The client feeds the challenge into hardware-backed key generation to create an attestation statement.
 3. The client sends the attestation proof (CSR) back to the back-end.
-    * **Wire-format-wise this is a CSR, with a custom attribute carrying the attestation statement payload**
-    * CSRs were chosen as their canonical encoding is precisely specified and because they inherently come with a proof of possession of the private key
-    * CSRs freely allow defining arbitrary extensions and attributes, which is a perfect fit for Warden Supreme's usage scenario
+    * **Wire-format-wise, this is a CSR with a custom attribute carrying the attestation statement payload**
+    * CSRs were chosen because their canonical encoding is precisely specified and because they inherently come with a proof of possession of the private key
+    * CSRs allow defining arbitrary extensions and attributes, which is a perfect fit for Warden Supreme's usage scenario
     * Finally, the PKIX context is the natural habitat of a CSR
 4. The back-end verifies the attestation statement against a predefined policy.
     * If the attestation is considered valid, the back-end issues a certificate for the attested key, thus vouching for the integrity of the client.
-    * In case the attestation does not verify, the back-end records the reason for this failure.
+    * If the attestation does not verify, the back-end records the reason for this failure.
 5. The back-end responds either with the full certificate chain (success) or a detailed error reason (failure).
 
 <figure>
@@ -73,7 +71,7 @@ An attestation flow works as follows, in accordance with Figure&nbsp;1:
     <!-- Fallback (srcset for browsers that don’t support `prefers-color-scheme`) -->
     <img
         src="../../assets/images/flow.png"
-        alt="Apple App Attest Flows"
+        alt="Warden Supreme attestation flow"
         style="width:100%;height:auto;" />
 
 </picture>
@@ -96,16 +94,15 @@ Warden Supreme integrates server-side and client-side logic into a lean interfac
 This section illustrates a complete end-to-end setup assuming a Ktor server on the back-end and a CMP client app.
 To get going, the following steps are required:
 
-* Decide on HTTPS endpoints to issue challenges and verify attestation statements,
-  and record the Apps identifiers and signer digests (Android) / team ID (iOS)
-* back-end:
-     1. Configure a `Makoto` instance based on your policy and app identifiers.
-     2. Create an `AttestationVerifier` based on the configured `Makoto` instance, your CA certificate, and signing keys
-     3. Wire HTTPS endpoints to the `AttestationVerifier` and start an HTTP server
-* Mobile App
-    1. Wire the verifier to the HTTPS endpoints to an `AttestationClient`
-    2. Call into the Endpoints
-    3. Store the received certificate chain after a successful attestation
+* Decide on HTTPS endpoints to issue challenges and verify attestation statements, and record the app identifiers and signer digests (Android) / team ID (iOS).
+* Back-end:
+    1. Configure a `Makoto` instance based on your policy and app identifiers.
+    2. Create an `AttestationVerifier` based on the configured `Makoto` instance, your CA certificate, and signing keys.
+    3. Wire HTTPS endpoints to the `AttestationVerifier` and start an HTTP server.
+* Mobile app:
+    1. Wire the verifier to the HTTPS endpoints in an `AttestationClient`.
+    2. Call the endpoints.
+    3. Store the received certificate chain after a successful attestation.
 
 !!! tip inline end "Migration Info"
     Warden Supreme 0.9.99 revamped trust anchor management and thus changed configuration parameters.
@@ -122,7 +119,7 @@ The following snippet shows an MWE that also accounts for five minutes of clock 
     * The combination of package identifier and signature digest fully identify an Android application and make it possible to attest its authenticity.
     * For production apps distributed through the Google Play Store, this is the digest of a Google cloud signing certificate.
 2. An iOS application is uniquely identified by a bundle identifier and a team ID.  
-This combination makes it possible to attest its authenticity.
+   This combination makes it possible to attest its authenticity.
 
 !!! warning "With great power comes great responsibility!"
     The above really is a minimum working example! 
@@ -155,21 +152,21 @@ The full details on the configuration can be found in the [API documentation](..
     1. The basic application for the masses
     2. A second, experimental high-security app
     3. Different package name from the first app
-    4. Enforce minimum version, Android 16, an up-do-date security patches
+    4. Enforce minimum version, Android 16, and up-to-date security patches
     5. Allow for more leeway
     6. Only remote key provisioning is considered trustworthy for this app
     7. Only the RKP trust anchor is considered trustworthy
     8. We want our app to have a dedicated HSM
     9. By default, Android 13 with a somewhat recent patch level will be required without enforcing the most recent security patches or StrongBox to reach a wider audience.
-    This concerns the first app, since the second one overrides these values.
-    10. This is hardly used in practice and shows the default
-    11. This is rather optimistic, but the majority of devices running Android 13 should not screw this up.
-    12. Usually, you will always want hardware attestation, so you'd need to explicitly disable it
+       This concerns the first app, since the second one overrides these values.
+    10. This is rarely used in practice and shows the default
+    11. This is rather optimistic, but the majority of devices running Android 13 should handle this correctly.
+    12. Usually, you will want hardware attestation, so you'd need to explicitly disable it
     13. This is for devices launched with Android 7.0 who have not received an upgraded KeyMaster. Such devices are only capable of key attestation.  
-    Their app attestation claims are only software-attested!
-    14. Warden Supreme does not need to enforce this, because cryptographic nonces are used to ensure freshness.  
-    It is not recommended to set this value, because many OEMs mess this up!
-    15. Required if you run Warden behind a proxy to fetch revocation information from Google servers!
+       Their app attestation claims are only software-attested!
+    14. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
+       It is not recommended to set this value because many OEMs get this wrong.
+    15. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
     16. A single iOS app for evaluation purposes.
     17. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
     18. Uses the test stage
@@ -199,7 +196,7 @@ instead of a pre-configured `Makoto` instance does not support such omissions.
     no real use case for such a configuration **except for testing**.
 
 #### Flexible Android Revocation Configuration
-Warden Supreme >0.x completely revamps revocation handling.
+Warden Supreme 1.0.0 and later completely revamp revocation handling.
 Instead of hardcoding a check against the official Google revocation list, it is now possible to configure an arbitrary number of
 revocation list loaders. Configuring an empty list completely disables revocation checks.
 Warden Supreme ships with three loaders by default:
@@ -208,9 +205,9 @@ Warden Supreme ships with three loaders by default:
 2. `FileLoader`
 3. `InMemoryLoader`
 
-The first two handle caching by simply re-serving a previously loaded list, until it is expired.
+The first two handle caching by simply re-serving a previously loaded list until it expires.
 The format conforms to the [revocation list schema specified by Google](https://developer.android.com/privacy-and-security/security-key-attestation)
-with the addition of `date`, `expires`, and `lastModified`.
+with the addition of `date`, `expires`, and `lastModified` fields.
 This allows for encoding freshness information directly into the revocation list, which is relevant when serving from the
 file system, instead of an HTTP server, where HTTP headers are used to encode this info.  
 The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.
@@ -220,16 +217,16 @@ The in-memory loader, on the other hand, will only ever serve a single, static p
 First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
 
 ??? info inline end "Important Nonce Info"
-    Under the hood, the attestation verifier needs a source to generate attestation challenges, track them, invalidate, and match them against incoming attestation requests.
-    Warden Supreme provides a secure nonce generation service and uses an in-memory challenge cache by default, which is fine for small to medium load but not for larger production deployments.
-    In such scenarios, roll your own (backed by Redis, for example)!
+    Under the hood, the attestation verifier needs a source to generate attestation challenges, track them, invalidate them, and match them against incoming attestation requests.
+    Warden Supreme provides a secure nonce generation service and uses an in-memory challenge cache by default, which is fine for small to medium loads but not for larger production deployments.
+    In such scenarios, roll your own (backed by Redis, for example).
 
 ```kotlin
 --8<-- "Readme-Verifier-min.kt:3"
 ```
 
 1. Yes, it really is that simple 99% of the time! Sane defaults are set, including instructions (`KeyConstraints`) for the client
-to create a hardware-backed P-256 key.
+   to create a hardware-backed P-256 key.
 
 ??? example "Comprehensive list of Verifier options"
     ```kotlin
@@ -237,15 +234,15 @@ to create a hardware-backed P-256 key.
     ```
     
     1. We want Warden Supreme to convey the attestation statement payload inside the CSR using a custom OID.
-    2. We don't care about device names in this example
+    2. We don't care about device names in this example.
     3. We explicitly specify the key we want to have created on the client.  
-    The values shown here correspond to the defaults, as this is supported by Android and iOS.
+       The values shown here correspond to the defaults, as this is supported by Android and iOS.
     4. We require user authentication to use the private key:
         * Protected by biometric auth
         * Usable for 30 seconds without reauthentication
         * Enrolling new biometric factors will invalidate the key
-    5. We want extra long nonces! (Default: 64 bytes. Max: 128 bytes)
-    6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here, roll your own!)
+    5. We want extra long nonces (default: 64 bytes; max: 128 bytes).
+    6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here; roll your own).
     
 
 Instead of passing parameters programmatically, it is also possible to externalise configuration (see [Externalising Configuration](config.md)).
@@ -256,18 +253,18 @@ attestation policies, as well as everything needed on top (object identifiers, e
 --8<-- "Readme-Verifier-config-supreme.kt:15"
 ```
 
-1. Default, secure nonce generator
-2. Default in-memory challenge validator
+1. Default, secure nonce generator.
+2. Default in-memory challenge validator.
 
 
 
 !!! tip
-    Warden Supreme does not check whether a device has biometrics enrolled. So if you choose to bind a to-be-attested key
-    to biometric auth, you need to check device capa&shy;bili&shy;ties beforehand!  
+    Warden Supreme does not check whether a device has biometrics enrolled. If you choose to bind a to-be-attested key
+    to biometric auth, you need to check device capa&shy;bili&shy;ties beforehand.  
     **&rarr;&nbsp;[AuthCheckKit](https://github.com/a-sit-plus/AuthCheckKit)
     provides a unified multiplatform API for that.**
 
-###  Handling Requests
+### Handling Requests
 This example assumes Ktor. Since this is an example environment, TLS is omitted for brevity.
 
 ```kotlin
@@ -296,7 +293,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 
 
 On the client, Warden Supreme is even easier to integrate. In contrast to the verifier, it is tailored around Ktor for its KMP goodness.
-Doing so allows for obtaining a certificate chain for an attested key are literally three short lines of code, if the challenge already
+Doing so allows for obtaining a certificate chain for an attested key in literally three short lines of code, if the challenge already
 specifies key constraints:
 
 ```kotlin
@@ -308,8 +305,8 @@ specifies key constraints:
     1. Fetches the challenge from `ENDPOINT_CHALLENGE` 
     2. Automatically creates a key for `ALIAS` and an accompanying attestation statement payload. **Beware:** if a key for this alias exists, this will fail!
     3. Creates and signs a CSR, feeding the challenge and attestation statement payload into it.
-    4. Sends it to the endpoint encodes into the received challenge.
-3. If everything worked out, store the received certificate chain using whatever means you decide on
+    4. Sends it to the endpoint encoded in the received challenge.
+3. If everything worked out, store the received certificate chain using whatever storage approach you choose
 4. The kind of error tells you what went wrong. An `AttestationResponse.Failure` **may** also contain a string explaining further details.
 
 This really is it! If you've made it this far, you have successfully issued certificates to mobile clients that fulfil your policy.
@@ -321,18 +318,18 @@ The `AttestationClient` doesn't even come with any configuration options.
 The step-by-step guide above illustrates the intended ways of using Warden Supreme, bolting down as many moving parts as possible.
 Reality, though, is a complex beast and sometimes a little more control is needed. In particular, logging is often not only desirable, but essential.
 Hence, the verifier allows for hooking into every possible outcome of an attestation verification.
-This also allows for customizing the explanations sent to clients.
+This also allows for customising the explanations sent to clients.
 
 
 !!! tip inline end "Error Handling and Debugging"
-    Head over to the dedicated [debugging page](debugging.md) to learn how to debug attestation issues and check out the [error handling page](errorhandling.md) for a comprehensive guide on how to handle and interpret
-    Warden Supreme's attestation errors.
+    Head over to the dedicated [debugging page](debugging.md) to learn how to debug attestation issues. For a comprehensive guide on how to handle and interpret
+    Warden Supreme's attestation errors, see the [error handling page](errorhandling.md).
     
 
 The Supreme attestation verifier only returns an enum indicating the reason for an error, with the option to attach a custom explanatory string.
 This is by design, as it is generally undesirable to expose the internals of a back-end to clients.
 
-On the backend, however, attestation issues typically need to be analysed. Hence, the Supreme attestation verifier provides
+On the back-end, however, attestation issues typically need to be analysed. Hence, the Supreme attestation verifier provides
 three callbacks to analyse attestation errors and success (without side effects):
 
 ```kotlin
@@ -345,21 +342,21 @@ three callbacks to analyse attestation errors and success (without side effects)
 3. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).
 4. `onAttestationError` is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
    See [the dedicated error handling guide](errorhandling.md) for more details!
-5. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!**. See [debugging and replaying diagnostics](../testing.md#debugging-replay-and-diagnostics).
+5. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!** See [debugging and replaying diagnostics](../testing.md#debugging-replay-and-diagnostics).
 6. Again, a custom error message can be sent to the client
 7. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
    This can be useful for statistical analyses, for example.
 8. This is the certificate signing lambda, also having a fully verified attestation result as receiver.
-  In contrast to `onAttestationSuccess` it is not side-effect-free, but is expected to return a certificate chain, whose
-  leaf certifies the attested key. As such, it receives the fully verified CSR as a parameter.
+   In contrast to `onAttestationSuccess`, it is not side-effect-free, but is expected to return a certificate chain, whose
+   leaf certifies the attested key. As such, it receives the fully verified CSR as a parameter.
 
 
 The step-by-step guide [above](#warden-supreme-step-by-step-guide) will cover most use cases perfectly well.
 While extensive configurations were also included alongside the basic ones, Warden Supreme is, in fact, more flexible:
 
 * Instead of always using the defaults, it is possible to specify challenge properties manually for each challenge issued
-* Key constraints need not be specified. In that case, it is up to the client to create a key that as desired by the back-end and sign a CSR manually.  
+* Key constraints need not be specified. In that case, it is up to the client to create a key that is desired by the back-end and sign a CSR manually.  
   (This is still very smooth, as can be seen in the [API docs](../dokka/supreme-client/at.asitplus.attestation.supreme/index.html#110236803%2FFunctions%2F-1347999820).)
-* By default, a device identifier is always encoded into the CSR, this can be toggled.
+* By default, a device identifier is always encoded into the CSR; this can be toggled.
 
-For more details, refer to the API docs on the [verifier](../../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/) and on the [client](../../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/)!
+For more details, refer to the API docs on the [verifier](../dokka/supreme-verifier/at.asitplus.attestation.supreme/-attestation-verifier/) and on the [client](../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/)!

@@ -2,8 +2,8 @@
 Whenever the actual attestation check fails (i.e., whenever `onAttestationError()` is called), a ready-made `WardenDebugAttestationStatement` is created and passed to this function.
 Hence, two pieces of information are available to aid debugging:
 
-1. the attestation error (as the receiver of this lambda)
-2. the debug statement, which can be exported for off-site analyses
+1. The attestation error (as the receiver of this lambda)
+2. The debug statement, which can be exported for offline analysis
 
 ## Debugging Integrated Attestation
 
@@ -14,9 +14,9 @@ By finally calling `replaySmart()` on such a deserialised debug info object, the
 Attaching a debugger allows for step-by-step debugging of any attestation errors encountered.
 For the most straightforward debugging experience:
 
-* import this project into IDEA
-* add a breakpoint [here in line 19](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt#L19)
-* and run it in debug mode.
+* Import this project into IntelliJ IDEA
+* Add a breakpoint [here (line 19)](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt#L19)
+* Run it in debug mode
 
 Just be sure to add a single argument pointing to a file as described in [Diag.kt](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt)!
 
@@ -31,7 +31,7 @@ It will then pretty-print the attestation extension's contents.
 As an added bonus, there is a nullable `androidAttestationExtension` extension property on the class
 `at.asitplus.signum.indispensable.pki.X509Certificate`, and `java.security.cert.X509Certificate`
 which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.
-It will even parse malformed values and print you those malformed values' DER-encoded hex representation.
+It will even parse malformed values and print those malformed values' DER-encoded hex representation.
 The underlying parser and the renderer are still experimental, so your mileage may vary, but it is still a huge improvement
 over relying solely on `ParsedAttestationRecord` for debugging.
 

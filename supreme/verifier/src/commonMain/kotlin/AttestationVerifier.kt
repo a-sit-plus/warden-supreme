@@ -285,7 +285,8 @@ constructor(
          * @param nonceGenerator A [NonceGenerator] instance to generate unique challenges for verification. Defaults to [WardenDefaults.nonceGenerator].
          * @param challengeValidator A lambda function that initializes a [ChallengeValidator] based on:
          *  * the provided [SupremeConfiguration.Clock.timeSource]
-         *  * the **negative** [SupremeConfiguration.verificationTimeOffset] (because otherwise, challenges would always be temporally invalid!)
+         *  * the **inverse** [SupremeConfiguration.verificationTimeOffset] because drift in the opposite direction relative to the back end.
+         *    Passing the inverse here means straight-forward challenge validation logic without the need to account for who sees what inverted and who doesn't.
          *
          * [configuration].
          * Defaults to using an [InMemoryChallengeCache].

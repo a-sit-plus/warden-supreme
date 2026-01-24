@@ -9,7 +9,7 @@ Apple’s canonical sequence diagrams and focuses on how App Attest works, not o
 Apple requires a small amount of up-front configuration. In particular, the following requirements must be met:
 
 * Active Apple Developer Program membership
-* iOS device (not Simulator) as target, running iOS 14+
+* An iOS device (not Simulator) as target, running iOS 14+
 * Xcode 15+ recommended
 
 ### Step 1: Prepare App ID and Signing
@@ -21,7 +21,7 @@ Apple requires a small amount of up-front configuration. In particular, the foll
 
 * Open your project > target > Signing & Capabilities.
 * Add Associated Domains (recommended):
-    * If you’ll bind to your domain, add webcredentials:your.domain (and/or applinks:your.domain for related flows).
+    * If you’ll bind to your domain, add `webcredentials:your.domain` (and/or `applinks:your.domain` for related flows).
 * App Attest entitlement:
     * Click on "+ Capability"
     * Select "App Attest"
@@ -123,7 +123,7 @@ App Attest natively attests **the app instance** (App ID) and the Apple‑manage
    protocol steps) and the **server challenge**.
 2. Compute `clientDataHash = SHA256(clientDataBytes)` and pass it into **`attestKey`** / **`generateAssertion`**.
 3. On the server, after validating the Apple artefacts, extract and validate the **public key bytes** embedded in your
-   client‑data.
+   client data.
 4. This binds Apple’s attestation to your application key, yielding **verifiable linkage** similar to Android key
    attestation.
 
@@ -133,7 +133,7 @@ Hence, no custom logic is required on clients or on the back-end.
 
 ## Assertions and Usage Model
 
-As touched, Apple platforms allow _asserting_ an app's and device's state after an initial attestation has been performed
+As touched, Apple platforms allow _asserting_ an app and device state after an initial attestation has been performed
 and recorded. This section subsumes the intended usage model as postulated by Apple.
 
 ### Assertion Contents
@@ -168,7 +168,7 @@ An assertion contains a counter value.
 
 ### Apple’s Intended Usage of App Attest
 !!! warning inline end
-    Even "lightweight re-attestation" requires devices to interact with Apple services, allowing for user tracking
+    Even "lightweight re-attestation" requires devices to interact with Apple services, allowing for user tracking.
 
 - Protect critical sections and privileged API calls with per-request challenges and assertions.
 - Use full attestation (registration) once per app instance, then rely on assertions to maintain trust over time.
@@ -179,7 +179,7 @@ An assertion contains a counter value.
 Using assertions as “re-attestation” has two notable downsides:
 - Back-end state management burden
     - You must persist per-device key state (keyId, highest seen counter, environment), enforce strict counter monotonicity,
-      handle resets/rollbacks (e.g., device restores), and design recovery paths (counter desync, key rotation, multi-device users). 
+      handle resets/rollbacks (e.g., device restores), and design recovery paths (counter desync, key rotation, multi-device users).
       This adds storage, concurrency control, migration, and incident-handling complexity.
       Risk-based policies (cadence, per-action challenges) further increase statefulness and operational overhead.
 
@@ -197,7 +197,7 @@ a state before a critical section is much more decoupled from specific user acti
 ### Receipts and Risk Assessment
 A third concept not discussed so far is the _receipt_ and its dual purpose. On the one hand, it is an integral part of the attestation
 structure sent from an iOS device to the back-end. It contains, for example, the bundle identifier, the attestation certificate and
-a validity period.  
+a validity period.
 
 On the other hand, it is possible to save this receipt on the back-end after a successful attestation and send it to Apple's
 servers at a later point in time, for additional risk assessment. In return, you'll receive a new receipt with a risk metric.
@@ -215,7 +215,7 @@ infrastructure operated by Apple.
     by proxy, it **can** be viable to utilise Apple's service to assess fraud risk. Use at your own discretion.
 
 In summary, Apple is able to provide a risk metric that is highly dependent on user behaviour with no clear guidance
-on how to interpret the metric at a substantially privacy cost. For these reasons, Warden Supreme considers this out of scope.
+on how to interpret the metric at a substantial privacy cost. For these reasons, Warden Supreme considers this out of scope.
 However, Warden Supreme provides a `ValidatedAttestation` object at the end of a successful attestation verification and this
 object contains the receipt that can be extracted, stored, and sent to Apple for risk assessment, if desired.
 
@@ -224,7 +224,7 @@ object contains the receipt that can be extracted, stored, and sent to Apple for
 
 - **Online dependency**: App Attest requires a **live connection to Apple** for attestation and assertions. Implement
   retries/queuing and clear UX.
-  See: https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service
+  See [Preparing to use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service).
 - **Rate limiting**: Avoid unnecessary re‑attestation; cache successful registrations and only assert per privileged
   request or session cadence that suits your risk posture.
 - **Stage separation**: Keep **Sandbox** and **Production** completely separate — App ID, keys, and trust anchors don’t
@@ -243,7 +243,7 @@ completeness, this section lists general common pitfalls.
 - **Skipping counter checks**: The **monotonic counter** is your continuity signal; enforce strictly increasing values.
 - **Leaking key material**: Never transmit or store private keys. Persist only the **public key** and minimal metadata.
 - **Time Drift**: Out-of-sync clocks between clients and server can cause the PKIX validation part to fail.
-See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-temporal-validity).
+  See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-temporal-validity).
 
 ## References and Libraries
 

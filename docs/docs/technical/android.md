@@ -90,7 +90,7 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 ### Server-Side Verification Checklist
 
 1. **Chain validation**: X.509 path build and verify (signatures, BasicConstraints, EKU if present, issuer/subject continuity).
-2. **Time validity**: validate NotBefore / NotAfter on intermediates; tolerate known **leaf-time quirks** only if you apply strict freshness windows (see §6).
+2. **Time validity**: validate NotBefore/NotAfter on intermediates; tolerate known **leaf-time quirks** only if you apply strict freshness windows (see §6).
 3. **Attestation root**: anchor in Google’s published **attestation-root set** (keep updated).
 4. **Extension parse**: parse **`KeyDescription`** with a standards-compliant ASN.1/DER library; **respect DER sorting for SET OF**.
 5. **Challenge**: exact match to your **one-time** challenge; reject reuse or replay.
@@ -130,9 +130,9 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 - **Accepting SELF_SIGNED states**: only acceptable for tightly scoped test channels.
 - **Relying solely on patch level**: combine with verified boot, device lock, and (optionally) pinned `verifiedBootKey`.
 - **Using too strict ASN.1 parsers and validation logic**: Android devices come with encoding flaws that need to be accounted for.
-See [Android-specific quirks](quirks.md#android).
+  See [Android-specific quirks](quirks.md#android).
 - **Time Drift**: Out-of-sync clocks between clients and server can cause the PKIX validation part to fail.
-See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-temporal-validity).
+  See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-temporal-validity).
 
 ## References and Libraries
 
@@ -142,3 +142,4 @@ See the consolidated [References](../refs.md):
 - [Android Key and ID Attestation (AOSP Spec)](../refs.md#ref-android-key-id-attestation)
 - [Android Keystore and StrongBox](../refs.md#ref-android-keystore-strongbox)
 - [Android Attestation Libraries (legacy/current)](../refs.md#ref-android-attestation-lib-legacy)
+- [Android Security Bulletin](../refs.md#ref-android-security-bulletin)

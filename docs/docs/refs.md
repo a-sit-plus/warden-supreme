@@ -10,6 +10,7 @@
 - <a id="ref-android-keystore2-fix"></a>Android Keystore2 Stability Fix (Post‑Android 16): [Binder Fix — Commit b0be7ed…](https://android.googlesource.com/platform/system/security/+/b0be7edbf9e34bc409c6d869f936c2eb00925b34)
 - <a id="ref-android-attestation-lib-legacy"></a>Android Attestation Libraries (legacy): [google/android‑key‑attestation](https://github.com/google/android-key-attestation)
 - <a id="ref-android-attestation-lib-current"></a>Android Attestation Libraries (current): [android/keyattestation](https://github.com/android/keyattestation)
+- <a id="ref-android-security-bulletin"></a>Android Security Bulletin (Vulnerability Advisories): [Android Security Bulletin](https://source.android.com/docs/security/bulletin)
 
 ## iOS App Attest
 - <a id="ref-ios-devicecheck-overview"></a>Apple Device Integrity Overview (DeviceCheck / App Attest): [Service Overview](https://developer.apple.com/documentation/devicecheck)
