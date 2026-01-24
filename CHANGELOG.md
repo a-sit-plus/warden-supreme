@@ -7,10 +7,13 @@ this changelog also includes the original WARDEN changelog.
 # 1.0.0-RC
 **Release Candidate for Warden Supreme 1.0.0**
 
-**Critical fix (Supreme integrated flow):** Earlier builds contained a signature verification bug in the
-fully integrated ("Supreme") attestation flow (`AttestationVerifier`). **Roboto and Makoto were never affected.**
-If you use `AttestationVerifier` (the integrated flow), update to this release immediately. If you use Roboto and/or
-Makoto directly, you are not affected.
+**Critical fix (integrated flow):**  
+Warden Supreme (and its predecessors WARDEN and WARDEN-roboto) always correctly validated attestation.
+However, earlier Warden Supreme builds had a bug in the **proof-of-possession check for the client private key** (signature verification).
+This only affected the fully integrated ("Supreme") flow (implemented in `AttestationVerifier`).  
+**Roboto and Makoto were never affected** since neither did proof-of-possession checks.
+
+**If you use `AttestationVerifier` (the integrated flow), update to this release. If you use Roboto and/or Makoto directly, you are not affected.**
 
 * **New Features**
     * Make it possible to configure only iOS or only Android attestation
@@ -27,14 +30,20 @@ Makoto directly, you are not affected.
         * Discourage config loading through Hoplite or Spring Boot
         * Includes YAML and JSON format
         * Docs include auto-generated full JSON and YAML as a reference
-    * Completely revamped revocation checks based on configurable, chainable loaders:
-        * HTTP-based, caching
-        * File-based, caching
-        * In-memory, static, non-caching
+    * Completely revamped Android revocation checks based on configurable, chainable loaders
+        * Allows specifying custom revocation lists
+        * Allows disabling revocation checks altogether
+        * Extensible with custom loaders
+        * Included loaders:
+            * HTTP-based, caching
+                * Supports SOCKS and HTTP proxies
+            * File-based, caching
+            * In-memory, static, non-caching
     * Provide fully-fledged Android revocation lists
         * The Android-specific `Revoked` error now includes the revocation list entry that indicates a revocation or suspension.
 * **Fixes**
-    * **Fix a signature verification bug in the Supreme integrated `AttestationVerifier` flow**
+    * **Fix a proof-of-possession (client private key) verification bug in the Supreme integrated `AttestationVerifier` flow**
+        * **Attestation verification was always correct; only proof-of-possession was affected**
         * **Neither Roboto nor Makoto were ever affected by this**
     * Fix custom auth prompts not propagating for fully integrated flows
     * Fix per-app trust anchors not being picked up when using the config builders.
