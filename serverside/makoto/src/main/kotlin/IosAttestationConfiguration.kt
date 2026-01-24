@@ -228,7 +228,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             fun trustedRootOverrides(trustAnchors: Set<TrustedRootPair>) =
                 apply { trustedRootOverrides = trustAnchors }
 
-            fun build() = AppData(teamIdentifier, bundleIdentifier, sandbox, iosVersionOverride)
+            fun build() = AppData(teamIdentifier, bundleIdentifier, sandbox, iosVersionOverride, trustedRootOverrides)
         }
 
         override fun equals(other: Any?): Boolean {
