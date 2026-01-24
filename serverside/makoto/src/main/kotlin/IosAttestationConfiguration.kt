@@ -200,6 +200,10 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
 
         ) {
 
+        init {
+            require(teamIdentifier.length == 10) { "Team identifier must be exactly 10 characters long" }
+        }
+
         /**
          * Builder for more Java-friendliness
          * @param teamIdentifier nomen est omen
