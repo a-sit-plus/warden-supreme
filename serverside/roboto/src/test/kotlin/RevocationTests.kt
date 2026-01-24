@@ -2,6 +2,8 @@ package at.asitplus.attestation.android
 
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
+import at.asitplus.testballoon.withData
+import at.asitplus.testballoon.withDataSuites
 import com.zkdcloud.proxy.http.ServerStart
 import com.zkdcloud.proxy.http.handler.client.ExceptionDuplexHandler
 import com.zkdcloud.proxy.http.handler.client.JudgeTypeInboundHandler
@@ -41,6 +43,8 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.min
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
@@ -62,7 +66,7 @@ val TEST_CERT = """
 
 
 @OptIn(ExperimentalTime::class)
-val RevocationTestFromGoogleSources by testSuite {
+val RevocationTests by testSuite {
 
     "custom implementation" - {
 
@@ -73,12 +77,12 @@ val RevocationTestFromGoogleSources by testSuite {
 
         "File-based" {
 
-            val loadBlocking =
-                AndroidRevocationList.FileLoader(TEST_STATUS_LIST_PATH, 0L).loadBlocking(Clock.System.now())
-            loadBlocking
+            val load =
+                AndroidRevocationList.FileLoader(TEST_STATUS_LIST_PATH, 0L).load(Clock.System.now())
+            load
                 .isRevokedOrSuspended(serialNumber).shouldBeTrue()
 
-            loadBlocking.isRevokedOrSuspended(BigInteger.valueOf(0xbadbeef)).shouldBeFalse()
+            load.isRevokedOrSuspended(BigInteger.valueOf(0xbadbeef)).shouldBeFalse()
         }
 
         "Date-only expires parsing" {
@@ -103,11 +107,11 @@ val RevocationTestFromGoogleSources by testSuite {
                 ) {
                     engine { requestHandlers.add(setResponse(now, withExpiry1Hour = false)) }
                 }
-                val first = client.loadBlocking(now)
+                val first = client.load(now)
                 first.expires shouldBe now
                 val times = 1000
                 repeat(times) {
-                    var newList = client.loadBlocking(now)
+                    var newList = client.load(now)
                     newList.expires shouldBe now
                     (newList === first).shouldBeFalse()
                 }
@@ -123,10 +127,10 @@ val RevocationTestFromGoogleSources by testSuite {
                     engine { requestHandlers.add(setResponse(now, withExpiry1Hour = true)) }
                 }
 
-                val first = client.loadBlocking(now)
+                val first = client.load(now)
                 val times = 1000
                 repeat(times) {
-                    (client.loadBlocking(now) === first).shouldBeTrue()
+                    (client.load(now) === first).shouldBeTrue()
                     first.expires shouldBe now + 1.hours
                 }
             }
@@ -156,6 +160,264 @@ val RevocationTestFromGoogleSources by testSuite {
                 val first = client.load(now)
                 first.expires shouldBe now + 1.hours
             }
+
+            "refresh after expiry returns fresh instance" {
+                val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
+                var fetches = 0
+                val client = AndroidRevocationList.HttpLoader(
+                    MockEngine,
+                    url = "",
+                    fallbackRevocationListValiditySeconds = 0L,
+                    preferHeaderBasedExpiry = true,
+                ) {
+                    engine {
+                        requestHandlers.add {
+                            fetches++
+                            respond(
+                                content = ByteReadChannel("""{"entries":{}}""".toByteArray(StandardCharsets.UTF_8)),
+                                status = HttpStatusCode.OK,
+                                headers = headers {
+                                    append(HttpHeaders.CacheControl, "max-age=2")
+                                    append(HttpHeaders.ContentType, "application/json")
+                                }
+                            )
+                        }
+                    }
+                }
+
+                val first = client.load(now)
+                repeat(1000){(client.load(now) === first).shouldBeTrue() }
+                val second = client.load(now + 1.seconds)
+                repeat(1000){(client.load(now) === second).shouldBeTrue() }
+                val third = client.load(now + 3.seconds)
+                repeat(1000){(client.load(now) === third).shouldBeTrue() }
+
+                (second === first).shouldBeTrue()
+                (third === first).shouldBeFalse()
+                fetches shouldBe 2
+            }
+
+            "expiry precedence (json vs headers vs fallback)" - {
+                data class Scenario(
+                    val jsonExpiresInSeconds: Long?,
+                    val cacheControlHeader: String?,
+                    val expiresHeaderSeconds: Long?,
+                    val expiresHeaderRaw: String?,
+                    val fallbackSeconds: Long,
+                    val expectedPreferHeadersSeconds: Long,
+                    val expectedPreferJsonSeconds: Long,
+                )
+
+                val scenarios = linkedMapOf(
+                    "prefer headers even if json shorter" to Scenario(
+                        jsonExpiresInSeconds = (30.minutes).inWholeSeconds,
+                        cacheControlHeader = "public, max-age=3600",
+                        expiresHeaderSeconds = null,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 9999,
+                        expectedPreferHeadersSeconds = 1.hours.inWholeSeconds,
+                        expectedPreferJsonSeconds = (30.minutes).inWholeSeconds,
+                    ),
+                    "no-cache forces immediate expiry" to Scenario(
+                        jsonExpiresInSeconds = 5.hours.inWholeSeconds,
+                        cacheControlHeader = "no-cache, max-age=3600",
+                        expiresHeaderSeconds = 1.hours.inWholeSeconds,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 9999,
+                        expectedPreferHeadersSeconds = 0,
+                        expectedPreferJsonSeconds = 5.hours.inWholeSeconds,
+                    ),
+                    "cache-control wins over expires" to Scenario(
+                        jsonExpiresInSeconds = 5.hours.inWholeSeconds,
+                        cacheControlHeader = "public, max-age=3600, Wumbo",
+                        expiresHeaderSeconds = (90.minutes).inWholeSeconds,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 9999,
+                        expectedPreferHeadersSeconds = 1.hours.inWholeSeconds,
+                        expectedPreferJsonSeconds = 5.hours.inWholeSeconds,
+                    ),
+                    "cache-control wins even if longer" to Scenario(
+                        jsonExpiresInSeconds = 5.hours.inWholeSeconds,
+                        cacheControlHeader = "public, max-age=5400",
+                        expiresHeaderSeconds = 1.hours.inWholeSeconds,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 9999,
+                        expectedPreferHeadersSeconds = (90.minutes).inWholeSeconds,
+                        expectedPreferJsonSeconds = 5.hours.inWholeSeconds,
+                    ),
+                    "cache-control malformed -> expires" to Scenario(
+                        jsonExpiresInSeconds = 5.hours.inWholeSeconds,
+                        cacheControlHeader = "public, max-age=abc",
+                        expiresHeaderSeconds = 1.hours.inWholeSeconds,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 9999,
+                        expectedPreferHeadersSeconds = 1.hours.inWholeSeconds,
+                        expectedPreferJsonSeconds = 5.hours.inWholeSeconds,
+                    ),
+                    "expires malformed -> cache-control" to Scenario(
+                        jsonExpiresInSeconds = 5.hours.inWholeSeconds,
+                        cacheControlHeader = "max-age=3600",
+                        expiresHeaderSeconds = null,
+                        expiresHeaderRaw = "not-a-date",
+                        fallbackSeconds = 77,
+                        expectedPreferHeadersSeconds = 1.hours.inWholeSeconds,
+                        expectedPreferJsonSeconds = 5.hours.inWholeSeconds,
+                    ),
+                    "both headers malformed -> json" to Scenario(
+                        jsonExpiresInSeconds = 1.hours.inWholeSeconds,
+                        cacheControlHeader = "max-age=nope",
+                        expiresHeaderSeconds = null,
+                        expiresHeaderRaw = "not-a-date",
+                        fallbackSeconds = 60,
+                        expectedPreferHeadersSeconds = 1.hours.inWholeSeconds,
+                        expectedPreferJsonSeconds = 1.hours.inWholeSeconds,
+                    ),
+                    "json absent -> min(headers)" to Scenario(
+                        jsonExpiresInSeconds = null,
+                        cacheControlHeader = "max-age=5400",
+                        expiresHeaderSeconds = 1.hours.inWholeSeconds,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 77,
+                        expectedPreferHeadersSeconds = (90.minutes).inWholeSeconds,
+                        expectedPreferJsonSeconds = (90.minutes).inWholeSeconds,
+                    ),
+                    "json absent + expires malformed -> cache-control" to Scenario(
+                        jsonExpiresInSeconds = null,
+                        cacheControlHeader = "max-age=3600",
+                        expiresHeaderSeconds = null,
+                        expiresHeaderRaw = "not-a-date",
+                        fallbackSeconds = 77,
+                        expectedPreferHeadersSeconds = 1.hours.inWholeSeconds,
+                        expectedPreferJsonSeconds = 1.hours.inWholeSeconds,
+                    ),
+                    "json absent + cache-control malformed -> expires" to Scenario(
+                        jsonExpiresInSeconds = null,
+                        cacheControlHeader = "max-age=abc",
+                        expiresHeaderSeconds = 1.hours.inWholeSeconds,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 77,
+                        expectedPreferHeadersSeconds = 1.hours.inWholeSeconds,
+                        expectedPreferJsonSeconds = 1.hours.inWholeSeconds,
+                    ),
+                    "json absent + both headers malformed -> fallback" to Scenario(
+                        jsonExpiresInSeconds = null,
+                        cacheControlHeader = "max-age=abc",
+                        expiresHeaderSeconds = null,
+                        expiresHeaderRaw = "not-a-date",
+                        fallbackSeconds = 77,
+                        expectedPreferHeadersSeconds = 77,
+                        expectedPreferJsonSeconds = 77,
+                    ),
+                    "json only (fallback must not override)" to Scenario(
+                        jsonExpiresInSeconds = 1.hours.inWholeSeconds,
+                        cacheControlHeader = null,
+                        expiresHeaderSeconds = null,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 60,
+                        expectedPreferHeadersSeconds = 1.hours.inWholeSeconds,
+                        expectedPreferJsonSeconds = 1.hours.inWholeSeconds,
+                    ),
+                    "no expiry anywhere uses fallback" to Scenario(
+                        jsonExpiresInSeconds = null,
+                        cacheControlHeader = null,
+                        expiresHeaderSeconds = null,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 123,
+                        expectedPreferHeadersSeconds = 123,
+                        expectedPreferJsonSeconds = 123,
+                    ),
+                    "multiple max-age picks shortest" to Scenario(
+                        jsonExpiresInSeconds = null,
+                        cacheControlHeader = "public, max-age=3600, max-age=10",
+                        expiresHeaderSeconds = 1.hours.inWholeSeconds,
+                        expiresHeaderRaw = null,
+                        fallbackSeconds = 123,
+                        expectedPreferHeadersSeconds = 10,
+                        expectedPreferJsonSeconds = 10,
+                    ),
+                )
+
+                withDataSuites(
+                    mapOf(
+                        "parse expiry from headers" to true,
+                        "ignore headers (JSON only)" to false,
+                    )
+                ) { preferHeaderBasedExpiry ->
+                    withData(scenarios) { scenario ->
+                        val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
+
+                        val jsonExpires =
+                            scenario.jsonExpiresInSeconds?.let { now + it.seconds }
+                        val body = if (jsonExpires == null) {
+                            """{"entries":{}}"""
+                        } else {
+                            """{"entries":{},"expires":"$jsonExpires"}"""
+                        }
+
+                        val expiresHeaderValue = scenario.expiresHeaderSeconds?.let {
+                            GMTDate(now.toEpochMilliseconds() + it * 1000).toHttpDate()
+                        } ?: scenario.expiresHeaderRaw
+
+                        val client = AndroidRevocationList.HttpLoader(
+                            MockEngine,
+                            url = "",
+                            fallbackRevocationListValiditySeconds = scenario.fallbackSeconds,
+                            preferHeaderBasedExpiry = preferHeaderBasedExpiry
+                        ) {
+                            engine {
+                                requestHandlers.add(
+                                    setJsonResponse(
+                                        now = now,
+                                        body = body,
+                                        expiresHeaderValue = expiresHeaderValue,
+                                        cacheControlHeaderValue = scenario.cacheControlHeader
+                                    )
+                                )
+                            }
+                        }
+
+                        val expectedSeconds = if (preferHeaderBasedExpiry) {
+                            scenario.expectedPreferHeadersSeconds
+                        } else {
+                            scenario.expectedPreferJsonSeconds
+                        }
+
+                        val list = client.load(now)
+                        list.expires shouldBe (now + expectedSeconds.seconds)
+                    }
+                }
+
+                "invalid json expiry must throw" - {
+                    withDataSuites(
+                        mapOf(
+                            "parse expiry from headers" to true,
+                            "ignore headers (JSON only)" to false,
+                        )
+                    ) { preferHeaderBasedExpiry ->
+                        "throws" {
+                            val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
+                            val client = AndroidRevocationList.HttpLoader(
+                                MockEngine,
+                                url = "",
+                                fallbackRevocationListValiditySeconds = 999,
+                                preferHeaderBasedExpiry = preferHeaderBasedExpiry
+                            ) {
+                                engine {
+                                    requestHandlers.add(
+                                        setJsonResponse(
+                                            now = now,
+                                            body = """{"entries":{},"expires":"not-an-instant"}""",
+                                            expiresHeaderValue = GMTDate(now.toEpochMilliseconds() + 3600_000).toHttpDate(),
+                                            cacheControlHeaderValue = "max-age=3600"
+                                        )
+                                    )
+                                }
+                            }
+                            shouldThrow<Throwable> { client.load(now) }
+                        }
+                    }
+                }
+            }
         }
 
         "Test HTTP local proxy" {
@@ -164,15 +426,15 @@ val RevocationTestFromGoogleSources by testSuite {
             ).withHttpProxy("http://localhost:1081")
                 .createLoader()
             shouldThrow<ConnectException> {
-                client.loadBlocking(Clock.System.now())
+                client.load(Clock.System.now())
             }
             startProxy()
             val now = Clock.System.now()
-            val revocationList = client.loadBlocking(now)
+            val revocationList = client.load(now)
             revocationList.isRevokedOrSuspended("6681152659205225093") shouldBe true
             revocationList.expires!! shouldBeGreaterThan now
             repeat(100000) {
-                (client.loadBlocking(Clock.System.now()) === revocationList).shouldBeTrue()
+                (client.load(Clock.System.now()) === revocationList).shouldBeTrue()
 
             }
         }
@@ -238,4 +500,22 @@ private fun setResponse(
         )
     }
 
+private fun setJsonResponse(
+    @OptIn(ExperimentalTime::class)
+    now: Instant,
+    body: String,
+    expiresHeaderValue: String? = null,
+    cacheControlHeaderValue: String? = null,
+): suspend MockRequestHandleScope.(request: HttpRequestData) -> HttpResponseData =
+    {
+        val expiry = expiresHeaderValue?.let { HttpHeaders.Expires to listOf(it) }
+        val cache = cacheControlHeaderValue?.let { HttpHeaders.CacheControl to listOf(it) }
+        val contentType = HttpHeaders.ContentType to listOf("application/json")
 
+        val headers = listOf(expiry, cache, contentType).filterNotNull()
+        respond(
+            content = ByteReadChannel(body.toByteArray(StandardCharsets.UTF_8)),
+            status = HttpStatusCode.OK,
+            headers = headers { headers.forEach { appendAll(it.first, it.second) } }
+        )
+    }

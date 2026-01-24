@@ -278,19 +278,50 @@ data class AndroidRevocationList(
     }
 
     /**
-     * Caching HTTP [Loader] that fetches an
+     * HTTP [CachingLoader] that fetches an
      * [AndroidRevocationList] over HTTP. This class uses an
      * [HttpClient] to perform requests and parses the fetched JSON content
-     * into the revocation list format and respects [HttpHeaders.CacheControl]!
+     * into the revocation list format.
+     *
+     * ## Expiry resolution
+     *
+     * The loader computes an effective expiry instant and stores it into [AndroidRevocationList.expires].
+     * It always starts by parsing the JSON body; invalid JSON (including an invalid `expires` value in the
+     * JSON) will fail the request.
+     *
+     * When `preferHeaderBasedExpiry = true` (default), the effective validity is chosen as:
+     * 1. A validity derived from HTTP caching headers (see below), if parseable.
+     * 2. Otherwise the JSON `expires`, if present.
+     * 3. Otherwise [fallbackRevocationListValiditySeconds].
+     *
+	     * When `preferHeaderBasedExpiry = false`, the effective validity is chosen as:
+	     * 1. The JSON `expires`, if present (short-circuit: no expiry-related HTTP header parsing is performed; however,
+	     *    [HttpHeaders.Date]/[HttpHeaders.LastModified] may still be read to fill missing metadata).
+	     * 2. Otherwise a validity derived from HTTP caching headers (see below), if parseable.
+	     * 3. Otherwise [fallbackRevocationListValiditySeconds].
+     *
+     * ### Header-derived validity
+     * - [HttpHeaders.CacheControl]: all values are joined, then:
+     *   - `no-cache` or `no-store` forces a validity of `0s`.
+     *   - `max-age=<seconds>` is parsed (non-negative integers only). If multiple `max-age` directives are present,
+     *     the smallest value is used (conservative).
+     *   - If no usable directive is present, Cache-Control is treated as absent/malformed.
+     * - [HttpHeaders.Expires]: only used if there is exactly one value and it is RFC1123-parseable; otherwise it is
+     *   treated as absent/malformed.
+     * - If both Cache-Control validity and Expires are parseable, Cache-Control wins.
+     * - Malformed/unsupported header values never hard-fail the load; they are ignored and the loader falls back
+     *   according to the precedence rules above.
+     *
+     * If the response provides [HttpHeaders.Date] or [HttpHeaders.LastModified], these values are used to fill missing
+     * [AndroidRevocationList.date] and [AndroidRevocationList.lastModified] fields when they are not present in the JSON.
      *
      * @param T The type of the [HttpClientEngineConfig] to configure the HTTP engine.
      * @param engineFactory The factory responsible for creating the engine used for the HTTP client.
      * @param url The URL from which the revocation list will be fetched.
      * Defaults to the official Google attestation revocation list URL.
-     * @param preferHeaderBasedExpiry if `true` (which is the default), a present [HttpHeaders.CacheControl] `max-age` property
-     * will take precedence over a potentially present [HttpHeaders.Expires] value.
-     * Note that Google explicitly mentions cache control to communicate expiry times. Most probably
-     * because it will work as expected regardless of clock drifts.
+     * @param preferHeaderBasedExpiry Controls whether HTTP header-derived expiry should be preferred over a JSON `expires`
+     * value (see "Expiry resolution" for full details). Google explicitly mentions Cache-Control to communicate expiry times,
+     * most probably because it will work as expected regardless of clock drifts.
      *
      * @param config An optional HTTP client configuration lambda that allows customization of the client's behaviour.
      * Note that fixed defaults for caching, content-negotiation, and deserialization may override parts of the provided config.
@@ -320,34 +351,46 @@ data class AndroidRevocationList(
 
         override suspend fun fetch(now: Instant): AndroidRevocationList =
             httpClient.get(url).run {
-                val validity: Duration? = if (this@HttpLoader.preferHeaderBasedExpiry) {
-                    val cacheControl = headers.getAll(HttpHeaders.CacheControl)
-                        .orEmpty()
-                        .asSequence()
-                        .flatMap { it.split(',').asSequence() }
-                        .map { it.trim() }
-                        .filter { it.contains("=") }
-                        .map { it.split("=", limit = 2).map { value -> value.trim() } }
-                        .filter { it.size == 2 }
-                        .filter { it.first().equals("max-age", ignoreCase = true) }
-                        .toList()
-                    if (cacheControl.size > 1)
-                        throw IllegalArgumentException("Found multiple Cache-Control entries setting a max-age: ${cacheControl.joinToString { it.joinToString() }}")
-                    val cacheControlTime =
-                        if (cacheControl.isNotEmpty()) cacheControl.first()[1].toLong().seconds else null
-                    val expiry = headers.getInstant(HttpHeaders.Expires)?.let { it - now }
-                    if (cacheControlTime == null && expiry == null) null
-                    else if (cacheControlTime == null) expiry
-                    else if (expiry == null) cacheControlTime
-                    else min(cacheControlTime.inWholeSeconds, expiry.inWholeSeconds).seconds
-                } else null
+                val jsonObject = body<JsonObject>()
+                val fromJson = deserialize(jsonObject = jsonObject)
 
-                deserialize(
-                    jsonObject = body<JsonObject>(),
-                    dateOverride = headers.getInstant(HttpHeaders.Date),
-                    expiresOverride = (validity ?: fallbackRevocationListValiditySeconds.seconds).let { now + it },
-                    lastModifiedOverride = headers.getInstant(HttpHeaders.LastModified)
-                )
+                val dateFromHeader = headers.getInstant(HttpHeaders.Date)
+                val lastModifiedFromHeader = headers.getInstant(HttpHeaders.LastModified)
+
+                if (!this@HttpLoader.preferHeaderBasedExpiry && fromJson.expires != null) {
+                    return@run fromJson
+                        .let { parsed -> if (parsed.date == null) dateFromHeader?.let { parsed.copy(date = it) } ?: parsed else parsed }
+                        .let { parsed ->
+                            if (parsed.lastModified == null) lastModifiedFromHeader?.let { parsed.copy(lastModified = it) }
+                                ?: parsed else parsed
+                        }
+                }
+
+                val jsonValidity: Duration? = fromJson.expires?.let { it - now }
+                val dateOverride = dateFromHeader
+                val lastModifiedOverride = lastModifiedFromHeader
+
+                val expiresHeaderTime: Duration? = headers.getAll(HttpHeaders.Expires)
+                    .orEmpty()
+                    .singleOrNull()
+                    ?.let { parseHttpDateInstant(it) }
+                    ?.let { it - now }
+
+                val cacheControlTime: Duration? = HttpHeaders.cacheControlValidity(headers)
+
+                val headerValidity: Duration? = cacheControlTime ?: expiresHeaderTime
+
+                val effectiveValidity = if (this@HttpLoader.preferHeaderBasedExpiry) {
+                    headerValidity ?: jsonValidity ?: fallbackRevocationListValiditySeconds.seconds
+                } else {
+                    jsonValidity ?: headerValidity ?: fallbackRevocationListValiditySeconds.seconds
+                }
+
+                var parsed = fromJson
+                if (parsed.date == null && dateOverride != null) parsed = parsed.copy(date = dateOverride)
+                parsed = parsed.copy(expires = now + effectiveValidity)
+                if (parsed.lastModified == null && lastModifiedOverride != null) parsed = parsed.copy(lastModified = lastModifiedOverride)
+                parsed
             }
 
 
@@ -383,6 +426,7 @@ data class AndroidRevocationList(
 
         /**
          * Uses the official Google revocation list and always prefers header-derived expiry.
+         * See [HttpLoader] for details on caching behaviour regarding validity calculation.
          */
         @Serializable
         @SerialName("google")
@@ -401,6 +445,7 @@ data class AndroidRevocationList(
 
         /**
          * Generic HTTP loader configuration.
+         * See [HttpLoader] for details on caching behaviour regarding validity calculation.
          */
         @Serializable
         @SerialName("http")
@@ -434,10 +479,48 @@ data class AndroidRevocationList(
             private val httpDateFormatter =
                 DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC)
 
-            private fun Headers.getInstant(name: String): Instant? =
-                get(name)?.let {
-                    java.time.Instant.from(httpDateFormatter.parse(it)).toKotlinInstant()
+            private fun parseHttpDateInstant(value: String): Instant? =
+                runCatching { java.time.Instant.from(httpDateFormatter.parse(value.trim())) }
+                    .getOrNull()
+                    ?.toKotlinInstant()
+
+            private fun HttpHeaders.cacheControlValidity(headers: Headers): Duration? {
+                val cacheControl = headers.getAll(CacheControl)
+                    .orEmpty()
+                    .joinToString(",")
+                    .trim()
+                if (cacheControl.isEmpty()) return null
+
+                val directives = cacheControl.split(',')
+                    .asSequence()
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .map { it.substringBefore(';').trim() }
+                    .filter { it.isNotEmpty() }
+                    .toList()
+
+                if (directives.any { it.equals("no-store", ignoreCase = true) || it.equals("no-cache", ignoreCase = true) }) {
+                    return 0.seconds
                 }
+
+                val maxAges = directives
+                    .asSequence()
+                    .filter { it.startsWith("max-age", ignoreCase = true) }
+                    .mapNotNull { directive ->
+                        val parts = directive.split("=", limit = 2)
+                        if (parts.size != 2) return@mapNotNull null
+                        parts[1].trim()
+                            .removeSurrounding("\"")
+                            .toLongOrNull()
+                            ?.takeIf { it >= 0 }
+                    }
+                    .toList()
+
+                return maxAges.minOrNull()?.seconds
+            }
+
+            private fun Headers.getInstant(name: String): Instant? =
+                get(name)?.let { parseHttpDateInstant(it) }
 
             val GOOGLE_OFFICIAL_REVOCATION_LIST = "https://android.googleapis.com/attestation/status"
         }
