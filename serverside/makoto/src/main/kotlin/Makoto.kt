@@ -55,7 +55,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 @OptIn(ExperimentalTime::class)
 class Makoto
-@Throws(IllegalArgumentException::class) internal constructor(
+@Throws(IllegalArgumentException::class) private constructor(
     val iosAttestationConfiguration: IosAttestationConfiguration?,
     val androidAttestationConfiguration: AndroidAttestationConfiguration?,
     val clock: Clock = Clock.System,
@@ -141,8 +141,8 @@ class Makoto
     @Throws(IllegalArgumentException::class)
     @JvmOverloads
     constructor(
-        androidAttestationConfigurationJ: AndroidAttestationConfiguration,
         iosAttestationConfigurationJ: IosAttestationConfiguration,
+        androidAttestationConfigurationJ: AndroidAttestationConfiguration,
         verificationTimeOffsetJ: java.time.Duration = DEFAULT_TIME_OFFSET.toJavaDuration(),
         javaClock: java.time.Clock = java.time.Clock.systemUTC()
     ) : this(
@@ -265,7 +265,7 @@ class Makoto
      * The longest attestation validity duration over Android and iOS configuration.
      * Useful to get the longest sensible nonce validity duration
      */
-    val longestValidityDuration: Duration? = shortestDurationInternal(
+    val longestValidityDuration: Duration? = longestDurationInternal(
         iosAttestationConfiguration?.attestationStatementValiditySeconds,
         androidAttestationConfiguration?.attestationStatementValiditySeconds
     )

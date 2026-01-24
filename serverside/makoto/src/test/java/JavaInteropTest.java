@@ -27,64 +27,66 @@ public class JavaInteropTest {
     public static void testDefaults() {
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
                     new Makoto(
-                            new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData(
-                                    "at.asitplus.attestation-example", Collections.emptyList())).build(),
                             new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
                                     "1234567890",
-                                    "at.asitplus.attestation-example")));
+                                    "at.asitplus.attestation-example")),
+                            new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData(
+                                    "at.asitplus.attestation-example", Collections.emptyList())).build());
                 },
                 "No signature digests specified");
 
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
                     new Makoto(
-                            new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
-                                    new ArrayList<>()
-                            )).build(),
                             new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
                                     "1234567890",
                                     "at.asitplus.attestation-example")),
+                            new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
+                                    new ArrayList<>()
+                            )).build(),
+
                             Duration.ZERO);
                 },
                 "No signature digests specified");
 
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
                     new Makoto(
+                            new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
+                                    "1234567890",
+                                    "at.asitplus.attestation-example")),
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
                                     new ArrayList<>(),
                                     10)
                             ).build(),
-                            new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
-                                    "1234567890",
-                                    "at.asitplus.attestation-example")),
+
                             Duration.ZERO);
                 },
                 "No signature digests specified");
 
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
                     new Makoto(
+                            new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
+                                    "1234567890",
+                                    "at.asitplus.attestation-example",
+                                    true)),
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
                                     new ArrayList<>(),
                                     10,
                                     10000)
                             ).build(),
-                            new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
-                                    "1234567890",
-                                    "at.asitplus.attestation-example",
-                                    true)),
                             Duration.ZERO);
                 },
                 "No signature digests specified");
 
         Assertions.assertThrows(AndroidAttestationException.class, () -> {
                     new Makoto(
-                            new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
-                                    new ArrayList<>()
-                            )).build(),
                             new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
                                     "1234567890",
                                     "at.asitplus.attestation-example",
                                     false),
                                     new IosAttestationConfiguration.OsVersions("14.1", "18A8395")),
+                            new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
+                                    new ArrayList<>()
+                            )).build(),
                             Duration.ZERO);
                 },
                 "No signature digests specified");
@@ -92,14 +94,14 @@ public class JavaInteropTest {
 
     public static void testAttestationCallsJavaFriendliness() throws NoSuchAlgorithmException {
         AttestationService service = new Makoto(
-                new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
-                        Arrays.asList(new byte[][]{new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}}))
-                ).build(),
                 new IosAttestationConfiguration(new IosAttestationConfiguration.AppData(
                         "1234567890",
                         "at.asitplus.attestation-example",
                         false),
                         new IosAttestationConfiguration.OsVersions("14.1", "18A8395")),
+                new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
+                        Arrays.asList(new byte[][]{new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}}))
+                ).build(),
                 Duration.ZERO);
 
         KeyAttestation<ECPublicKey> keyAttestationResult = service.verifyKeyAttestation(Collections.emptyList(),

@@ -881,6 +881,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
             if (requireRemoteKeyProvisioningOverride != other.requireRemoteKeyProvisioningOverride) return false
 
+            if (trustedRootOverrides != other.trustedRootOverrides) return false
+
+            if (requireStrongBoxOverride != other.requireStrongBoxOverride) return false
+
             return true
         }
 
@@ -891,8 +895,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + packageName.hashCode()
             result = 31 * result + signerFingerprints.hashCode()
             result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
-            result = 31 * result + trustedRootOverrides.hashCode()
-            result = 31 * result + requireRemoteKeyProvisioningOverride.hashCode()
+            result = 31 * result + (trustedRootOverrides?.hashCode() ?: 0)
+            result = 31 * result + (requireRemoteKeyProvisioningOverride?.hashCode() ?: 0)
+            result = 31 * result + (requireStrongBoxOverride?.hashCode() ?: 0)
             return result
         }
 
