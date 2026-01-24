@@ -6,17 +6,25 @@ this changelog also includes the original WARDEN changelog.
 
 # 1.0.0-RC
 **Release Candidate for Warden Supreme 1.0.0**
-This release includes critical fixes for integrated (Supreme) attestation checks!.
-If you have been using Makoto and/or Roboto directly, you were never at risk
+
+**Critical fix (Supreme integrated flow):** Earlier builds contained a signature verification bug in the
+fully integrated ("Supreme") attestation flow (`AttestationVerifier`). **Roboto and Makoto were never affected.**
+If you use `AttestationVerifier` (the integrated flow), update to this release immediately. If you use Roboto and/or
+Makoto directly, you are not affected.
 
 * **New Features**
-     * Make it possible to configure only iOS or only Android attestation
-         * `AttestationResult.Error.CONTENT` is now thrown when an attestation is received for a non-configured platform
-     * Ability to set clock on client for testing/debugging (only sensible on Android)
-     * Add custom Android Attestation Extension parser (for debugging purposes, for now)
-     *
+    * Make it possible to configure only iOS or only Android attestation
+        * `AttestationResult.Error.CONTENT` is now thrown when an attestation is received for a non-configured platform
+    * Ability to set the clock on the client for testing/debugging (only sensible on Android)
+    * Add custom Android Attestation Extension parser (for debugging purposes, for now)
+    * Revamp AttestationChallenge
+        * Configurable device name OID
+            * Replace `includeGenericDeviceName` in favour of `genericDeviceNameOID`
+            * Old constructor signatures have been removed
+            * Also affects `AttestationVerifier`
+        * Bump challenge version to `2`
     * Introduce canonical config format to avoid issues with config loading
-        * Discourage config Loading through Hoplite or Spring Boot
+        * Discourage config loading through Hoplite or Spring Boot
         * Includes YAML and JSON format
         * Docs include auto-generated full JSON and YAML as a reference
     * Completely revamped revocation checks based on configurable, chainable loaders:
@@ -26,22 +34,16 @@ If you have been using Makoto and/or Roboto directly, you were never at risk
     * Provide fully-fledged Android revocation lists
         * The Android-specific `Revoked` error now includes the revocation list entry that indicates a revocation or suspension.
 * **Fixes**
-    * **Fix a glaring signature verification bug in the Supreme `AttestationVerifier`**
-        * **Neither Makoto nor Roboto were ever affected by this**
+    * **Fix a signature verification bug in the Supreme integrated `AttestationVerifier` flow**
+        * **Neither Roboto nor Makoto were ever affected by this**
     * Fix custom auth prompts not propagating for fully integrated flows
     * Fix per-app trust anchors not being picked up when using the config builders.
-    * Allow specifying CSR attributes and extensions for fully integrated flows     
+    * Allow specifying CSR attributes and extensions for fully integrated flows
     * Fix nonce validity duration calculation
     * Additional fixes to exception equality checks
 * **API-only Changes**
     * Remove all deprecations marked for removal with 1.0.0.
-    * Switch order of `androidattestationConfigurationJ` and `iosAttestationconfigurationJ` for Java-oriented Makoto constructor
-    * Revamp AttestationChallenge
-        * Configurable device name OID
-            * Replace `includeGenericDeviceName` in favour of `genericDeviceNameOID`
-            * Old constructor signatures have been removed
-            * Also Affects `AttestationVerifier`
-        * Bump challenge version to `2`
+    * Switch order of `androidAttestationConfigurationJ` and `iosAttestationConfigurationJ` for Java-oriented Makoto constructor
     * Remove ability to specify challenge validity as instant
         * Validity is set as a duration
         * read-only `validUntil` Instant-property stays
