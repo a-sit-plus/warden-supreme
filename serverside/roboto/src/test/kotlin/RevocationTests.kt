@@ -36,12 +36,14 @@ import java.net.ConnectException
 import java.nio.charset.StandardCharsets
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlin.time.toKotlinInstant
 
 
 const val TEST_STATUS_LIST_PATH = "../../dependencies/android-key-attestation/src/test/resources/status.json"
@@ -77,6 +79,17 @@ val RevocationTestFromGoogleSources by testSuite {
                 .isRevokedOrSuspended(serialNumber).shouldBeTrue()
 
             loadBlocking.isRevokedOrSuspended(BigInteger.valueOf(0xbadbeef)).shouldBeFalse()
+        }
+
+        "Date-only expires parsing" {
+            val list = AndroidRevocationList.deserialize(
+                """{"entries":{"abcd":{"status":"SUSPENDED","expires":"2025-01-31"}}}"""
+            )
+            val expected = java.time.LocalDate.parse("2025-01-31")
+                .atStartOfDay(ZoneOffset.UTC)
+                .toInstant()
+                .toKotlinInstant()
+            list.entries["abcd"]!!.expires shouldBe expected
         }
 
         "test cache" - {
@@ -116,6 +129,32 @@ val RevocationTestFromGoogleSources by testSuite {
                     (client.loadBlocking(now) === first).shouldBeTrue()
                     first.expires shouldBe now + 1.hours
                 }
+            }
+
+            "with Cache-Control max-age" {
+                val now = Clock.System.now()
+                val client = AndroidRevocationList.HttpLoader(
+                    MockEngine,
+                    url = "",
+                    fallbackRevocationListValiditySeconds = 0L
+                ) {
+                    engine {
+                        requestHandlers.add {
+                            val headers = headers {
+                                append(HttpHeaders.CacheControl, "public, max-age=3600, Wumbo")
+                                append(HttpHeaders.ContentType, "application/json")
+                            }
+                            respond(
+                                content = ByteReadChannel(File(TEST_STATUS_LIST_PATH).readBytes()),
+                                status = HttpStatusCode.OK,
+                                headers = headers
+                            )
+                        }
+                    }
+                }
+
+                val first = client.load(now)
+                first.expires shouldBe now + 1.hours
             }
         }
 
@@ -198,6 +237,5 @@ private fun setResponse(
             headers = headers { headers.forEach { appendAll(it.first, it.second) } }
         )
     }
-
 
 

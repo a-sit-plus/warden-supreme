@@ -35,6 +35,7 @@ import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -320,17 +321,20 @@ data class AndroidRevocationList(
         override suspend fun fetch(now: Instant): AndroidRevocationList =
             httpClient.get(url).run {
                 val validity: Duration? = if (this@HttpLoader.preferHeaderBasedExpiry) {
-                    val cacheControl =
-                        headers.getAll(HttpHeaders.CacheControl)
-                            .orEmpty()
-                            .asSequence()
-                            .flatMap { it.split(',') }.filter { it.contains("=") }
-                            .map { it.split("=") }.filter { it.size == 2 }.filter { it.first() == "max-age" }
-                            .toList()
+                    val cacheControl = headers.getAll(HttpHeaders.CacheControl)
+                        .orEmpty()
+                        .asSequence()
+                        .flatMap { it.split(',').asSequence() }
+                        .map { it.trim() }
+                        .filter { it.contains("=") }
+                        .map { it.split("=", limit = 2).map { value -> value.trim() } }
+                        .filter { it.size == 2 }
+                        .filter { it.first().equals("max-age", ignoreCase = true) }
+                        .toList()
                     if (cacheControl.size > 1)
                         throw IllegalArgumentException("Found multiple Cache-Control entries setting a max-age: ${cacheControl.joinToString { it.joinToString() }}")
                     val cacheControlTime =
-                        if (cacheControl.isNotEmpty()) cacheControl.first()[2].toLong().seconds else null
+                        if (cacheControl.isNotEmpty()) cacheControl.first()[1].toLong().seconds else null
                     val expiry = headers.getInstant(HttpHeaders.Expires)?.let { it - now }
                     if (cacheControlTime == null && expiry == null) null
                     else if (cacheControlTime == null) expiry
@@ -510,7 +514,10 @@ private object Iso8601YyyMmDdSerializer : KSerializer<Instant> {
     }
 
     override fun deserialize(decoder: Decoder): Instant {
-        return Instant.parse(decoder.decodeString())
+        val value = decoder.decodeString()
+        return runCatching { Instant.parse(value) }.getOrElse {
+            LocalDate.parse(value).atStartOfDay(ZoneOffset.UTC).toInstant().toKotlinInstant()
+        }
     }
 
 }
