@@ -41,6 +41,7 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
             * In-memory, static, non-caching
     * Provide fully-fledged Android revocation lists
         * The Android-specific `Revoked` error now includes the revocation list entry that indicates a revocation or suspension.
+    * Debugging is now smoother because debug statements now include the snapshot of the revocations lists they have been using 
 * **Fixes**
     * **Fix a proof-of-possession (client private key) verification bug in the Supreme integrated `AttestationVerifier` flow**
         * **Attestation verification was always correct; only proof-of-possession was affected**
@@ -63,6 +64,7 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
     * Make Makoto configs publicly accessible
     * Deprecate misnamed and overly complex APIs. They will be removed with 1.1
     * Fail early on invalid iOS team identifier length
+    * Android-only debug statements must now also contain a version number
 * **Dependency and Build updates**
     * Gradle 9 + Kotlin 2.3
         * Return value checker defaults to `check`
