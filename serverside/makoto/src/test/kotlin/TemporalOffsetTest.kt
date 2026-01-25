@@ -60,7 +60,7 @@ val TemporalOffsetTest by testSuite {
             val attestationService = attestationService(
                 timeSource = FixedTimeClock(it.verificationDate.time),
                 offset = (-1).days,
-                androidN = true, androidSW = true
+                androidSW = true
             )
             attestationService.verifyAttestation(
                 it.attestationProof,
@@ -81,7 +81,7 @@ val TemporalOffsetTest by testSuite {
             val attestationService = attestationService(
                 timeSource = FixedTimeClock(pixel6KeyMint200Good.verificationDate.time),
                 offset = (-1).days,
-                androidN = true, androidSW = true
+                 androidSW = true
             )
             attestationService.verifyAttestation(
                 pixel6KeyMint200Good.attestationProof,

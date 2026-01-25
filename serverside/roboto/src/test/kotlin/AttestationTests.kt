@@ -123,36 +123,6 @@ val AttestationTests by testSuite {
                 }
             }
 
-            "should fail with NougatHybridAttestationChecker" {
-
-                NougatHybridAttestationVerifier(
-                    AndroidAttestationConfiguration(
-                        listOf(
-                            AndroidAttestationConfiguration.AppData(
-                                packageName,
-                                signatureDigests,
-                            )
-                        ),
-                        enableNougatAttestation = true,
-                        ignoreLeafValidity = true
-                    )
-                ).apply {
-                    shouldThrow<AttestationValueException> {
-                        verifyAttestation(
-                            attestationCertChain,
-                            verificationDate,
-                            challenge
-                        )
-                    }.reason shouldBe AttestationValueException.Reason.SEC_LEVEL
-                    val collectDebugInfo =
-                        collectDebugInfo(attestationCertChain, challenge, verificationDate).serialize()
-
-                    shouldThrow<AttestationValueException> {
-                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
-                    }.reason shouldBe AttestationValueException.Reason.SEC_LEVEL
-                }
-            }
-
             "should work with SoftwareAttestationChecker" {
                 SoftwareAttestationVerifier(
                     AndroidAttestationConfiguration(
@@ -261,28 +231,6 @@ val AttestationTests by testSuite {
                 shouldThrow<CertificateInvalidException> {
                     AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
                 }.reason shouldBe CertificateInvalidException.Reason.TRUST
-            }
-        }
-
-        "should work with NougatHybridAttestationChecker" {
-            NougatHybridAttestationVerifier(
-                AndroidAttestationConfiguration(
-                    listOf(
-                        AndroidAttestationConfiguration.AppData(
-                            packageName,
-                            signatureDigests,
-                        )
-                    ),
-                    enableNougatAttestation = true,
-                    ignoreLeafValidity = true
-                )
-            ).verifyAttestation(
-                data.attestationCertChain,
-                data.verificationDate,
-                data.challenge
-            ).shouldBeInstanceOf<ParsedAttestationRecord>().apply {
-                attestationSecurityLevel() shouldBe SecurityLevel.SOFTWARE
-                keymasterSecurityLevel() shouldBe SecurityLevel.TRUSTED_ENVIRONMENT
             }
         }
     }
@@ -495,39 +443,6 @@ val AttestationTests by testSuite {
                                 recordedAttestation.verificationDate
                             ).replay().shouldBeInstanceOf<ParsedAttestationRecord>()
                         }
-                    }
-                }
-
-                "Should fail with Nougat attestation" {
-                    NougatHybridAttestationVerifier(
-                        AndroidAttestationConfiguration(
-                            listOf(
-                                AndroidAttestationConfiguration.AppData(
-                                    ATT_CLIENT_PKG_NAME,
-                                    ATT_CLIENT_DIGESTS,
-                                )
-                            ),
-                            enableNougatAttestation = true
-                        )
-                    ).apply {
-                        shouldThrow<CertificateInvalidException> {
-                            verifyAttestation(
-                                recordedAttestation.attestationCertChain,
-                                recordedAttestation.verificationDate,
-                                recordedAttestation.challenge
-                            )
-                        }.reason shouldBe CertificateInvalidException.Reason.TRUST
-
-                        val collectDebugInfo =
-                            collectDebugInfo(
-                                recordedAttestation.attestationCertChain,
-                                recordedAttestation.challenge,
-                                recordedAttestation.verificationDate
-                            ).serialize()
-
-                        shouldThrow<CertificateInvalidException> {
-                            AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
-                        }.reason shouldBe CertificateInvalidException.Reason.TRUST
                     }
                 }
 

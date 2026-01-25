@@ -52,6 +52,10 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
     * Allow specifying CSR attributes and extensions for fully integrated flows
     * Fix nonce validity duration calculation
     * Additional fixes to exception equality checks
+* **Removed Features**
+   * Nougat Hybrid Attestation has been completely removed due to irrelevance
+       * Android 7 was released a decade ago
+       * Devices released with Android 7 it lost support around eight years ago
 * **API-only Changes**
     * Remove all deprecations marked for removal with 1.0.0.
     * Switch order of `androidAttestationConfigurationJ` and `iosAttestationConfigurationJ` for Java-oriented Makoto constructor
