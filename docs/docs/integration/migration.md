@@ -1,5 +1,7 @@
 # Migration from WARDEN / WARDEN‑roboto
 
+**The most obvious change coming from WARDEN / WARDEN-roboto is dropped support for Nougat hybrid attestation on Android. It is simply not relevant any more.**
+
 !!! danger "Read This First: Footguns"
     The biggest upgrade hazards are about configuration loading and time checks:
 
