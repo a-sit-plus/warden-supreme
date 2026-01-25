@@ -46,6 +46,7 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
     * **Fix a proof-of-possession (client private key) verification bug in the Supreme integrated `AttestationVerifier` flow**
         * **Attestation verification was always correct; only proof-of-possession was affected**
         * **Neither Roboto nor Makoto were ever affected by this**
+    * Per-App Strongbox overrides are now respected
     * Fix custom auth prompts not propagating for fully integrated flows
     * Fix per-app trust anchors not being picked up when using the config builders.
     * Allow specifying CSR attributes and extensions for fully integrated flows
