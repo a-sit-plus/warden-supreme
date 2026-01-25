@@ -20,19 +20,12 @@ class NougatHybridAttestationVerifier @JvmOverloads constructor(
 
     @Throws(AttestationValueException::class)
     override fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean?/*ignored*/) {
-        if (attestationConfiguration.requireStrongBox) {
-            if (keymasterSecurityLevel() != ParsedAttestationRecord.SecurityLevel.STRONG_BOX) throw AttestationValueException(
-                "Keymaster security level not StrongBox", reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                actualValue = keymasterSecurityLevel()
-            )
-        } else {
-            if (keymasterSecurityLevel() == ParsedAttestationRecord.SecurityLevel.SOFTWARE) throw AttestationValueException(
-                "Keymaster security level software", reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                actualValue = keymasterSecurityLevel()
-            )
-        }
+        if (keymasterSecurityLevel() == ParsedAttestationRecord.SecurityLevel.SOFTWARE) throw AttestationValueException(
+            "Keymaster security level software", reason = AttestationValueException.Reason.SEC_LEVEL,
+            expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
+            actualValue = keymasterSecurityLevel()
+        )
+
         if (attestationSecurityLevel() != ParsedAttestationRecord.SecurityLevel.SOFTWARE) {
             throw AttestationValueException(
                 "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
@@ -45,7 +38,11 @@ class NougatHybridAttestationVerifier @JvmOverloads constructor(
     override val trustAnchors = attestationConfiguration.softwareTrustedRoots
 
     @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyAndroidVersion(versionOverride: Int?, osPatchLevel: PatchLevel?, verificationDate: Date) {
+    override fun ParsedAttestationRecord.verifyAndroidVersion(
+        versionOverride: Int?,
+        osPatchLevel: PatchLevel?,
+        verificationDate: Date
+    ) {
         //impossible
     }
 
