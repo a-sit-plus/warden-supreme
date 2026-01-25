@@ -536,7 +536,7 @@ abstract class Roboto(
             actualValue = receivedChallenge
         )
         parsedAttestationRecord.verifyAttestationTime(verificationDate.toInstant())
-        parsedAttestationRecord.verifySecurityLevel()
+        parsedAttestationRecord.verifySecurityLevel(attestedApp.requireStrongBoxOverride)
         parsedAttestationRecord.verifyBootStateAndSystemImage()
         parsedAttestationRecord.verifyRollbackResistance()
 
