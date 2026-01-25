@@ -49,7 +49,6 @@ val initTests by testSuite {
         verificationSecondsOffset = 0, //DEFAULT
         /*(12)!*/disableHardwareAttestation = false,
         enableSoftwareAttestation = false, //DEFAULT
-        /*(13)!*/enableNougatAttestation = false, //DEFAULT
         /*(14)!*/attestationStatementValiditySeconds = null, // DEFAULT; no validity time checks!
         /*(15)!*/ revocation = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("https://localhost:2345"),
             AndroidRevocationList.FileLoader.Configuration("./localrevocation.json")), // Defaults to null
@@ -97,7 +96,7 @@ val initTests by testSuite {
     "timely properties are the same" {
         verifierFromMakoto.nonceValidity shouldBe verifierFromConfigs.nonceValidity
         (verifierFromMakoto.challengeValidator as InMemoryChallengeCache).clock shouldBe (verifierFromConfigs.challengeValidator as InMemoryChallengeCache).clock
-        (verifierFromMakoto.challengeValidator).offset shouldBe (verifierFromConfigs.challengeValidator as InMemoryChallengeCache).offset
+        (verifierFromMakoto.challengeValidator).offset shouldBe (verifierFromConfigs.challengeValidator).offset
         (verifierFromMakoto.challengeValidator).offset shouldBe -makoto.verificationTimeOffset
     }
 

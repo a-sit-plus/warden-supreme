@@ -313,11 +313,6 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
  * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12]
  * @param disableHardwareAttestation Entirely disable creation of a [HardwareAttestationVerifier].
  * Only change this flag, if you **really** know what you are doing!
- * @param enableNougatAttestation Enables hybrid attestation.
- * [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
- * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
- * devices only support hardware-backed key attestation, but provide no indication about the OS state.
- * Hence, app-attestation cannot be trusted, but key attestation still can.
  * @param enableSoftwareAttestation Enables software attestation.
  * A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
  * Only change this flag, if you **really** know what you are doing!
@@ -347,14 +342,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Set to `true` if *StrongBox* security level should be required.
-     * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+     * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
      */
     val requireStrongBox: Boolean = false,
 
     /**
      * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
      * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-     * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+     * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
      */
     val allowBootloaderUnlock: Boolean = false,
 
@@ -402,14 +397,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * @see enableSoftwareAttestation
      */
     val disableHardwareAttestation: Boolean = false,
-
-    /**
-     * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
-     * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
-     * devices only support hardware-backed key attestation, but provide no indication about the OS state.
-     * Hence, app-attestation cannot be trusted, but key attestation still can.
-     */
-    val enableNougatAttestation: Boolean = false,
 
     /**
      * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
@@ -515,14 +502,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
-         * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
-         * devices only support hardware-backed key attestation, but provide no indication about the OS state.
-         * Hence, app-attestation cannot be trusted, but key attestation still can.
-         */
-        enableNougatAttestation: Boolean = false,
-
-        /**
          * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you **really** know what you are doing!
          * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
@@ -555,7 +534,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         verificationSecondsOffset = verificationSecondsOffset,
         attestationStatementValiditySeconds = attestationStatementValiditySeconds,
         disableHardwareAttestation = disableHardwareAttestation,
-        enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
@@ -624,14 +602,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables hybrid attestation. A [NougatHybridAttestationVerifier] can only be instantiated if this flag is set to true.
-         * Only change this flag, if you require support for devices, which originally shipped with Android 7 (Nougat), as these
-         * devices only support hardware-backed key attestation, but provide no indication about the OS state.
-         * Hence, app-attestation cannot be trusted, but key attestation still can.
-         */
-        enableNougatAttestation: Boolean = false,
-
-        /**
          * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
          * Only change this flag, if you **really** know what you are doing!
          * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
@@ -688,7 +658,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         verificationSecondsOffset = verificationSecondsOffset,
         attestationStatementValiditySeconds = attestationStatementValiditySeconds,
         disableHardwareAttestation = disableHardwareAttestation,
-        enableNougatAttestation = enableNougatAttestation,
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
@@ -908,9 +877,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             throw object : AndroidAttestationException("No trust anchors configured", null) {}
 
         if (applications.isEmpty()) throw object : AndroidAttestationException("No apps configured", null) {}
-        if (disableHardwareAttestation && !enableSoftwareAttestation && !enableNougatAttestation)
+        if (disableHardwareAttestation && !enableSoftwareAttestation)
             throw object : AndroidAttestationException(
-                "Neither hardware, nor hybrid, nor software attestation enabled", null
+                "Neither hardware, nor software attestation enabled", null
             ) {}
         attestationStatementValiditySeconds?.let {
             if (it < 0) throw object :
@@ -943,7 +912,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var attestationStatementValiditySeconds: Long? = null
         private var disableHwAttestation: Boolean = false
         private var enableSwAttestation: Boolean = false
-        private var enableNougatAttestation: Boolean = false
         private var revocation: List<AndroidRevocationList.Loader.Configuration<*>> =
             listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
@@ -1059,11 +1027,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         fun enableSoftwareAttestation() = apply { enableSwAttestation = true }
 
         /**
-         * @see AndroidAttestationConfiguration.enableNougatAttestation
-         */
-        fun enableNougatAttestation() = apply { enableNougatAttestation = true }
-
-        /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
          * @see AndroidRevocationList.HttpLoader.Configuration
          * @see AndroidRevocationList.FileLoader.Configuration
@@ -1091,7 +1054,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             attestationStatementValiditySeconds = attestationStatementValiditySeconds,
             disableHardwareAttestation = disableHwAttestation,
             enableSoftwareAttestation = enableSwAttestation,
-            enableNougatAttestation = enableNougatAttestation,
             revocation = revocation,
             requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
         )
@@ -1112,7 +1074,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "verificationSecondsOffset=$verificationSecondsOffset, " +
                 "attestationStatementValiditySeconds=$attestationStatementValiditySeconds, " +
                 "disableHardwareAttestation=$disableHardwareAttestation, " +
-                "enableNougatAttestation=$enableNougatAttestation, " +
                 "enableSoftwareAttestation=$enableSoftwareAttestation, " +
                 "revocation=$revocation, " +
                 "osPatchLevel=$osPatchLevel" +
@@ -1131,7 +1092,6 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (verificationSecondsOffset != other.verificationSecondsOffset) return false
         if (attestationStatementValiditySeconds != other.attestationStatementValiditySeconds) return false
         if (disableHardwareAttestation != other.disableHardwareAttestation) return false
-        if (enableNougatAttestation != other.enableNougatAttestation) return false
         if (enableSoftwareAttestation != other.enableSoftwareAttestation) return false
         if (osPatchLevel != other.osPatchLevel) return false
         if (applications != other.applications) return false
@@ -1156,14 +1116,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + verificationSecondsOffset.toInt()
         attestationStatementValiditySeconds?.let { result = 31 * result + attestationStatementValiditySeconds.toInt() }
         result = 31 * result + disableHardwareAttestation.hashCode()
-        result = 31 * result + enableNougatAttestation.hashCode()
         result = 31 * result + enableSoftwareAttestation.hashCode()
         result = 31 * result + (osPatchLevel ?: 0)
         result = 31 * result + applications.hashCode()
         result = 31 * result + (patchLevel?.hashCode() ?: 0)
         result = 31 * result + hardwareTrustedRoots.hashCode()
         result = 31 * result + softwareTrustedRoots.hashCode()
-        result = 31 * result + (revocation?.hashCode() ?: 0)
+        result = 31 * result + (revocation.hashCode() ?: 0)
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
         return result
     }

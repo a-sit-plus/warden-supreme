@@ -162,19 +162,17 @@ The full details on the configuration can be found in the [API documentation](..
     10. This is rarely used in practice and shows the default
     11. This is rather optimistic, but the majority of devices running Android 13 should handle this correctly.
     12. Usually, you will want hardware attestation, so you'd need to explicitly disable it
-    13. This is for devices launched with Android 7.0 who have not received an upgraded KeyMaster. Such devices are only capable of key attestation.  
-       Their app attestation claims are only software-attested!
-    14. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
+    13. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
        It is not recommended to set this value because many OEMs get this wrong.
-    15. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
-    16. A single iOS app for evaluation purposes.
-    17. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
-    18. Uses the test stage
-    19. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
-    20. This could already be a production value, in preparation for the real iOS app
-    21. This is simply Apple's recommendation plus five minutes offset
-    22. Explicitly set production trusted roots as default
-    23. Account for clock drift!
+    14. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
+    15. A single iOS app for evaluation purposes.
+    16. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
+    17. Uses the test stage
+    18. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
+    19. This could already be a production value, in preparation for the real iOS app
+    20. This is simply Apple's recommendation plus five minutes offset
+    21. Explicitly set production trusted roots as default
+    22. Account for clock drift!
     
     Note that revocation configuration has been revamped after 0.9.9999 (see below)!
 
