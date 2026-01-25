@@ -303,7 +303,6 @@ fun attestationService(
     offset: Duration = 0.seconds,
     eternalLeaves: Boolean = false,
     androidSW: Boolean = false,
-    androidN: Boolean = false,
     androidAttestationStatementValidity: Duration = 10.minutes,
     iosAttestationStatementValidity: Duration = 10.minutes,
 ) =
@@ -323,7 +322,6 @@ fun attestationService(
             requireRollbackResistance = requireRollbackResistance,
             ignoreLeafValidity = eternalLeaves,
             enableSoftwareAttestation = androidSW,
-            enableNougatAttestation = androidN,
             attestationStatementValiditySeconds = androidAttestationStatementValidity.inWholeSeconds
         ),
         IosAttestationConfiguration(

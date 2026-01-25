@@ -54,7 +54,6 @@ class AndroidDebugAttestationStatement(
         when (kind) {
             Type.HARDWARE -> HardwareAttestationVerifier(configuration)
             Type.SOFTWARE -> SoftwareAttestationVerifier(configuration)
-            Type.NOUGAT_HYBRID -> NougatHybridAttestationVerifier(configuration)
         }
 
     override suspend fun replay() =
@@ -71,7 +70,7 @@ class AndroidDebugAttestationStatement(
 
     @Serializable
     enum class Type {
-        HARDWARE, SOFTWARE, NOUGAT_HYBRID
+        HARDWARE, SOFTWARE
     }
 
     //Reader<D, R : DebugStatement<R>>
@@ -88,7 +87,6 @@ class AndroidDebugAttestationStatement(
             when (verifier) {
                 is HardwareAttestationVerifier -> Type.HARDWARE
                 is SoftwareAttestationVerifier -> Type.SOFTWARE
-                is NougatHybridAttestationVerifier -> Type.NOUGAT_HYBRID
                 else -> throw IllegalArgumentException("Unknown checker type")
             },
             configuration,

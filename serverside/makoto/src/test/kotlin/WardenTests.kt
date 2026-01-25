@@ -690,121 +690,45 @@ val WardenTest by testSuite {
                         }
                     }
 
-
-                    "Wrongfully disabled HW attestation" - {
+                    "Wrongfully disabled HW attestation" {
                         val clock =
                             FixedTimeClock(recordedAttestation.verificationDate.toInstant().toKotlinInstant())
-                        "Software-Only" {
-                            Makoto(
-                                androidAttestationConfiguration = AndroidAttestationConfiguration(
-                                    listOf(
-                                        AndroidAttestationConfiguration.AppData(
-                                            ANDROID_PACKAGE_NAME,
-                                            ANDROID_SIGNATURE_DIGESTS
-                                        )
-                                    ),
-                                    attestationStatementValiditySeconds = 300,
-                                    disableHardwareAttestation = true,
-                                    enableSoftwareAttestation = true,
-                                    ignoreLeafValidity = true
+                        Makoto(
+                            androidAttestationConfiguration = AndroidAttestationConfiguration(
+                                listOf(
+                                    AndroidAttestationConfiguration.AppData(
+                                        ANDROID_PACKAGE_NAME,
+                                        ANDROID_SIGNATURE_DIGESTS
+                                    )
                                 ),
-                                DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock,
-                                verificationTimeOffset = Duration.ZERO
-                            ).apply {
-                                verifyAttestation(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge
-                                ).shouldBeInstanceOf<AttestationResult.Error>()
-                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                                attestationStatementValiditySeconds = 300,
+                                disableHardwareAttestation = true,
+                                enableSoftwareAttestation = true,
+                                ignoreLeafValidity = true
+                            ),
+                            DEFAULT_IOS_ATTESTATION_CFG,
+                            clock = clock,
+                            verificationTimeOffset = Duration.ZERO
+                        ).apply {
+                            verifyAttestation(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge
+                            ).shouldBeInstanceOf<AttestationResult.Error>()
+                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
 
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replay()
-                                        shouldBeInstanceOf<AttestationResult.Error>()
-                                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-                                    }
-                            }
+                            val dbg = collectDebugInfo(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge,
+                            ).serializeCompact()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation().apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replay()
+                                    shouldBeInstanceOf<AttestationResult.Error>()
+                                        .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                                }
                         }
 
-                        "Nougat attestation" {
-                            Makoto(
-                                androidAttestationConfiguration = AndroidAttestationConfiguration(
-                                    listOf(
-                                        AndroidAttestationConfiguration.AppData(
-                                            ANDROID_PACKAGE_NAME,
-                                            ANDROID_SIGNATURE_DIGESTS
-                                        )
-                                    ),
-                                    disableHardwareAttestation = true,
-                                    enableNougatAttestation = true,
-                                    attestationStatementValiditySeconds = 300,
-                                ),
-                                DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock,
-                                verificationTimeOffset = Duration.ZERO
-                            ).apply {
-                                verifyAttestation(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge
-                                ).shouldBeInstanceOf<AttestationResult.Error>()
-                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replay()
-                                        shouldBeInstanceOf<AttestationResult.Error>()
-                                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-                                    }
-                            }
-                        }
-                        "Software + Nougat attestation" {
-                            Makoto(
-                                androidAttestationConfiguration = AndroidAttestationConfiguration(
-                                    listOf(
-                                        AndroidAttestationConfiguration.AppData(
-                                            ANDROID_PACKAGE_NAME,
-                                            ANDROID_SIGNATURE_DIGESTS
-                                        )
-                                    ),
-                                    disableHardwareAttestation = true,
-                                    enableNougatAttestation = true,
-                                    enableSoftwareAttestation = true,
-                                    attestationStatementValiditySeconds = 300,
-                                ),
-                                DEFAULT_IOS_ATTESTATION_CFG,
-                                clock = clock,
-                                verificationTimeOffset = Duration.ZERO
-                            ).apply {
-                                verifyAttestation(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge
-                                ).shouldBeInstanceOf<AttestationResult.Error>().also { println(it) }
-                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replay()
-                                        shouldBeInstanceOf<AttestationResult.Error>()
-                                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-                                    }
-                            }
-                        }
                     }
 
                     "Fail" - {
@@ -1125,7 +1049,8 @@ val WardenTest by testSuite {
                         .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
                 }
 
-                "Nougat Hybrid attestation should fail" {
+
+                "Software attestation should work" {
                     Makoto(
                         androidAttestationConfiguration = AndroidAttestationConfiguration(
                             listOf(
@@ -1134,10 +1059,10 @@ val WardenTest by testSuite {
                                     ANDROID_SIGNATURE_DIGESTS
                                 )
                             ),
-                            attestationStatementValiditySeconds = 300,
                             disableHardwareAttestation = true,
-                            enableNougatAttestation = true,
-                            ignoreLeafValidity = true
+                            enableSoftwareAttestation = true,
+                            ignoreLeafValidity = true,
+                            attestationStatementValiditySeconds = 10 * 60
                         ),
                         DEFAULT_IOS_ATTESTATION_CFG,
                         clock = clock,
@@ -1146,168 +1071,18 @@ val WardenTest by testSuite {
                         verifyAttestation(
                             attestationProof,
                             challenge
-                        ).shouldBeInstanceOf<AttestationResult.Error>()
-                            .cause.shouldBeInstanceOf<AttestationException.Content>()
-
+                        ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord
                         val dbg = collectDebugInfo(
                             attestationProof,
                             challenge,
                         ).serializeCompact()
-                        WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replay()
-                                shouldBeInstanceOf<AttestationResult.Error>()
-                                    .cause.shouldBeInstanceOf<AttestationException.Content>()
-                            }
-                    }
-                }
-
-                "HW Attestation and Nougat Hybrid attestation combined should fail" {
-                    Makoto(
-                        androidAttestationConfiguration = AndroidAttestationConfiguration(
-                            listOf(
-                                AndroidAttestationConfiguration.AppData(
-                                    ANDROID_PACKAGE_NAME,
-                                    ANDROID_SIGNATURE_DIGESTS
-                                )
-                            ),
-                            attestationStatementValiditySeconds = 300,
-                            enableNougatAttestation = true,
-                            ignoreLeafValidity = true
-                        ),
-                        DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock,
-                        verificationTimeOffset = Duration.ZERO
-                    ).apply {
-                        verifyAttestation(
-                            attestationProof,
-                            challenge
-                        ).shouldBeInstanceOf<AttestationResult.Error>()
-                            .cause.shouldBeInstanceOf<AttestationException.Content>()
-                        val dbg = collectDebugInfo(
-                            attestationProof,
-                            challenge,
-                        ).serializeCompact()
-                        WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replay()
-                                shouldBeInstanceOf<AttestationResult.Error>()
-                                    .cause.shouldBeInstanceOf<AttestationException.Content>()
-                            }
-                    }
-                }
-
-                "Software attestation should work" - {
-
-                    "stand-alone" {
-                        Makoto(
-                            androidAttestationConfiguration = AndroidAttestationConfiguration(
-                                listOf(
-                                    AndroidAttestationConfiguration.AppData(
-                                        ANDROID_PACKAGE_NAME,
-                                        ANDROID_SIGNATURE_DIGESTS
-                                    )
-                                ),
-                                disableHardwareAttestation = true,
-                                enableSoftwareAttestation = true,
-                                ignoreLeafValidity = true,
-                                attestationStatementValiditySeconds = 10 * 60
-                            ),
-                            DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock,
-                            verificationTimeOffset = Duration.ZERO
-                        ).apply {
-                            verifyAttestation(
-                                attestationProof,
-                                challenge
-                            ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord
-                            val dbg = collectDebugInfo(
-                                attestationProof,
-                                challenge,
-                            ).serializeCompact()
-                            val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation()
-                            replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replay()
-                            replayGenericAttestation
-                                .shouldBeInstanceOf<AttestationResult.Android>()
-                        }
-                    }
-
-                    "with Nougat attestation" {
-                        Makoto(
-                            androidAttestationConfiguration = AndroidAttestationConfiguration(
-                                listOf(
-                                    AndroidAttestationConfiguration.AppData(
-                                        ANDROID_PACKAGE_NAME,
-                                        ANDROID_SIGNATURE_DIGESTS
-                                    )
-                                ),
-                                disableHardwareAttestation = true,
-                                enableNougatAttestation = true,
-                                enableSoftwareAttestation = true,
-                                ignoreLeafValidity = true,
-                                attestationStatementValiditySeconds = 10 * 60
-                            ),
-                            DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock,
-                            verificationTimeOffset = Duration.ZERO
-                        ).apply {
-                            verifyAttestation(
-                                attestationProof,
-                                challenge
-                            ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord
-                            val dbg = collectDebugInfo(
-                                attestationProof,
-                                challenge,
-                            ).serializeCompact()
-                            val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation()
-                            replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replay()
-                            replayGenericAttestation
-                                .shouldBeInstanceOf<AttestationResult.Android>()
-                        }
-                    }
-
-                    "with Nougat and HW attestation" {
-                        Makoto(
-                            androidAttestationConfiguration = AndroidAttestationConfiguration(
-                                listOf(
-                                    AndroidAttestationConfiguration.AppData(
-                                        ANDROID_PACKAGE_NAME,
-                                        ANDROID_SIGNATURE_DIGESTS
-                                    )
-                                ),
-                                enableNougatAttestation = true,
-                                enableSoftwareAttestation = true,
-                                ignoreLeafValidity = true,
-                                attestationStatementValiditySeconds = 10 * 60
-                            ),
-                            DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock,
-                            verificationTimeOffset = Duration.ZERO
-                        ).apply {
-                            verifyAttestation(
-                                attestationProof,
-                                challenge
-                            ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord
-                            val dbg = collectDebugInfo(
-                                attestationProof,
-                                challenge,
-                            ).serializeCompact()
-                            val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation()
-                            replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replay()
-                            replayGenericAttestation
-                                .shouldBeInstanceOf<AttestationResult.Android>()
-                        }
+                        val replayGenericAttestation =
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation()
+                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replay()
+                        replayGenericAttestation
+                            .shouldBeInstanceOf<AttestationResult.Android>()
                     }
                 }
             }
@@ -1330,186 +1105,6 @@ val WardenTest by testSuite {
             val packageName = "com.example.trustedapplication"
 
             val clock = FixedTimeClock(data.verificationDate.toInstant().toKotlinInstant())
-
-            "Nougat Hybrid attestation should work" - {
-                "stand-alone" {
-                    Makoto(
-                        androidAttestationConfiguration = AndroidAttestationConfiguration(
-                            listOf(
-                                AndroidAttestationConfiguration.AppData(
-                                    packageName,
-                                    signatureDigests
-                                )
-                            ),
-                            disableHardwareAttestation = true,
-                            enableNougatAttestation = true,
-                            attestationStatementValiditySeconds = 300,
-                            ignoreLeafValidity = true
-                        ),
-                        DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock,
-                        verificationTimeOffset = Duration.ZERO
-                    ).apply {
-                        verifyAttestation(
-                            data.attestationProof,
-                            data.challenge
-                        ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
-                            attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
-                            keymasterSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT
-                        }
-
-                        val dbg = collectDebugInfo(
-                            data.attestationProof,
-                            data.challenge,
-                        ).serializeCompact()
-                        val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replay()
-                        replayGenericAttestation
-                            .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
-                                attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
-                                keymasterSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT
-
-                            }
-
-                    }
-                }
-
-
-                "with Hardware attestation" {
-                    Makoto(
-                        androidAttestationConfiguration = AndroidAttestationConfiguration(
-                            listOf(
-                                AndroidAttestationConfiguration.AppData(
-                                    packageName,
-                                    signatureDigests
-                                )
-                            ),
-                            enableNougatAttestation = true,
-                            attestationStatementValiditySeconds = 300,
-                            ignoreLeafValidity = true
-                        ),
-                        DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock,
-                        verificationTimeOffset = Duration.ZERO
-                    ).apply {
-                        verifyAttestation(
-                            data.attestationProof,
-                            data.challenge
-                        ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
-                            attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
-                            keymasterSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT
-                        }
-                        val dbg = collectDebugInfo(
-                            data.attestationProof,
-                            data.challenge,
-                        ).serializeCompact()
-                        val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replay()
-                        replayGenericAttestation
-                            .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
-                                attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
-                                keymasterSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT
-
-                            }
-
-                    }
-                }
-
-                "with Hardware + Sowftware Attestation " {
-                    Makoto(
-                        androidAttestationConfiguration = AndroidAttestationConfiguration(
-                            listOf(
-                                AndroidAttestationConfiguration.AppData(
-                                    packageName,
-                                    signatureDigests
-                                )
-                            ),
-                            attestationStatementValiditySeconds = 300,
-                            enableSoftwareAttestation = true,
-                            enableNougatAttestation = true,
-                            ignoreLeafValidity = true
-                        ),
-                        DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock,
-                        verificationTimeOffset = Duration.ZERO
-                    ).apply {
-                        verifyAttestation(
-                            data.attestationProof,
-                            data.challenge
-                        ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
-                            attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
-                            keymasterSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT
-                        }
-                        val dbg = collectDebugInfo(
-                            data.attestationProof,
-                            data.challenge,
-                        ).serializeCompact()
-                        val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replay()
-                        replayGenericAttestation
-                            .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
-                                attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
-                                keymasterSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT
-
-                            }
-
-                    }
-                }
-
-                "with Software Attestation" {
-                    Makoto(
-                        androidAttestationConfiguration = AndroidAttestationConfiguration(
-                            listOf(
-                                AndroidAttestationConfiguration.AppData(
-                                    packageName,
-                                    signatureDigests
-                                )
-                            ),
-                            attestationStatementValiditySeconds = 300,
-                            disableHardwareAttestation = true,
-                            enableSoftwareAttestation = true,
-                            enableNougatAttestation = true,
-                            ignoreLeafValidity = true
-                        ),
-                        DEFAULT_IOS_ATTESTATION_CFG,
-                        clock = clock,
-                        verificationTimeOffset = Duration.ZERO
-                    ).apply {
-                        verifyAttestation(
-                            data.attestationProof,
-                            data.challenge
-                        ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
-                            attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
-                            keymasterSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT
-                        }
-                        val dbg = collectDebugInfo(
-                            data.attestationProof,
-                            data.challenge,
-                        ).serializeCompact()
-                        val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replay()
-                        replayGenericAttestation
-                            .shouldBeInstanceOf<AttestationResult.Android>().attestationRecord.apply {
-                                attestationSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.SOFTWARE
-                                keymasterSecurityLevel() shouldBe ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT
-
-                            }
-
-                    }
-                }
-            }
 
             "Hardware attestation should fail" {
                 Makoto(

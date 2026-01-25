@@ -226,10 +226,6 @@ class Makoto
             HardwareAttestationVerifier(
                 correctlyOffsetAndroidConfig
             ) { expected, actual -> expected contentEquals actual })
-        if (correctlyOffsetAndroidConfig.enableNougatAttestation) verifiers.add(
-            NougatHybridAttestationVerifier(
-                correctlyOffsetAndroidConfig
-            ) { expected, actual -> expected contentEquals actual })
         if (correctlyOffsetAndroidConfig.enableSoftwareAttestation) verifiers.add(
             SoftwareAttestationVerifier(
                 correctlyOffsetAndroidConfig

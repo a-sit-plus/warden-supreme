@@ -56,7 +56,6 @@ val AndroidConfigurationBuilderTests by testSuite {
             .attestationStatementValiditySeconds(600)
             .disableHardwareAttestation()
             .enableSoftwareAttestation()
-            .enableNougatAttestation()
             .revocation(revocation)
             .requireRemoteKeyProvisioning(true)
             .build()
@@ -73,7 +72,6 @@ val AndroidConfigurationBuilderTests by testSuite {
         config.attestationStatementValiditySeconds shouldBe 600
         config.disableHardwareAttestation shouldBe true
         config.enableSoftwareAttestation shouldBe true
-        config.enableNougatAttestation shouldBe true
         config.revocation shouldBe revocation
         config.requireRemoteKeyProvisioning shouldBe true
     }
