@@ -1,4 +1,4 @@
-# iOS App Attest Deep Dive
+# iOS Device Check / App Attest Deep Dive
 
 This page explains how trust is established for an iOS app instance using App Attest, from key creation in the
 Secure Enclave to attestation and ongoing assertions, and how a service verifies those artefacts. It links to

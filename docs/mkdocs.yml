@@ -101,8 +101,10 @@ nav:
             - Thread Models and Risks: bg/threatmodels.md
             - Privacy and Data Protection: bg/privacy.md
         - Technical Deep Dive:
-            - Android: technical/android.md
-            - iOS: technical/ios.md
+            - Android:
+                - Attestation Model: technical/android.md
+                - Leaked KeyBoxes: technical/android/leakedkeys.md
+            - iOS DeviceCheck &amp; App&nbsp;Attest: technical/ios.md
             - Quirks and Hints: technical/quirks.md
         - Testing: testing.md
         - References: refs.md
