@@ -208,7 +208,7 @@ For convenience, the minimum set relevant to leaked keyboxes is summarised here:
 
 Even if you already consume Google’s official status list, operational reality can require **supplemental** controls, for example:
 
-- You ingest *your own* monitoring / incident response intelligence and want to react faster than external publication cycles.
+- You ingest *your own* monitoring / incident response intelligence.
 - You want environment-specific hardening (e.g., stricter policies for a regulated service tier).
 - You need deterministic change control (e.g., staged rollout, extra audit trails, or “hotfix” deny entries during an incident).
 
