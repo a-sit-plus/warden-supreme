@@ -97,7 +97,7 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 6. **Root-of-trust**: require `verifiedBootState = VERIFIED`, `deviceLocked = true`; optionally **pin `verifiedBootKey`** and enforce minimum `osPatchLevel` / `vendorPatchLevel` / `bootPatchLevel`.
 7. **App binding**: require `packageName` and **signer digest(s)** to match your allow-list; optionally pin **`versionCode`** via an app-side claim bound to the challenge.
 8. **Key properties**: check `securityLevel` in `hardwareEnforced` is **TrustedEnvironment** or **StrongBox**; verify **`userAuth`** parameters (auth-per-use / timeouts) meet your policy.
-9. **Revocation**: check against **revoked attestation keys** (Google feeds) and your own deny-lists; fail closed in high-assurance contexts.
+9. **Revocation**: check against **revoked attestation keys** (Google feeds) and your own revocation lists; fail closed in high-assurance contexts.
 10. **Decision & logging**: produce an auditable decision with specific reasons (e.g., “boot not verified”, “signer mismatch”, “patch too old”).
 
 
