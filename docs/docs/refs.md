@@ -6,6 +6,9 @@
 ## Android Attestation
 - <a id="ref-android-key-attestation"></a>Android Key Attestation (Developer Guide): [Verify Hardware‑Backed Key Pairs with Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)
 - <a id="ref-android-key-id-attestation"></a>Android Key and ID Attestation (AOSP Specification and Schema): [Key and ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)
+- <a id="ref-android-rkp"></a><a id="ref-android-rkpd"></a>Remote Key Provisioning (AOSP Source): [RemoteKeyProvisioning Module](https://android.googlesource.com/platform/packages/modules/RemoteKeyProvisioning/+/refs/heads/main)
+- <a id="ref-android-compat-overview"></a>Android Device Certification Overview (Compatibility): [Compatibility Overview](https://source.android.com/docs/compatibility/overview)
+- <a id="ref-android-14-cdd"></a>Android 14 Compatibility Definition Document (CDD): [Android 14 CDD](https://source.android.com/docs/compatibility/14/android-14-cdd)
 - <a id="ref-android-keystore-strongbox"></a>Android Keystore and StrongBox Overview (Developer Guide): [Security and StrongBox](https://developer.android.com/privacy-and-security/keystore)
 - <a id="ref-android-keystore2-fix"></a>Android Keystore2 Stability Fix (Post‑Android 16): [Binder Fix — Commit b0be7ed…](https://android.googlesource.com/platform/system/security/+/b0be7edbf9e34bc409c6d869f936c2eb00925b34)
 - <a id="ref-android-attestation-lib-legacy"></a>Android Attestation Libraries (legacy): [google/android‑key‑attestation](https://github.com/google/android-key-attestation)
@@ -27,6 +30,8 @@
 - <a id="ref-warden-roboto"></a>WARDEN‑roboto (Android Attestation Utilities and Parsers): [Repository](https://github.com/a-sit-plus/warden-roboto/)
 
 ## Background and Research
-- <a id="ref-android-platform-security-model"></a>Android Platform Security Model (Academic Paper): [Mayrhofer et al., “Android Platform Security Model”](https://arxiv.org/abs/1904.05572)
-- <a id="ref-sybil-attack"></a>The Sybil Attack (Foundational Concept, P2P, and Identity Fraud): [John R. Douceur, IPTPS 2002](http://research.microsoft.com/en-us/um/people/douceur/documents/sybil.pdf)
+- <a id="ref-android-platform-security-model"></a>Android Platform Security Model (Academic Paper): [Mayrhofer et al.](https://arxiv.org/abs/1904.05572)
+- <a id="ref-sybil-attack"></a>The Sybil Attack (Foundational Concept, P2P, and Identity Fraud): [John R. Douceur](https://www.freehaven.net/anonbib/cache/sybil.pdf)
 - <a id="ref-digitales-amt-repackaging"></a>_Digitales Amt_ Repackaging: [eGovPatchesAT/id-austria](https://github.com/eGovPatchesAT/id-austria)
+- <a id="ref-tryigit-keybox-analysis"></a>Community Analysis (Gray/Black Market): [Android Keybox Attestation Analysis](https://tryigit.dev/android-keybox-attestation-analysis/#chapter-5)
+- <a id="ref-tryigit-keybox-vip"></a>Leaked Keyboxes (part accurate, part marketing claims): [“VIP Keybox” Pricing Page](https://tryigit.dev/keybox/vip/#pricing)
