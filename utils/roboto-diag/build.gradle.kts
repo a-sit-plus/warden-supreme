@@ -35,6 +35,7 @@ sourceSets.main {
 
 
 dependencies {
+    implementation(project(":supreme-common"))
     implementation(project(":roboto"))
     implementation(libs.autovalue.annotations)
     implementation(libs.gson)

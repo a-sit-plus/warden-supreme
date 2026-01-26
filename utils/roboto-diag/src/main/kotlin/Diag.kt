@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.indispensable.pki.X509Certificate
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security
 import kotlin.system.exitProcess
@@ -13,6 +14,6 @@ fun main(args: Array<String>) {
     val certB64 = if (args[0] == "-f") java.io.File(args[1]).readText() else args[0]
 
     println(
-        at.asitplus.signum.indispensable.pki.X509Certificate.decodeFromByteArray(certB64.encodeToByteArray())?.androidAttestationExtension?.prettyPrint()
+        X509Certificate.decodeFromByteArray(certB64.encodeToByteArray())?.androidAttestationExtension?.prettyPrint()
     )
 }

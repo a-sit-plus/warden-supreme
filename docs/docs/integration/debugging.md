@@ -27,13 +27,17 @@ More specifically, it pretty-prints the contents of the leaf certificate's Andro
 * `-f path/to/leaf/certificate.pem`
 * a base64-encoded certificate as the sole argument
 
-It will then pretty-print the attestation extension's contents.  
-As an added bonus, there is a nullable `androidAttestationExtension` extension property on the class
-`at.asitplus.signum.indispensable.pki.X509Certificate`, and `java.security.cert.X509Certificate`
-which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.
+It will then pretty-print the attestation extension's contents.
+
+!!! tip inline end "Stand-Alone Attestation Parser"
+    To use `androidAttestationExtension` on all platforms (e.g., to implement client-side checks on Android),
+    include `at.asitplus.warden:supreme-commons` in your project, and you are ready to go!
+
+As an added bonus, there is a nullable `androidAttestationExtension` extension property on the Java `X509Certificate`
+and on Signum's `X509Certificate` class, which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.
 It will even parse malformed values and print those malformed values' DER-encoded hex representation.
-The underlying parser and the renderer are still experimental, so your mileage may vary, but it is still a huge improvement
-over relying solely on `ParsedAttestationRecord` for debugging.
+The underlying parser and the renderer are still experimental, so your mileage may vary.
+Nonetheless, it is still a huge improvement over relying solely on `ParsedAttestationRecord` for debugging.
 
 !!! example "Example of a Pretty-Printed Attestation Record from an Emulator"
     ```properties
