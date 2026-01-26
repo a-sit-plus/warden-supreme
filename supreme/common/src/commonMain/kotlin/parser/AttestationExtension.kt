@@ -7,7 +7,6 @@ import at.asitplus.signum.indispensable.asn1.encoding.decodeToEnum
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToInt
 import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1ContentBytes
 import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.indispensable.toKmpCertificate
 
 /**
  * Attestation certificate extension [used by Google](https://source.android.com/docs/security/features/keystore/attestation#schema).
@@ -191,11 +190,3 @@ val X509Certificate.androidAttestationExtension: AttestationKeyDescription?
             }.getOrNull()
         }
 
-/**
- * Tries to parse an [AttestationKeyDescription] certificate extension, if present.
- * Never throws.
- */
-val java.security.cert.X509Certificate.androidAttestationExtension: AttestationKeyDescription?
-    get() = catchingUnwrapped {
-        toKmpCertificate().getOrNull()?.androidAttestationExtension
-    }.getOrNull()
