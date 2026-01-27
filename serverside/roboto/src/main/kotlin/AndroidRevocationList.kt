@@ -1,7 +1,6 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.SerializerRegistry
-import at.asitplus.attestation.android.AndroidRevocationList.HttpLoader.Companion.GOOGLE_OFFICIAL_REVOCATION_LIST
 import at.asitplus.attestation.android.AndroidRevocationList.HttpLoader.Configuration.ProxyConfig.Type
 import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
 import io.ktor.client.*
@@ -39,7 +38,6 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -359,7 +357,10 @@ data class AndroidRevocationList(
 
                 if (!this@HttpLoader.preferHeaderBasedExpiry && fromJson.expires != null) {
                     return@run fromJson
-                        .let { parsed -> if (parsed.date == null) dateFromHeader?.let { parsed.copy(date = it) } ?: parsed else parsed }
+                        .let { parsed ->
+                            if (parsed.date == null) dateFromHeader?.let { parsed.copy(date = it) }
+                                ?: parsed else parsed
+                        }
                         .let { parsed ->
                             if (parsed.lastModified == null) lastModifiedFromHeader?.let { parsed.copy(lastModified = it) }
                                 ?: parsed else parsed
@@ -386,11 +387,11 @@ data class AndroidRevocationList(
                     jsonValidity ?: headerValidity ?: fallbackRevocationListValiditySeconds.seconds
                 }
 
-                var parsed = fromJson
-                if (parsed.date == null && dateOverride != null) parsed = parsed.copy(date = dateOverride)
-                parsed = parsed.copy(expires = now + effectiveValidity)
-                if (parsed.lastModified == null && lastModifiedOverride != null) parsed = parsed.copy(lastModified = lastModifiedOverride)
-                parsed
+                fromJson.copy(
+                    date = fromJson.date ?: dateOverride,
+                    expires = now + effectiveValidity,
+                    lastModified = fromJson.lastModified ?: lastModifiedOverride,
+                )
             }
 
 
