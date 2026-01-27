@@ -26,6 +26,7 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
             * Old constructor signatures have been removed
             * Also affects `AttestationVerifier`
         * Bump challenge version to `2`
+    * Revamp challenge validation API to take the full CSR from the client instead of just the nonce already extracted from it
     * Introduce canonical config format to avoid issues with config loading
         * Discourage config loading through Hoplite or Spring Boot
         * Includes YAML and JSON format
@@ -70,6 +71,8 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
     * Deprecate misnamed and overly complex APIs. They will be removed with 1.1
     * Fail early on invalid iOS team identifier length
     * Android-only debug statements must now also contain a version number
+    * Add `onChallengeValidated` callback to `AttestationVerifier.verifyAttestation`
+    * Make `verifyAttestation` callbacks suspending and ignore callback exceptions
 * **Dependency and Build updates**
     * Gradle 9 + Kotlin 2.3
         * Return value checker defaults to `check`

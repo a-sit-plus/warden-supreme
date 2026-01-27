@@ -12,6 +12,7 @@ import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
@@ -136,6 +137,9 @@ constructor(
      * * issues trying to extract the challenge from the CSR
      * * challenge validation errors
      *
+     * [onChallengeValidated] allows side-effect-free investigating/logging/handling of validated challenges.
+     * Includes the CSR from the client.
+     *
      * [onAttestationError] allows side-effect-free investigating attestation statement verification errors.
      * Gives you not only the Attestation error, but also a ready-made [WardenDebugAttestationStatement].
      * Those are essentially attestation statements received from the client that do not
@@ -146,26 +150,37 @@ constructor(
      * Logging and/or collecting numbers for statistical analysis comes to mind.
      *
      * Should any verification step fail, an [AttestationResponse.Failure] is returned.
+     *
+     * Any exception thrown by any of the callback lambdas is ignored (treated as if the callback were a NOOP).
      */
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun verifyAttestation(
         csr: Pkcs10CertificationRequest,
-        onPreAttestationError: PreAttestationError.() -> String? = { null },
-        onAttestationError: AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
-        onAttestationSuccess: AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
+        onChallengeValidated: suspend AttestationChallenge.(Pkcs10CertificationRequest) -> Unit = {  },
+        onPreAttestationError: suspend PreAttestationError.() -> String? = { null },
+        onAttestationError: suspend AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
+        onAttestationSuccess: suspend AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
         certificateIssuer: CertificateIssuer,
     ): AttestationResponse {
-        val nonce = csr.tbsCsr.challenge.getOrElse {
-            return Failure(Type.CONTENT, it.challengeReason(onPreAttestationError))
+
+
+        val nonce = when (val challengeValidationResult = challengeValidator.validate(csr)) {
+            is ChallengeValidationResult.Failure.NonceExtraction -> return Failure(
+                Type.CONTENT,
+                challengeValidationResult.reason.challengeReason(onPreAttestationError)
+            )
+
+            is ChallengeValidationResult.Failure.Other ->
+                return Failure(Type.CONTENT, challengeValidationResult.reason(csr.tbsCsr, onPreAttestationError))
+
+
+            is ChallengeValidationResult.Success -> {
+                catchingUnwrapped { challengeValidationResult.validatedChallenge.onChallengeValidated(csr) }
+                challengeValidationResult.validatedChallenge.nonce
+            }
         }
 
-        when (val challengeValidationResult = challengeValidator.validate(nonce)) {
-            is ChallengeValidationResult.Failure ->
-                return Failure(Type.CONTENT, challengeValidationResult.reason(nonce, onPreAttestationError))
 
-            is ChallengeValidationResult.Success -> {} //for now, we don't care for the issued challenge
-            //but we may in teh future, e.g. to check whether Key Constraints are actually fulfilled.
-        }
 
         val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID).getOrElse {
             return Failure(Type.CONTENT, it.extractionReason(csr, onPreAttestationError))
@@ -227,8 +242,8 @@ constructor(
     private fun Pkcs10CertificationRequest.jcaSignature(): KmmResult<Signature> =
         (signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance()
 
-    private fun csrReason(
-        onAttestationError: AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
+    private suspend fun csrReason(
+        onAttestationError: suspend AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
         attestationStatement: Attestation,
         nonce: ByteArray,
     ): String? = catchingUnwrapped {
@@ -238,36 +253,36 @@ constructor(
         ).onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
     }.getOrNull()
 
-    private fun Throwable.operationalReason(
-        onPreAttestationError: PreAttestationError.() -> String?,
+    private suspend fun Throwable.operationalReason(
+        onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.OperationalError(this).onPreAttestationError()
     }.getOrNull()
 
-    private fun AttestationResult.Error.extractReason(
-        onAttestationError: AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
+    private suspend fun AttestationResult.Error.extractReason(
+        onAttestationError: suspend AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
         attestationStatement: Attestation,
         nonce: ByteArray,
     ): String? = catchingUnwrapped {
         onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
     }.getOrNull()
 
-    private fun Throwable.challengeReason(
-        onPreAttestationError: PreAttestationError.() -> String?,
+    private suspend fun Throwable.challengeReason(
+        onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.ChallengeExtraction(this).onPreAttestationError()
     }.getOrNull()
 
-    private fun ChallengeValidationResult.Failure.reason(
-        nonce: ByteArray,
-        onPreAttestationError: PreAttestationError.() -> String?,
+    private suspend fun ChallengeValidationResult.Failure.reason(
+        tbsCsr: TbsCertificationRequest,
+        onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
-        ChallengeVerification(reason, nonce).onPreAttestationError()
+        ChallengeVerification(reason, tbsCsr).onPreAttestationError()
     }.getOrNull()
 
-    private fun Throwable.extractionReason(
+    private suspend fun Throwable.extractionReason(
         csr: Pkcs10CertificationRequest,
-        onPreAttestationError: PreAttestationError.() -> String?,
+        onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.AttestationStatementExtraction(this, csr).onPreAttestationError()
     }.getOrNull()
@@ -322,7 +337,7 @@ constructor(
  * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
  * matching, ensuring freshness!
  *
- * **BEWARE OF CLOCK DRIFT AND CONFIGURED OFFSETS WRT VALIDITY DURATION!**
+ * **BEWARE OF CLOCK DRIFT AND CONFIGURED OFFSETS WRT. VALIDITY DURATION!**
  *
  * @see InMemoryChallengeCache for a sane default logic to account for clock drift
  */
@@ -334,12 +349,16 @@ interface ChallengeValidator {
     suspend fun store(challenge: AttestationChallenge)
 
     /**
-     * The contract of this function is that it returns a [ChallengeValidationResult.Success] iff a single still valid challenge matching the passend [nonce] is found.
-     * In all other cases, it must return a [ChallengeValidationResult.Failure].
-     * In addition, it **should** also remove all expired nonces, to keep stale nonces from inflating memory/storage.
+     * The contract of this function is that it returns a [ChallengeValidationResult.Success] iff a valid
+     * challenge matching the passend [csr] from the client is found.
+     * In all other cases, it must return a [ChallengeValidationResult.Failure]:
+     * * It must return a [ChallengeValidationResult.Failure.NonceExtraction] if nonce extraction fails (relevant for nonce-cache based implementations)
+     * * It must return a [ChallengeValidationResult.Failure.Other] if other validation errors occur, such as no valid challenge matching the passed  [csr].
+     * In addition, it **should** also remove all expired challenges, to keep stale challenges from inflating memory/storage.
      */
-    suspend fun validate(nonce: ByteArray): ChallengeValidationResult
+    suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult
 }
+
 
 /**
  *
@@ -348,7 +367,10 @@ typealias NonceGenerator = suspend () -> ByteArray
 
 sealed class ChallengeValidationResult {
     class Success(val validatedChallenge: AttestationChallenge) : ChallengeValidationResult()
-    class Failure(val reason: Throwable?) : ChallengeValidationResult()
+    sealed class Failure(val reason: Throwable) : ChallengeValidationResult() {
+        class NonceExtraction(reason: Throwable) : Failure(reason)
+        class Other(reason: Throwable) : Failure(reason)
+    }
 }
 
 
@@ -366,7 +388,7 @@ sealed class PreAttestationError {
     class ChallengeExtraction(override val throwable: Throwable) : PreAttestationError()
     class ChallengeVerification(
         override val throwable: Throwable?,
-        val receivedChallenge: ByteArray,
+        val receivedTbsCsr: TbsCertificationRequest,
     ) : PreAttestationError()
 
     class AttestationStatementExtraction(override val throwable: Throwable, val csr: Pkcs10CertificationRequest) :
@@ -408,8 +430,11 @@ class InMemoryChallengeCache(internal val clock: Clock, internal val offset: Dur
         }
     }
 
-    override suspend fun validate(nonce: ByteArray): ChallengeValidationResult {
+    override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult {
         mutex.withLock {
+            val nonce = csr.tbsCsr.nonce.getOrElse {
+                return ChallengeValidationResult.Failure.NonceExtraction(it)
+            }
             pruneExpiredEntries()
             return find(nonce)
         }
@@ -417,7 +442,7 @@ class InMemoryChallengeCache(internal val clock: Clock, internal val offset: Dur
 
     private fun find(nonce: ByteArray): ChallengeValidationResult {
         val key = NonceKey(nonce)
-        val challenge = challengesByNonce.remove(key) ?: return ChallengeValidationResult.Failure(
+        val challenge = challengesByNonce.remove(key) ?: return ChallengeValidationResult.Failure.Other(
             IllegalStateException("No challenge found")
         )
 

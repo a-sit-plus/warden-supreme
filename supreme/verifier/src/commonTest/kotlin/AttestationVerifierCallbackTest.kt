@@ -61,7 +61,6 @@ val AttestationVerifierCallbackTest by testSuite {
             expectedClass = PreAttestationError.ChallengeVerification::class.java,
             extraAssert = { error ->
                 val typed = error as PreAttestationError.ChallengeVerification
-                typed.receivedChallenge.isNotEmpty() shouldBe true
             },
         ),
         PreErrorCase(
