@@ -77,16 +77,28 @@ private constructor(
      */
     val version: Int? = null,
 
-    /**
-     * Specifies key constraints for the client
-     */
-    val keyConstraints: KeyConstraints? = null,
+	    /**
+	     * Specifies key constraints for the client
+	     */
+	    val keyConstraints: KeyConstraints? = null,
 
+	    /**
+	     * Optional user-defined payload.
+	     *
+	     * Must be a nested map structure, where values are [Constrained] (primitives, nested maps, or `null`).
+	     *
+	     * Serialization uses a custom, format-agnostic encoding to avoid pitfalls of formats that may omit default scalar
+	     * values (e.g. `0`, `false`, `""`) on the wire (as in ProtoBuf-style encodings). Each value is encoded as a
+	     * "typed envelope" that always includes a non-default discriminator, so a missing value can be reconstructed as
+	     * the correct default, and `null` can be represented without relying on the underlying format's null support.
+	     */
+	    @Serializable(with = ConstrainedMapSerializer::class)
+	    val additionalPayload: Map<String, Constrained>? = null,
 
-    ) {
-    init {
-        if (nonce.size > 128) throw IllegalArgumentException("nonce too large! must be at most 128 bytes.")
-    }
+	    ) {
+	    init {
+	        if (nonce.size > 128) throw IllegalArgumentException("nonce too large! must be at most 128 bytes.")
+	    }
 
     /**
      * @param issuedAt The issuing time of the nonce. Useful to detect clock drifts and exit early.
@@ -99,32 +111,35 @@ private constructor(
      *  @param attestationEndpoint The endpoint to post the CSR containing the attestation proof to.
      *  @param proofOID The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
      *  @param genericDeviceNameOID Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
-     *  Setting this to an OID other than `null` will include a device name on a best-effort basis. Defaults to `null` (i.e., no device name will be included).
-     *  @param keyConstraints Specifies key constraints for the client.
-     *
-     * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes
-     */
-    @Throws(IllegalArgumentException::class)
-    constructor(
+	     *  Setting this to an OID other than `null` will include a device name on a best-effort basis. Defaults to `null` (i.e., no device name will be included).
+	     *  @param keyConstraints Specifies key constraints for the client.
+	     *  @param additionalPayload Optional user-defined payload. See [additionalPayload] for serialization requirements.
+	     *
+	     * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes
+	     */
+	    @Throws(IllegalArgumentException::class)
+	    constructor(
         issuedAt: Instant,
         validity: Duration,
         timeZone: TimeZone? = null,
         nonce: ByteArray,
         attestationEndpoint: String,
-        proofOID: ObjectIdentifier,
-        genericDeviceNameOID: ObjectIdentifier? = null,
-        keyConstraints: KeyConstraints? = null,
-    ) : this(
-        issuedAt = issuedAt,
-        validity = validity,
-        timeZone = timeZone,
+	        proofOID: ObjectIdentifier,
+	        genericDeviceNameOID: ObjectIdentifier? = null,
+	        keyConstraints: KeyConstraints? = null,
+	        additionalPayload: Map<String, Constrained>? = null,
+	    ) : this(
+	        issuedAt = issuedAt,
+	        validity = validity,
+	        timeZone = timeZone,
         nonce = nonce,
         attestationEndpoint = attestationEndpoint,
-        proofOID = proofOID,
-        genericDeviceNameOID = genericDeviceNameOID,
-        version = CURRENT_VERSION,
-        keyConstraints = keyConstraints,
-    )
+	        proofOID = proofOID,
+	        genericDeviceNameOID = genericDeviceNameOID,
+	        version = CURRENT_VERSION,
+	        keyConstraints = keyConstraints,
+	        additionalPayload = additionalPayload,
+	    )
 
     /**
      * Lazily-evaluated property
@@ -150,13 +165,14 @@ private constructor(
         if (validity != other.validity) return false
         if (timeZone != other.timeZone) return false
         if (!nonce.contentEquals(other.nonce)) return false
-        if (attestationEndpoint != other.attestationEndpoint) return false
-        if (proofOID != other.proofOID) return false
-        if (keyConstraints != other.keyConstraints) return false
-        if (validUntil != other.validUntil) return false
+	        if (attestationEndpoint != other.attestationEndpoint) return false
+	        if (proofOID != other.proofOID) return false
+	        if (keyConstraints != other.keyConstraints) return false
+	        if (additionalPayload != other.additionalPayload) return false
+	        if (validUntil != other.validUntil) return false
 
-        return true
-    }
+	        return true
+	    }
 
     override fun hashCode(): Int {
         var result = genericDeviceNameOID.hashCode()
@@ -164,13 +180,14 @@ private constructor(
         result = 31 * result + issuedAt.hashCode()
         result = 31 * result + validity.hashCode()
         result = 31 * result + (timeZone?.hashCode() ?: 0)
-        result = 31 * result + nonce.contentHashCode()
-        result = 31 * result + attestationEndpoint.hashCode()
-        result = 31 * result + proofOID.hashCode()
-        result = 31 * result + (keyConstraints?.hashCode() ?: 0)
-        result = 31 * result + validUntil.hashCode()
-        return result
-    }
+	        result = 31 * result + nonce.contentHashCode()
+	        result = 31 * result + attestationEndpoint.hashCode()
+	        result = 31 * result + proofOID.hashCode()
+	        result = 31 * result + (keyConstraints?.hashCode() ?: 0)
+	        result = 31 * result + (additionalPayload?.hashCode() ?: 0)
+	        result = 31 * result + validUntil.hashCode()
+	        return result
+	    }
 
     companion object {
         const val CURRENT_VERSION: Int = 2

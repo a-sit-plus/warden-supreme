@@ -151,6 +151,7 @@ constructor(
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun verifyAttestation(
         csr: Pkcs10CertificationRequest,
+        onChallengeValidated: suspend AttestationChallenge.(Pkcs10CertificationRequest) -> Unit = {  },
         onPreAttestationError: PreAttestationError.() -> String? = { null },
         onAttestationError: AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
         onAttestationSuccess: AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
@@ -424,9 +425,9 @@ class InMemoryChallengeCache(internal val clock: Clock, internal val offset: Dur
 
     override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult {
         mutex.withLock {
-        val nonce = csr.tbsCsr.nonce.getOrElse {
-            return ChallengeValidationResult.Failure.NonceExtraction(it)
-        }
+            val nonce = csr.tbsCsr.nonce.getOrElse {
+                return ChallengeValidationResult.Failure.NonceExtraction(it)
+            }
             pruneExpiredEntries()
             return find(nonce)
         }
