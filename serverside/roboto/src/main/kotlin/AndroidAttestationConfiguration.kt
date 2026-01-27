@@ -445,14 +445,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -558,14 +558,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
