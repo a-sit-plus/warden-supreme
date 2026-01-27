@@ -5,6 +5,7 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # 1.0.0
+* Add extension to read/write configurations directly from/to files
 
 # 1.0.0-RC
 **Release Candidate for Warden Supreme 1.0.0**
