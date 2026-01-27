@@ -9,8 +9,10 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import kotlinx.datetime.LocalDate
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 val ENDPOINT_CHALLENGE = "http://10.0.2.2:8080/api/v1/challenge"
@@ -55,13 +57,7 @@ val EndToEndTest by testSuite {
 private class FixedTimeClock(private var epochMilliseconds: Long) : Clock {
     constructor(instant: Instant) : this(instant.toEpochMilliseconds())
     constructor(yyyy: UInt, mm: UInt, dd: UInt) : this(
-        Instant.parse(
-            "$yyyy-${
-                mm.toString().let { if (it.length < 2) "0$it" else it }
-            }-${
-                dd.toString().let { if (it.length < 2) "0$it" else it }
-            }T00:00:00.000Z"
-        )
+        LocalDate(yyyy.toInt(), mm.toInt(), dd.toInt()).toEpochDays().days.inWholeMilliseconds
     )
 
     fun offsetBy(duration: Duration) {

@@ -7,11 +7,13 @@ import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -196,13 +198,7 @@ internal constructor(
 class FixedTimeClock(private var epochMilliseconds: Long) : Clock {
     constructor(instant: Instant) : this(instant.toEpochMilliseconds())
     constructor(yyyy: UInt, mm: UInt, dd: UInt) : this(
-        Instant.parse(
-            "$yyyy-${
-                mm.toString().let { if (it.length < 2) "0$it" else it }
-            }-${
-                dd.toString().let { if (it.length < 2) "0$it" else it }
-            }T00:00:00.000Z"
-        )
+        LocalDate(yyyy.toInt(), mm.toInt(), dd.toInt()).toEpochDays().days.inWholeMilliseconds
     )
 
     fun offsetBy(duration: Duration) {

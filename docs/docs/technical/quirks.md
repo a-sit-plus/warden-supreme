@@ -115,8 +115,8 @@ This concerns the vendor patch level field, not the OS patch level, and requires
 
 ### Misleading Assumptions about ECDH
 Virtually every Android device supports hardware-backed EC crypto and EC Diffie-Hellman key agreement.
-**However**, this does not entail that it supports a combination of the two. With respect to EC keys, only ECDSA verification on NIST curves
-is guaranteed to be performed in hardware, assuming a cryptographic hardware module. This means that without explicitly specifying
+**However**, this does not entail that it supports a combination of the two. With respect to EC keys, only ECDSA signatures on NIST curves
+are guaranteed to be performed in hardware, assuming a cryptographic hardware module. This means that without explicitly specifying
 [KeyProperties.SECURITY_LEVEL_TRUSTED_ENVIRONMENT](https://developer.android.com/reference/android/security/keystore/KeyProperties#SECURITY_LEVEL_TRUSTED_ENVIRONMENT)
 during key generation, even generating an EC key pair for a curve supported in hardware may lead to a key being actually generated
 in software, as soon as [KeyProperties.PURPOSE_AGREE_KEY](https://developer.android.com/reference/android/security/keystore/KeyProperties#PURPOSE_AGREE_KEY)
