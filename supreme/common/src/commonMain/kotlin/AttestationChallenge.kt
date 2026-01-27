@@ -177,13 +177,13 @@ private constructor(
         timeZone = timeZone,
         nonce = nonce,
         attestationEndpoint = attestationEndpoint,
-	        proofOID = proofOID,
-	        genericDeviceNameOID = genericDeviceNameOID,
-	        version = CURRENT_VERSION,
-	        keyConstraints = keyConstraints,
-	        additionalPayload = additionalPayload,
-	        transientData = transientData,
-	    )
+        proofOID = proofOID,
+        genericDeviceNameOID = genericDeviceNameOID,
+        version = CURRENT_VERSION,
+        keyConstraints = keyConstraints,
+        additionalPayload = additionalPayload,
+        transientData = transientData,
+    )
 
     /**
      * Lazily-evaluated property
