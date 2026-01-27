@@ -77,11 +77,13 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
      */
     sealed class Content(platform: Platform, message: String?, cause: Throwable) :
         AttestationException(platform, message = message, cause = cause) {
-            class Android(message: String? = null, override val cause: AttestationValueException) :Content(Platform.ANDROID, message, cause)
+        class Android(message: String? = null, override val cause: AttestationValueException) :
+            Content(Platform.ANDROID, message, cause)
 
-            class iOS(message: String? = null, override val cause: IosAttestationException) :Content(Platform.IOS, message, cause)
+        class iOS(message: String? = null, override val cause: IosAttestationException) :
+            Content(Platform.IOS, message, cause)
 
-            class Unknown(message: String? = null, cause: Throwable): Content(Platform.UNKNOWN, message, cause)
+        class Unknown(message: String? = null, cause: Throwable) : Content(Platform.UNKNOWN, message, cause)
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -278,3 +280,18 @@ internal fun <T : PublicKey> logicalError(
     } for attestation proof ${
         attestationProof.joinToString { it.encodeBase64() }
     } with challenge ${expectedChallenge.encodeBase64()} at ${Clock.System.now()}")
+
+
+/**
+ * Wraps this [Throwable] into an [AttestationResult.Error] whose [AttestationResult.Error.exception] is an
+ * [AttestationException.Content.Unknown].
+ *
+ * Use this when a failure cannot be attributed to a specific platform (Android/iOS), but should still be surfaced as an
+ * attestation failure with the original throwable attached as the underlying cause.
+ *
+ * @param message Human-readable context for this error; used both as the result message and the wrapper exception message.
+ */
+internal fun Throwable.encapsulateToUnknown(message: String) = AttestationResult.Error(
+    message,
+    AttestationException.Content.Unknown(message, this)
+)

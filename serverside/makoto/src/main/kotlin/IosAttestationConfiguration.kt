@@ -284,7 +284,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonString(): String = jsonDebug.encodeToString(this)
 
     /**
-     * Serialises this config into its canonical form (YAML). Can be loaded using [fromJsonString] afterwards.
+     * Serialises this config into its canonical form (YAML). Can be loaded using [fromYamlString] afterwards.
      */
     override fun toYamlString(): String = yaml.encodeToString(this)
 
@@ -307,7 +307,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             jsonDebug.decodeFromString<IosAttestationConfiguration>(jsonRepresentation)
 
         /**
-         * Loads the config from its canonical form (YAML), as produced by [toJsonString].
+         * Loads the config from its canonical form (YAML), as produced by [toYamlString].
          */
         override fun fromYamlString(yamlRepresentation: String): IosAttestationConfiguration =
             yaml.decodeFromString<IosAttestationConfiguration>(yamlRepresentation)

@@ -13,7 +13,7 @@ interface AttestationConfiguration {
     fun toJsonString(): String
 
     /**
-     * Serialises this config into its canonical form (YAML). Can be loaded using [fromJsonString] afterwards.
+     * Serialises this config into its canonical form (YAML). Can be loaded using [fromYamlString] afterwards.
      */
     fun toYamlString(): String
 
@@ -30,7 +30,7 @@ interface AttestationConfiguration {
         fun fromJsonString(jsonRepresentation: String): A
 
         /**
-         * Loads the config from its canonical form (JSON), as produced by [toJsonString].
+         * Loads the config from its canonical form (YAML), as produced by [toYamlString].
          */
         fun fromYamlString(yamlRepresentation: String): A
 

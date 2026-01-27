@@ -338,7 +338,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
      * Can be overridden for individual apps.
      */
-    internal val patchLevel: PatchLevel? = null,
+    val patchLevel: PatchLevel? = null,
 
     /**
      * Set to `true` if *StrongBox* security level should be required.
@@ -1133,7 +1133,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonString(): String = jsonDebug.encodeToString(this)
 
     /**
-     * Serialises this config into its canonical form (YAML). Can be loaded using [fromJsonString] afterwards.
+     * Serialises this config into its canonical form (YAML). Can be loaded using [fromYamlString] afterwards.
      */
     override fun toYamlString(): String = yaml.encodeToString(this)
 
@@ -1157,7 +1157,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             jsonDebug.decodeFromString<AndroidAttestationConfiguration>(jsonRepresentation)
 
         /**
-         * Loads the config from its canonical form (JSON), as produced by [toJsonString].
+         * Loads the config from its canonical form (YAML), as produced by [toYamlString].
          */
         override fun fromYamlString(yamlRepresentation: String): AndroidAttestationConfiguration =
             yaml.decodeFromString(yamlRepresentation)
