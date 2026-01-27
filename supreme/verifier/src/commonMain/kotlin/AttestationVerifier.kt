@@ -150,14 +150,16 @@ constructor(
      * Logging and/or collecting numbers for statistical analysis comes to mind.
      *
      * Should any verification step fail, an [AttestationResponse.Failure] is returned.
+     *
+     * Any exception thrown by any of the callback lambdas is ignored (treated as if the callback were a NOOP).
      */
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun verifyAttestation(
         csr: Pkcs10CertificationRequest,
         onChallengeValidated: suspend AttestationChallenge.(Pkcs10CertificationRequest) -> Unit = {  },
-        onPreAttestationError: PreAttestationError.() -> String? = { null },
-        onAttestationError: AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
-        onAttestationSuccess: AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
+        onPreAttestationError: suspend PreAttestationError.() -> String? = { null },
+        onAttestationError: suspend AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
+        onAttestationSuccess: suspend AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
         certificateIssuer: CertificateIssuer,
     ): AttestationResponse {
 
@@ -173,7 +175,7 @@ constructor(
 
 
             is ChallengeValidationResult.Success -> {
-                challengeValidationResult.validatedChallenge.onChallengeValidated(csr)
+                catchingUnwrapped { challengeValidationResult.validatedChallenge.onChallengeValidated(csr) }
                 challengeValidationResult.validatedChallenge.nonce
             }
         }
@@ -240,8 +242,8 @@ constructor(
     private fun Pkcs10CertificationRequest.jcaSignature(): KmmResult<Signature> =
         (signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance()
 
-    private fun csrReason(
-        onAttestationError: AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
+    private suspend fun csrReason(
+        onAttestationError: suspend AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
         attestationStatement: Attestation,
         nonce: ByteArray,
     ): String? = catchingUnwrapped {
@@ -251,36 +253,36 @@ constructor(
         ).onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
     }.getOrNull()
 
-    private fun Throwable.operationalReason(
-        onPreAttestationError: PreAttestationError.() -> String?,
+    private suspend fun Throwable.operationalReason(
+        onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.OperationalError(this).onPreAttestationError()
     }.getOrNull()
 
-    private fun AttestationResult.Error.extractReason(
-        onAttestationError: AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
+    private suspend fun AttestationResult.Error.extractReason(
+        onAttestationError: suspend AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
         attestationStatement: Attestation,
         nonce: ByteArray,
     ): String? = catchingUnwrapped {
         onAttestationError(makoto.collectDebugInfo(attestationStatement, nonce))
     }.getOrNull()
 
-    private fun Throwable.challengeReason(
-        onPreAttestationError: PreAttestationError.() -> String?,
+    private suspend fun Throwable.challengeReason(
+        onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.ChallengeExtraction(this).onPreAttestationError()
     }.getOrNull()
 
-    private fun ChallengeValidationResult.Failure.reason(
+    private suspend fun ChallengeValidationResult.Failure.reason(
         tbsCsr: TbsCertificationRequest,
-        onPreAttestationError: PreAttestationError.() -> String?,
+        onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         ChallengeVerification(reason, tbsCsr).onPreAttestationError()
     }.getOrNull()
 
-    private fun Throwable.extractionReason(
+    private suspend fun Throwable.extractionReason(
         csr: Pkcs10CertificationRequest,
-        onPreAttestationError: PreAttestationError.() -> String?,
+        onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.AttestationStatementExtraction(this, csr).onPreAttestationError()
     }.getOrNull()
