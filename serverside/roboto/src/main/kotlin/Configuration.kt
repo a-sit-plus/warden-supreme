@@ -4,6 +4,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import java.io.File
 import java.io.FileReader
+import java.io.FileWriter
 
 interface AttestationConfiguration {
 
@@ -42,15 +43,37 @@ interface AttestationConfiguration {
 }
 
 /**
- * Reads an attestation configuration from a YAML file and deserializes it into an instance of type [A].
+ * Writes the JSON representation of this [AttestationConfiguration] to the specified file.
  *
- * @param path The file system path to the YAML file containing the serialized attestation configuration.
- * @return An instance of type [A] representing the deserialized attestation configuration.
+ * @param file The file to which the JSON representation of this configuration will be written.
  */
-fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromYamlFile(path: String): A =
-    FileReader(path).buffered().use { fileReader ->
-        fromYamlString(fileReader.readText())
-    }
+fun AttestationConfiguration.toJsonFile(file: File) = FileWriter(file).buffered().use { it.write(toJsonString()) }
+
+
+/**
+ * Writes the JSON representation of this [AttestationConfiguration] to the specified file.
+ *
+ * @param path The path to the file to which the JSON representation of this configuration will be written.
+ */
+fun AttestationConfiguration.toJsonFile(path: String) = toJsonFile(File(path))
+
+/**
+ * Serializes this `AttestationConfiguration` instance to a YAML-formatted string
+ * and writes it to the specified file.
+ *
+ * @param file The destination file where the YAML representation of this configuration will be written.
+ */
+fun AttestationConfiguration.toYamlFile(file: File) = FileWriter(file).buffered().use { it.write(toYamlString()) }
+
+/**
+ * Serializes this `AttestationConfiguration` instance to a YAML-formatted string
+ * and writes it to the specified file.
+ *
+ * @param path The destination path to the file where the YAML representation of this configuration will be written.
+ */
+fun AttestationConfiguration.toYamlFile(path: String) = toYamlFile(File(path))
+
+
 /**
  * Reads an attestation configuration from a YAML file and deserializes it into an instance of type [A].
  *
@@ -62,17 +85,17 @@ fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromYamlFi
         fromYamlString(fileReader.readText())
     }
 
-/**
- * Reads an attestation configuration of type [A] from a JSON file located at the specified path.
- *
- * @param path The file system path to the JSON file containing the attestation configuration.
- * @return An instance of [A], created by parsing the JSON file's content.
- */
-fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromJsonFile(path: String): A =
-    FileReader(path).buffered().use { fileReader ->
-        fromJsonFile(fileReader.readText())
 
-    }
+/**
+ * Reads an attestation configuration from a YAML file and deserializes it into an instance of type [A].
+ *
+ * @param path The file system path to the YAML file containing the serialized attestation configuration.
+ * @return An instance of type [A] representing the deserialized attestation configuration.
+ */
+fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromYamlFile(path: String): A =
+    fromYamlFile(File(path))
+
+
 /**
  * Reads an attestation configuration of type [A] from a JSON file located at the specified path.
  *
@@ -84,3 +107,12 @@ fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromJsonFi
         fromJsonFile(fileReader.readText())
 
     }
+
+/**
+ * Reads an attestation configuration of type [A] from a JSON file located at the specified path.
+ *
+ * @param path The file system path to the JSON file containing the attestation configuration.
+ * @return An instance of [A], created by parsing the JSON file's content.
+ */
+fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromJsonFile(path: String): A =
+    fromJsonFile(File(path))
