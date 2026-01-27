@@ -137,7 +137,7 @@ constructor(
      * * issues trying to extract the challenge from the CSR
      * * challenge validation errors
      *
-     * [onChallengeValidated] allows side-effect free investigating/logging/handling of validated challenges.
+     * [onChallengeValidated] allows side-effect-free investigating/logging/handling of validated challenges.
      * Includes the CSR from the client.
      *
      * [onAttestationError] allows side-effect-free investigating attestation statement verification errors.

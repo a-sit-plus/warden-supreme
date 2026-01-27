@@ -71,6 +71,7 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
     * Deprecate misnamed and overly complex APIs. They will be removed with 1.1
     * Fail early on invalid iOS team identifier length
     * Android-only debug statements must now also contain a version number
+    * Add `onChallengeValidated` callback to `AttestationVerifier.verifyAttestation`
 * **Dependency and Build updates**
     * Gradle 9 + Kotlin 2.3
         * Return value checker defaults to `check`
