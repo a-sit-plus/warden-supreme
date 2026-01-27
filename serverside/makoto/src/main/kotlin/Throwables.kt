@@ -283,9 +283,13 @@ internal fun <T : PublicKey> logicalError(
 
 
 /**
- * Encapsulates the current [Throwable] into an [AttestationResult.Error] with an [AttestationException.Content.Unknown] cause.
+ * Wraps this [Throwable] into an [AttestationResult.Error] whose [AttestationResult.Error.exception] is an
+ * [AttestationException.Content.Unknown].
  *
- * @param message The explanatory message describing the context of the error.
+ * Use this when a failure cannot be attributed to a specific platform (Android/iOS), but should still be surfaced as an
+ * attestation failure with the original throwable attached as the underlying cause.
+ *
+ * @param message Human-readable context for this error; used both as the result message and the wrapper exception message.
  */
 internal fun Throwable.encapsulateToUnknown(message: String) = AttestationResult.Error(
     message,

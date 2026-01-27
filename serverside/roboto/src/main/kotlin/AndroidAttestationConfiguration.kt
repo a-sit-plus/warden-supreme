@@ -338,7 +338,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
      * Can be overridden for individual apps.
      */
-    internal val patchLevel: PatchLevel? = null,
+    val patchLevel: PatchLevel? = null,
 
     /**
      * Set to `true` if *StrongBox* security level should be required.
