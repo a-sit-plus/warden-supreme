@@ -2,6 +2,7 @@ package docs.service.callbacks
 
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.supreme.PreAttestationError
+import at.asitplus.attestation.supreme.nonce
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import docs.config.minimal.verifier
 import java.util.logging.Level
@@ -17,30 +18,35 @@ private suspend fun foo() {
 
 val result = verifier.verifyAttestation(
  /*(1)!*/csr = csr,
- /*(2)!*/onPreAttestationError = {
+ /*(2)!*/onChallengeValidated = { csr ->
+        val customPayload = additionalPayload
+        logger.log(Level.FINE,
+            "Challenge validated (payload=$customPayload) based on nonce ${csr.tbsCsr.nonce} from CSR")
+    },
+ /*(3)!*/onPreAttestationError = {
         when (this) {
             is PreAttestationError.AttestationStatementExtraction -> TODO()
             is PreAttestationError.ChallengeExtraction -> TODO()
             is PreAttestationError.ChallengeVerification -> TODO()
             is PreAttestationError.OperationalError -> TODO()
         }
-     /*(3)!*/null
+     /*(4)!*/null
     },
- /*(4)!*/onAttestationError = { debugStatement ->
+ /*(5)!*/onAttestationError = { debugStatement ->
         val attestationException = cause
         val reason = explanation
-     /*(5)!*/logger.log(Level.WARNING,"Attestation failed due to $reason. "
+     /*(6)!*/logger.log(Level.WARNING,"Attestation failed due to $reason. "
             + debugStatement.serializeCompact(), attestationException)
-     /*(6)!*/null
+     /*(7)!*/null
     },
- /*(7)!*/onAttestationSuccess = { attestedKey ->
+ /*(8)!*/onAttestationSuccess = { attestedKey ->
         when (this) {
             is AttestationResult.Android.Verified -> TODO()
             is AttestationResult.IOS.Verified -> TODO()
         }
 
     }
-)/*(8)!*/{ csr ->
+)/*(9)!*/{ csr ->
     when (this) {
         is AttestationResult.Android.Verified -> TODO()
         is AttestationResult.IOS.Verified -> TODO()

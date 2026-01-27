@@ -94,7 +94,7 @@ class AttestationClient(client: HttpClient, private val clock: Clock = Clock.Sys
  *
  *
  * Usually, you'll want to use pass [AlternativeNames] into [additionalCsrExtensions], not a subject name!
- * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [challenge].
+ * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [nonce].
  * Hence, the values passed to this parameter containing a [KnownOIDs.serialNumber] will be overwritten.
  *
  * @param additionalCsrExtensions Certificate extensions to be requested. May be ignored by the issuer.
@@ -133,7 +133,7 @@ suspend fun AttestationClient.performAttestationFlow(
  * Since this operation prepares and directly signs the CSR, it may require user authentication.
  *
  * Usually, you'll want to use pass [AlternativeNames] into [additionalCsrExtensions], not a subject name!
- * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [challenge].
+ * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [nonce].
  * Hence, the values passed to this parameter containing a [KnownOIDs.serialNumber] will be overwritten.
  *
  * @param additionalCsrExtensions Certificate extensions to be requested. May be ignored by the issuer.

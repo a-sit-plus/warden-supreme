@@ -328,23 +328,24 @@ The Supreme attestation verifier only returns an enum indicating the reason for 
 This is by design, as it is generally undesirable to expose the internals of a back-end to clients.
 
 On the back-end, however, attestation issues typically need to be analysed. Hence, the Supreme attestation verifier provides
-three callbacks to analyse attestation errors and success (without side effects):
+four callbacks to analyse challenge validation, attestation errors, and success (without side effects):
 
 ```kotlin
 --8<-- "Readme-Backend-callbacks.kt:15:50"
 ```
 
 1. This is simply the CSR from the client, as in the minimal example
-2. `onPreAttestationError` is called in case of operational/internal errors, or if the attestation statement cannot
+2. `onChallengeValidated` is called after the CSR’s challenge binding was validated. It has the validated challenge as receiver and the CSR as parameter.
+3. `onPreAttestationError` is called in case of operational/internal errors, or if the attestation statement cannot
    be extracted from a CSR. Different side-effect-free handling strategies can be employed based on error type.
-3. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).
-4. `onAttestationError` is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
+4. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).
+5. `onAttestationError` is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
    See [the dedicated error handling guide](errorhandling.md) for more details!
-5. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!** See [debugging and replaying diagnostics](../testing.md#debugging-replay-and-diagnostics).
-6. Again, a custom error message can be sent to the client
-7. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
+6. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!** See [debugging and replaying diagnostics](../testing.md#debugging-replay-and-diagnostics).
+7. Again, a custom error message can be sent to the client
+8. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
    This can be useful for statistical analyses, for example.
-8. This is the certificate signing lambda, also having a fully verified attestation result as receiver.
+9. This is the certificate signing lambda, also having a fully verified attestation result as receiver.
    In contrast to `onAttestationSuccess`, it is not side-effect-free, but is expected to return a certificate chain, whose
    leaf certifies the attested key. As such, it receives the fully verified CSR as a parameter.
 

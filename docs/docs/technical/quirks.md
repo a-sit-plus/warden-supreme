@@ -121,7 +121,6 @@ are guaranteed to be performed in hardware, assuming a cryptographic hardware mo
 during key generation, even generating an EC key pair for a curve supported in hardware may lead to a key being actually generated
 in software, as soon as [KeyProperties.PURPOSE_AGREE_KEY](https://developer.android.com/reference/android/security/keystore/KeyProperties#PURPOSE_AGREE_KEY)
 is also set.
-
 ### OS Bugs and Quirks
 
 #### Bootloader Unlock Destroying Keys

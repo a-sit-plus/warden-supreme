@@ -28,12 +28,15 @@ val AttestationVerifierChallengeTest by testSuite {
         val random = Random(1337)
         repeat(25) {
             val nonce = random.nextBytes(random.nextInt(1, 129))
+
+            val attestationJson = loadResourceText(e2eCases.first().attestationResource)
             val verifier = verifierForNonce(nonce)
             val challenge = verifier.issueChallenge(attestationEndpoint)
+            val csr = createCsr(challenge, attestationJson, keyPairForAttestation(attestationJson))
             challenge.nonce.contentEquals(nonce) shouldBe true
-            verifier.challengeValidator.validate(nonce)
+            verifier.challengeValidator.validate(csr)
                 .shouldBeInstanceOf<ChallengeValidationResult.Success>()
-            verifier.challengeValidator.validate(nonce)
+            verifier.challengeValidator.validate(csr)
                 .shouldBeInstanceOf<ChallengeValidationResult.Failure>()
         }
     }
