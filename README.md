@@ -16,37 +16,39 @@
 > Need help tailored to your needs? See our [💎 Services](https://a-sit-plus.github.io/warden-supreme/services/)
 
 _Warden Supreme_ is a fully integrated key and app attestation suite consisting of:
-1. Mobile (iOS and Android) client library to generate attestation statements
-2. Unified server-side key and app attestation verification library
-3. Agnostic communication logic, taking care of process flows and wire format
+
+1. A mobile (iOS and Android) client library to generate attestation statements
+2. A unified server-side key and app attestation verification library
+3. Agnostic communication logic that handles process flows and wire format
 
 Put differently, Warden Supreme is the evolution of the battle-tested [WARDEN](https://github.com/a-sit-plus/warden) server-side key and app attestation library,
 augmented by Signum's [_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/) for a consistent UX across Android and iOS.
+
 The original server-side-only key and app attestation library is still available and actively maintained, as it is one
-of the pillars supporting Warden Supreme.
-It now lives on as [Warden makoto](serverside/makoto) and continues to be published to Maven Central.
+of the pillars supporting Warden Supreme. It now lives on as [Warden makoto](serverside/makoto) and continues to be
+published to Maven Central.
 
-
-> [!WARNING]  
+> [!WARNING]
 > **Warden Supreme changed some defaults compared to previous WARDEN / WARDEN-roboto**
-> 
-> Most prominently, there is no Nougat hybrid attestation any more and trust anchor management was completely revamped!  
+>
+> Most prominently, there is no Nougat hybrid attestation any more and trust anchor management was completely revamped.  
 > Do check out the [full migration guide](https://a-sit-plus.github.io/warden-supreme/integration/migration/).
-> 
-> **Ignoring these changes can result in a total security failure if you do not ensure freshness through means of feeding random cryptographic nonces into attestation statement creation and properly checking them!**
+>
+> **Ignoring these changes can result in a total security failure if you do not ensure freshness by feeding random cryptographic nonces into attestation statement creation and properly checking them.**
 
 ## 0. About this Document
-This README provides just a brief overview. **Warden Supreme's [extensive documentation hub](https://a-sit-plus.github.io/warden-supreme) is a comprehensive one-stop shop covering
+
+This README provides only a brief overview. **Warden Supreme's [extensive documentation hub](https://a-sit-plus.github.io/warden-supreme) is a comprehensive one-stop shop covering
 all topics regarding key and app attestation.**
 
-The documentation hub explains basic concepts, how to apply them, and it provides
+The documentation hub explains the basic concepts, how to apply them, and provides
 a detailed write-up on how Android and iOS implement them.
-The full documentation also lays out a foundation for a risk analysis for anyone
+The full documentation also lays out a foundation for risk analysis for anyone
 considering attestation as part of a more comprehensive security model.
-Finally, it lists all lessons learned from deploying and relying on Warden in production, attesting millions of clients,
-including hiccups, glitches, and outright failures due to non-compliant vendor implementations and how to cope with them.
+Finally, it lists lessons learned from deploying and relying on Warden in production, attesting millions of clients,
+including hiccups, glitches, and outright failures due to non-compliant vendor implementations—and how to cope with them.
 
-**The remainder of this document assumes familiarity with all the topics covered by the full documentation**, and serves
+**The remainder of this document assumes familiarity with all topics covered by the full documentation**, and serves
 as a quick-start guide to integrate Warden Supreme to remotely establish trust in mobile clients.
 
 Full API docs are available [here](https://a-sit-plus.github.io/warden-supreme/dokka/).
@@ -54,6 +56,7 @@ Full API docs are available [here](https://a-sit-plus.github.io/warden-supreme/d
 ## 1. Using Warden Supreme in your Projects
 
 Warden Supreme targets Android and iOS clients and JVM-based back-ends.
+
 * On the back-end, add the `verifier` dependency:
   ```kotlin
   implementation("at.asitplus.warden:supreme-verifier:$version")
@@ -65,22 +68,23 @@ Warden Supreme targets Android and iOS clients and JVM-based back-ends.
 
 > [!TIP]
 > Check out **Warden Supreme's [integration guide](https://a-sit-plus.github.io/warden-supreme/integration/supreme)** for a step-by-step
-> integration tutorial, setting up a minimum-working example! The guide includes code samples, minimum and exhaustive configuration examples!
+> integration tutorial and a minimum working example. The guide includes code samples and minimum and exhaustive configuration examples.
 
-
-Warden Supreme currently only supports HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
+Warden Supreme currently supports only HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
 The back-end, however, can also use [Spring](https://spring.io/), for example.
+
 An attestation flow works as follows:
+
 1. The client fetches a challenge from the back-end.
 2. The client feeds the challenge into hardware-backed key generation to create an attestation statement.
 3. The client sends the attestation statement back to the back-end.
-    * **Wire-format-wise this is a CSR, with a custom attribute carrying the actual attestation proof**
-    * CSRs were chosen as their canonical encoding is precisely specified and because they inherently come with a proof of possession of the private key
-    * CSRs freely allow defining arbitrary extensions and attributes, which is a perfect fit for Warden Supreme's usage scenario
-    * Finally, the PKIX context is the natural habitat of a CSR
+    * **Wire-format-wise, this is a CSR with a custom attribute carrying the actual attestation proof.**
+    * CSRs were chosen because their canonical encoding is precisely specified and because they inherently include a proof of possession of the private key.
+    * CSRs freely allow defining arbitrary extensions and attributes, which is a perfect fit for Warden Supreme's usage scenario.
+    * Finally, the PKIX context is the natural habitat of a CSR.
 4. The back-end verifies the attestation statement against a predefined policy.
     * If the attestation is considered valid, the back-end issues a certificate for the attested key, thus vouching for the integrity of the client.
-    * In case the attestation does not verify, the back-end records the reason for this failure.
+    * If the attestation does not verify, the back-end records the reason for the failure.
 5. The back-end responds either with the full certificate chain (success) or a detailed error reason (failure).
 
 Figure&nbsp;1 illustrates this process.
@@ -93,45 +97,53 @@ Figure&nbsp;1: Remotely establishing trust in mobile clients
 
 </div>
 
-As shown in Figure&nbsp;1, the back-end needs to be configured before being able to assert the trustworthiness of a client.
-While the actual API is unified for Android and iOS (both for verifying attestation statements and on the mobile clients creating
-attestation statements), configuration needs to deal with each platform separately.
+As shown in Figure&nbsp;1, the back-end needs to be configured before it can assert a client’s trustworthiness.
+While the API is unified across Android and iOS (for both attestation statement creation on clients and verification on the server),
+configuration must still handle each platform separately.
 
 ## 2. Debugging, Recording, and Replaying Attestation Checks
-Whenever the actual attestation check fails (i.e., whenever `onAttestationError()` is called), a ready-made `WardenDebugAttestationStatement` is created and passed to this function.
-Hence, two pieces of information are available to aid debugging:
+
+Whenever the attestation check fails (i.e., whenever `onAttestationError()` is called), a ready-made
+`WardenDebugAttestationStatement` is created and passed to this function.
+
+This gives you two inputs to aid debugging:
 
 1. the attestation error (as the receiver of this lambda)
 2. the debug statement, which can be exported for off-site analyses
 
 ### 2.1 Debugging Integrated Attestation
 
-The `WardenDebugAttestationStatement` can be serialized to JSON by invoking `.serialize()` (or `serializeCompact()`) on it.
+`WardenDebugAttestationStatement` can be serialized to JSON by invoking `.serialize()` (or `serializeCompact()`) on it.
 It can later be deserialized by calling `deserialize()` (or `deserializeCompact()`) on its companion.
-By finally calling `replaySmart()` on such a deserialized debug info object, the whole attestation verification process is replayed.
+Finally, call `replay()` on the deserialized debug object to replay the full attestation verification process.
 
-Attaching a debugger allows for step-by-step debugging of any attestation errors encountered.
+Attaching a debugger allows step-by-step inspection of any attestation errors encountered.
 For the most straightforward debugging experience:
+
 * import this project into IDEA
 * add a breakpoint [here in line 19](utils/makoto-diag/src/main/kotlin/Diag.kt#L19)
-* and run it in debug mode.
+* run it in debug mode
 
-Just be sure to add a single argument pointing to a file as described in [Diag.kt](utils/makoto-diag/src/main/kotlin/Diag.kt)!
+Be sure to add a single argument pointing to a file as described in [Diag.kt](utils/makoto-diag/src/main/kotlin/Diag.kt).
 
 ### 2.2 Debugging Raw Android Attestations
+
 A similar utility exists for printing the contents of an Android attestation statement, located in [/utils/roboto-diag](utils/roboto-diag).
-More specifically, it pretty-prints the contents of the leaf certificate's Android attestation extension and expects either
+More specifically, it pretty-prints the contents of the leaf certificate's Android attestation extension and expects either:
+
 * `-f path/to/leaf/certificate.pem`
 * a base64-encoded certificate as the sole argument
 
-It will then serialize a certificate to JSON, giving insight into the attestable properties.
+It then serializes a certificate to JSON, giving insight into the attestable properties.
 
 ## 3. Project Structure
+
 This project is structured into four groups:
-1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2.
-2. `/serverside` contains the server-side foundations with all the low-level logic to verify attestations
-3. `/utils` contains unpublished utility helpers aimed at aiding attestation errors. Those are to be used inside an IDE with a debugger attached to it
-4. `/dependencies` contains external dependencies that are not published to Maven Central or anywhere else and are thus compiled into group&nbsp;2 or used for testing.
+
+1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2
+2. `/serverside` contains the server-side foundations with all low-level logic to verify attestations
+3. `/utils` contains unpublished utilities for investigating attestation errors; these are intended to be used inside an IDE with a debugger attached
+4. `/dependencies` contains external dependencies that are not published to Maven Central (or anywhere else) and are thus compiled into group&nbsp;2 or used for testing
 
 ### 3.1 `/supreme`
 
@@ -145,24 +157,27 @@ This project is structured into four groups:
 
 The modules located here can be used on their own, in case the Supreme integrated attestation suite is not desired.
 
-| <img alt="Warden roboto" src="docs/docs/assets/images/roboto.png" width="249" style="height:auto;">                                               | <picture>  <source media="(prefers-color-scheme: dark)" srcset="docs/docs/assets/images/makoto-w.png">  <source media="(prefers-color-scheme: light)" srcset="docs/docs/assets/images/makoto-b.png">  <img alt="Warden makoto" src="docs/docs/assets/images/makoto-w.png" width="232" height="36" style="height:auto;"> </picture> | 
-|---------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Android-only server-side key and app attestation library developed by A-SIT Plus. Used to be a separate project, now integrated here as a module. | Unified server-side Android and iOS key and app attestation library providing a common API to remotely establish trust in Android and iOS devices. Depends on Warden roboto and [Vincent Haupert's](https://github.com/veehaitch) excellent [DeviceCheck/AppAttest](https://github.com/veehaitch/devicecheck-appattest) library.   |
-| Location: `/serverside/roboto`                                                                                                                    | Location: `/serverside/makoto`                                                                                                                                                                                                                                                                                                     |
-| Maven coordinates: `at.asitplus.warden:roboto`                                                                                                    | Maven coordinates: `at.asitplus.warden:makoto`                                                                                                                                                                                                                                                                                     |
+| <img alt="Warden roboto" src="docs/docs/assets/images/roboto.png" width="249" style="height:auto;">                                               | <picture>  <source media="(prefers-color-scheme: dark)" srcset="docs/docs/assets/images/makoto-w.png">  <source media="(prefers-color-scheme: light)" srcset="docs/docs/assets/images/makoto-b.png">  <img alt="Warden makoto" src="docs/docs/assets/images/makoto-w.png" width="232" height="36" style="height:auto;"> </picture> |
+|---------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Android-only server-side key and app attestation library developed by A-SIT Plus. Used to be a separate project, now integrated here as a module. | Unified server-side Android and iOS key and app attestation library providing a common API to remotely establish trust in Android and iOS devices. Depends on Warden roboto and [Vincent Haupert's](https://github.com/veehaitch) excellent [DeviceCheck/AppAttest](https://github.com/veehaitch/devicecheck-appattest) library. |
+| Location: `/serverside/roboto`                                                                                                                    | Location: `/serverside/makoto`                                                                                                                                                                                                                                                                                                      |
+| Maven coordinates: `at.asitplus.warden:roboto`                                                                                                     | Maven coordinates: `at.asitplus.warden:makoto`                                                                                                                                                                                                                                                                                      |
 
 ### 3.3 `/utils`
-This group houses the debugging/examination utils mentioned in Section&nbsp;2.
+
+This group houses the debugging/examination utilities mentioned in Section&nbsp;2.
 
 ### 3.4 `/dependencies`
-Teams at Google released reference Android attestation parsers (not full attestation checkers to remotely establish trust in Android devices!) and PKIX certificate path validators to complement parsing.
-They did not, however, publish those artifacts to Maven Central. Hence, Warden Supreme integrates them as git submodules and compiles them into _Warden roboto_.
 
-In addition, an HTTP proxy is present to facilitate testing. It is not, however, shipped with any artifact.
+Teams at Google released reference Android attestation parsers (not full attestation checkers to remotely establish trust in Android devices) and PKIX certificate path validators to complement parsing.
+They did not, however, publish these artifacts to Maven Central. Hence, Warden Supreme integrates them as git submodules and compiles them into _Warden roboto_.
+
+In addition, an HTTP proxy is included to facilitate testing. It is not, however, shipped with any artifact.
 
 ## Contributing
-External contributions are greatly appreciated!
-Just be sure to observe the contribution guidelines (see [CONTRIBUTING.md](CONTRIBUTING.md)).
+
+External contributions are greatly appreciated.
+Please observe the contribution guidelines (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ---
 <p align="center">

@@ -3,6 +3,12 @@ package at.asitplus.attestation.supreme
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
+import at.asitplus.signum.indispensable.CryptoSignature
+import at.asitplus.signum.indispensable.X509SignatureAlgorithm
+import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
+import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
+import at.asitplus.signum.indispensable.toCryptoPublicKey
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
 import de.infix.testBalloon.framework.core.testSuite
@@ -21,6 +27,21 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+private val csrKeyPair by lazy { generateRsaKeyPair(1024) }
+
+private fun csrForChallenge(challenge: AttestationChallenge): Pkcs10CertificationRequest {
+    val tbsCsr = TbsCertificationRequest(
+        subjectName = listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber())),
+        publicKey = csrKeyPair.public.toCryptoPublicKey().getOrThrow(),
+        attributes = emptyList(),
+    )
+    return Pkcs10CertificationRequest(
+        tbsCsr = tbsCsr,
+        signatureAlgorithm = X509SignatureAlgorithm.RS256,
+        signature = CryptoSignature.RSA(byteArrayOf(0x01)),
+    )
+}
+
 val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 10.minutes)) {
 
     "once" {
@@ -35,11 +56,13 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
             WardenDefaults.OIDs.ATTESTATION_PROOF
         )
         val cache = InMemoryChallengeCache(clock, Duration.ZERO)
+
         cache.store(challenge)
-        val res1 = cache.validate(nonce)
+        val csr = csrForChallenge(challenge)
+        val res1 = cache.validate(csr)
         res1.shouldBeInstanceOf<ChallengeValidationResult.Success>()
         res1.validatedChallenge shouldBe challenge
-        cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+        cache.validate(csr).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
     }
 
     "twice" {
@@ -68,21 +91,23 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
 
 
         cache.store(challenge1)
-        cache.validate(nonce).let { result ->
-            cache.validate(twice).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+        val csr1 = csrForChallenge(challenge1)
+        val csr2 = csrForChallenge(challenge2)
+        cache.validate(csr1).let { result ->
+            cache.validate(csr2).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
             result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
             result.validatedChallenge shouldBe challenge1
-            cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
-            cache.validate(twice).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+            cache.validate(csr1).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+            cache.validate(csr2).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
         }
 
         cache.store(challenge2)
-        cache.validate(twice).let { result ->
-            cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+        cache.validate(csr2).let { result ->
+            cache.validate(csr1).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
             result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
             result.validatedChallenge shouldBe challenge2
-            cache.validate(twice).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
-            cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+            cache.validate(csr2).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+            cache.validate(csr1).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
         }
     }
 
@@ -103,17 +128,18 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
 
         cache.store(challenge1)
         cache.store(challenge1)
-        cache.validate(nonce).let { result ->
+        val csr = csrForChallenge(challenge1)
+        cache.validate(csr).let { result ->
             result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
             result.validatedChallenge shouldBe challenge1
-            cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+            cache.validate(csr).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
         }
 
         cache.store(challenge1)
-        cache.validate(nonce).let { result ->
+        cache.validate(csr).let { result ->
             result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
             result.validatedChallenge shouldBe challenge1
-            cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+            cache.validate(csr).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
         }
     }
 
@@ -134,20 +160,22 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
 
         withClue("valid") {
             cache.store(challenge1)
-            cache.validate(nonce).let { result ->
+            val csr = csrForChallenge(challenge1)
+            cache.validate(csr).let { result ->
                 result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
                 result.validatedChallenge shouldBe challenge1
-                cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+                cache.validate(csr).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
             }
         }
 
         withClue("still valid for 1ms") {
             clock.offsetBy(999.milliseconds)
             cache.store(challenge1)
-            cache.validate(nonce).let { result ->
+            val csr = csrForChallenge(challenge1)
+            cache.validate(csr).let { result ->
                 result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
                 result.validatedChallenge shouldBe challenge1
-                cache.validate(nonce).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+                cache.validate(csr).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
             }
         }
 
@@ -155,7 +183,8 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
 
             cache.store(challenge1)
             clock.offsetBy(1.milliseconds)
-            cache.validate(nonce).let { result ->
+            val csr = csrForChallenge(challenge1)
+            cache.validate(csr).let { result ->
                 result.shouldBeInstanceOf<ChallengeValidationResult.Failure>()
                 result.reason?.message?.lowercase() shouldContain "no challenge"
             }
@@ -164,7 +193,8 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
         withClue("1ms expired") {
             cache.store(challenge1)
             clock.offsetBy(1.milliseconds)
-            cache.validate(nonce).let { result ->
+            val csr = csrForChallenge(challenge1)
+            cache.validate(csr).let { result ->
                 result.shouldBeInstanceOf<ChallengeValidationResult.Failure>()
                 result.reason?.message?.lowercase() shouldContain "no challenge"
             }
@@ -198,7 +228,7 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
             repeat(numberOfNonces) {
                 checkers += launch {
                     val challenge = recorded.receive()
-                    val result = cache.validate(challenge.nonce)
+                    val result = cache.validate(csrForChallenge(challenge))
                     result.shouldBeInstanceOf<ChallengeValidationResult.Success>()
                     result.validatedChallenge.nonce shouldBe challenge.nonce
                 }

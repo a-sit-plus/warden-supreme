@@ -1,7 +1,6 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
-import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Attestation
@@ -198,11 +197,13 @@ fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): K
             ?: throw Asn1StructuralException("Attestation statement not present")
     }
 
+@Deprecated("Misnomer. To be removed in 1.1", replaceWith = ReplaceWith("nonce"))
+val TbsCertificationRequest.challenge get() = nonce
 
 /**
- * Tries to extract the challenge from a TBS CSR's subject name, given it is encoded into an RDN containing a [KnownOIDs.serialNumber]
+ * Tries to extract the nonce from a TBS CSR's subject name, given it is encoded into an RDN containing a [KnownOIDs.serialNumber]
  */
-val TbsCertificationRequest.challenge: KmmResult<ByteArray>
+val TbsCertificationRequest.nonce: KmmResult<ByteArray>
     get() = catching {
         val noncesRecovered =
             subjectName.mapNotNull { name -> name.attrsAndValues.find { attributeTypeAndValue -> attributeTypeAndValue.oid == KnownOIDs.serialNumber } }
