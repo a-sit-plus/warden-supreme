@@ -1133,7 +1133,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonString(): String = jsonDebug.encodeToString(this)
 
     /**
-     * Serialises this config into its canonical form (YAML). Can be loaded using [fromJsonString] afterwards.
+     * Serialises this config into its canonical form (YAML). Can be loaded using [fromYamlString] afterwards.
      */
     override fun toYamlString(): String = yaml.encodeToString(this)
 
