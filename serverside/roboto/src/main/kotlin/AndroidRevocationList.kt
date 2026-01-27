@@ -349,8 +349,7 @@ data class AndroidRevocationList(
 
         override suspend fun fetch(now: Instant): AndroidRevocationList =
             httpClient.get(url).run {
-                val jsonObject = body<JsonObject>()
-                val fromJson = deserialize(jsonObject = jsonObject)
+                val fromJson = body<AndroidRevocationList>()
 
                 val dateFromHeader = headers.getInstant(HttpHeaders.Date)
                 val lastModifiedFromHeader = headers.getInstant(HttpHeaders.LastModified)
