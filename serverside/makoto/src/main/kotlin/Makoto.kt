@@ -1,6 +1,9 @@
 package at.asitplus.attestation
 
-import at.asitplus.attestation.android.*
+import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.HardwareAttestationVerifier
+import at.asitplus.attestation.android.Roboto
+import at.asitplus.attestation.android.SoftwareAttestationVerifier
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
@@ -404,10 +407,8 @@ class Makoto
         clientData: ByteArray?
     ): AttestationResult {
         log.debug("attestation proof length: ${attestationProof.size}")
-        return if (attestationProof.isEmpty()) AttestationResult.Error(
-            "Attestation proof is empty",
-            AttestationException.Content.Unknown("Attestation proof is empty", cause = IllegalArgumentException())
-        )
+        return if (attestationProof.isEmpty())
+            IllegalArgumentException().encapsulateToUnknown("Attestation proof is empty")
         else if (attestationProof.size > 2) verifyAttestationAndroid(attestationProof, challenge).let {
             if (it is AttestationResult.Android) clientData?.let { encodedKey ->
                 if (!it.attestationCertificate.publicKey.encoded.contentEquals(encodedKey)) {
@@ -440,23 +441,11 @@ class Makoto
                 //if attestationProof contains no assertion, but clientData is set, for example
                 log.warn("Could not verify attestation proof: {}", attestationProof.map { it.encodeBase64() })
                 return if (it is IndexOutOfBoundsException)
-                    AttestationResult.Error(
-                        "Invalid length of attestation proof: ${it.message}. " +
-                                "Possible reason: passed 'clientData' but no assertion",
-                        AttestationException.Content.Unknown(
-                            "Invalid length of attestation proof: ${it.message}",
-                            cause = it
-                        )
-                    )
-                else AttestationResult.Error(
+                    it.encapsulateToUnknown("Invalid length of attestation proof: ${it.message}")
+                else it.encapsulateToUnknown(
                     "Could not verify client integrity due to internal error: " +
-                            "${it::class.simpleName}${it.message?.let { ". $it" }}",
-                    AttestationException.Content.Unknown(
-                        "Could not verify client integrity due to internal error",
-                        cause = it
-                    )
+                            "${it::class.simpleName}${it.message?.let { ". $it" }}"
                 )
-
             }
         }
     }
