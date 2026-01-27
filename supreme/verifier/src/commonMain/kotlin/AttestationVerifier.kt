@@ -137,6 +137,9 @@ constructor(
      * * issues trying to extract the challenge from the CSR
      * * challenge validation errors
      *
+     * [onChallengeValidated] allows side-effect free investigating/logging/handling of validated challenges.
+     * Includes the CSR from the client.
+     *
      * [onAttestationError] allows side-effect-free investigating attestation statement verification errors.
      * Gives you not only the Attestation error, but also a ready-made [WardenDebugAttestationStatement].
      * Those are essentially attestation statements received from the client that do not
@@ -170,10 +173,12 @@ constructor(
 
 
             is ChallengeValidationResult.Success -> {
+                challengeValidationResult.validatedChallenge.onChallengeValidated(csr)
                 challengeValidationResult.validatedChallenge.nonce
-            } //for now, we don't care for the issued challenge
-            //but we may in teh future, e.g. to check whether Key Constraints are actually fulfilled.
+            }
         }
+
+
 
         val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID).getOrElse {
             return Failure(Type.CONTENT, it.extractionReason(csr, onPreAttestationError))

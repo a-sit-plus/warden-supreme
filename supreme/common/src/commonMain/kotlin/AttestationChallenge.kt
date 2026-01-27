@@ -1,6 +1,7 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
+import at.asitplus.attestation.supreme.AttestationChallenge.Companion.CURRENT_VERSION
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Attestation
@@ -14,11 +15,38 @@ import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
- * A generic representation of a challenge sent the server.
+ * Represents a challenge for attestation processes, encapsulating necessary details such as the nonce, validity, and
+ * additional constraints or metadata for the attestation proof.
+ *
+ * The class provides serialization support for its fields and enforces strict requirements, such as the maximum size of
+ * the nonce. It includes both diagnostic and functional properties to support attestation protocols and ensure client
+ * compliance with server requirements.
+ *
+ * @constructor Primary constructor for internal initialization. Throws [IllegalArgumentException] if the [nonce] exceeds
+ * the size restriction.
+ *
+ * @property issuedAt The issuing time of the nonce, used to check for clock synchronization.
+ * @property validity Specifies the duration for which the nonce is valid.
+ * @property timeZone The optional timezone of the server where the challenge was issued. This is purely diagnostic, since
+ * [Instant] used for timestamps is UTC by definition.
+ * @property nonce A server-specified unique identifier, bound by a maximum size of 128 bytes.
+ * @property attestationEndpoint The URL endpoint where the Certificate Signing Request containing the attestation proof
+ * will be posted.
+ * @property proofOID The Object Identifier used for encoding the attestation proof into the CSR.
+ * @property genericDeviceNameOID Optional OID specifying whether a generic device name should be included in the
+ * attestation proof. If set, the device name is included on a best-effort basis.
+ * @property version Indicates the wire format version. The default value is set to [CURRENT_VERSION].
+ * @property keyConstraints Specifies constraints on keys that can be used during the attestation process.
+ * @property additionalPayload An optional user-defined map for custom payloads. Constraints on serialization apply,
+ * where nested maps or primitives are strictly controlled for cross-format consistency.
+ * @property transientData Optional runtime-only attachment. Not serialized and excluded from equality/hashing.
+ *
+ * @throws IllegalArgumentException If the [nonce] exceeds 128 bytes.
  */
 @ConsistentCopyVisibility
 @Serializable
@@ -77,28 +105,41 @@ private constructor(
      */
     val version: Int? = null,
 
-	    /**
-	     * Specifies key constraints for the client
-	     */
-	    val keyConstraints: KeyConstraints? = null,
+    /**
+     * Specifies key constraints for the client
+     */
+    val keyConstraints: KeyConstraints? = null,
 
-	    /**
-	     * Optional user-defined payload.
-	     *
-	     * Must be a nested map structure, where values are [Constrained] (primitives, nested maps, or `null`).
-	     *
-	     * Serialization uses a custom, format-agnostic encoding to avoid pitfalls of formats that may omit default scalar
-	     * values (e.g. `0`, `false`, `""`) on the wire (as in ProtoBuf-style encodings). Each value is encoded as a
-	     * "typed envelope" that always includes a non-default discriminator, so a missing value can be reconstructed as
-	     * the correct default, and `null` can be represented without relying on the underlying format's null support.
-	     */
-	    @Serializable(with = ConstrainedMapSerializer::class)
-	    val additionalPayload: Map<String, Constrained>? = null,
+    /**
+     * Optional user-defined payload.
+     *
+     * Must be a nested map structure, where values are [Constrained] (primitives, nested maps, or `null`).
+     *
+     * Serialization uses a custom, format-agnostic encoding to avoid pitfalls of formats that may omit default scalar
+     * values (e.g. `0`, `false`, `""`) on the wire (as in ProtoBuf-style encodings). Each value is encoded as a
+     * "typed envelope" that always includes a non-default discriminator, so a missing value can be reconstructed as
+     * the correct default, and `null` can be represented without relying on the underlying format's null support.
+     */
+    @Serializable(with = ConstrainedMapSerializer::class)
+    val additionalPayload: Map<String, Constrained>? = null,
 
-	    ) {
-	    init {
-	        if (nonce.size > 128) throw IllegalArgumentException("nonce too large! must be at most 128 bytes.")
-	    }
+    /**
+     * Optional runtime-only attachment for application state.
+     *
+     * This value is **not** part of the wire format:
+     * - It is not serialized (`@Transient`), i.e. it will never be sent to clients and will not be reconstructed when a
+     *   challenge is deserialized.
+     * - It is excluded from [equals] and [hashCode], so it does not affect challenge identity, caching, or replay checks.
+     *
+     * Typical use cases include attaching an internal database id, request context, or metrics tags.
+     */
+    @Transient
+    val transientData: Any? = null,
+
+    ) {
+    init {
+        if (nonce.size > 128) throw IllegalArgumentException("nonce too large! must be at most 128 bytes.")
+    }
 
     /**
      * @param issuedAt The issuing time of the nonce. Useful to detect clock drifts and exit early.
@@ -111,27 +152,29 @@ private constructor(
      *  @param attestationEndpoint The endpoint to post the CSR containing the attestation proof to.
      *  @param proofOID The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
      *  @param genericDeviceNameOID Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
-	     *  Setting this to an OID other than `null` will include a device name on a best-effort basis. Defaults to `null` (i.e., no device name will be included).
-	     *  @param keyConstraints Specifies key constraints for the client.
-	     *  @param additionalPayload Optional user-defined payload. See [additionalPayload] for serialization requirements.
-	     *
-	     * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes
-	     */
-	    @Throws(IllegalArgumentException::class)
-	    constructor(
+     *  Setting this to an OID other than `null` will include a device name on a best-effort basis. Defaults to `null` (i.e., no device name will be included).
+     *  @param keyConstraints Specifies key constraints for the client.
+     *  @param additionalPayload Optional user-defined payload. See [additionalPayload] for serialization requirements.
+     *  @param transientData Optional runtime-only attachment. Not serialized and excluded from equality/hashing.
+     *
+     * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes
+     */
+    @Throws(IllegalArgumentException::class)
+    constructor(
         issuedAt: Instant,
         validity: Duration,
         timeZone: TimeZone? = null,
         nonce: ByteArray,
         attestationEndpoint: String,
-	        proofOID: ObjectIdentifier,
-	        genericDeviceNameOID: ObjectIdentifier? = null,
-	        keyConstraints: KeyConstraints? = null,
-	        additionalPayload: Map<String, Constrained>? = null,
-	    ) : this(
-	        issuedAt = issuedAt,
-	        validity = validity,
-	        timeZone = timeZone,
+        proofOID: ObjectIdentifier,
+        genericDeviceNameOID: ObjectIdentifier? = null,
+        keyConstraints: KeyConstraints? = null,
+        additionalPayload: Map<String, Constrained>? = null,
+        transientData: Any? = null,
+    ) : this(
+        issuedAt = issuedAt,
+        validity = validity,
+        timeZone = timeZone,
         nonce = nonce,
         attestationEndpoint = attestationEndpoint,
 	        proofOID = proofOID,
@@ -139,6 +182,7 @@ private constructor(
 	        version = CURRENT_VERSION,
 	        keyConstraints = keyConstraints,
 	        additionalPayload = additionalPayload,
+	        transientData = transientData,
 	    )
 
     /**
@@ -165,14 +209,14 @@ private constructor(
         if (validity != other.validity) return false
         if (timeZone != other.timeZone) return false
         if (!nonce.contentEquals(other.nonce)) return false
-	        if (attestationEndpoint != other.attestationEndpoint) return false
-	        if (proofOID != other.proofOID) return false
-	        if (keyConstraints != other.keyConstraints) return false
-	        if (additionalPayload != other.additionalPayload) return false
-	        if (validUntil != other.validUntil) return false
+        if (attestationEndpoint != other.attestationEndpoint) return false
+        if (proofOID != other.proofOID) return false
+        if (keyConstraints != other.keyConstraints) return false
+        if (additionalPayload != other.additionalPayload) return false
+        if (validUntil != other.validUntil) return false
 
-	        return true
-	    }
+        return true
+    }
 
     override fun hashCode(): Int {
         var result = genericDeviceNameOID.hashCode()
@@ -180,14 +224,14 @@ private constructor(
         result = 31 * result + issuedAt.hashCode()
         result = 31 * result + validity.hashCode()
         result = 31 * result + (timeZone?.hashCode() ?: 0)
-	        result = 31 * result + nonce.contentHashCode()
-	        result = 31 * result + attestationEndpoint.hashCode()
-	        result = 31 * result + proofOID.hashCode()
-	        result = 31 * result + (keyConstraints?.hashCode() ?: 0)
-	        result = 31 * result + (additionalPayload?.hashCode() ?: 0)
-	        result = 31 * result + validUntil.hashCode()
-	        return result
-	    }
+        result = 31 * result + nonce.contentHashCode()
+        result = 31 * result + attestationEndpoint.hashCode()
+        result = 31 * result + proofOID.hashCode()
+        result = 31 * result + (keyConstraints?.hashCode() ?: 0)
+        result = 31 * result + (additionalPayload?.hashCode() ?: 0)
+        result = 31 * result + validUntil.hashCode()
+        return result
+    }
 
     companion object {
         const val CURRENT_VERSION: Int = 2

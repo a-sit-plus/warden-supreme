@@ -35,6 +35,25 @@ to respond.
 - `genericDeviceNameOID`: whether to include a generic make/model (not user-assignable name) in the CSR.
 - `version`: data format version.
 - `keyConstraints`: desired key parameters and protection policy for the client.
+- `additionalPayload`: optional, service-defined key/value payload to piggy-back along with the challenge (see below).
+- `transientData`: optional runtime-only attachment; not serialized and not part of the wire format.
+
+#### `additionalPayload`
+Some deployments want to carry additional service context with the challenge (e.g., a session id, tenant id, UI flow hints,
+or other metadata that should potentially be echoed back by the client when submitting the CSR).
+
+`additionalPayload` is a nested map structure:
+- Keys are `String`.
+- Values are constrained to primitives (`Boolean`, `String`, numeric types, `Char`), nested maps, or `null`.
+
+To avoid ambiguities with serialization formats that may omit default scalar values on the wire (e.g. encoding `0` as "field absent"),
+each value is encoded internally as a small "typed envelope" that always includes a non-default discriminator. This makes the payload
+format-agnostic and resilient across JSON/CBOR/ProtoBuf-style encodings even when they apply default-elision optimizations.
+
+#### `transientData`
+`transientData` exists for server-side convenience (e.g., attaching a database id or request context to a challenge instance).
+It is annotated as transient, excluded from equality/hashing, and therefore never appears on the wire or in generated schemas.
+You may set it when constructing an `AttestationChallenge` on the server, to keep runtime-only state associated with the challenge.
 
 ### Proof Transport (Client → Server)
 The platform-specific attestation payload (Android Key/ID Attestation, iOS App Attest) is embedded into a PKCS#10
