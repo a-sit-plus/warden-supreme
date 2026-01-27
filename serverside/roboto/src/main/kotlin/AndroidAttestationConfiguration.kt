@@ -1157,7 +1157,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             jsonDebug.decodeFromString<AndroidAttestationConfiguration>(jsonRepresentation)
 
         /**
-         * Loads the config from its canonical form (JSON), as produced by [toJsonString].
+         * Loads the config from its canonical form (YAML), as produced by [toYamlString].
          */
         override fun fromYamlString(yamlRepresentation: String): AndroidAttestationConfiguration =
             yaml.decodeFromString(yamlRepresentation)
