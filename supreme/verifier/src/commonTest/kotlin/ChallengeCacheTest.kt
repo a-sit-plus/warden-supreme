@@ -186,7 +186,7 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
             val csr = csrForChallenge(challenge1)
             cache.validate(csr).let { result ->
                 result.shouldBeInstanceOf<ChallengeValidationResult.Failure>()
-                result.reason?.message?.lowercase() shouldContain "no challenge"
+                result.reason.message.lowercase() shouldContain "no challenge"
             }
         }
 
