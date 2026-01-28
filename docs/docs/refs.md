@@ -8,6 +8,8 @@
 - <a id="ref-android-compat-overview"></a>Android Device Certification Overview — Compatibility: [Docs]({{ links.android_compat_overview }})
 - <a id="ref-android-14-cdd"></a>Android 14 Compatibility Definition Document — CDD: [Docs]({{ links.android_14_cdd }})
 - <a id="ref-android-keystore-strongbox"></a>Android Keystore and StrongBox Overview: [Docs]({{ links.android_keystore_overview }})
+- <a id="ref-android-keystore-extraction-prevention"></a>Android Keystore — Extraction Prevention: [Docs]({{ links.android_keystore_extraction_prevention }})
+- <a id="ref-android-keystore-strongbox-keymint"></a>Android Keystore — StrongBox KeyMint: [Docs]({{ links.android_keystore_strongbox_keymint }})
 - <a id="ref-android-keystore-keyproperties"></a>Android Keystore — `KeyProperties`: [API Docs]({{ links.android_keyproperties_api }})
 - <a id="ref-android-emulator-headless"></a>Android Emulator — Command Line and Headless Usage: [Docs]({{ links.android_emulator_headless }})
 - <a id="ref-android-implementer-ref"></a>Android Keystore Implementer Reference — Rollback Resistance: [Docs]({{ links.android_implementer_ref_rollback_resistance }})
@@ -26,18 +28,17 @@
 - <a id="ref-ios-build-numbers"></a>Apple Version and Build Number Primer: [Website]({{ links.ios_build_numbers }})
 
 ## Libraries and Tooling
-- <a id="ref-signum"></a>Signum — Kotlin Multiplatform Crypto/PKI Toolkit: [Website]({{ links.signum_home }}) • [Docs]({{ links.signum_supreme }})
+- <a id="ref-signum"></a>Signum — Kotlin Multiplatform Crypto/PKI Toolkit: [Website]({{ links.signum_home }}) • [Proivder Docs]({{ links.signum_supreme }}) • [Attestation Docs]({{ links.signum_attestation_docs }})
 - <a id="ref-ktor"></a>Ktor — HTTP Client/Server Framework: [Website]({{ links.ktor }})
 - <a id="ref-spring"></a>Spring — JVM Framework: [Website]({{ links.spring }})
 - <a id="ref-kotlin"></a>Kotlin — Programming Language: [Website]({{ links.kotlin }})
-- <a id="ref-spring-boot-external-config"></a>Spring Boot External Configuration — Application JSON: [Docs]({{ links.spring_boot_external_config_json }})
+- <a id="ref-spring-boot-external-config"></a>Spring Boot External Configuration Loader: [Docs]({{ links.spring_boot_external_config_json }})
 - <a id="ref-ios-devicecheck-lib"></a>iOS App Attest Helper Library: GitHub Repo: [veehaitch/devicecheck-appattest]({{ links.github_veehaitch_devicecheck_appattest }})
 - <a id="ref-authcheckkit"></a>AuthCheckKit — Multiplatform Authentication Capabilities Check: GitHub Repo: [a-sit-plus/AuthCheckKit]({{ links.github_asitplus_authcheckkit }})
 
 ## Legacy Projects
-- <a id="ref-warden"></a>WARDEN — Legacy Server‑Side Verifier for Mobile Attestation: GitHub Repo: [a-sit-plus/warden]({{ links.github_asitplus_warden }}) • [Website]({{ links.warden_site }})
+- <a id="ref-warden"></a>WARDEN — Legacy Server‑Side Verifier for Mobile Attestation: GitHub Repo: [a-sit-plus/warden]({{ links.github_asitplus_warden }}) • [Website]({{ links.warden_site }}) • [Instance Creation API Docs]({{ links.warden_api_docs }})
 - <a id="ref-warden-roboto"></a>WARDEN‑roboto — Legacy Android Attestation Utilities and Parsers: GitHub Repo: [a-sit-plus/warden-roboto]({{ links.github_asitplus_warden_roboto }})
-- <a id="ref-warden-api-docs"></a>WARDEN — Legacy API Docs: [API Docs]({{ links.warden_api_docs }})
 
 ## Background and Research
 - <a id="ref-android-platform-security-model"></a>Android Platform Security Model: [Paper]({{ links.android_platform_security_model_paper }})
@@ -47,5 +48,4 @@
 - <a id="ref-gcp-vm-pricing"></a>Cloud Pricing Reference — GCP Compute Engine: [Website]({{ links.gcp_vm_pricing }})
 - <a id="ref-accessibility-attacks"></a>Android Accessibility Abuse: [Website]({{ links.android_accessibility_abuse }})
 - <a id="ref-digitales-amt-repackaging"></a>_Digitales Amt_ Repackaging: GitHub Repo: [eGovPatchesAT/id-austria]({{ links.digitales_amt_repackaging_repo }})
-- <a id="ref-tryigit-keybox-analysis"></a>Community Analysis — Gray/Black Market: [Website]({{ links.tryigit_keybox_analysis }})
-- <a id="ref-tryigit-keybox-vip"></a>Leaked Keyboxes — Part Accurate, Part Marketing Claims: [Website]({{ links.tryigit_keybox_vip }})
+- <a id="ref-tryigit-keybox-analysis"></a><a id="ref-tryigit-keybox-vip"></a>Leaked Keyboxes — Gray/Black Market Sources: [Analysis]({{ links.tryigit_keybox_analysis }}) • [“VIP Keybox” Pricing]({{ links.tryigit_keybox_vip }})

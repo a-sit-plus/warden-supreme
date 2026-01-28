@@ -138,8 +138,8 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 
 See the consolidated [References](../refs.md):
 
-- [Android Key Attestation (Developer Guide)](../refs.md#ref-android-key-attestation)
-- [Android Key and ID Attestation (AOSP Spec)](../refs.md#ref-android-key-id-attestation)
-- [Android Keystore and StrongBox](../refs.md#ref-android-keystore-strongbox)
-- [Android Attestation Libraries (legacy/current)](../refs.md#ref-android-attestation-lib-legacy)
-- [Android Security Bulletin](../refs.md#ref-android-security-bulletin)
+- [Android Key Attestation (Developer Guide)]({{ links.android_key_attestation }})
+- [Android Key and ID Attestation (AOSP Spec)]({{ links.android_key_id_attestation }})
+- [Android Keystore and StrongBox]({{ links.android_keystore_overview }})
+- [Android Attestation Libraries (Legacy)]({{ links.github_google_android_key_attestation }})
+- [Android Security Bulletin]({{ links.android_security_bulletin }})

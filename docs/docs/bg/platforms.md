@@ -5,7 +5,7 @@ iOS and Android tackle remote attestation differently. This page provides a high
 ## Android (Key & App/ID Attestation)
 
 !!! tip inline end
-    For a formal treatment of Android’s security model, see the **Android Platform Security Model** paper by Mayrhofer et al. [(Paper)](../refs.md#ref-android-platform-security-model). It explains **Verified Boot**, **TEE/StrongBox**, and the OS trust chain your policies rely on.
+    For a formal treatment of Android’s security model, see the [**Android Platform Security Model** paper by Mayrhofer et al.]({{ links.android_platform_security_model_paper }}). It explains **Verified Boot**, **TEE/StrongBox**, and the OS trust chain your policies rely on.
 
 An Android attestation statement is an X.509 certificate chain. The leaf certificate contains:
 - the public part of the newly generated key
@@ -29,10 +29,10 @@ Attestation can also be used in pure test setups, including automated tests, by 
     Enrolling new fingerprints (or, in general, changing user authentication), factory-resetting a device, uninstalling an app, unlocking, or relocking a device's bootloader will invalidate keys, requiring the creation of fresh keys and attesting them all over again.
 
 
-- Chain of trust: **Leaf (app key)** → **Device‑embedded attestation key** → **Manufacturer/Google intermediates** → **Google Hardware Attestation Root**. Verify against **Google trust anchors**. (see [Android Key Attestation](../refs.md#ref-android-key-attestation)).
-- Attestation extension (*KeyDescription*): OS version & patch level, verified boot state, deviceLocked, bootloaderUnlocked, app package/signature digest, key purpose/alg, userAuth authorisations, rollbackResistant, security level (TEE vs StrongBox). (see [AOSP schema](../refs.md#ref-android-key-id-attestation)).
-- **Auth & Presence**: Require biometric/PIN per use by setting authorisations when generating the key; verification confirms the requirement. (see [Android Keystore](../refs.md#ref-android-keystore-strongbox)).
-- **Key invalidation events**: Changing device auth (adding/removing fingerprints or PIN reset) can **invalidate keys requiring user auth**; **bootloader unlock** or verified‑boot failures invalidate trust; **factory reset** deletes keys. (see [Android Keystore](../refs.md#ref-android-keystore-strongbox)).
+- Chain of trust: **Leaf (app key)** → **Device‑embedded attestation key** → **Manufacturer/Google intermediates** → **Google Hardware Attestation Root**. Verify against **Google trust anchors**. (see [Android Key Attestation]({{ links.android_key_attestation }})).
+- Attestation extension (*KeyDescription*): OS version & patch level, verified boot state, deviceLocked, bootloaderUnlocked, app package/signature digest, key purpose/alg, userAuth authorisations, rollbackResistant, security level (TEE vs StrongBox). (see [AOSP schema]({{ links.android_key_id_attestation }})).
+- **Auth & Presence**: Require biometric/PIN per use by setting authorisations when generating the key; verification confirms the requirement. (see [Android Keystore]({{ links.android_keystore_overview }})).
+- **Key invalidation events**: Changing device auth (adding/removing fingerprints or PIN reset) can **invalidate keys requiring user auth**; **bootloader unlock** or verified‑boot failures invalidate trust; **factory reset** deletes keys. (see [Android Keystore]({{ links.android_keystore_overview }})).
 
 ## iOS (App Attest, Emulating Key Attestation)
 !!! tip inline end

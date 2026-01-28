@@ -58,6 +58,7 @@ plugins:
   - social
   - search
   - macros
+  - open-in-new-tab
 
 extra:
   links:
@@ -68,6 +69,8 @@ extra:
     android_compat_overview: https://source.android.com/docs/compatibility/overview
     android_14_cdd: https://source.android.com/docs/compatibility/14/android-14-cdd
     android_keystore_overview: https://developer.android.com/privacy-and-security/keystore
+    android_keystore_extraction_prevention: https://developer.android.com/privacy-and-security/keystore#ExtractionPrevention
+    android_keystore_strongbox_keymint: https://developer.android.com/privacy-and-security/keystore#StrongBoxKeyMint
     android_keyproperties_api: https://developer.android.com/reference/android/security/keystore/KeyProperties
     android_emulator_headless: https://developer.android.com/studio/run/emulator-commandline
     android_implementer_ref_rollback_resistance: https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance
@@ -102,7 +105,6 @@ extra:
 
     android_platform_security_model_paper: https://arxiv.org/abs/1904.05572
     sybil_attack_paper_pdf: https://www.freehaven.net/anonbib/cache/sybil.pdf
-    sybil_attack_paper_pdf_msr: http://research.microsoft.com/en-us/um/people/douceur/documents/sybil.pdf
     rfc_7049_cbor: https://datatracker.ietf.org/doc/html/rfc7049
     rfc_8152_cose: https://datatracker.ietf.org/doc/html/rfc8152
     gcp_vm_pricing: https://cloud.google.com/compute/vm-instance-pricing
