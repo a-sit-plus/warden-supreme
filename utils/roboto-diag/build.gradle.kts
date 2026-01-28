@@ -36,9 +36,6 @@ sourceSets.main {
 
 dependencies {
     implementation(project(":supreme-common"))
-    implementation(project(":roboto"))
-    implementation(libs.autovalue.annotations)
-    implementation(libs.gson)
     implementation(libs.signum) {
         exclude("org.bouncycastle", "bcpkix-jdk18on")
     }

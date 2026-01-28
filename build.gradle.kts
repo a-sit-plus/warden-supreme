@@ -21,7 +21,6 @@ dokka {
     dokkaPublications.html {
         outputDirectory.set(dokkaDir)
     }
-    // moduleName.set("Warden Supreme")
 }
 
 subprojects {
@@ -32,11 +31,6 @@ allprojects {
     apply(plugin = "org.jetbrains.dokka")
     group = rootProject.group
 }
-
-
-
-
-
 
 tasks.register<Copy>("copyChangelog") {
     into(rootDir.resolve("docs/docs"))

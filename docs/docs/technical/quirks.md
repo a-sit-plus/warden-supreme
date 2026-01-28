@@ -113,6 +113,24 @@ Many **Android 15** devices (even emulator images) and some Samsung devices do n
 This concerns the vendor patch level field, not the OS patch level, and requires monkey-patching Google's upstream parser code to prevent it from glitching out.
 **Warden Supreme already applies the necessary band-aids**, but enforcing vendor patch levels is generally discouraged in favour of OS patch levels.
 
+Some devices also truncate `vendorPatchLevel` and/or `bootPatchLevel` by omitting the day-of-month.
+Instead of the expected `yyyyMMdd` form (e.g. `20181230`), they encode only `yyyyMM` (e.g. `201812`).
+This does not conform to the attestation extension schema and needs to be handled leniently (e.g. by treating a missing day as unknown/default and avoiding strict enforcement of these fields).
+
+#### Broken RSA PKCS#1 `AlgorithmIdentifier` (Missing ASN.1 NULL)
+Some Android devices generate a non-conforming X.509 leaf certificate **at attestation time**.
+In other words: when the app requests key attestation, the device creates a leaf certificate that carries the attestation proof and signs it using a key in the TEE — but the resulting certificate is not fully X.509/DER-conforming.
+
+Concretely, for RSA PKCS#1 v1.5 signature algorithms, the X.509 ASN.1 profile requires `AlgorithmIdentifier.parameters` to be present and encoded as ASN.1 `NULL` (`05 00`).
+On affected devices, the certificate’s signature algorithm is encoded as an `AlgorithmIdentifier` that contains only the OID and omits the required `NULL` parameters.
+A common case is `sha256WithRSAEncryption` with OID `1.2.840.113549.1.1.11`, encoded as:
+
+- **illegal (missing NULL):** `30 0b 06 09 2a 86 48 86 f7 0d 01 01 0b`
+- **required by X.509 profile:** `30 0d 06 09 2a 86 48 86 f7 0d 01 01 0b 05 00`
+
+Many parsers accept this in practice, but strict implementations may reject such certificates, or fail when comparing signature algorithm identifiers byte-for-byte.
+Hence, certificate parsing needs to be relaxed for Android attestation proofs.
+
 ### Misleading Assumptions about ECDH
 Virtually every Android device supports hardware-backed EC crypto and EC Diffie-Hellman key agreement.
 **However**, this does not entail that it supports a combination of the two. With respect to EC keys, only ECDSA signatures on NIST curves
