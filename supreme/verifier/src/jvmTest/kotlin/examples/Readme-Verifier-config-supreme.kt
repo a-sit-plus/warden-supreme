@@ -1,4 +1,4 @@
-package docs.config.minimal
+package examples.docs.config.minimal
 
 import at.asitplus.attestation.supreme.AttestationVerifier
 import at.asitplus.attestation.supreme.InMemoryChallengeCache

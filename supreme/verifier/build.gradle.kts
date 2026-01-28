@@ -25,11 +25,6 @@ kotlin {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
         }
 
-        commonMain.dependencies {
-            api(project(":supreme-common"))
-            implementation(libs.yamltk)
-        }
-
         commonTest.dependencies {
             implementation(ktor("server-netty"))
             implementation(ktor("serialization-kotlinx-json"))
@@ -39,6 +34,8 @@ kotlin {
 
         jvmMain.dependencies {
             api(project(":makoto"))
+            api(project(":supreme-common"))
+            implementation(libs.yamltk)
         }
     }
 }

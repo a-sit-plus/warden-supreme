@@ -82,7 +82,7 @@ markdown_extensions:
       check_paths: true
       dedent_subsections: true
       base_path:
-        - ../supreme/verifier/src/commonTest/kotlin/examples/
+        - ../supreme/verifier/src/jvmTest/kotlin/examples/
         - ../supreme/client/src/commonTest/kotlin/examples/
         - docs/examples/
   - pymdownx.superfences

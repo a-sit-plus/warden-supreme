@@ -23,7 +23,8 @@ due to [issues with handling nullable properties](https://docs.spring.io/spring-
 ??? example "YAML with Defaults for a Sample Android and iOS App"
     The below example shows every configuration property in YAML form.
     It uses a single Android app and a single iOS app. Android revocation checks use the default Google revocation list,
-    as well as a custom file-based revocation list. All other properties show their default values.
+    as well as a custom file-based revocation list. All other properties show their default values.  
+    You can download the below example [here](../examples/supreme.yaml).
     
     ```yaml
     --8<-- "supreme.yaml"
@@ -32,7 +33,8 @@ due to [issues with handling nullable properties](https://docs.spring.io/spring-
 ??? example "JSON with Defaults for a Sample Android and iOS App"
     The below example shows every configuration property in JSON form.
     It uses a single Android app and a single iOS app. Android revocation checks use the default Google revocation list,
-    as well as a custom file-based revocation list. All other properties show their default values.
+    as well as a custom file-based revocation list. All other properties show their default values.  
+    You can download the below example [here](../examples/supreme.json).
     
     ```json
     --8<-- "supreme.json"
@@ -56,6 +58,8 @@ All three and their companion objects implement the same interface tandem to kee
     * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
     * A file-based revocation list is configured to allow for manually revoking certificates.
     
+    You can download the below example [here](../examples/android.yaml).
+    
     ```yaml
     --8<-- "android.yaml"
     ```
@@ -67,6 +71,8 @@ All three and their companion objects implement the same interface tandem to kee
     
     * An HTTP proxy is configured for the default HTTP-based revocation checker using the official Google revocation list.
     * A file-based revocation list is configured to allow for manually revoking certificates.
+    
+    You can download the below example [here](../examples/android.json).
 
     ```json
     --8<-- "android.json"
@@ -99,7 +105,8 @@ for the externalisable configuration. The latter must be marked as `@Serializabl
 
 ??? example "YAML with Defaults for a Sample App"
     The below example shows every configuration property in YAML form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.  
+    You can download the below example [here](../examples/ios.yaml).
 
     ```yaml
     --8<-- "ios.yaml"
@@ -108,7 +115,8 @@ for the externalisable configuration. The latter must be marked as `@Serializabl
 
 ??? example "JSON with Defaults for a Sample App"
     The below example shows every configuration property in JSON form.
-    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.
+    Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.  
+    You can download the below example [here](../examples/ios.json).
 
     ```json
     --8<-- "ios.json"

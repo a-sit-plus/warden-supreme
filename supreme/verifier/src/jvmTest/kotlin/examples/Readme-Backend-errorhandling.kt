@@ -1,10 +1,10 @@
-package docs.service.callbacks
+package examples.docs.service.callbacks
 
 import at.asitplus.attestation.AttestationException
 import at.asitplus.attestation.IosAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import docs.config.minimal.verifier
+import examples.docs.config.minimal.verifier
 import java.util.logging.Level
 import java.util.logging.Logger
 

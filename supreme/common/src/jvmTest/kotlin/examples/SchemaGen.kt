@@ -1,10 +1,11 @@
+package examples
+
 import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.AttestationResponse
 import at.asitplus.attestation.supreme.InstantLongSerializer
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.ECCurveSerializer
 import at.asitplus.testballoon.withData
 import de.infix.testBalloon.framework.core.testSuite
 import io.github.smiley4.schemakenerator.core.data.InitialKTypeData

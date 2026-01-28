@@ -1,8 +1,8 @@
-package docs.service.callbacks
+package examples.docs.service.callbacks
 
 import at.asitplus.attestation.supreme.PreAttestationError
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import docs.config.minimal.verifier
+import examples.docs.config.minimal.verifier
 import java.util.logging.Logger
 
 private val csr: Pkcs10CertificationRequest = TODO()

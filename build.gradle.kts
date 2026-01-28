@@ -1,5 +1,3 @@
-import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
-
 plugins {
     val kotlinVer = System.getenv("KOTLIN_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotlin.get()
     val testballoonVer =
@@ -48,8 +46,12 @@ tasks.register<Copy>("copyChangelog") {
 tasks.register<Copy>("mkDocsPrepare") {
     dependsOn("dokkaGenerate")
     dependsOn("copyChangelog")
-    dependsOn(project(":supreme-common").tasks.named("jvmTest")) //to generate JSON schema
-    dependsOn(project(":supreme-verifier").tasks.named("jvmTest")) //to generate config files
+    dependsOn(project(":supreme-common").tasks.named<Test>("jvmTest") {
+        setTestNameIncludePatterns(listOf("examples.*"))
+    }) //to generate JSON schema
+    dependsOn(project(":supreme-verifier").tasks.named<Test>("jvmTest") {
+        setTestNameIncludePatterns(listOf("examples.*"))
+    }) //to generate config files
     into(rootDir.resolve("docs/docs/dokka"))
     from(dokkaDir)
 }
