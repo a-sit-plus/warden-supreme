@@ -2,9 +2,9 @@
 kotlin = "2.3.0"
 guava = "33.5.0-jre"
 autovalue = "1.11.0"
-signum = "3.19.1"
+signum = "3.19.2"
 agp = "8.13.2"
-supreme = "0.11.1"
+supreme = "0.11.2"
 cbor = "0.9"
 gson = "2.13.2"
 errorprone = "2.43.0"
@@ -20,8 +20,10 @@ coroutines = "1.10.2"
 semver = "1.2.0"
 
 slf4j = "1.7.36"
-testballoon = "0.7.1-K2.3.0"
+testballoon = "0.8.2-K2.3.0"
+testballoonAddons = "0.7.1"
 asp = "20260114"
+
 
 [libraries]
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }

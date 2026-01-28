@@ -63,6 +63,7 @@ kotlin {
             implementation(libs.schemakenerator.core)
             implementation(libs.schemakenerator.serialization)
             implementation(libs.schemakenerator.jsonschema)
+            implementation(project(":roboto"))
         }
     }
 }

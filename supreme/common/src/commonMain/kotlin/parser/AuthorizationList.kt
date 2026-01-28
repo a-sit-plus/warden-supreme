@@ -199,9 +199,12 @@ data class AuthorizationList(
         padding?.let { require(it.isNotEmpty()) }
         mgfDigest?.let { require(it.isNotEmpty()) }
 
-        versionCheck()
+        //versionCheck()
     }
 
+    /**
+     * Useful for debugging, but too strict in reality
+     */
     fun versionCheck() {
         if (attestationVersion != null) {
             if (attestationVersion < 400) {

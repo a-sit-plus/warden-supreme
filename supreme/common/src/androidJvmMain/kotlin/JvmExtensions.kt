@@ -10,4 +10,6 @@ import at.asitplus.signum.indispensable.toKmpCertificate
 val java.security.cert.X509Certificate.androidAttestationExtension: AttestationKeyDescription?
     get() = catchingUnwrapped {
         toKmpCertificate().getOrNull()?.androidAttestationExtension
-    }.getOrNull()
+    }.getOrElse {
+        null
+    }
