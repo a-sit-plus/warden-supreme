@@ -2,6 +2,7 @@
 
 !!! bug inline end "Android Private Key Extraction"
     Some OEM implementations have shipped key isolation bugs where keys were not fully confined to secure hardware.
+    See [Leaked Keyboxes](../technical/android/leakedkeys.md).
     Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., [Android Security Bulletin](https://source.android.com/docs/security/bulletin)).
 
 Attestation is not a panacea—nothing ever is.
