@@ -91,6 +91,7 @@ val CustomParserTests by testSuite {
             fromGoogle.shouldNotBeNull()
         }
         "Own" {
+            val google = fromGoogle.shouldNotBeNull()
             androidAttestationExtension.shouldNotBeNull()
             androidAttestationExtension.encodeToDer() shouldBe
                     (DEROctetString.fromByteArray(
@@ -100,6 +101,7 @@ val CustomParserTests by testSuite {
                     ) as ASN1OctetString).octets
 
             androidAttestationExtension.attestationChallenge shouldBe Base64.getMimeDecoder().decode(challenge)
+            assertSemanticallyEqual(google, androidAttestationExtension)
 
         }
     }
