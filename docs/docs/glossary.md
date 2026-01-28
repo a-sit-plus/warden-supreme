@@ -13,20 +13,20 @@ This glossary centralises terms used across the documentation. Each entry is con
 - **Attestation Statement** — The platform-generated attestation payload (Android: X.509 chain with KeyDescription; iOS: App Attest payload).
 - **Attestation Object (iOS)** — Apple’s App Attest CBOR structure (`authenticatorData`, `attStmt`, `x5c`) returned by `attestKey`.
 - **Attestation Proof** — The transport container sent to the server, typically a CSR carrying the attestation statement payload.
-- **Challenge / Nonce** — A server‑generated, unpredictable byte string used exactly once to guarantee freshness and prevent replay. Android embeds it in the attestation extension; iOS mixes it into the attestation nonce via `clientDataHash` (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation), [Attestation Object Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
+- **Challenge / Nonce** — A server‑generated, unpredictable byte string used exactly once to guarantee freshness and prevent replay. Android embeds it in the attestation extension; iOS mixes it into the attestation nonce via `clientDataHash` (see [Android Key Attestation](refs.md#ref-android-key-attestation), [Attestation Object Validation Guide](refs.md#ref-ios-attestation-validation)).
 - **Binding** — Cryptographically tying data (e.g., public key bytes + challenge) into an attested statement so the verifier can trust their association.
 
 ## Identities and Fields
-- **App Identity (Android)** — Package name plus signing certificate digest(s); appears in the attestation extension (see [AOSP Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation#attested-application-id)).
-- **App ID (iOS)** — Concatenation of Team ID and Bundle ID, hashed into the authenticator data; identifies the app instance (see [Attestation Object Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
+- **App Identity (Android)** — Package name plus signing certificate digest(s); appears in the attestation extension (see [AOSP Key & ID Attestation](refs.md#ref-android-key-id-attestation)).
+- **App ID (iOS)** — Concatenation of Team ID and Bundle ID, hashed into the authenticator data; identifies the app instance (see [Attestation Object Validation Guide](refs.md#ref-ios-attestation-validation)).
 - **Team ID (Apple)** — 10‑character identifier of the Apple Developer team; part of iOS App ID checks.
 - **Bundle ID (Apple)** — Reverse‑DNS identifier (e.g., `com.example.app`). Appears (hashed) in App Attest authenticator data.
-- **AAGUID (Apple App Attest)** — Identifies the attestation authenticator (production vs. sandbox/development) and must match the configured environment (see [Validating Apps That Connect to Your Server](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)).
+- **AAGUID (Apple App Attest)** — Identifies the attestation authenticator (production vs. sandbox/development) and must match the configured environment (see [Validating Apps That Connect to Your Server](refs.md#ref-ios-validating-apps)).
 
 ## Cryptographic Material and Encoding
-- **X.509 Certificate Chain** — Sequence of certificates from leaf (key’s cert) → intermediate(s) → root (trust anchor). Android attestation uses an X.509 leaf carrying an attestation extension (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)).
+- **X.509 Certificate Chain** — Sequence of certificates from leaf (key’s cert) → intermediate(s) → root (trust anchor). Android attestation uses an X.509 leaf carrying an attestation extension (see [Android Key Attestation](refs.md#ref-android-key-attestation)).
 - **Leaf / Intermediate / Root** — The key’s certificate is the leaf; intermediates link to a root certificate that the verifier trusts.
-- **Trust Anchor** — Known‑good root certificate or public key the verifier explicitly trusts (e.g., Google’s Hardware Attestation Root, Apple’s App Attest Root) (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation), [Attestation Object Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
+- **Trust Anchor** — Known‑good root certificate or public key the verifier explicitly trusts (e.g., Google’s Hardware Attestation Root, Apple’s App Attest Root) (see [Android Key Attestation](refs.md#ref-android-key-attestation), [Attestation Object Validation Guide](refs.md#ref-ios-attestation-validation)).
 - **PKCS#10 / CSR (Certificate Signing Request)** — Signed request carrying a public key and optional attributes/extensions; Warden Supreme embeds attestation payloads in CSR attributes and binds the nonce via the CSR subject.
 - **OID (Object Identifier)** — Hierarchical identifier used in X.509 and CSR attributes/extensions; used to identify custom attestation payloads and optional device-name attributes.
 - **PKI / PKIX** — Public Key Infrastructure and its X.509 profile; governs certificate path validation, constraints, and revocation semantics.
@@ -34,9 +34,9 @@ This glossary centralises terms used across the documentation. Each entry is con
 - **CBOR / COSE** — Encoding formats used by WebAuthn‑like structures and relevant to Apple’s App Attest internals ([CBOR](https://datatracker.ietf.org/doc/html/rfc7049), [COSE](https://datatracker.ietf.org/doc/html/rfc8152)).
 
 ## Android Specifics
-- **Key Attestation (Android)** — X.509 chain with an Android‑specific ASN.1 extension (KeyDescription) encoding device/app state (OS version, patch level, verified boot, app package/signing digest, etc.) (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation), [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
-- **KeyDescription (Attestation Extension)** — Android’s ASN.1 structure embedded in the leaf certificate containing RootOfTrust, authorisation lists, challenge, app identity, OS version, patch level, and more (see [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
-- **RootOfTrust** — Sub‑structure exposing verified boot state, device lock, and related boot verification data (see [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
+- **Key Attestation (Android)** — X.509 chain with an Android‑specific ASN.1 extension (KeyDescription) encoding device/app state (OS version, patch level, verified boot, app package/signing digest, etc.) (see [Android Key Attestation](refs.md#ref-android-key-attestation), [AOSP schema](refs.md#ref-android-key-id-attestation)).
+- **KeyDescription (Attestation Extension)** — Android’s ASN.1 structure embedded in the leaf certificate containing RootOfTrust, authorisation lists, challenge, app identity, OS version, patch level, and more (see [AOSP schema](refs.md#ref-android-key-id-attestation)).
+- **RootOfTrust** — Sub‑structure exposing verified boot state, device lock, and related boot verification data (see [AOSP schema](refs.md#ref-android-key-id-attestation)).
 - **AVB (Android Verified Boot)** — Boot-time verification scheme using `vbmeta` and rollback indexes; its results are attested via RootOfTrust and patch-level fields.
 - **Verified Boot** — Android’s secure boot chain enforcing locked bootloader policies. The attestation exposes `verifiedBootState`.  
   Apple devices behave similarly, but verified boot is implied by the presence of an Apple‑signed attestation.
@@ -55,24 +55,24 @@ This glossary centralises terms used across the documentation. Each entry is con
 - **ID Attestation** — Optional attestation of device identifiers; limited availability and low practical relevance.
 
 ## iOS Specifics
-- **App Attest** — Apple service attesting an app instance using a Secure Enclave key, an Apple‑signed attestation, and follow‑up assertions with counters (see [DeviceCheck / App Attest](https://developer.apple.com/documentation/devicecheck)).
-- **Attestation Object (App Attest)** — Structure returned by App Attest containing `authenticatorData`, `attStmt` (with `x5c`), and related metadata (see [Attestation Object Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
-- **Assertion** — A fresh, per‑request proof produced after successful attestation, proving continuity via a monotonic counter and binding a new challenge (see [Validating Apps That Connect to Your Server](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)).
+- **App Attest** — Apple service attesting an app instance using a Secure Enclave key, an Apple‑signed attestation, and follow‑up assertions with counters (see [DeviceCheck / App Attest](refs.md#ref-ios-devicecheck-overview)).
+- **Attestation Object (App Attest)** — Structure returned by App Attest containing `authenticatorData`, `attStmt` (with `x5c`), and related metadata (see [Attestation Object Validation Guide](refs.md#ref-ios-attestation-validation)).
+- **Assertion** — A fresh, per‑request proof produced after successful attestation, proving continuity via a monotonic counter and binding a new challenge (see [Validating Apps That Connect to Your Server](refs.md#ref-ios-validating-apps)).
 - **Client Data / `clientDataHash`** — Client‑defined input mixed into the App Attest nonce. In practice this is typically `SHA-256` over app‑defined bytes (often JSON) that include the server challenge and any binding context. Warden Supreme’s unified format uses this to emulate key attestation semantics on iOS (see [Signum Supreme](https://a-sit-plus.github.io/signum/supreme/)).
 - **Receipt (App Attest)** — Apple‑provided token attesting server‑validated registration; can be stored for later checks.
 - **Counter (App Attest)** — Monotonic value in assertions to prevent replay.
-- **Production vs. Sandbox** — Distinct environments identified by AAGUID; configuration must match (see [Preparing to Use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service)).
+- **Production vs. Sandbox** — Distinct environments identified by AAGUID; configuration must match (see [Preparing to Use App Attest](refs.md#ref-ios-app-attest-setup)).
 
 ## Policy, Validation & Ops
 - **Trust Policy** — Server‑side rules: required security level, patch level, OS version, boot state, etc.
-- **Patch Level / OS Version** — Values attested by Android for minimum update enforcement. Beware OEM misencoding issues on some releases (see [AOSP Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)).
+- **Patch Level / OS Version** — Values attested by Android for minimum update enforcement. Beware OEM misencoding issues on some releases (see [AOSP Key & ID Attestation](refs.md#ref-android-key-id-attestation)).
 - **Revocation** — Mechanisms to invalidate compromised issuer/leaf certs; for Android attestation, check Google‑published revocations on the server.
-    - Android uses a custom mechanism (see [Android Developer Documentation](https://developer.android.com/privacy-and-security/security-key-attestation#certificate_status)).
+    - Android uses a custom mechanism (see [Android Key Attestation](refs.md#ref-android-key-attestation)).
     - iOS does not provide revocation information for the attestation certificate chain.
 - **Replay Protection** — Enforced by challenge/nonce binding and (on iOS) increasing counters.
 - **Freshness Window** — Time window during which an attestation/statement is considered valid (e.g., 300 seconds).
 - **Time Drift** — Difference between client and server clocks. Can cause time‑based verification failures and needs to be compensated for.
-- **Rate Limiting (iOS)** — Apple may throttle excessive attestation/assertion use; cache receipts and avoid per‑launch attestation (see [Preparing to Use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service)).
+- **Rate Limiting (iOS)** — Apple may throttle excessive attestation/assertion use; cache receipts and avoid per‑launch attestation (see [Preparing to Use App Attest](refs.md#ref-ios-app-attest-setup)).
 
 ## Warden and Ecosystem
 - **Warden Supreme** — Unified server‑side verifier for Android and iOS attestations, with unified format support for iOS key binding (this project).

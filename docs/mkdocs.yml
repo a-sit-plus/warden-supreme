@@ -57,8 +57,60 @@ copyright: Copyright &copy; 2025-2026 A-SIT Plus GmbH
 plugins:
   - social
   - search
+  - macros
 
 extra:
+  links:
+    android_key_attestation: https://developer.android.com/privacy-and-security/security-key-attestation
+    android_key_id_attestation: https://source.android.com/docs/security/features/keystore/attestation
+    android_rkp_source: https://android.googlesource.com/platform/packages/modules/RemoteKeyProvisioning/+/refs/heads/main
+    android_rkp_docs: https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning
+    android_compat_overview: https://source.android.com/docs/compatibility/overview
+    android_14_cdd: https://source.android.com/docs/compatibility/14/android-14-cdd
+    android_keystore_overview: https://developer.android.com/privacy-and-security/keystore
+    android_keyproperties_api: https://developer.android.com/reference/android/security/keystore/KeyProperties
+    android_emulator_headless: https://developer.android.com/studio/run/emulator-commandline
+    android_implementer_ref_rollback_resistance: https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance
+    android_keystore2_binder_fix: https://android.googlesource.com/platform/system/security/+/b0be7edbf9e34bc409c6d869f936c2eb00925b34
+    android_security_bulletin: https://source.android.com/docs/security/bulletin
+    github_google_android_key_attestation: https://github.com/google/android-key-attestation
+    github_android_keyattestation: https://github.com/android/keyattestation
+
+    ios_devicecheck: https://developer.apple.com/documentation/devicecheck
+    ios_validating_apps: https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server
+    ios_attestation_validation: https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide
+    ios_preparing_app_attest: https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service
+    ios_assessing_fraud_risk: https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk
+    ios_secure_enclave: https://support.apple.com/guide/security/secure-enclave-sec59b0b31ff/web
+    ios_build_numbers: https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/
+
+    signum_home: https://a-sit-plus.github.io/signum/
+    signum_supreme: https://a-sit-plus.github.io/signum/supreme/
+    signum_attestation_docs: https://a-sit-plus.github.io/signum/supreme/#attestation
+
+    ktor: https://ktor.io/
+    spring: https://spring.io/
+    kotlin: http://kotlinlang.org
+    spring_boot_external_config_json: https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json
+
+    github_veehaitch_devicecheck_appattest: https://github.com/veehaitch/devicecheck-appattest
+    github_asitplus_authcheckkit: https://github.com/a-sit-plus/AuthCheckKit
+    github_asitplus_warden: https://github.com/a-sit-plus/warden
+    github_asitplus_warden_roboto: https://github.com/a-sit-plus/warden-roboto/
+    warden_site: https://a-sit-plus.github.io/warden/index.html
+    warden_api_docs: https://a-sit-plus.github.io/warden/warden/at.asitplus.attestation/-warden/index.html
+
+    android_platform_security_model_paper: https://arxiv.org/abs/1904.05572
+    sybil_attack_paper_pdf: https://www.freehaven.net/anonbib/cache/sybil.pdf
+    sybil_attack_paper_pdf_msr: http://research.microsoft.com/en-us/um/people/douceur/documents/sybil.pdf
+    rfc_7049_cbor: https://datatracker.ietf.org/doc/html/rfc7049
+    rfc_8152_cose: https://datatracker.ietf.org/doc/html/rfc8152
+    gcp_vm_pricing: https://cloud.google.com/compute/vm-instance-pricing
+    android_accessibility_abuse: https://iamjosephmj.medium.com/unveiling-accessibility-attacks-on-android-code-examples-and-countermeasures-de16bd25c76c
+    digitales_amt_repackaging_repo: https://github.com/eGovPatchesAT/id-austria
+    tryigit_keybox_analysis: https://tryigit.dev/android-keybox-attestation-analysis/#chapter-5
+    tryigit_keybox_vip: https://tryigit.dev/keybox/vip/#pricing
+
   social:
     - icon: fontawesome/solid/earth-americas
       link: https://plus.a-sit.at/

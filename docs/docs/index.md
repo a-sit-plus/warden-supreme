@@ -86,14 +86,14 @@ from concepts to hands‑on integration:
       <li>
         <span class="bullet">✅</span>
         Support Android Key Attestation (see
-        <a href="https://source.android.com/docs/security/features/keystore/attestation" target="_blank">
+        <a href="refs/#ref-android-key-id-attestation" target="_blank">
           Android Key &amp; ID Attestation
         </a>)
       </li>
       <li>
         <span class="bullet">✅</span>
         Support Apple App Attest (see
-        <a href="https://developer.apple.com/documentation/devicecheck" target="_blank">
+        <a href="refs/#ref-ios-devicecheck-overview" target="_blank">
           DeviceCheck / App Attest
         </a>)
         with key attestation emulation

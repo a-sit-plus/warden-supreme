@@ -201,7 +201,7 @@ a validity period.
 
 On the other hand, it is possible to save this receipt on the back-end after a successful attestation and send it to Apple's
 servers at a later point in time, for additional risk assessment. In return, you'll receive a new receipt with a risk metric.
-This is where things get somewhat fuzzy. [According to Apple](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk?language=objc#Interpret-the-metric),
+This is where things get somewhat fuzzy. [According to Apple](../refs.md#ref-ios-fraud-risk),
 it _indicates the number of attested keys associated with a given device over the past 30 days_ and one should
 _look for this value to be a low number_ (for whatever that means).
 
@@ -224,7 +224,7 @@ object contains the receipt that can be extracted, stored, and sent to Apple for
 
 - **Online dependency**: App Attest requires a **live connection to Apple** for attestation and assertions. Implement
   retries/queuing and clear UX.
-  See [Preparing to use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service).
+  See [Preparing to Use App Attest](../refs.md#ref-ios-app-attest-setup).
 - **Rate limiting**: Avoid unnecessary re‑attestation; cache successful registrations and only assert per privileged
   request or session cadence that suits your risk posture.
 - **Stage separation**: Keep **Sandbox** and **Production** completely separate — App ID, keys, and trust anchors don’t

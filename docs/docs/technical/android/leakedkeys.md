@@ -12,7 +12,7 @@ authentic unless your verifier performs revocation checks.
     In practice, keyboxes are often file-based provisioning blobs that a device imports into its secure hardware.
 
 To mitigate leaked attestation keys, Google publishes revocation information for Android attestation, and verifiers are expected to reject attestations based on revoked keys (see Android’s
-[hardware-backed key attestation documentation](https://developer.android.com/privacy-and-security/security-key-attestation)).
+[hardware-backed key attestation documentation](../../refs.md#ref-android-key-attestation)).
 Warden Supreme incorporates such a check by default.
 
 

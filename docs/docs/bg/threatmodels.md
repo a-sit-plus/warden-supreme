@@ -3,7 +3,7 @@
 !!! bug inline end "Android Private Key Extraction"
     Some OEM implementations have shipped key isolation bugs where keys were not fully confined to secure hardware.
     See [Leaked Keyboxes](../technical/android/leakedkeys.md).
-    Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., [Android Security Bulletin](https://source.android.com/docs/security/bulletin)).
+    Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., [Android Security Bulletin](../refs.md#ref-android-security-bulletin)).
 
 Attestation is not a panacea—nothing ever is.
 However, attestation is a powerful mechanism that significantly raises the security bar for clients that would
@@ -106,7 +106,7 @@ or automate UI flows on “farms” of cheap handsets to commit large‑scale fr
 Emulators are effectively free to scale—marginal costs are primarily CPU time and cloud instances
 (see [Google Cloud — VM Instance Pricing](https://cloud.google.com/compute/vm-instance-pricing))—which makes them attractive
 for abuse at massive volume. The Android Emulator’s headless/CI mode also makes horizontal scaling trivial via scripts and
-containers (see [Android Emulator — Command‑Line and Headless Usage](https://developer.android.com/studio/run/emulator-commandline)).
+containers (see [Android Emulator — Command‑Line and Headless Usage](../refs.md#ref-android-emulator-headless)).
 In addition, bot operators often modify or instrument Android builds on physical devices to ease automation (e.g.,
 [abusing Accessibility Services](https://iamjosephmj.medium.com/unveiling-accessibility-attacks-on-android-code-examples-and-countermeasures-de16bd25c76c),
 engineering/rooting ROMs, or repackaging apps to expose hooks and bypass certificate

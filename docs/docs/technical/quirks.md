@@ -163,7 +163,7 @@ If you need a certificate chain that works for TLS, issue your own for an attest
 
 ### Online Requirement and Rate Limiting
 iOS requires an internet connection **on the mobile device** to issue attestations, as it needs to talk to an Apple service.
-This service is subject to rate limiting (see [Preparing to use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service)). **Keep this in mind!**
+This service is subject to rate limiting (see [Preparing to Use App Attest](../refs.md#ref-ios-app-attest-setup)). **Keep this in mind!**
 
 ### Non-Compliant ASN.1 SET OF
 The custom certificate extension carrying some attestation information uses `SET OF` for some parameters. Apple failed to observe the constraints DER-encoded ASN.1 data must fulfil

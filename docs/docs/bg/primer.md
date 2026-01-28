@@ -15,7 +15,7 @@ that statement against **trusted roots** and **policy**.
 - **Privacy aspects**: On Android, verification uses Google roots but **doesn’t require the device to talk to Google
   during attestation**; only *your* server sees the data. While your back-end must check Google’s revocation list, this
   doesn't expose user-traceable data to third-party services or Google's infrastructure.
-  (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)).<br>
+  (see [Android Key Attestation](../refs.md#ref-android-key-attestation)).<br>
   On iOS, the story is a bit different, and, sadly, client devices will need to contact Apple servers to create an
   attestation statement.
 - **Limits**: Attestation **can’t** stop a legitimate user from later abusing an account; it **won’t** prevent
@@ -31,11 +31,11 @@ that statement against **trusted roots** and **policy**.
 **Platform Differences** (high level):
 
 - **Android**: provides **Key Attestation** (attests a key and device state) and **App/ID attestation** fields in the
-  attestation extension (see [Android Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)).
+  attestation extension (see [Android Key & ID Attestation](../refs.md#ref-android-key-id-attestation)).
 - **iOS**: provides **App Attest** (attests an app instance and device integrity via Apple's servers). It’s conceptually
   **app attestation**, providing no out-of-the-box guarantees about any cryptographic material used by an app.
   **Key attestation can be emulated** by binding a hardware-backed public key into the Apple‑signed `clientDataHash`
-  attestation field (see [Apple App Attest](https://developer.apple.com/documentation/devicecheck)).  
+  attestation field (see [Apple App Attest](../refs.md#ref-ios-devicecheck-overview)).  
   Warden Supreme natively supports this as described
   [here](https://a-sit-plus.github.io/signum/supreme/#attestation).
 
@@ -76,18 +76,18 @@ that statement against **trusted roots** and **policy**.
 - **Secure Enclave** — Apple’s secure coprocessor (a secure element, like StrongBox) providing hardware key isolation,
   implementation of cryptographic procedures and counters inside dedicated hardware (see [Secure Enclave](https://support.apple.com/guide/security/secure-enclave-sec59b0b31ff/web)).
 - **Key Attestation (Android)** — X.509 cert chain with an Android‑specific ASN.1 extension (*KeyDescription*) that
-  encodes device/app state (OS version, patch level, verified boot, app package/signing digest, etc.). (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)
-  and [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
+  encodes device/app state (OS version, patch level, verified boot, app package/signing digest, etc.). (see [Android Key Attestation](../refs.md#ref-android-key-attestation)
+  and [AOSP schema](../refs.md#ref-android-key-id-attestation)).
 - **App Attest (iOS)** — Apple‑operated attestation where `DCAppAttestService` creates a Secure Enclave key and Apple
   signs an **attestation object**; your server validates Apple’s chain and the **nonce** binding to your challenge.
-  (see [DeviceCheck / App Attest](https://developer.apple.com/documentation/devicecheck)).
+  (see [DeviceCheck / App Attest](../refs.md#ref-ios-devicecheck-overview)).
 - **Trust Anchor** — A root certificate your server trusts to validate an attestation chain. For Android, use Google’s
-  attestation roots; for iOS, Apple’s App Attest root. (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)
-  and [Apple Attestation Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
+  attestation roots; for iOS, Apple’s App Attest root. (see [Android Key Attestation](../refs.md#ref-android-key-attestation)
+  and [Apple Attestation Validation Guide](../refs.md#ref-ios-attestation-validation)).
 - **User-Authentication-Bound Keys** — Android keys can require user presence (biometrics/PIN) per‑use; Warden can
   enforce or read these authorisations. (see [Android Keystore](https://developer.android.com/privacy-and-security/keystore)).
 - **Remote Provisioning** — Newer Androids provision attestation/identities over the air; offline devices can **exhaust
   key pools** until connectivity returns. Plan for this in testing. (see conceptual notes
-  in [AOSP Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)).
+  in [AOSP Key & ID Attestation](../refs.md#ref-android-key-id-attestation)).
 - **App vs. Key Attestation (iOS)** — iOS does **app** attestation. **Key‑attestation emulation** is possible by
   embedding the public key bytes into the Apple‑signed attestation format (using our unified format). (see [Signum Supreme](https://a-sit-plus.github.io/signum/supreme/)).
