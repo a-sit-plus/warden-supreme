@@ -56,29 +56,28 @@ This glossary centralises terms used across the documentation. Each entry is con
 
 ## iOS Specifics
 - **App Attest** — Apple service attesting an app instance using a Secure Enclave key, an Apple‑signed attestation, and follow‑up assertions with counters (see [DeviceCheck / App Attest](https://developer.apple.com/documentation/devicecheck)).
-- **Attestation (Object)** — Structure returned by App Attest containing `authenticatorData`, `attStmt` (with `x5c`), and related metadata (see [Attestation Object Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
+- **Attestation Object (App Attest)** — Structure returned by App Attest containing `authenticatorData`, `attStmt` (with `x5c`), and related metadata (see [Attestation Object Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
 - **Assertion** — A fresh, per‑request proof produced after successful attestation, proving continuity via a monotonic counter and binding a new challenge (see [Validating Apps That Connect to Your Server](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)).
-- **Secure Enclave** — Apple’s secure coprocessor providing hardware key isolation and counters.
-- **Client Data / `clientDataHash`** — Client‑side JSON (or structured) data hashed and mixed into the attestation nonce (e.g., challenge + public key). Introduced in Signum Supreme’s unified format to emulate key attestation. Fully supported by Warden Supreme (see [Signum Supreme](https://a-sit-plus.github.io/signum/supreme/)).
+- **Client Data / `clientDataHash`** — Client‑defined input mixed into the App Attest nonce. In practice this is typically `SHA-256` over app‑defined bytes (often JSON) that include the server challenge and any binding context. Warden Supreme’s unified format uses this to emulate key attestation semantics on iOS (see [Signum Supreme](https://a-sit-plus.github.io/signum/supreme/)).
 - **Receipt (App Attest)** — Apple‑provided token attesting server‑validated registration; can be stored for later checks.
 - **Counter (App Attest)** — Monotonic value in assertions to prevent replay.
 - **Production vs. Sandbox** — Distinct environments identified by AAGUID; configuration must match (see [Preparing to Use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service)).
 
 ## Policy, Validation & Ops
-- **Trust Policy** - Your server-side rules: required **security level**, **patch level**, **OS version**, **boot state**, etc.
-- **Patch Level / OS Version** - Values attested by Android for minimum update enforcement. Beware OEM **misencoding** issues on some releases (see [AOSP Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)). iOS unofficially supports these properties to be attested, but it is neither documented nor officially supported.
-- **Revocation** - Mechanisms to invalidate compromised issuer/leaf certs; for Android attestation, check Google-published revocations on the server.
-    - Android uses a custom mechanism (see [Android Developer Documentation](https://developer.android.com/privacy-and-security/security-key-attestation#certificate_status))
-    - iOS does not have any revocation information associated with the certificate chain used for attestation.
-- **Replay Protection** - Enforced by challenge/nonce binding and (on iOS) increasing counters.
-- **Freshness Window** - Time window during which an attestation/statement is considered valid (e.g., 300s).
-- **Time Drift** - Difference between client and back-end clocks. May cause temporal validation errors to trip attestation checks. Needs to be compensated for.
-- **Rate Limiting (iOS)** - Apple may throttle excessive attestation/assertion use; cache receipts and avoid per-launch attestation. (see [Preparing to use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service))
+- **Trust Policy** — Server‑side rules: required security level, patch level, OS version, boot state, etc.
+- **Patch Level / OS Version** — Values attested by Android for minimum update enforcement. Beware OEM misencoding issues on some releases (see [AOSP Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)).
+- **Revocation** — Mechanisms to invalidate compromised issuer/leaf certs; for Android attestation, check Google‑published revocations on the server.
+    - Android uses a custom mechanism (see [Android Developer Documentation](https://developer.android.com/privacy-and-security/security-key-attestation#certificate_status)).
+    - iOS does not provide revocation information for the attestation certificate chain.
+- **Replay Protection** — Enforced by challenge/nonce binding and (on iOS) increasing counters.
+- **Freshness Window** — Time window during which an attestation/statement is considered valid (e.g., 300 seconds).
+- **Time Drift** — Difference between client and server clocks. Can cause time‑based verification failures and needs to be compensated for.
+- **Rate Limiting (iOS)** — Apple may throttle excessive attestation/assertion use; cache receipts and avoid per‑launch attestation (see [Preparing to Use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service)).
 
 ## Warden and Ecosystem
 - **Warden Supreme** — Unified server‑side verifier for Android and iOS attestations, with unified format support for iOS key binding (this project).
 - **Warden roboto** — Android‑focused attestation verification utilities used by Warden; previously a dedicated project, now integrated.
-- **Warden makoto** — Server‑side mobile client attestation; previously a dedicated project, now integrated.
+- **Warden makoto** — Server‑side Android+iOS attestation library; previously a dedicated project, now integrated.
 - **[Signum](https://a-sit-plus.github.io/signum/)** — Kotlin Multiplatform crypto/PKI toolkit. Its Supreme KMP crypto provider implements unified attestation flows in Warden Supreme.
 - **[`google/android-key-attestation`](https://github.com/google/android-key-attestation)** — Google’s original parser and low‑level Android attestation check library; deprecated but still used inside Warden roboto due to limitations of the newer parser.
 - **[`android/keyattestation`](https://github.com/android/keyattestation)** — Google’s newer attestation parser and PKIX cert path validator; Warden roboto uses the cert path validator but not the parser due to inherent limitations.
