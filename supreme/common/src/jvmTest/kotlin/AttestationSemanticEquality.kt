@@ -17,137 +17,221 @@ import java.util.Optional
 import kotlinx.datetime.number
 
 fun assertSemanticallyEqual(fromGoogle: ParsedAttestationRecord, androidAttestationExtension: AttestationKeyDescription) {
-    checkEquals("attestationVersion", fromGoogle.attestationVersion(), androidAttestationExtension.attestationVersion)
-    checkEquals(
-        "attestationSecurityLevel",
-        fromGoogle.attestationSecurityLevel().name,
-        androidAttestationExtension.attestationSecurityLevel.name
-    )
-    checkEquals("keymasterVersion", fromGoogle.keymasterVersion(), androidAttestationExtension.keymasterVersion)
-    checkEquals(
-        "keymasterSecurityLevel",
-        fromGoogle.keymasterSecurityLevel().name,
-        androidAttestationExtension.keymasterSecurityLevel.name
-    )
-    checkByteArrayEquals(
-        "attestationChallenge",
-        fromGoogle.attestationChallenge().toByteArray(),
-        androidAttestationExtension.attestationChallenge
-    )
-    checkByteArrayEquals("uniqueId", fromGoogle.uniqueId().toByteArray(), androidAttestationExtension.uniqueId)
+    val diffs = SemanticDiffCollector()
 
-    assertAuthorizationListSemanticallyEqual(
-        "softwareEnforced",
-        fromGoogle.softwareEnforced(),
-        androidAttestationExtension.softwareEnforced
-    )
-    assertAuthorizationListSemanticallyEqual(
-        "teeEnforced",
-        fromGoogle.teeEnforced(),
-        androidAttestationExtension.hardwareEnforced
-    )
+    diffs.capture {
+        checkEquals("attestationVersion", fromGoogle.attestationVersion(), androidAttestationExtension.attestationVersion)
+    }
+    diffs.capture {
+        checkEquals(
+            "attestationSecurityLevel",
+            fromGoogle.attestationSecurityLevel().name,
+            androidAttestationExtension.attestationSecurityLevel.name
+        )
+    }
+    diffs.capture {
+        checkEquals("keymasterVersion", fromGoogle.keymasterVersion(), androidAttestationExtension.keymasterVersion)
+    }
+    diffs.capture {
+        checkEquals(
+            "keymasterSecurityLevel",
+            fromGoogle.keymasterSecurityLevel().name,
+            androidAttestationExtension.keymasterSecurityLevel.name
+        )
+    }
+    diffs.capture {
+        checkByteArrayEquals(
+            "attestationChallenge",
+            fromGoogle.attestationChallenge().toByteArray(),
+            androidAttestationExtension.attestationChallenge
+        )
+    }
+    diffs.capture {
+        checkByteArrayEquals("uniqueId", fromGoogle.uniqueId().toByteArray(), androidAttestationExtension.uniqueId)
+    }
+
+    diffs.capture {
+        assertAuthorizationListSemanticallyEqual(
+            diffs,
+            "softwareEnforced",
+            fromGoogle.softwareEnforced(),
+            androidAttestationExtension.softwareEnforced
+        )
+    }
+    diffs.capture {
+        assertAuthorizationListSemanticallyEqual(
+            diffs,
+            "teeEnforced",
+            fromGoogle.teeEnforced(),
+            androidAttestationExtension.hardwareEnforced
+        )
+    }
+
+    diffs.throwIfAny()
 }
 
 private fun assertAuthorizationListSemanticallyEqual(
+    diffs: SemanticDiffCollector,
     path: String,
     google: GoogleAuthorizationList,
     ours: AuthorizationList
 ) {
-    checkEquals("$path.purpose", google.purpose().mapTo(sortedSetOf()) { it.name }, ours.purpose.toNamesOrEmpty("$path.purpose"))
-    checkOptionalEnumEquals("$path.algorithm", google.algorithm(), ours.algorithm?.successValueOrThrow("$path.algorithm")?.name)
-    checkOptionalLongEquals("$path.keySize", google.keySize(), ours.keySize?.successValueOrThrow("$path.keySize")?.intValue?.toLongValue())
-    checkEquals("$path.digest", google.digest().mapTo(sortedSetOf()) { it.name }, ours.digest.toNamesOrEmpty("$path.digest"))
-    checkEquals("$path.padding", google.padding().mapTo(sortedSetOf()) { it.name }, ours.padding.toNamesOrEmpty("$path.padding"))
-    checkOptionalEnumEquals("$path.ecCurve", google.ecCurve(), ours.ecCurve?.successValueOrThrow("$path.ecCurve")?.name)
-    checkOptionalLongEquals(
-        "$path.rsaPublicExponent",
-        google.rsaPublicExponent(),
-        ours.rsaPublicExponent?.successValueOrThrow("$path.rsaPublicExponent")?.intValue?.toLongValue()
-    )
+    diffs.capture {
+        checkEquals(
+            "$path.purpose",
+            google.purpose().mapTo(sortedSetOf()) { it.name },
+            ours.purpose.toEnumNamesOrEmpty("$path.purpose")
+        )
+    }
+    diffs.capture {
+        checkOptionalEnumEquals(
+            "$path.algorithm",
+            google.algorithm(),
+            ours.algorithm?.successValueOrThrow("$path.algorithm")?.name
+        )
+    }
+    diffs.capture {
+        checkOptionalLongEquals(
+            "$path.keySize",
+            google.keySize(),
+            ours.keySize?.successValueOrThrow("$path.keySize")?.intValue?.toLongValue()
+        )
+    }
+    diffs.capture {
+        checkEquals(
+            "$path.digest",
+            google.digest().mapTo(sortedSetOf()) { it.name },
+            ours.digest.toEnumNamesOrEmpty("$path.digest")
+        )
+    }
+    diffs.capture {
+        checkEquals(
+            "$path.padding",
+            google.padding().mapTo(sortedSetOf()) { it.name },
+            ours.padding.toEnumNamesOrEmpty("$path.padding")
+        )
+    }
+    diffs.capture {
+        checkOptionalEnumEquals("$path.ecCurve", google.ecCurve(), ours.ecCurve?.successValueOrThrow("$path.ecCurve")?.name)
+    }
+    diffs.capture {
+        checkOptionalLongEquals(
+            "$path.rsaPublicExponent",
+            google.rsaPublicExponent(),
+            ours.rsaPublicExponent?.successValueOrThrow("$path.rsaPublicExponent")?.intValue?.toLongValue()
+        )
+    }
 
-    checkEquals(
-        "$path.rollbackResistance",
-        google.rollbackResistance(),
-        ours.rollbackResistance != null || ours.rollbackResistant != null
-    )
+    diffs.capture {
+        checkEquals(
+            "$path.rollbackResistance",
+            google.rollbackResistance(),
+            ours.rollbackResistance != null || ours.rollbackResistant != null
+        )
+    }
 
-    checkOptionalInstantEquals(
-        "$path.activeDateTime",
-        google.activeDateTime(),
-        ours.activeDateTime?.successValueOrThrow("$path.activeDateTime")?.intValue?.toEpochMilliInstant()
-    )
-    checkOptionalInstantEquals(
-        "$path.originationExpireDateTime",
-        google.originationExpireDateTime(),
-        ours.originationExpireDateTime?.successValueOrThrow("$path.originationExpireDateTime")?.intValue?.toEpochMilliInstant()
-    )
-    checkOptionalInstantEquals(
-        "$path.usageExpireDateTime",
-        google.usageExpireDateTime(),
-        ours.usageExpireDateTime?.successValueOrThrow("$path.usageExpireDateTime")?.intValue?.toEpochMilliInstant()
-    )
+    diffs.capture {
+        checkOptionalInstantEquals(
+            "$path.activeDateTime",
+            google.activeDateTime(),
+            ours.activeDateTime?.successValueOrThrow("$path.activeDateTime")?.intValue?.toEpochMilliInstant()
+        )
+    }
+    diffs.capture {
+        checkOptionalInstantEquals(
+            "$path.originationExpireDateTime",
+            google.originationExpireDateTime(),
+            ours.originationExpireDateTime?.successValueOrThrow("$path.originationExpireDateTime")?.intValue?.toEpochMilliInstant()
+        )
+    }
+    diffs.capture {
+        checkOptionalInstantEquals(
+            "$path.usageExpireDateTime",
+            google.usageExpireDateTime(),
+            ours.usageExpireDateTime?.successValueOrThrow("$path.usageExpireDateTime")?.intValue?.toEpochMilliInstant()
+        )
+    }
 
-    checkEquals("$path.noAuthRequired", google.noAuthRequired(), ours.noAuthRequired != null)
+    diffs.capture {
+        checkEquals("$path.noAuthRequired", google.noAuthRequired(), ours.noAuthRequired != null)
+    }
 
-    val googleUserAuthTypes = google.userAuthType().mapTo(sortedSetOf()) { it.name }
-    val oursUserAuthTypes = ours.userAuthType.toUserAuthTypeNamesOrEmpty("$path.userAuthType")
-    checkEquals("$path.userAuthType", googleUserAuthTypes, oursUserAuthTypes)
+    diffs.capture {
+        val googleUserAuth = googleUserAuthTypeToLong(google.userAuthType())
+        val oursUserAuth = ours.userAuthType?.successValueOrThrow("$path.userAuthType")?.intValue?.toLongValue()
+        checkEquals("$path.userAuthType", googleUserAuth, oursUserAuth)
+    }
 
-    checkOptionalDurationEquals(
-        "$path.authTimeout",
-        google.authTimeout(),
-        ours.authTimeout?.successValueOrThrow("$path.authTimeout")?.duration?.inWholeSeconds?.let { Duration.ofSeconds(it) }
-    )
+    diffs.capture {
+        checkOptionalDurationEquals(
+            "$path.authTimeout",
+            google.authTimeout(),
+            ours.authTimeout?.successValueOrThrow("$path.authTimeout")?.duration?.inWholeSeconds?.let { Duration.ofSeconds(it) }
+        )
+    }
 
-    checkEquals("$path.allowWhileOnBody", google.allowWhileOnBody(), ours.allowWhileOnBody != null)
-    checkEquals(
-        "$path.trustedUserPresenceRequired",
-        google.trustedUserPresenceRequired(),
-        ours.trustedUserPresenceRequired != null
-    )
-    checkEquals(
-        "$path.trustedConfirmationRequired",
-        google.trustedConfirmationRequired(),
-        ours.trustedConfirmationRequired != null
-    )
-    checkEquals("$path.unlockedDeviceRequired", google.unlockedDeviceRequired(), ours.unlockedDeviceRequired != null)
+    diffs.capture { checkEquals("$path.allowWhileOnBody", google.allowWhileOnBody(), ours.allowWhileOnBody != null) }
+    diffs.capture {
+        checkEquals(
+            "$path.trustedUserPresenceRequired",
+            google.trustedUserPresenceRequired(),
+            ours.trustedUserPresenceRequired != null
+        )
+    }
+    diffs.capture {
+        checkEquals(
+            "$path.trustedConfirmationRequired",
+            google.trustedConfirmationRequired(),
+            ours.trustedConfirmationRequired != null
+        )
+    }
+    diffs.capture { checkEquals("$path.unlockedDeviceRequired", google.unlockedDeviceRequired(), ours.unlockedDeviceRequired != null) }
 
-    checkOptionalInstantEquals(
-        "$path.creationDateTime",
-        google.creationDateTime(),
-        ours.creationDateTime?.successValueOrThrow("$path.creationDateTime")?.timestamp?.toEpochMilliseconds()
-            ?.let { Instant.ofEpochMilli(it) }
-    )
+    diffs.capture {
+        checkOptionalInstantEquals(
+            "$path.creationDateTime",
+            google.creationDateTime(),
+            ours.creationDateTime?.successValueOrThrow("$path.creationDateTime")?.timestamp?.toEpochMilliseconds()
+                ?.let { Instant.ofEpochMilli(it) }
+        )
+    }
 
-    checkOptionalEnumEquals("$path.origin", google.origin(), ours.origin?.successValueOrThrow("$path.origin")?.name)
+    diffs.capture {
+        checkOptionalEnumEquals("$path.origin", google.origin(), ours.origin?.successValueOrThrow("$path.origin")?.name)
+    }
 
-    assertOptionalRootOfTrustEquals("$path.rootOfTrust", google.rootOfTrust(), ours.rootOfTrust)
-    checkOptionalLongEquals("$path.osVersion", google.osVersion(), ours.osVersion?.successValueOrThrow("$path.osVersion")?.toEncodedLong())
-    assertOptionalYearMonthEquals("$path.osPatchLevel", google.osPatchLevel(), ours.osPatchLevel)
+    diffs.capture { assertOptionalRootOfTrustEquals(diffs, "$path.rootOfTrust", google.rootOfTrust(), ours.rootOfTrust) }
+    diffs.capture { checkOptionalLongEquals("$path.osVersion", google.osVersion(), ours.osVersion?.successValueOrThrow("$path.osVersion")?.toEncodedLong()) }
+    diffs.capture { assertOptionalYearMonthEquals(diffs, "$path.osPatchLevel", google.osPatchLevel(), ours.osPatchLevel) }
 
-    assertOptionalAttestationApplicationIdEquals(
-        "$path.attestationApplicationId",
-        google.attestationApplicationId(),
-        ours.attestationApplicationId
-    )
+    diffs.capture {
+        assertOptionalAttestationApplicationIdEquals(
+            diffs,
+            "$path.attestationApplicationId",
+            google.attestationApplicationId(),
+            ours.attestationApplicationId
+        )
+    }
 
-    assertOptionalAttestationIdEquals("$path.attestationIdBrand", google.attestationIdBrand(), ours.attestationIdBrand)
-    assertOptionalAttestationIdEquals("$path.attestationIdDevice", google.attestationIdDevice(), ours.attestationIdDevice)
-    assertOptionalAttestationIdEquals("$path.attestationIdProduct", google.attestationIdProduct(), ours.attestationIdProduct)
-    assertOptionalAttestationIdEquals("$path.attestationIdSerial", google.attestationIdSerial(), ours.attestationIdSerial)
-    assertOptionalAttestationIdEquals("$path.attestationIdImei", google.attestationIdImei(), ours.attestationIdImei)
-    assertOptionalAttestationIdEquals("$path.attestationIdSecondImei", google.attestationIdSecondImei(), ours.attestationIdSecondImei)
-    assertOptionalAttestationIdEquals("$path.attestationIdMeid", google.attestationIdMeid(), ours.attestationIdMeid)
-    assertOptionalAttestationIdEquals("$path.attestationIdManufacturer", google.attestationIdManufacturer(), ours.attestationIdManufacturer)
-    assertOptionalAttestationIdEquals("$path.attestationIdModel", google.attestationIdModel(), ours.attestationIdModel)
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdBrand", google.attestationIdBrand(), ours.attestationIdBrand) }
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdDevice", google.attestationIdDevice(), ours.attestationIdDevice) }
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdProduct", google.attestationIdProduct(), ours.attestationIdProduct) }
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdSerial", google.attestationIdSerial(), ours.attestationIdSerial) }
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdImei", google.attestationIdImei(), ours.attestationIdImei) }
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdSecondImei", google.attestationIdSecondImei(), ours.attestationIdSecondImei) }
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdMeid", google.attestationIdMeid(), ours.attestationIdMeid) }
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdManufacturer", google.attestationIdManufacturer(), ours.attestationIdManufacturer) }
+    diffs.capture { assertOptionalAttestationIdEquals(diffs, "$path.attestationIdModel", google.attestationIdModel(), ours.attestationIdModel) }
 
-    assertOptionalLocalDateEquals("$path.vendorPatchLevel", google.vendorPatchLevel(), ours.vendorPatchLevel)
-    assertOptionalLocalDateEquals("$path.bootPatchLevel", google.bootPatchLevel(), ours.bootPatchLevel)
+    diffs.capture { assertOptionalLocalDateEquals(diffs, "$path.vendorPatchLevel", google.vendorPatchLevel(), ours.vendorPatchLevel) }
+    diffs.capture { assertOptionalLocalDateEquals(diffs, "$path.bootPatchLevel", google.bootPatchLevel(), ours.bootPatchLevel) }
 
-    checkEquals("$path.individualAttestation", google.individualAttestation(), ours.deviceUniqueAttestation != null)
+    diffs.capture { checkEquals("$path.individualAttestation", google.individualAttestation(), ours.deviceUniqueAttestation != null) }
 
-    if (google.unorderedTags().isNotEmpty()) {
-        throw IllegalStateException("$path.unorderedTags differs: google has ${google.unorderedTags()}, ours does not retain unknown tags")
+    diffs.capture {
+        if (google.unorderedTags().isNotEmpty()) {
+            throw IllegalStateException("$path.unorderedTags differs: google has ${google.unorderedTags()}, ours does not retain unknown tags")
+        }
     }
 }
 
@@ -156,24 +240,15 @@ private fun <T : Asn1Encodable<*>> AttestationValue<T>.successValueOrThrow(path:
     is AttestationValue.Failure<*> -> throw IllegalStateException("$path differs: ours failed to parse ($this)")
 }
 
-private fun <T : Asn1Encodable<*>> Set<AttestationValue<T>>?.toNamesOrEmpty(path: String): Set<String> =
-    this?.mapTo(sortedSetOf()) { it.successValueOrThrow(path).toString() } ?: emptySet()
-
-private fun AttestationValue<AuthorizationList.UserAuthType>?.toUserAuthTypeNamesOrEmpty(path: String): Set<String> {
-    val ours = this ?: return emptySet()
-    val value = ours.successValueOrThrow(path)
-
-    return when (value) {
-        AuthorizationList.UserAuthType.NONE -> emptySet()
-        AuthorizationList.UserAuthType.ANY -> setOf("ANY")
-        else -> setOf(value.name)
-    }
-}
+private fun <E> Set<AttestationValue<E>>?.toEnumNamesOrEmpty(path: String): Set<String>
+    where E : Asn1Encodable<*>, E : Enum<E> =
+    this?.mapTo(sortedSetOf()) { it.successValueOrThrow(path).name } ?: emptySet()
 
 private fun AuthorizationList.OsVersion.toEncodedLong(): Long =
     (major.toLong() * 10000L) + (minor.toLong() * 100L) + sub.toLong()
 
 private fun assertOptionalRootOfTrustEquals(
+    diffs: SemanticDiffCollector,
     path: String,
     google: Optional<com.google.android.attestation.RootOfTrust>,
     ours: AttestationValue<AuthorizationList.RootOfTrust>?
@@ -188,21 +263,26 @@ private fun assertOptionalRootOfTrustEquals(
     val oursValue = ours?.successValueOrThrow(path)
         ?: throw IllegalStateException("$path differs: google present, ours absent")
 
-    checkByteArrayEquals("$path.verifiedBootKey", googleValue.verifiedBootKey().toByteArray(), oursValue.verifiedBootKeyDigest)
-    checkEquals("$path.deviceLocked", googleValue.deviceLocked(), oursValue.deviceLocked)
-    checkEquals("$path.verifiedBootState", googleValue.verifiedBootState().name, oursValue.verifiedBootState.name)
+    diffs.capture {
+        checkByteArrayEquals("$path.verifiedBootKey", googleValue.verifiedBootKey().toByteArray(), oursValue.verifiedBootKeyDigest)
+    }
+    diffs.capture { checkEquals("$path.deviceLocked", googleValue.deviceLocked(), oursValue.deviceLocked) }
+    diffs.capture { checkEquals("$path.verifiedBootState", googleValue.verifiedBootState().name, oursValue.verifiedBootState.name) }
 
     val googleHash = googleValue.verifiedBootHash().map { it.toByteArray() }.orElse(null)
     if (googleHash == null) {
-        if (oursValue.verifiedBootHash.isNotEmpty()) {
-            throw IllegalStateException("$path.verifiedBootHash differs: google absent, ours present (${oursValue.verifiedBootHash.toHex()})")
+        diffs.capture {
+            if (oursValue.verifiedBootHash.isNotEmpty()) {
+                throw IllegalStateException("$path.verifiedBootHash differs: google absent, ours present (${oursValue.verifiedBootHash.toHex()})")
+            }
         }
     } else {
-        checkByteArrayEquals("$path.verifiedBootHash", googleHash, oursValue.verifiedBootHash)
+        diffs.capture { checkByteArrayEquals("$path.verifiedBootHash", googleHash, oursValue.verifiedBootHash) }
     }
 }
 
 private fun assertOptionalYearMonthEquals(
+    diffs: SemanticDiffCollector,
     path: String,
     google: Optional<YearMonth>,
     ours: AttestationValue<AuthorizationList.OsPatchLevel>?
@@ -213,11 +293,12 @@ private fun assertOptionalYearMonthEquals(
     }
     val googleValue = google.get()
     val oursValue = ours?.successValueOrThrow(path) ?: throw IllegalStateException("$path differs: google present, ours absent")
-    checkEquals("$path.year", googleValue.year.toUShort(), oursValue.year)
-    checkEquals("$path.month", googleValue.monthValue, oursValue.month.number)
+    diffs.capture { checkEquals("$path.year", googleValue.year.toUShort(), oursValue.year) }
+    diffs.capture { checkEquals("$path.month", googleValue.monthValue, oursValue.month.number) }
 }
 
 private fun assertOptionalAttestationApplicationIdEquals(
+    diffs: SemanticDiffCollector,
     path: String,
     google: Optional<GoogleAttestationApplicationId>,
     ours: AttestationValue<AuthorizationList.AttestationApplicationId>?
@@ -231,14 +312,15 @@ private fun assertOptionalAttestationApplicationIdEquals(
 
     val googlePackages = googleValue.packageInfos().mapTo(sortedSetOf()) { "${it.packageName()}:${it.version()}" }
     val oursPackages = oursValue.packageInfos.mapTo(sortedSetOf()) { "${it.packageName}:${it.version}" }
-    checkEquals("$path.packageInfos", googlePackages, oursPackages)
+    diffs.capture { checkEquals("$path.packageInfos", googlePackages, oursPackages) }
 
     val googleDigests = googleValue.signatureDigests().mapTo(sortedSetOf()) { it.toByteArray().toHex() }
     val oursDigests = oursValue.signatureDigests.mapTo(sortedSetOf()) { it.toHex() }
-    checkEquals("$path.signatureDigests", googleDigests, oursDigests)
+    diffs.capture { checkEquals("$path.signatureDigests", googleDigests, oursDigests) }
 }
 
 private fun assertOptionalAttestationIdEquals(
+    diffs: SemanticDiffCollector,
     path: String,
     google: Optional<ByteString>,
     ours: AttestationValue<AuthorizationList.AttestationId>?
@@ -250,10 +332,11 @@ private fun assertOptionalAttestationIdEquals(
     val googleValue = google.get().toStringUtf8()
     val oursValue = ours?.successValueOrThrow(path)?.stringValue
         ?: throw IllegalStateException("$path differs: google present, ours absent")
-    checkEquals(path, googleValue, oursValue)
+    diffs.capture { checkEquals(path, googleValue, oursValue) }
 }
 
 private fun assertOptionalLocalDateEquals(
+    diffs: SemanticDiffCollector,
     path: String,
     google: Optional<LocalDate>,
     ours: AttestationValue<AuthorizationList.PatchLevel>?
@@ -265,9 +348,28 @@ private fun assertOptionalLocalDateEquals(
     val googleValue = google.get()
     val oursValue = ours?.successValueOrThrow(path) ?: throw IllegalStateException("$path differs: google present, ours absent")
 
-    checkEquals("$path.year", googleValue.year.toUShort(), oursValue.year)
-    checkEquals("$path.month", googleValue.monthValue, oursValue.month.number)
-    checkEquals("$path.day", googleValue.dayOfMonth.toUShort(), oursValue.day)
+    diffs.capture { checkEquals("$path.year", googleValue.year.toUShort(), oursValue.year) }
+    diffs.capture { checkEquals("$path.month", googleValue.monthValue, oursValue.month.number) }
+    diffs.capture { checkEquals("$path.day", googleValue.dayOfMonth.toUShort(), oursValue.day) }
+}
+
+private class SemanticDiffCollector {
+    private val diffs = mutableListOf<Throwable>()
+
+    fun capture(block: () -> Unit) {
+        try {
+            block()
+        } catch (t: Throwable) {
+            diffs += t
+        }
+    }
+
+    fun throwIfAny() {
+        if (diffs.isEmpty()) return
+        val ex = IllegalStateException("Semantic equality failed with ${diffs.size} difference(s)")
+        diffs.forEach(ex::addSuppressed)
+        throw ex
+    }
 }
 
 private fun checkEquals(path: String, expected: Any?, actual: Any?) {
@@ -307,3 +409,18 @@ private fun Asn1Integer.toEpochMilliInstant(): Instant =
     Instant.ofEpochMilli(toLongValue())
 
 private fun ByteArray.toHex(): String = joinToString(separator = "") { b -> "%02x".format(b) }
+
+private fun googleUserAuthTypeToLong(types: Set<com.google.android.attestation.AuthorizationList.UserAuthType>): Long {
+    if (types.contains(com.google.android.attestation.AuthorizationList.UserAuthType.USER_AUTH_TYPE_NONE)) return 0L
+
+    var result = 0L
+    types.forEach { type ->
+        when (type) {
+            com.google.android.attestation.AuthorizationList.UserAuthType.PASSWORD -> result = result or 1L
+            com.google.android.attestation.AuthorizationList.UserAuthType.FINGERPRINT -> result = result or 2L
+            com.google.android.attestation.AuthorizationList.UserAuthType.USER_AUTH_TYPE_ANY -> result = UInt.MAX_VALUE.toLong()
+            com.google.android.attestation.AuthorizationList.UserAuthType.USER_AUTH_TYPE_NONE -> {}
+        }
+    }
+    return result
+}
