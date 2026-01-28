@@ -30,7 +30,7 @@ Android requires no special setup procedure for attestation compared to iOS. See
 </figure>
 
 !!! tip
-    Keep Figure&nbsp;1 at your ready while digging through this page, as it will be referenced throughout!
+    Keep Figure&nbsp;1 at the ready while digging through this page, as it will be referenced throughout!
 
 
 ## Boot-Time Trust Chain

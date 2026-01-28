@@ -1,7 +1,7 @@
 # References
 
 !!! warning "Under Construction"
-    These references need to be vetted, expanded, and consolidated with the rest of the documentation.
+    These references still need to be reviewed, expanded, and consolidated with the rest of the documentation.
 
 ## Android Attestation
 - <a id="ref-android-key-attestation"></a>Android Key Attestation (Developer Guide): [Verify Hardware‑Backed Key Pairs with Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)

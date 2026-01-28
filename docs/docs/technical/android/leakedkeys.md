@@ -51,8 +51,8 @@ Because keys are intentionally shared, a *single* compromised attestation signin
 
 #### Revocation Mechanism
 
-Google publishes revocation information as an **attestation status list** that is regularly updates. The list is
-publicly retrievable (JSON) and contains the serial number of many certiifcates whose correspondign private keys were
+Google publishes revocation information as an **attestation status list** that is regularly updated. The list is
+publicly retrievable (JSON) and contains the serial number of many certificates whose corresponding private keys were
 leaked. Entries include revocation status and reason (for example, `KEY_COMPROMISE`). See
 [Verify Hardware‑Backed Key Pairs with Key Attestation](../../refs.md#ref-android-key-attestation).
 

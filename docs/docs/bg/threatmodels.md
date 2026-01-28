@@ -6,7 +6,7 @@
     Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., [Android Security Bulletin](https://source.android.com/docs/security/bulletin)).
 
 Attestation is not a panacea—nothing ever is.
-Attestation is, however, a powerful mechanism that significantly raises the security bar for clients that would
+However, attestation is a powerful mechanism that significantly raises the security bar for clients that would
 otherwise be untrusted.  
 This page outlines common threats and how attestation helps mitigate them, with practical, easy‑to‑apply policies.
 
@@ -24,7 +24,7 @@ use your service.
 To keep such devices and apps out, require strong, cryptographic platform guarantees:
 
 - Android  
-    - Accept only attestation records with `verifiedBootState: Verified` and a locked bootloader.  
+    - Accept only attestation records with `verifiedBootState: VERIFIED` and a locked bootloader.  
     - Enforce a minimum OS security patch level to exclude known, widely exploited vulnerabilities.  
     - Verify the app identity: compare package name and signing‑certificate digest(s) against your allowlist.
 
@@ -38,7 +38,7 @@ filtering out cheap, commoditised attacks.
 
 !!! example "Example Repackaging Attacks"
     Attestation thwarts common repackaging patterns such as:
-
+    
     - Modifying network calls to bypass server‑side checks and resigning the app with an attacker key.
     - Injecting ad‑fraud or click‑spam SDKs into a popular app to monetise traffic.
     - Stripping certificate pinning hooks and shipping a “patched” build to enable man-in-the-middle attacks.
@@ -49,7 +49,7 @@ filtering out cheap, commoditised attacks.
 ### Attack Goals
 The goals of using off-the-shelf methods to tamper with apps are twofold:
 
-1. Circumvent root checks and modify app logic on one's own device
+1. Circumvent root checks and modify app logic on a device the attacker controls
 2. Distribute malware inside repackaged apps through unofficial app stores
 
 The first class of "attackers" can be treated as an untrusted client a user deliberately employs.

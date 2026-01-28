@@ -14,7 +14,7 @@ that statement against **trusted roots** and **policy**.
   applied may access resource _X_”).
 - **Privacy aspects**: On Android, verification uses Google roots but **doesn’t require the device to talk to Google
   during attestation**; only *your* server sees the data. While your back-end must check Google’s revocation list, this
-  doesn't expose any data traceable to users to third-party services or Google's infrastructure.
+  doesn't expose user-traceable data to third-party services or Google's infrastructure.
   (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)).<br>
   On iOS, the story is a bit different, and, sadly, client devices will need to contact Apple servers to create an
   attestation statement.
@@ -70,7 +70,7 @@ that statement against **trusted roots** and **policy**.
   Apple devices behave similarly, but imply a verified boot process through the mere presence of an Apple-signed
   attestation statement.
 - **TEE (Trusted Execution Environment)** — Hardware‑isolated environment **inside the CPU/SoC** (e.g., ARM TrustZone)
-  securely storing unextractable keys and performing cryptographic operations (see [Extraction prevention](https://developer.android.com/privacy-and-security/keystore#ExtractionPrevention)).
+  securely storing unextractable keys and performing cryptographic operations (see [Extraction Prevention](https://developer.android.com/privacy-and-security/keystore#ExtractionPrevention)).
 - **StrongBox** — (Android only) A separate secure element with dedicated CPU/RAM, providing stronger physical attack
   resistance than a TEE. Very few devices are manufactured with it (see [StrongBox](https://developer.android.com/privacy-and-security/keystore#StrongBoxKeyMint)).
 - **Secure Enclave** — Apple’s secure coprocessor (a secure element, like StrongBox) providing hardware key isolation,

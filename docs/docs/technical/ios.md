@@ -1,4 +1,4 @@
-# iOS Device Check / App Attest Deep Dive
+# iOS DeviceCheck / App Attest Deep Dive
 
 This page explains how trust is established for an iOS app instance using App Attest, from key creation in the
 Secure Enclave to attestation and ongoing assertions, and how a service verifies those artefacts. It links to
@@ -6,7 +6,7 @@ Apple’s canonical sequence diagrams and focuses on how App Attest works, not o
 
 
 ## Setup
-Apple requires a small amount of up-front configuration. In particular, the following requirements must be met:
+Apple requires a small amount of upfront configuration. In particular, the following requirements must be met:
 
 * Active Apple Developer Program membership
 * An iOS device (not Simulator) as target, running iOS 14+
@@ -76,10 +76,10 @@ From a high-level point of view, both flows involve the same entities, as shown 
 <figcaption>Figure&nbsp;1: Apple App Attest Flows</figcaption>
 </figure>
 
-Warden Supreme relies on attestation, but also generates a separate public/private key pair inside the Secure Enclave,
-and feeds the public key's hash into `clientDataHash`, to bind the public key to the attestation.
-Since Apple platforms do not allow for attesting keys (the hardware-backed keys used for attestation cannot be used), this
-way of binding a usable key to an attestation is used to emulate key attestation (see [Emulating Key Attestation](#emulating-key-attestation)).
+Warden Supreme relies on attestation, but also generates a separate public/private key pair inside the Secure Enclave and
+feeds the public key’s hash into `clientDataHash` to bind that usable key to the Apple-signed attestation.
+Since App Attest does not provide native key attestation for arbitrary keys, this binding is used to emulate key attestation
+(see [Emulating Key Attestation](#emulating-key-attestation)).
 
 Warden Supreme does not natively support assertions in the fully integrated flow (for reasons explained [below](#assertion-wrap-up))
 and relies on attestation and emulated key attestation to replicate Android's behaviour for a consistent UX across both platforms.

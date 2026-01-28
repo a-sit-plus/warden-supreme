@@ -7,9 +7,8 @@ Warden Supreme configuration consists of two parts:
 2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs (CSRs) and key constraints, as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup).
 
 
-To externalise such configuration in a convenient way, there is an umbrella `SupremeConfiguration`.
-This configuration class includes both the platform-specific configurations and the configuration properties related
-to fully integrated attestation.  
+To externalise such configuration conveniently, use the umbrella `SupremeConfiguration`.
+It includes both the platform-specific configurations and the properties related to fully integrated attestation.  
 `SupremeConfiguration` has canonical serialised representations (JSON and YAML) and comes with the following (de)serialisation functions:
 
 * `toJsonString()` and `fromJsonString()`
@@ -45,7 +44,7 @@ It is possible to add time sources other than the system clock and externalise t
 
 Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they also
 have canonical serialised representations (JSON and YAML) and expose the same (de)serialisation functions as `SupremeConfiguration`.
-All three and their companion objects implement the same interface tandem to keep the API consistent.
+All three and their companion objects implement the same interface in tandem to keep the API consistent.
 
 
 ## Android Configuration Files
@@ -73,7 +72,7 @@ All three and their companion objects implement the same interface tandem to kee
     * A file-based revocation list is configured to allow for manually revoking certificates.
     
     You can download the below example [here](../examples/android.json).
-
+    
     ```json
     --8<-- "android.json"
     ```
@@ -107,7 +106,7 @@ for the externalisable configuration. The latter must be marked as `@Serializabl
     The below example shows every configuration property in YAML form.
     Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.  
     You can download the below example [here](../examples/ios.yaml).
-
+    
     ```yaml
     --8<-- "ios.yaml"
     ```
@@ -117,7 +116,7 @@ for the externalisable configuration. The latter must be marked as `@Serializabl
     The below example shows every configuration property in JSON form.
     Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.  
     You can download the below example [here](../examples/ios.json).
-
+    
     ```json
     --8<-- "ios.json"
     ```
