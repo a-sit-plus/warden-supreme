@@ -44,7 +44,7 @@ It is possible to add time sources other than the system clock and externalise t
 
 Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they also
 have canonical serialised representations (JSON and YAML) and expose the same (de)serialisation functions as `SupremeConfiguration`.
-All three and their companion objects implement the same interface in tandem to keep the API consistent.
+All three and their companion objects implement the same interface tandem to keep the API consistent.
 
 
 ## Android Configuration Files
