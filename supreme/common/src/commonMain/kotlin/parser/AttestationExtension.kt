@@ -187,6 +187,8 @@ val X509Certificate.androidAttestationExtension: AttestationKeyDescription?
                 val children = it.value.asEncapsulatingOctetString().children
                 require(children.size == 1)
                 AttestationKeyDescription.decodeFromTlv(children.first().asSequence())
-            }.getOrNull()
+            }.getOrElse {
+                null
+            }
         }
 
