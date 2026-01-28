@@ -113,6 +113,10 @@ Many **Android 15** devices (even emulator images) and some Samsung devices do n
 This concerns the vendor patch level field, not the OS patch level, and requires monkey-patching Google's upstream parser code to prevent it from glitching out.
 **Warden Supreme already applies the necessary band-aids**, but enforcing vendor patch levels is generally discouraged in favour of OS patch levels.
 
+Some devices also truncate `vendorPatchLevel` and/or `bootPatchLevel` by omitting the day-of-month.
+Instead of the expected `yyyyMMdd` form (e.g. `20181230`), they encode only `yyyyMM` (e.g. `201812`).
+This does not conform to the attestation extension schema and needs to be handled leniently (e.g. by treating a missing day as unknown/default and avoiding strict enforcement of these fields).
+
 #### Broken RSA PKCS#1 `AlgorithmIdentifier` (Missing ASN.1 NULL)
 Some Android devices generate a non-conforming X.509 leaf certificate **at attestation time**.
 In other words: when the app requests key attestation, the device creates a leaf certificate that carries the attestation proof and signs it using a key in the TEE — but the resulting certificate is not fully X.509/DER-conforming.
