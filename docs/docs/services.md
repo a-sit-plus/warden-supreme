@@ -3,7 +3,6 @@
 Proving the integrity of mobile clients is essential for systems built around trusted apps, including mobile banking and digital identity solutions such as the EU Digital Identity Wallet.
 Integrating libraries and APIs is usually straightforward; designing an attestation system that is meaningful, robust, and sustainable requires considerably more than writing code.
 
-
 **This is where we come in.** We support teams in making informed decisions about the application of mobile client attestation,
 policy design, and the construction of robust trust and key management concepts, with a focus on solutions that remain understandable and sustainable in long-term operation.
 
@@ -28,7 +27,7 @@ We help you make the right architectural and security decisions. Typical topics 
 ### 🔧 Implementation Support
 
 Your team still does most of the implementation work, and you get to own all the code and gather the expertise you need, avoiding costly mistakes.
-We support you with targeted expertise during design, integration, rollout, and hands-on coding support.
+We support you with targeted expertise during design, integration, rollout, and hands-on implementation support.
 
 
 ### 🚀 Turnkey Integration

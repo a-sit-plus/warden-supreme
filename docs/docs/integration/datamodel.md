@@ -36,6 +36,7 @@ to respond.
 - `version`: data format version.
 - `keyConstraints`: desired key parameters and protection policy for the client.
 - `additionalPayload`: optional, service-defined key/value payload to piggy-back along with the challenge (see below).
+- `additionalPayload`: optional, service-defined key/value payload to piggyback along with the challenge (see below).
 - `transientData`: optional runtime-only attachment; not serialized and not part of the wire format.
 
 #### `additionalPayload`
@@ -46,12 +47,12 @@ or other metadata that should potentially be echoed back by the client when subm
 - Keys are `String`.
 - Values are constrained to primitives (`Boolean`, `String`, numeric types, `Char`), nested maps, or `null`.
 
-To avoid ambiguities with serialization formats that may omit default scalar values on the wire (e.g. encoding `0` as "field absent"),
+To avoid ambiguities with serialisation formats that may omit default scalar values on the wire (e.g. encoding `0` as "field absent"),
 each value is encoded internally as a small "typed envelope" that always includes a non-default discriminator. This makes the payload
-format-agnostic and resilient across JSON/CBOR/ProtoBuf-style encodings even when they apply default-elision optimizations.
+format-agnostic and resilient across JSON/CBOR/Protobuf-style encodings even when they apply default-elision optimisations.
 
 #### `transientData`
-`transientData` exists for server-side convenience (e.g., attaching a database id or request context to a challenge instance).
+`transientData` exists for server-side convenience (e.g., attaching a database ID or request context to a challenge instance).
 It is annotated as transient, excluded from equality/hashing, and therefore never appears on the wire or in generated schemas.
 You may set it when constructing an `AttestationChallenge` on the server, to keep runtime-only state associated with the challenge.
 

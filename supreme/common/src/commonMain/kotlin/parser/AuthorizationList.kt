@@ -487,7 +487,7 @@ data class AuthorizationList(
                             onSuccess = { AttestationValue.Success(this, this) },
                             onFailure = { AttestationValue.Failure(this::class.simpleName!!, this, first) })
                 }) as AttestationValue<A>?
-            } ?: null
+            }
         }
 
         private val List<Asn1Element>.singleOrNull: Asn1Element? get() = if (size == 1) first() else null

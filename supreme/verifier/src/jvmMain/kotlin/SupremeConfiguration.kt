@@ -241,7 +241,7 @@ operator fun Makoto.Companion.invoke(configuration: SupremeConfiguration): Makot
         verificationTimeOffset = configuration.verificationTimeOffset
     )
     else if (configuration.android == null) Makoto(
-        iosAttestationConfiguration = configuration.ios!!,
+        iosAttestationConfiguration = configuration.ios,
         clock = configuration.clock.timeSource,
         verificationTimeOffset = configuration.verificationTimeOffset
     )

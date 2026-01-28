@@ -1,4 +1,4 @@
-package docs.service
+package examples.docs.service
 
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
@@ -10,7 +10,7 @@ import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
-import docs.config.minimal.verifier
+import examples.docs.config.minimal.verifier
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*

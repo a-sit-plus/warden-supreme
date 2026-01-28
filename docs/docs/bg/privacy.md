@@ -44,7 +44,7 @@ Android attestation extension. This extension encodes, among other fields:
 
 Your server validates the chain to recognised Android attestation roots, parses the extension, and evaluates your
 acceptance policy. The policy can be strict (e.g., require StrongBox, recent patch levels)
-or flexible (e.g., allow some legacy devices and don't require strict app integrity), but the decision is yours and is explainable from attested
+or flexible (e.g., allow some legacy devices and don’t require strict app integrity), but the decision is yours and is explainable from attested
 fields.
 
 ### Data Flow (Who Learns What)
@@ -72,7 +72,7 @@ Because verification and policy live on your back-end, you define and transparen
 
 ### Custom Firmware and Sovereignty
 
-You can accept your organization’s verified-boot (AVB) root(s) and thus trust sovereign
+You can accept your organisation’s verified-boot (AVB) root(s) and thus trust sovereign
 or enterprise ROMs, provided verified boot is on and the device is locked. This cannot be expressed in Google Play
 Integrity’s official verdicts.
 

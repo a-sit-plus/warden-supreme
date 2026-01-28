@@ -1,6 +1,6 @@
 # Testing Strategy
 
-A sound attestation test strategy exercises the full pipeline without weakening production policy. Core ideas: strict separation of trust, realistic artefacts for automation, and staged environments that mirror production behaviour.
+A sound attestation test strategy exercises the full pipeline without weakening production policy. Core ideas are strict separation of trust, realistic artefacts for automation, and staged environments that mirror production behaviour.
 
 ## Principles
 

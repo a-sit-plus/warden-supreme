@@ -1,4 +1,4 @@
-package docs.config
+package examples.docs.config
 
 import at.asitplus.attestation.supreme.AttestationVerifier
 import at.asitplus.attestation.supreme.ChallengeValidator
@@ -8,7 +8,7 @@ import at.asitplus.attestation.supreme.KeyConstraints.KeyProtection
 import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.nativeDigest
-import docs.config.minimal.makoto
+import examples.docs.config.minimal.makoto
 import org.kotlincrypto.random.CryptoRand
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds

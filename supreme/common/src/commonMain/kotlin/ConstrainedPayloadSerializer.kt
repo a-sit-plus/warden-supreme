@@ -27,7 +27,7 @@ typealias Constrained = Any?
 object ConstrainedMapSerializer : KSerializer<Map<String, Constrained>> {
     private val delegate: KSerializer<Map<String, Constrained>> by lazy {
         @Suppress("UNCHECKED_CAST")
-        MapSerializer(String.serializer(), ConstrainedValueSerializer) as KSerializer<Map<String, Constrained>>
+        MapSerializer(String.serializer(), ConstrainedValueSerializer)
     }
 
     override val descriptor: SerialDescriptor get() = delegate.descriptor

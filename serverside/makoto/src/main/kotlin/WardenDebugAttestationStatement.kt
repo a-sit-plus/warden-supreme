@@ -190,7 +190,7 @@ internal constructor(
         result = 31 * result + (clientData?.contentHashCode() ?: 0)
         result = 31 * result + verificationTime.hashCode()
         result = 31 * result + verificationTimeOffset.hashCode()
-        result = 31 * result + (version?.hashCode() ?: 0)
+        result = 31 * result + (version.hashCode() ?: 0)
         return result
     }
 }

@@ -5,7 +5,7 @@ Naturally, this caused hiccups and also helped identify their causes.
 Due to the diversity of its device landscape, Android is most affected. iOS, however, is also not without flaws.
 
 This page lists known quirks and bugs and discusses how to deal with them.
-First, some general hints that apply regardless are discussed.
+It starts with general guidance that applies across platforms.
 
 ## General Hints
 Using attestation to strongly enforce policies and to remotely establish trust in mobile clients is rooted in cryptographic
@@ -13,7 +13,7 @@ mechanisms and PKI procedures.
 Hence, timeliness is of the essence; freshness windows and temporal checks are crucial.
 As a logical consequence, the clocks between a service and the clients being attested need to be in sync.
 
-Given that the service owner is very much not the device owner, clock drifts and even time zone differences causing hours of
+Given that the service owner is not the device owner, clock drift and even time-zone differences of hours
 offset are not uncommon.
 Warden Supreme allows for sending server time zone (and even clock drift information) to clients along with a cryptographic nonce
 at the start of an attestation procedure.
@@ -50,7 +50,7 @@ Warden Supreme's verifier allows for setting a global verification clock offset 
 !!! danger "The Two Sources of Attestation Creation Time"
     (Yes, things get even more complex!)  
     iOS and Android attestation statements come with two kinds of temporal validity:
-
+    
     1. The (leaf) certificates `notBefore` and `notAfter` validity period
     2. An attestation creation time, encoded into the attestation data (this is true for iOS and Android)
     
@@ -121,6 +121,7 @@ are guaranteed to be performed in hardware, assuming a cryptographic hardware mo
 during key generation, even generating an EC key pair for a curve supported in hardware may lead to a key being actually generated
 in software, as soon as [KeyProperties.PURPOSE_AGREE_KEY](https://developer.android.com/reference/android/security/keystore/KeyProperties#PURPOSE_AGREE_KEY)
 is also set.
+
 ### OS Bugs and Quirks
 
 #### Bootloader Unlock Destroying Keys
@@ -162,7 +163,7 @@ If you need a certificate chain that works for TLS, issue your own for an attest
 
 ### Online Requirement and Rate Limiting
 iOS requires an internet connection **on the mobile device** to issue attestations, as it needs to talk to an Apple service.
-This service is subject to rate limiting (see [Preparing to use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service)). **Keep this in mind!**
+This service is subject to rate limiting (see [Preparing to Use App Attest]({{ links.ios_preparing_app_attest }})). **Keep this in mind!**
 
 ### Non-Compliant ASN.1 SET OF
 The custom certificate extension carrying some attestation information uses `SET OF` for some parameters. Apple failed to observe the constraints DER-encoded ASN.1 data must fulfil

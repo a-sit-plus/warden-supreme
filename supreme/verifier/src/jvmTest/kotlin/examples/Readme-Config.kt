@@ -1,4 +1,4 @@
-package examples
+package examples.examples
 
 import at.asitplus.attestation.APPLE_DEFAULT_TRUSTED_ROOTS
 import at.asitplus.attestation.IosAttestationConfiguration

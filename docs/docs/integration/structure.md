@@ -1,4 +1,5 @@
 # Project Structure
+
 Warden Supreme is structured into four groups:
 
 1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2.
@@ -28,7 +29,7 @@ The modules located here can be used on their own, in case the Supreme integrate
 This group houses the debugging/examination utils described in [Debugging](debugging.md).
 
 ## /dependencies
-Teams at Google released reference Android attestation parsers (not full attestation checkers to remotely establish trust in Android devices!) and PKIX certificate path validators to complement parsing.
-They did not, however, publish those artefacts to Maven Central. Hence, Warden Supreme integrates them as Git submodules and compiles them into _Warden roboto_.
+Google released reference Android attestation parsers (not full attestation checkers for remotely establishing trust in Android devices) and PKIX certificate path validators to complement parsing.
+They did not, however, publish those artefacts to Maven Central. Warden Supreme therefore integrates them as Git submodules and compiles them into _Warden roboto_.
 
 In addition, an HTTP proxy is present to facilitate testing. It is not, however, shipped with any artefacts.

@@ -2,10 +2,11 @@
 
 !!! bug inline end "Android Private Key Extraction"
     Some OEM implementations have shipped key isolation bugs where keys were not fully confined to secure hardware.
-    Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., [Android Security Bulletin](https://source.android.com/docs/security/bulletin)).
+    See [Leaked Keyboxes](../technical/android/leakedkeys.md).
+    Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., [Android Security Bulletin]({{ links.android_security_bulletin }})).
 
 Attestation is not a panacea—nothing ever is.
-Attestation is, however, a powerful mechanism that significantly raises the security bar for clients that would
+However, attestation is a powerful mechanism that significantly raises the security bar for clients that would
 otherwise be untrusted.  
 This page outlines common threats and how attestation helps mitigate them, with practical, easy‑to‑apply policies.
 
@@ -23,7 +24,7 @@ use your service.
 To keep such devices and apps out, require strong, cryptographic platform guarantees:
 
 - Android  
-    - Accept only attestation records with `verifiedBootState: Verified` and a locked bootloader.  
+    - Accept only attestation records with `verifiedBootState: VERIFIED` and a locked bootloader.  
     - Enforce a minimum OS security patch level to exclude known, widely exploited vulnerabilities.  
     - Verify the app identity: compare package name and signing‑certificate digest(s) against your allowlist.
 
@@ -37,7 +38,7 @@ filtering out cheap, commoditised attacks.
 
 !!! example "Example Repackaging Attacks"
     Attestation thwarts common repackaging patterns such as:
-
+    
     - Modifying network calls to bypass server‑side checks and resigning the app with an attacker key.
     - Injecting ad‑fraud or click‑spam SDKs into a popular app to monetise traffic.
     - Stripping certificate pinning hooks and shipping a “patched” build to enable man-in-the-middle attacks.
@@ -48,7 +49,7 @@ filtering out cheap, commoditised attacks.
 ### Attack Goals
 The goals of using off-the-shelf methods to tamper with apps are twofold:
 
-1. Circumvent root checks and modify app logic on one's own device
+1. Circumvent root checks and modify app logic on a device the attacker controls
 2. Distribute malware inside repackaged apps through unofficial app stores
 
 The first class of "attackers" can be treated as an untrusted client a user deliberately employs.
@@ -67,9 +68,8 @@ because sophisticated means to circumvent attestation require physical access to
 
 Public demonstrations have shown attempts to repackage apps to bypass client‑side checks (e.g., root/jailbreak
 detection, pinning) and then re‑sign the modified APK with a different key. A documented community example is
-[github.com/eGovPatchesAT/id-austria](https://github.com/eGovPatchesAT/id-austria),
+[github.com/eGovPatchesAT/id-austria]({{ links.digitales_amt_repackaging_repo }}),
 which explores patching attempts against the Austrian _Digitales Amt_ app.
-
 **What the repository proposes and why it’s relevant:**
 
 - It documents techniques commonly discussed in reverse‑engineering communities: extracting the APK, modifying bytecode
@@ -99,15 +99,15 @@ which explores patching attempts against the Austrian _Digitales Amt_ app.
 ## Threat Model B — Bot Farms, Sybil Attacks, and Large‑Scale Emulator Abuse
 
 Here the adversary doesn’t necessarily tamper with the OS. Instead, they spin up thousands of virtual devices (a form of
-a [Sybil attack](http://research.microsoft.com/en-us/um/people/douceur/documents/sybil.pdf)—many forged identities controlled by one adversary)
+a [Sybil attack]({{ links.sybil_attack_paper_pdf }})—many forged identities controlled by one adversary)
 or automate UI flows on “farms” of cheap handsets to commit large‑scale fraud (e.g., credential stuffing, promo abuse, ad‑click inflation).
 
 Emulators are effectively free to scale—marginal costs are primarily CPU time and cloud instances
-(see [Google Cloud — VM Instance Pricing](https://cloud.google.com/compute/vm-instance-pricing))—which makes them attractive
+(see [Google Cloud — VM Instance Pricing]({{ links.gcp_vm_pricing }}))—which makes them attractive
 for abuse at massive volume. The Android Emulator’s headless/CI mode also makes horizontal scaling trivial via scripts and
-containers (see [Android Emulator — Command‑Line and Headless Usage](https://developer.android.com/studio/run/emulator-commandline)).
+containers (see [Android Emulator — Command‑Line and Headless Usage]({{ links.android_emulator_headless }})).
 In addition, bot operators often modify or instrument Android builds on physical devices to ease automation (e.g.,
-[abusing Accessibility Services](https://iamjosephmj.medium.com/unveiling-accessibility-attacks-on-android-code-examples-and-countermeasures-de16bd25c76c),
+[abusing Accessibility Services]({{ links.android_accessibility_abuse }}),
 engineering/rooting ROMs, or repackaging apps to expose hooks and bypass certificate
 pinning).
 

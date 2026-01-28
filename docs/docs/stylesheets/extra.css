@@ -205,10 +205,8 @@ ul.emoji-list li .bullet {
 }
 .md-announce__inner {
     display: flex;
-    gap: .75rem;
     align-items: center;
     justify-content: center;
-    padding: .35rem .75rem;
     flex-wrap: wrap;
 }
 

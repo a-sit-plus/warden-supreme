@@ -1,3 +1,5 @@
+package examples.docs
+
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
@@ -6,7 +8,6 @@ import at.asitplus.attestation.supreme.SupremeConfiguration
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
-import com.github.curiousoddman.rgxgen.nodes.Repeat.minimum
 import de.infix.testBalloon.framework.core.TestCompartment
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
@@ -39,7 +40,9 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
     )
 
     withData(
-        "android" to androidAttestationConfiguration, "ios" to iosAttestationConfiguration
+        nameFn = { (name, _) -> name },
+        "android" to androidAttestationConfiguration,
+        "ios" to iosAttestationConfiguration
     ) - { (name, config) ->
         "Writing $name" {
             withClue("JSON") {
