@@ -7,7 +7,7 @@ import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
 import com.google.android.attestation.ParsedAttestationRecord
 import de.infix.testBalloon.framework.core.testSuite
-import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -81,12 +81,13 @@ val CustomParserTests by testSuite {
         val androidAttestationExtension = attestationCertChain.first().androidAttestationExtension
 
         "convert" - {
-            withData(nameFn = {it.subjectX500Principal.toString()}, attestationCertChain) {
+            withData(nameFn = { it.subjectX500Principal.toString() }, attestationCertChain) {
                 it.toKmpCertificate().isSuccess shouldBe true
                 it.toKmpCertificate().getOrThrow().encodeToDer() shouldBe it.encoded
             }
         }
-        val fromGoogle = catchingUnwrapped { ParsedAttestationRecord.createParsedAttestationRecord(attestationCertChain)}.getOrNull()
+        val fromGoogle =
+            catchingUnwrapped { ParsedAttestationRecord.createParsedAttestationRecord(attestationCertChain) }.getOrNull()
         "From Google" {
             fromGoogle.shouldNotBeNull()
         }
@@ -102,6 +103,13 @@ val CustomParserTests by testSuite {
 
             androidAttestationExtension.attestationChallenge shouldBe Base64.getMimeDecoder().decode(challenge)
             assertSemanticallyEqual(google, androidAttestationExtension)
+            listOf(
+                "UnknownPackage",
+                "at.asitplus.atttest"
+            ).shouldContain(
+                androidAttestationExtension.softwareEnforced.attestationApplicationId.shouldNotBeNull()
+                    .get().packageInfos.get(0).packageName
+            )
 
         }
     }
