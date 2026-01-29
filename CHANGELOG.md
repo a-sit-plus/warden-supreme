@@ -7,11 +7,14 @@ this changelog also includes the original WARDEN changelog.
 # 1.0.0-RC2
 * Features:
     * Relax custom parser to report less values as error
+    * Add extension to read/write configurations directly from/to files
 * Fixes:
+    * Correct generation of API docs 
     * Support cursed RSA PKCS1 X.509 signature algorithm profiles used by one of the larges OEMs
 * Revised and extended documentation
 * Dependency Updates:
     * Signum 3.19.2 / Supreme 0.11.2
+
 
 # 1.0.0-RC
 **Release Candidate for Warden Supreme 1.0.0**
