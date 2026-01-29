@@ -1,4 +1,4 @@
-# iOS Device Check / App Attest Deep Dive
+# iOS DeviceCheck / App Attest Deep Dive
 
 This page explains how trust is established for an iOS app instance using App Attest, from key creation in the
 Secure Enclave to attestation and ongoing assertions, and how a service verifies those artefacts. It links to
@@ -6,7 +6,7 @@ Apple’s canonical sequence diagrams and focuses on how App Attest works, not o
 
 
 ## Setup
-Apple requires a small amount of up-front configuration. In particular, the following requirements must be met:
+Apple requires a small amount of upfront configuration. In particular, the following requirements must be met:
 
 * Active Apple Developer Program membership
 * An iOS device (not Simulator) as target, running iOS 14+
@@ -76,10 +76,10 @@ From a high-level point of view, both flows involve the same entities, as shown 
 <figcaption>Figure&nbsp;1: Apple App Attest Flows</figcaption>
 </figure>
 
-Warden Supreme relies on attestation, but also generates a separate public/private key pair inside the Secure Enclave,
-and feeds the public key's hash into `clientDataHash`, to bind the public key to the attestation.
-Since Apple platforms do not allow for attesting keys (the hardware-backed keys used for attestation cannot be used), this
-way of binding a usable key to an attestation is used to emulate key attestation (see [Emulating Key Attestation](#emulating-key-attestation)).
+Warden Supreme relies on attestation, but also generates a separate public/private key pair inside the Secure Enclave and
+feeds the public key’s hash into `clientDataHash` to bind that usable key to the Apple-signed attestation.
+Since App Attest does not provide native key attestation for arbitrary keys, this binding is used to emulate key attestation
+(see [Emulating Key Attestation](#emulating-key-attestation)).
 
 Warden Supreme does not natively support assertions in the fully integrated flow (for reasons explained [below](#assertion-wrap-up))
 and relies on attestation and emulated key attestation to replicate Android's behaviour for a consistent UX across both platforms.
@@ -201,7 +201,7 @@ a validity period.
 
 On the other hand, it is possible to save this receipt on the back-end after a successful attestation and send it to Apple's
 servers at a later point in time, for additional risk assessment. In return, you'll receive a new receipt with a risk metric.
-This is where things get somewhat fuzzy. [According to Apple](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk?language=objc#Interpret-the-metric),
+This is where things get somewhat fuzzy. [According to Apple]({{ links.ios_assessing_fraud_risk }}),
 it _indicates the number of attested keys associated with a given device over the past 30 days_ and one should
 _look for this value to be a low number_ (for whatever that means).
 
@@ -224,7 +224,7 @@ object contains the receipt that can be extracted, stored, and sent to Apple for
 
 - **Online dependency**: App Attest requires a **live connection to Apple** for attestation and assertions. Implement
   retries/queuing and clear UX.
-  See [Preparing to use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service).
+  See [Preparing to Use App Attest]({{ links.ios_preparing_app_attest }}).
 - **Rate limiting**: Avoid unnecessary re‑attestation; cache successful registrations and only assert per privileged
   request or session cadence that suits your risk posture.
 - **Stage separation**: Keep **Sandbox** and **Production** completely separate — App ID, keys, and trust anchors don’t
@@ -249,8 +249,8 @@ completeness, this section lists general common pitfalls.
 
 See the consolidated [References](../refs.md):
 
-- [DeviceCheck / App Attest overview](../refs.md#ref-ios-devicecheck-overview)
-- [Validating apps that connect to your server](../refs.md#ref-ios-validating-apps)
-- [Attestation Object Validation Guide](../refs.md#ref-ios-attestation-validation)
-- [Preparing to use App Attest](../refs.md#ref-ios-app-attest-setup)
-- [DeviceCheck / App Attest library (Kotlin)](../refs.md#ref-ios-devicecheck-lib)
+- [DeviceCheck / App Attest overview]({{ links.ios_devicecheck }})
+- [Validating apps that connect to your server]({{ links.ios_validating_apps }})
+- [Attestation Object Validation Guide]({{ links.ios_attestation_validation }})
+- [Preparing to Use App Attest]({{ links.ios_preparing_app_attest }})
+- [DeviceCheck / App Attest library (Kotlin)]({{ links.github_veehaitch_devicecheck_appattest }})

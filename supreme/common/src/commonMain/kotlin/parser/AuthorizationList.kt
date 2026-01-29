@@ -199,9 +199,12 @@ data class AuthorizationList(
         padding?.let { require(it.isNotEmpty()) }
         mgfDigest?.let { require(it.isNotEmpty()) }
 
-        versionCheck()
+        //versionCheck()
     }
 
+    /**
+     * Useful for debugging, but too strict in reality
+     */
     fun versionCheck() {
         if (attestationVersion != null) {
             if (attestationVersion < 400) {
@@ -487,7 +490,7 @@ data class AuthorizationList(
                             onSuccess = { AttestationValue.Success(this, this) },
                             onFailure = { AttestationValue.Failure(this::class.simpleName!!, this, first) })
                 }) as AttestationValue<A>?
-            } ?: null
+            }
         }
 
         private val List<Asn1Element>.singleOrNull: Asn1Element? get() = if (size == 1) first() else null
@@ -1055,7 +1058,7 @@ data class AuthorizationList(
         val verifiedBootKeyDigest: ByteArray,
         val deviceLocked: Boolean,
         val verifiedBootState: VerifiedBootState,
-        val verifiedBootHash: ByteArray
+        val verifiedBootHash: ByteArray?
     ) : Asn1Encodable<Asn1Sequence>, Tagged.WithTag<Asn1Sequence>, PrettyPrintable {
         companion object Tag : Tagged(704uL), Asn1Decodable<Asn1Sequence, RootOfTrust> {
             override fun doDecode(src: Asn1Sequence) = src.iterator().run {
@@ -1063,7 +1066,7 @@ data class AuthorizationList(
                     next().asPrimitive().content,
                     next().asPrimitive().decodeToBoolean(),
                     VerifiedBootState.decodeFromTlv(next().asPrimitive()),
-                    next().asPrimitive().content
+                    if (hasNext()) next().asPrimitive().content else null
                 )
             }
         }
@@ -1074,12 +1077,12 @@ data class AuthorizationList(
             +Asn1.OctetString(verifiedBootKeyDigest)
             +Asn1.Bool(deviceLocked)
             +verifiedBootState
-            +Asn1.OctetString(verifiedBootHash)
+            verifiedBootHash?.let { +Asn1.OctetString(it) }
         }
 
         @OptIn(ExperimentalStdlibApi::class)
         override fun toString(): String {
-            return "RootOfTrust(verifiedBootKeyDigest=${verifiedBootKeyDigest.toHexString()}, deviceLocked=$deviceLocked, verifiedBootState=$verifiedBootState, verifiedBootHash=${verifiedBootHash.toHexString()})"
+            return "RootOfTrust(verifiedBootKeyDigest=${verifiedBootKeyDigest.toHexString()}, deviceLocked=$deviceLocked, verifiedBootState=$verifiedBootState, verifiedBootHash=${verifiedBootHash?.toHexString()})"
         }
 
         @OptIn(ExperimentalStdlibApi::class)
@@ -1089,7 +1092,7 @@ data class AuthorizationList(
             append(i).append("verifiedBootKeyDigest=").append(verifiedBootKeyDigest.toHexString()).append('\n')
             append(i).append("deviceLocked=").append(deviceLocked).append('\n')
             append(i).append("verifiedBootState=").append(verifiedBootState).append('\n')
-            append(i).append("verifiedBootHash=").append(verifiedBootHash.toHexString()).append('\n')
+            append(i).append("verifiedBootHash=").append(verifiedBootHash?.toHexString()).append('\n')
             append(indent).append(")")
         }
 
@@ -1408,31 +1411,44 @@ data class AuthorizationList(
     sealed class PatchLevel(
         val year: UShort,
         val month: Month,
-        val day: UShort
+        val day: UShort?
     ) : IntEncodable {
         override val intValue =
+            if(day==null)
+            Asn1Integer( month.number.toUInt() + year.toUInt() * 100u)
+        else
             Asn1Integer(day.toUInt() + month.number.toUInt() * 100u + year.toUInt() * 10000u)
 
         companion object {
-            fun Asn1Primitive.decode(): Triple<UShort, Month, UShort> {
+            fun Asn1Primitive.decode(): Triple<UShort, Month, UShort?> {
                 val raw = Long.decodeFromAsn1ContentBytes(
                     decodeToAsn1Integer().encodeToAsn1ContentBytes()
                 )
-                val day = raw % 100
-                val monthNumber = (raw % 10000) / 100
-                val year = raw / 10000
-                return Triple(
-                    year.toUShort(),
-                    Month(monthNumber.toInt()),
-                    day.toUShort()
-                )
+                if(raw >999999) {
+                    val day = raw % 100
+                    val monthNumber = (raw % 10000) / 100
+                    val year = raw / 10000
+                    return Triple(
+                        year.toUShort(),
+                        Month(monthNumber.toInt()),
+                        day.toUShort()
+                    )
+                }else {
+                    val monthNumber = (raw % 100)
+                    val year = raw / 100
+                    return Triple(
+                        year.toUShort(),
+                        Month(monthNumber.toInt()),
+                        null
+                    )
+                }
             }
         }
 
         class Vendor(
             year: UShort,
             month: Month,
-            day: UShort
+            day: UShort?
         ) : PatchLevel(year, month, day) {
             companion object Tag : Tagged(718uL), Asn1Decodable<Asn1Primitive, Vendor> {
                 override fun doDecode(src: Asn1Primitive): Vendor = src.decode().let { (y, m, d) ->
@@ -1447,7 +1463,7 @@ data class AuthorizationList(
         class Boot(
             year: UShort,
             month: Month,
-            day: UShort
+            day: UShort?
         ) : PatchLevel(year, month, day) {
             companion object Tag : Tagged(719uL), Asn1Decodable<Asn1Primitive, Boot> {
                 override fun doDecode(src: Asn1Primitive): Boot = src.decode().let { (y, m, d) ->

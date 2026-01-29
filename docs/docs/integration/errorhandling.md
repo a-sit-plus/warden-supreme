@@ -10,13 +10,12 @@ across iOS and Android attestation checks into semantic categories to streamline
 When opting for fully integrated attestation flows (Supreme Verifier and Supreme Client), attestation statements received
 from clients may not even come this far and might be rejected before being fed into Makoto for verification.
 
-An in-depth understanding of all nitty-gritty details on this matter (i.e. when, how, and why attestation may fail) is important
+An in-depth understanding of the details (i.e. when, how, and why attestation may fail) is important
 for anyone integrating attestation checks on the back-end.
 This is true **even when using the fully integrated Supreme verifier and client** solution, 
 because it makes sense to define and communicate (opaque) error codes to help debug issues in the field.
 
-This page first discusses all the details related to every possible attestation error that can happen on the back-end.
-Afterwards (i.e. when all context is established), errors communicated to the client are discussed. 
+This page first covers server-side errors and their causes. Afterwards, once the context is established, it explains the error categories communicated to clients.
 
 ## Server-Side (Low-Level Errors)
 This section first discusses the low-level attestation error hierarchy.

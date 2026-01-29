@@ -14,8 +14,8 @@ that statement against **trusted roots** and **policy**.
   applied may access resource _X_”).
 - **Privacy aspects**: On Android, verification uses Google roots but **doesn’t require the device to talk to Google
   during attestation**; only *your* server sees the data. While your back-end must check Google’s revocation list, this
-  doesn't expose any data traceable to users to third-party services or Google's infrastructure.
-  (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)).<br>
+  doesn't expose user-traceable data to third-party services or Google's infrastructure.
+  (see [Android Key Attestation]({{ links.android_key_attestation }})).<br>
   On iOS, the story is a bit different, and, sadly, client devices will need to contact Apple servers to create an
   attestation statement.
 - **Limits**: Attestation **can’t** stop a legitimate user from later abusing an account; it **won’t** prevent
@@ -31,13 +31,13 @@ that statement against **trusted roots** and **policy**.
 **Platform Differences** (high level):
 
 - **Android**: provides **Key Attestation** (attests a key and device state) and **App/ID attestation** fields in the
-  attestation extension (see [Android Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)).
+  attestation extension (see [Android Key & ID Attestation]({{ links.android_key_id_attestation }})).
 - **iOS**: provides **App Attest** (attests an app instance and device integrity via Apple's servers). It’s conceptually
   **app attestation**, providing no out-of-the-box guarantees about any cryptographic material used by an app.
   **Key attestation can be emulated** by binding a hardware-backed public key into the Apple‑signed `clientDataHash`
-  attestation field (see [Apple App Attest](https://developer.apple.com/documentation/devicecheck)).  
+  attestation field (see [Apple App Attest]({{ links.ios_devicecheck }})).  
   Warden Supreme natively supports this as described
-  [here](https://a-sit-plus.github.io/signum/supreme/#attestation).
+  [here]({{ links.signum_attestation_docs }}).
 
 ## High-Level Attestation Flow
 
@@ -70,24 +70,24 @@ that statement against **trusted roots** and **policy**.
   Apple devices behave similarly, but imply a verified boot process through the mere presence of an Apple-signed
   attestation statement.
 - **TEE (Trusted Execution Environment)** — Hardware‑isolated environment **inside the CPU/SoC** (e.g., ARM TrustZone)
-  securely storing unextractable keys and performing cryptographic operations (see [Extraction prevention](https://developer.android.com/privacy-and-security/keystore#ExtractionPrevention)).
+  securely storing unextractable keys and performing cryptographic operations (see [Extraction Prevention]({{ links.android_keystore_extraction_prevention }})).
 - **StrongBox** — (Android only) A separate secure element with dedicated CPU/RAM, providing stronger physical attack
-  resistance than a TEE. Very few devices are manufactured with it (see [StrongBox](https://developer.android.com/privacy-and-security/keystore#StrongBoxKeyMint)).
+  resistance than a TEE. Very few devices are manufactured with it (see [StrongBox]({{ links.android_keystore_strongbox_keymint }})).
 - **Secure Enclave** — Apple’s secure coprocessor (a secure element, like StrongBox) providing hardware key isolation,
-  implementation of cryptographic procedures and counters inside dedicated hardware (see [Secure Enclave](https://support.apple.com/guide/security/secure-enclave-sec59b0b31ff/web)).
+  implementation of cryptographic procedures and counters inside dedicated hardware (see [Secure Enclave]({{ links.ios_secure_enclave }})).
 - **Key Attestation (Android)** — X.509 cert chain with an Android‑specific ASN.1 extension (*KeyDescription*) that
-  encodes device/app state (OS version, patch level, verified boot, app package/signing digest, etc.). (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)
-  and [AOSP schema](https://source.android.com/docs/security/features/keystore/attestation#schema)).
+  encodes device/app state (OS version, patch level, verified boot, app package/signing digest, etc.). (see [Android Key Attestation]({{ links.android_key_attestation }})
+  and [AOSP schema]({{ links.android_key_id_attestation }})).
 - **App Attest (iOS)** — Apple‑operated attestation where `DCAppAttestService` creates a Secure Enclave key and Apple
   signs an **attestation object**; your server validates Apple’s chain and the **nonce** binding to your challenge.
-  (see [DeviceCheck / App Attest](https://developer.apple.com/documentation/devicecheck)).
+  (see [DeviceCheck / App Attest]({{ links.ios_devicecheck }})).
 - **Trust Anchor** — A root certificate your server trusts to validate an attestation chain. For Android, use Google’s
-  attestation roots; for iOS, Apple’s App Attest root. (see [Android Key Attestation](https://developer.android.com/privacy-and-security/security-key-attestation)
-  and [Apple Attestation Validation Guide](https://developer.apple.com/documentation/devicecheck/attestation-object-validation-guide)).
+  attestation roots; for iOS, Apple’s App Attest root. (see [Android Key Attestation]({{ links.android_key_attestation }})
+  and [Apple Attestation Validation Guide]({{ links.ios_attestation_validation }})).
 - **User-Authentication-Bound Keys** — Android keys can require user presence (biometrics/PIN) per‑use; Warden can
-  enforce or read these authorisations. (see [Android Keystore](https://developer.android.com/privacy-and-security/keystore)).
+  enforce or read these authorisations. (see [Android Keystore]({{ links.android_keystore_overview }})).
 - **Remote Provisioning** — Newer Androids provision attestation/identities over the air; offline devices can **exhaust
   key pools** until connectivity returns. Plan for this in testing. (see conceptual notes
-  in [AOSP Key & ID Attestation](https://source.android.com/docs/security/features/keystore/attestation)).
+  in [AOSP Key & ID Attestation]({{ links.android_key_id_attestation }})).
 - **App vs. Key Attestation (iOS)** — iOS does **app** attestation. **Key‑attestation emulation** is possible by
-  embedding the public key bytes into the Apple‑signed attestation format (using our unified format). (see [Signum Supreme](https://a-sit-plus.github.io/signum/supreme/)).
+  embedding the public key bytes into the Apple‑signed attestation format (using our unified format). (see [Signum Supreme]({{ links.signum_supreme }})).

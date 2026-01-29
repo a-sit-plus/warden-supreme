@@ -12,7 +12,7 @@ authentic unless your verifier performs revocation checks.
     In practice, keyboxes are often file-based provisioning blobs that a device imports into its secure hardware.
 
 To mitigate leaked attestation keys, Google publishes revocation information for Android attestation, and verifiers are expected to reject attestations based on revoked keys (see Android’s
-[hardware-backed key attestation documentation](https://developer.android.com/privacy-and-security/security-key-attestation)).
+[hardware-backed key attestation documentation]({{ links.android_key_attestation }})).
 Warden Supreme incorporates such a check by default.
 
 
@@ -36,11 +36,11 @@ service operators can reliably enforce, regardless of how a given OEM implemente
 
 Android’s security model expects attestation signing keys to be protected by secure hardware and used *inside* that secure
 environment (see
-[Key and ID Attestation](../../refs.md#ref-android-key-id-attestation)).
+[Key and ID Attestation]({{ links.android_key_id_attestation }})).
 At the same time, attestation signing keys **must be shared across a sufficiently large population** to avoid becoming
 de-facto device identifiers (privacy requirement). The Android CDD discusses this privacy-driven “shared key” model (for
 example Android 14:
-[Android 14 CDD](../../refs.md#ref-android-14-cdd)).
+[Android 14 CDD]({{ links.android_14_cdd }})).
 
 #### Blast Radius of Leaked Keyboxes
 
@@ -51,10 +51,10 @@ Because keys are intentionally shared, a *single* compromised attestation signin
 
 #### Revocation Mechanism
 
-Google publishes revocation information as an **attestation status list** that is regularly updates. The list is
-publicly retrievable (JSON) and contains the serial number of many certiifcates whose correspondign private keys were
+Google publishes revocation information as an **attestation status list** that is regularly updated. The list is
+publicly retrievable (JSON) and contains the serial number of many certificates whose corresponding private keys were
 leaked. Entries include revocation status and reason (for example, `KEY_COMPROMISE`). See
-[Verify Hardware‑Backed Key Pairs with Key Attestation](../../refs.md#ref-android-key-attestation).
+[Verify Hardware‑Backed Key Pairs with Key Attestation]({{ links.android_key_attestation }}).
 
 #### On Leaked `keybox.xml` Material
 
@@ -66,7 +66,7 @@ intelligence*, not as authoritative platform guarantees.
 
 For Android-certified devices, private keys used for attestation are required to be protected by secure hardware and not
 be extractable (see
-[Android device certification / compatibility](../../refs.md#ref-android-compat-overview)).
+[Android device certification / compatibility]({{ links.android_compat_overview }})).
 
 Historically, many OEMs implemented this with file-based provisioning:
 
@@ -92,24 +92,24 @@ Android has been moving away from long-lived, factory-provisioned attestation ke
 tackle the issue of leaked keys:
 
 - Android **12** introduced RKP; Android **15** requires devices to implement it (see
-  [Remote Key Provisioning](../../refs.md#ref-android-rkp)).
+  [Remote Key Provisioning]({{ links.android_rkp_source }})).
 - RKP replaces in-factory private key provisioning with a model that uses in-factory public key material and
   **over-the-air provisioning of short-lived certificates**.
 - In AOSP, RKP is implemented with a dedicated stack; newer Android versions package parts of it as a **Mainline module**
   (`com.android.rkpd`, the `rkpd` daemon) to improve updateability (see
-  [Remote Key Provisioning](../../refs.md#ref-android-rkp)).
+  [Remote Key Provisioning]({{ links.android_rkp_source }})).
 
 **Security consequence (relevant to leaked keyboxes)**
 
 RKP reduces the value of “static” leaked provisioning artefacts because it shifts attestation certificate issuance towards
 a fresher, online-managed model with improved recoverability.  
 See also:
-[Remote Key Provisioning](../../refs.md#ref-android-rkp) and
+[Remote Key Provisioning]({{ links.android_rkp_source }}) and
 [platform quirks around RKP](../quirks.md#remote-provisioning).
 
 For a deeper (and sometimes market-adjacent) perspective on how leaked key material is obtained, traded, and detected,
 community analysis can provide useful context (for example
-[Android Keybox Attestation Analysis](../../refs.md#ref-tryigit-keybox-analysis)). Treat these sources as threat
+[Android Keybox Attestation Analysis]({{ links.tryigit_keybox_analysis }})). Treat these sources as threat
 intelligence and anecdotal reporting, not as authoritative platform guarantees.
 
 
@@ -219,12 +219,12 @@ For configuration details, see
 
 ## References
 
-- [Android hardware-backed key attestation (incl. revocation list semantics)](../../refs.md#ref-android-key-attestation)
-- [AOSP: Key and ID Attestation](../../refs.md#ref-android-key-id-attestation)
-- [AOSP: Remote Key Provisioning](../../refs.md#ref-android-rkp)
-- [Android device certification / compatibility overview](../../refs.md#ref-android-compat-overview)
-- [Android 14 CDD](../../refs.md#ref-android-14-cdd)
+- [Android hardware-backed key attestation (incl. revocation list semantics)]({{ links.android_key_attestation }})
+- [AOSP: Key and ID Attestation]({{ links.android_key_id_attestation }})
+- [AOSP: Remote Key Provisioning]({{ links.android_rkp_source }})
+- [Android device certification / compatibility overview]({{ links.android_compat_overview }})
+- [Android 14 CDD]({{ links.android_14_cdd }})
 - [Warden Supreme checklist (revocation + revocation lists)](../android.md#server-side-verification-checklist)
 - [Warden Supreme changelog](../../CHANGELOG.md)
-- [Community analysis: Android keybox attestation](../../refs.md#ref-tryigit-keybox-analysis)
-- [Community example: “VIP keybox” marketing](../../refs.md#ref-tryigit-keybox-vip)
+- [Community analysis: Android keybox attestation]({{ links.tryigit_keybox_analysis }})
+- [Community example: “VIP keybox” marketing]({{ links.tryigit_keybox_vip }})

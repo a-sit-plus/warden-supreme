@@ -13,7 +13,7 @@
 </div>
 
 > [!TIP]
-> Need help tailored to your needs? See our [💎 Services](https://a-sit-plus.github.io/warden-supreme/services/)
+> Need help tailored to your needs? See our [💎 Services](https://a-sit-plus.github.io/warden-supreme/services/).
 
 _Warden Supreme_ is a fully integrated key and app attestation suite consisting of:
 

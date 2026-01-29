@@ -31,7 +31,7 @@ It will then pretty-print the attestation extension's contents.
 
 !!! tip inline end "Stand-Alone Attestation Parser"
     To use `androidAttestationExtension` on all platforms (e.g., to implement client-side checks on Android),
-    include `at.asitplus.warden:supreme-commons` in your project, and you are ready to go!
+    include `at.asitplus.warden:supreme-common` in your project, and you are ready to go!
 
 As an added bonus, there is a nullable `androidAttestationExtension` extension property on the Java `X509Certificate`
 and on Signum's `X509Certificate` class, which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.

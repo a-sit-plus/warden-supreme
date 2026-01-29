@@ -4,11 +4,11 @@
 
 !!! danger "Read This First: Footguns"
     The biggest upgrade hazards are about configuration loading and time checks:
-
+    
     * Configuration loading through Hoplite/Spring Boot is no longer supported and can silently misconfigure checks. Use canonical config loading only. See [Externalising Configuration](config.md).
     * Android leaf certificate validity is ignored by default and Android attestation statement validity defaults to `null`; ensure freshness through your challenge/nonce handling. See [raw flow](raw.md).
     * Verification time offset now defaults to five minutes and is applied to certificate and attestation time checks on both platforms.
-
+    
     **If you do not handle freshness explicitly, you can accidentally accept stale attestations.**
 
 Warden Supreme enforces unified flows and a unified data model. Migration primarily means:
@@ -25,7 +25,7 @@ This section focuses on upgrades that keep using Makoto/Roboto directly, without
 - Android verifier types renamed to `HardwareAttestationVerifier`, and `SoftwareAttestationVerifier`.
 - Makoto can be configured for Android‑only or iOS‑only verification; attestations received from non‑configured platforms are treated as configuration errors. See [Error Handling](errorhandling.md).
 - Attestation verification functions are suspending; blocking wrappers remain under legacy `@JvmName`s. See [raw flow](raw.md).
-- The parameters `androidAttestationConfigurationJ` and `androidAttestationConfigurationJ` in `Makoto`'s Java-oriented constructor have been swapped to disambiguate it from the Kotlin constructors. 
+- The parameters `androidAttestationConfigurationJ` and `androidAttestationConfigurationJ` in `Makoto`'s Java-oriented constructor have been swapped to disambiguate it from the Kotlin constructors.
 
 ### Results and Exceptions
 - `AttestationResult` gains a `Verified` marker; NOOP results are distinct.

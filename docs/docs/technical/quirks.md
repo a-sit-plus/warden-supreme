@@ -5,7 +5,7 @@ Naturally, this caused hiccups and also helped identify their causes.
 Due to the diversity of its device landscape, Android is most affected. iOS, however, is also not without flaws.
 
 This page lists known quirks and bugs and discusses how to deal with them.
-First, some general hints that apply regardless are discussed.
+It starts with general guidance that applies across platforms.
 
 ## General Hints
 Using attestation to strongly enforce policies and to remotely establish trust in mobile clients is rooted in cryptographic
@@ -13,7 +13,7 @@ mechanisms and PKI procedures.
 Hence, timeliness is of the essence; freshness windows and temporal checks are crucial.
 As a logical consequence, the clocks between a service and the clients being attested need to be in sync.
 
-Given that the service owner is very much not the device owner, clock drifts and even time zone differences causing hours of
+Given that the service owner is not the device owner, clock drift and even time-zone differences of hours
 offset are not uncommon.
 Warden Supreme allows for sending server time zone (and even clock drift information) to clients along with a cryptographic nonce
 at the start of an attestation procedure.
@@ -50,7 +50,7 @@ Warden Supreme's verifier allows for setting a global verification clock offset 
 !!! danger "The Two Sources of Attestation Creation Time"
     (Yes, things get even more complex!)  
     iOS and Android attestation statements come with two kinds of temporal validity:
-
+    
     1. The (leaf) certificates `notBefore` and `notAfter` validity period
     2. An attestation creation time, encoded into the attestation data (this is true for iOS and Android)
     
@@ -113,6 +113,24 @@ Many **Android 15** devices (even emulator images) and some Samsung devices do n
 This concerns the vendor patch level field, not the OS patch level, and requires monkey-patching Google's upstream parser code to prevent it from glitching out.
 **Warden Supreme already applies the necessary band-aids**, but enforcing vendor patch levels is generally discouraged in favour of OS patch levels.
 
+Some devices also truncate `vendorPatchLevel` and/or `bootPatchLevel` by omitting the day-of-month.
+Instead of the expected `yyyyMMdd` form (e.g. `20181230`), they encode only `yyyyMM` (e.g. `201812`).
+This does not conform to the attestation extension schema and needs to be handled leniently (e.g. by treating a missing day as unknown/default and avoiding strict enforcement of these fields).
+
+#### Broken RSA PKCS#1 `AlgorithmIdentifier` (Missing ASN.1 NULL)
+Some Android devices generate a non-conforming X.509 leaf certificate **at attestation time**.
+In other words: when the app requests key attestation, the device creates a leaf certificate that carries the attestation proof and signs it using a key in the TEE — but the resulting certificate is not fully X.509/DER-conforming.
+
+Concretely, for RSA PKCS#1 v1.5 signature algorithms, the X.509 ASN.1 profile requires `AlgorithmIdentifier.parameters` to be present and encoded as ASN.1 `NULL` (`05 00`).
+On affected devices, the certificate’s signature algorithm is encoded as an `AlgorithmIdentifier` that contains only the OID and omits the required `NULL` parameters.
+A common case is `sha256WithRSAEncryption` with OID `1.2.840.113549.1.1.11`, encoded as:
+
+- **illegal (missing NULL):** `30 0b 06 09 2a 86 48 86 f7 0d 01 01 0b`
+- **required by X.509 profile:** `30 0d 06 09 2a 86 48 86 f7 0d 01 01 0b 05 00`
+
+Many parsers accept this in practice, but strict implementations may reject such certificates, or fail when comparing signature algorithm identifiers byte-for-byte.
+Hence, certificate parsing needs to be relaxed for Android attestation proofs.
+
 ### Misleading Assumptions about ECDH
 Virtually every Android device supports hardware-backed EC crypto and EC Diffie-Hellman key agreement.
 **However**, this does not entail that it supports a combination of the two. With respect to EC keys, only ECDSA signatures on NIST curves
@@ -121,6 +139,7 @@ are guaranteed to be performed in hardware, assuming a cryptographic hardware mo
 during key generation, even generating an EC key pair for a curve supported in hardware may lead to a key being actually generated
 in software, as soon as [KeyProperties.PURPOSE_AGREE_KEY](https://developer.android.com/reference/android/security/keystore/KeyProperties#PURPOSE_AGREE_KEY)
 is also set.
+
 ### OS Bugs and Quirks
 
 #### Bootloader Unlock Destroying Keys
@@ -162,7 +181,7 @@ If you need a certificate chain that works for TLS, issue your own for an attest
 
 ### Online Requirement and Rate Limiting
 iOS requires an internet connection **on the mobile device** to issue attestations, as it needs to talk to an Apple service.
-This service is subject to rate limiting (see [Preparing to use App Attest](https://developer.apple.com/documentation/devicecheck/preparing-to-use-the-app-attest-service)). **Keep this in mind!**
+This service is subject to rate limiting (see [Preparing to Use App Attest]({{ links.ios_preparing_app_attest }})). **Keep this in mind!**
 
 ### Non-Compliant ASN.1 SET OF
 The custom certificate extension carrying some attestation information uses `SET OF` for some parameters. Apple failed to observe the constraints DER-encoded ASN.1 data must fulfil

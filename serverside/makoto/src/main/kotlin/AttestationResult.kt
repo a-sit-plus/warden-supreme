@@ -175,7 +175,7 @@ sealed class AttestationResult {
 
         override fun hashCode(): Int {
             var result = explanation.hashCode()
-            result = 31 * result + (cause?.hashCode() ?: 0)
+            result = 31 * result + (cause.hashCode() ?: 0)
             result = 31 * result + details.hashCode()
             return result
         }
@@ -188,6 +188,7 @@ sealed class AttestationResult {
  * [details] contains the detailed attestation result (see [AttestationResult] for more details)
  *
  */
+@ConsistentCopyVisibility
 data class KeyAttestation<T : PublicKey> internal constructor(
     val attestedPublicKey: T?,
     val details: AttestationResult

@@ -11,7 +11,7 @@ _Warden Supreme_ is a fully integrated key and app attestation suite consisting 
 
 1. A mobile client library (iOS and Android) to generate attestation statements
 2. A unified server-side key and app attestation verification library
-3. Agnostic communication logic for process flows and wire format
+3. Agnostic communication logic for process flows and the wire format
 
 !!! bug inline end "Bugs Ahead!"
     Several devices and OS versions in the field come with bugs and quirks. Warden Supreme's docs hub discusses them [here](../technical/quirks.md).
@@ -27,7 +27,7 @@ It now lives on as [Warden makoto](https://github.com/a-sit-plus/warden-supreme/
 ## Using Warden Supreme in your Projects
 
 Warden Supreme targets Android and iOS clients and JVM-based back-ends.
-Warden Supreme currently only supports HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
+Warden Supreme currently supports HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
 The back-end, however, can also use [Spring](https://spring.io/) or any other HTTP framework of your choice.
 
 * On the back-end, add the `verifier` dependency:
@@ -91,7 +91,7 @@ attestation statements), configuration needs to deal with each platform separate
 
 Warden Supreme integrates server-side and client-side logic into a lean interface.
 
-This section illustrates a complete end-to-end setup assuming a Ktor server on the back-end and a CMP client app.
+This section illustrates a complete end-to-end setup assuming a Ktor server on the back-end and a KMP client app.
 To get going, the following steps are required:
 
 * Decide on HTTPS endpoints to issue challenges and verify attestation statements, and record the app identifiers and signer digests (Android) / team ID (iOS).
@@ -204,7 +204,7 @@ Warden Supreme ships with three loaders by default:
 3. `InMemoryLoader`
 
 The first two handle caching by simply re-serving a previously loaded list until it expires.
-The format conforms to the [revocation list schema specified by Google](https://developer.android.com/privacy-and-security/security-key-attestation)
+The format conforms to the [revocation list schema specified by Google]({{ links.android_key_attestation }})
 with the addition of `date`, `expires`, and `lastModified` fields.
 This allows for encoding freshness information directly into the revocation list, which is relevant when serving from the
 file system, instead of an HTTP server, where HTTP headers are used to encode this info.  
