@@ -4,6 +4,8 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
+# 1.0.0-SNAPSHOT
+
 # 1.0.0-RC2
 * Features:
     * Relax custom parser to report less values as error
