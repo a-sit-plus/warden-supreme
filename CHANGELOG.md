@@ -8,7 +8,8 @@ this changelog also includes the original WARDEN changelog.
 * Features:
     * Relax custom parser to report less values as error
 * Fixes:
-    * Support cursed RSA PKCS1 X.509 signature algorithm profiles used by one of the larges OEMs 
+    * Support cursed RSA PKCS1 X.509 signature algorithm profiles used by one of the larges OEMs
+* Revised and extended documentation
 * Dependency Updates:
     * Signum 3.19.2 / Supreme 0.11.2
 
