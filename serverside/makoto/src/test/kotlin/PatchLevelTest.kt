@@ -44,10 +44,10 @@ val PatchLevelTest by testSuite {
     "parserCheck" - {
         "illegal" - {
             withData(
-                "0" to "0",
-                "0" to "13",
-                "0" to "99",
-                "0" to "100",
+                0 to "0",
+                0 to "13",
+                0 to "99",
+                0 to "100",
             ) { (y, m) ->
                 val singleInt = "$y$m".toInt()
                 shouldThrow<IllegalArgumentException> { PatchLevel.fromSingleInt(singleInt) }
@@ -56,15 +56,15 @@ val PatchLevelTest by testSuite {
 
         "legal" - {
             withData(
-                "0" to "1",
-                "-0" to "1", /*same as above*/
-                "-1" to "12",
-                "-999" to "01",
-                "9999999" to "01",
+                0 to "1",
+                -0 to "1", /*same as above*/
+                -1 to "12",
+                -999 to "01",
+                9999999 to "01",
             ) { (y, m) ->
                 val singleInt = "$y$m".toInt()
                 val pl = PatchLevel.fromSingleInt(singleInt)
-                pl.year shouldBe y.toInt()
+                pl.year shouldBe y
                 pl.month shouldBe m.toInt()
             }
         }

@@ -1225,9 +1225,9 @@ val WardenTest by testSuite {
     }
 
     "And the Fabulous" - {
-        val ios = "D4BD9EFC2A1AB1E2351143A4E67BB91F" to
+        val ios = "D4BD9EFC2A1AB1E2351143A4E67BB91F".hexToByteArray(HexFormat.UpperCase) to
                 Json.decodeFromStream<Attestation>(this::class.java.classLoader.getResourceAsStream("ios-appattest.json"))
-        val android = "CAC4307080875C418BEB668E825649DC" to
+        val android = "CAC4307080875C418BEB668E825649DC".hexToByteArray(HexFormat.UpperCase) to
                 Json.decodeFromStream<Attestation>(this::class.java.classLoader.getResourceAsStream("aksattest.json"))
 
         val androidSigDigests = listOf(
@@ -1259,10 +1259,10 @@ val WardenTest by testSuite {
             ).apply {
                 val dbg = collectDebugInfo(
                     it.second,
-                    it.first.hexToByteArray(HexFormat.UpperCase),
+                    it.first,
                 ).serializeCompact()
                 withClue("$dbg should pass") {
-                    verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
+                    verifyKeyAttestation(it.second, it.first).apply {
                         isSuccess.shouldBeTrue()
                     }
 
@@ -1276,12 +1276,12 @@ val WardenTest by testSuite {
                 }
 
                 withClue("challenge fail") {
-                    verifyKeyAttestation(it.second, it.first.reversed().hexToByteArray(HexFormat.UpperCase)).apply {
+                    verifyKeyAttestation(it.second, it.first.reversedArray()).apply {
                         isSuccess.shouldBeFalse()
                     }
                     val dbg = collectDebugInfo(
                         it.second,
-                        it.first.reversed().hexToByteArray(HexFormat.UpperCase)
+                        it.first.reversedArray()
                     ).serializeCompact()
                     val attestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
                         .replayKeyAttestation()
@@ -1310,12 +1310,12 @@ val WardenTest by testSuite {
                         )
                     ), FixedTimeClock(2024u, 10u, 1u)
                 ).apply {
-                    verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
+                    verifyKeyAttestation(it.second, it.first).apply {
                         isSuccess.shouldBeFalse()
                     }
                     val dbg = collectDebugInfo(
                         it.second,
-                        it.first.hexToByteArray(HexFormat.UpperCase),
+                        it.first,
                     ).serializeCompact()
                     val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
                         .replayKeyAttestation()
@@ -1348,12 +1348,12 @@ val WardenTest by testSuite {
 
                     ).apply {
                     withClue("should not pass") {
-                        verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
+                        verifyKeyAttestation(it.second, it.first).apply {
                             isSuccess.shouldBeFalse()
                         }
                         val dbg = collectDebugInfo(
                             it.second,
-                            it.first.hexToByteArray(HexFormat.UpperCase),
+                            it.first,
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
                             .replayKeyAttestation()
@@ -1365,13 +1365,13 @@ val WardenTest by testSuite {
                     withClue("challenge fail") {
                         verifyKeyAttestation(
                             it.second,
-                            it.first.reversed().hexToByteArray(HexFormat.UpperCase)
+                            it.first.reversedArray(),
                         ).apply {
                             isSuccess.shouldBeFalse()
                         }
                         val dbg = collectDebugInfo(
                             it.second,
-                            it.first.hexToByteArray(HexFormat.UpperCase),
+                            it.first,
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
                             .replayKeyAttestation()
@@ -1407,10 +1407,10 @@ val WardenTest by testSuite {
                 ).apply {
                     val dbg = collectDebugInfo(
                         it.second,
-                        it.first.hexToByteArray(HexFormat.UpperCase),
+                        it.first,
                     ).serializeCompact()
                     withClue("$dbg should not pass") {
-                        verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
+                        verifyKeyAttestation(it.second, it.first).apply {
                             isSuccess.shouldBeFalse()
                         }
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
@@ -1423,13 +1423,13 @@ val WardenTest by testSuite {
                     withClue("challenge fail pass") {
                         verifyKeyAttestation(
                             it.second,
-                            it.first.reversed().hexToByteArray(HexFormat.UpperCase)
+                            it.first.reversedArray()
                         ).apply {
                             isSuccess.shouldBeFalse()
                         }
                         val dbg = collectDebugInfo(
                             it.second,
-                            it.first.hexToByteArray(HexFormat.UpperCase),
+                            it.first,
                         ).serializeCompact()
                         val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
                             .replayKeyAttestation()
@@ -1464,12 +1464,12 @@ val WardenTest by testSuite {
                     ), FixedTimeClock(2024u, 10u, 1u)
                 ).apply {
 
-                    verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
+                    verifyKeyAttestation(it.second, it.first).apply {
                         isSuccess.shouldBeFalse()
                     }
                     val dbg = collectDebugInfo(
                         it.second,
-                        it.first.hexToByteArray(HexFormat.UpperCase),
+                        it.first,
                     ).serializeCompact()
                     val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
                         .replayKeyAttestation()
@@ -1498,12 +1498,12 @@ val WardenTest by testSuite {
                         )
                     ), FixedTimeClock(1954u, 10u, 1u)
                 ).apply {
-                    verifyKeyAttestation(it.second, it.first.hexToByteArray(HexFormat.UpperCase)).apply {
+                    verifyKeyAttestation(it.second, it.first).apply {
                         isSuccess.shouldBeFalse()
                     }
                     val dbg = collectDebugInfo(
                         it.second,
-                        it.first.hexToByteArray(HexFormat.UpperCase),
+                        it.first,
                     ).serializeCompact()
                     val replayKeyAttestation = WardenDebugAttestationStatement.deserializeCompact(dbg)
                         .replayKeyAttestation()

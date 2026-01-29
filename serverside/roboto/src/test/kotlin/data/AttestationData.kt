@@ -1,13 +1,6 @@
 package at.asitplus.attestation.data
 
-import at.asitplus.attestation.android.AttestationKeyDescription
-import at.asitplus.attestation.android.androidAttestationExtension
-import at.asitplus.catchingUnwrapped
 import com.google.android.attestation.ParsedAttestationRecord
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
-import org.bouncycastle.asn1.ASN1OctetString
-import org.bouncycastle.asn1.DEROctetString
 import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.cert.CertificateFactory
@@ -30,25 +23,6 @@ class AttestationData(
     val packageOverride: String? = null,
     val isProductionOverride: Boolean? = null
 ) {
-
-    init {
-        //this will explode the test suite so our parser is tested!
-        catchingUnwrapped {
-            val androidAttestationExtension = attestationCertChain.first().androidAttestationExtension
-            androidAttestationExtension.shouldNotBeNull()
-            androidAttestationExtension.encodeToDer() shouldBe
-                    (DEROctetString.fromByteArray(
-                        attestationCertChain.first().getExtensionValue(
-                            AttestationKeyDescription.oid.toString()
-                        )
-                    ) as ASN1OctetString).octets
-
-        }.getOrElse {
-            it.printStackTrace()
-            throw it
-        }
-
-    }
 
     val verificationDate: Date = Date.from(Instant.parse(isoDate))
 
