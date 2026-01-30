@@ -108,14 +108,26 @@ Some vendors encode **UTC Time vs. GeneralizedTime** incorrectly leading to year
 Only the vendor can fix this through updates. However, relying on a tight freshness window based on a cryptographic nonce
 sourced from true randomness is recommended anyway (see [Clock Drifts and Temporal Validity](#clock-drifts-and-temporal-validity)).
 
-#### Vendor Patch Level Misencoding
-Many **Android 15** devices (even emulator images) and some Samsung devices do not conform to the ASN.1 schema for attestation data with respect to patch level encoding.
-This concerns the vendor patch level field, not the OS patch level, and requires monkey-patching Google's upstream parser code to prevent it from glitching out.
+
+#### Patch Level Misencoding
+One would assume a dead-simple encoding of dates is easy to get right. Wrong!
+
+##### Vendor Patch Level Misencoding
+Many **Android 15** devices (even emulator images) do not conform to the ASN.1 schema for attestation data with respect to patch level encoding.
+This concerns the **vendor patch level** field (not the OS patch level) and can cause Google's upstream parser to fail unless it is patched to be more tolerant.
 **Warden Supreme already applies the necessary band-aids**, but enforcing vendor patch levels is generally discouraged in favour of OS patch levels.
 
-Some devices also truncate `vendorPatchLevel` and/or `bootPatchLevel` by omitting the day-of-month.
+The issue typically manifests as the vendor patch level being encoded as `0`.
+The most likely root cause is a faulty reference implementation by Google (as evidenced by emulator images exhibiting the same behaviour) that was adopted by OEMs and shipped in both factory images and over-the-air updates.
+
+##### Patch Level Truncation
+Some devices truncate `vendorPatchLevel` and/or `bootPatchLevel` by omitting the day-of-month.
 Instead of the expected `yyyyMMdd` form (e.g. `20181230`), they encode only `yyyyMM` (e.g. `201812`).
 This does not conform to the attestation extension schema and needs to be handled leniently (e.g. by treating a missing day as unknown/default and avoiding strict enforcement of these fields).
+
+##### Patch Level Off-By-One Errors
+There are also devices that encode invalid “zero” date components: some encode the first day of a month as `00` instead of `01`, and some even encode January as `00` instead of `01`.
+Both variants violate the expected `yyyyMMdd`/`yyyyMM` semantics and need the same kind of lenient handling.
 
 #### Broken RSA PKCS#1 `AlgorithmIdentifier` (Missing ASN.1 NULL)
 Some Android devices generate a non-conforming X.509 leaf certificate **at attestation time**.
@@ -130,6 +142,16 @@ A common case is `sha256WithRSAEncryption` with OID `1.2.840.113549.1.1.11`, enc
 
 Many parsers accept this in practice, but strict implementations may reject such certificates, or fail when comparing signature algorithm identifiers byte-for-byte.
 Hence, certificate parsing needs to be relaxed for Android attestation proofs.
+
+#### Broken Certificate Extension Encoding (Explicit `critical = false`)
+Some devices produce attestation certificates whose extension encoding is not DER-compliant: they explicitly encode the `critical` flag as `false` inside the attestation extension, instead of omitting it.
+
+Per RFC 5280, an X.509 extension is defined as `SEQUENCE { extnOID, critical BOOLEAN DEFAULT FALSE, extnValue OCTET STRING }`.
+In DER, values that are equal to their ASN.1 `DEFAULT` **must be omitted** from the encoding.
+Encoding `critical = false` therefore violates RFC 5280 (and, by extension, the expectation that certificate chains are DER-encoded).
+
+In a perfect world, devices producing such certificates should never have passed certification, and such attestations should never have parsed.
+In the real world, they exist in production in very large numbers, so verifiers need to be tolerant here and treat an explicitly encoded `critical = false` the same as if the field had been omitted.
 
 ### Misleading Assumptions about ECDH
 Virtually every Android device supports hardware-backed EC crypto and EC Diffie-Hellman key agreement.

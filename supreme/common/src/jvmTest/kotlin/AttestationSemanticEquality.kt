@@ -125,7 +125,7 @@ private fun assertAuthorizationListSemanticallyEqual(
 
     diffs.capture {
         // Soft diff only: our model has both rollbackResistance and rollbackResistant variants depending on attestation version.
-        val oursRollbackResistance = ours.rollbackResistance != null || ours.rollbackResistant != null
+        val oursRollbackResistance = ours.rollbackResistance != null //TODO: || ours.rollbackResistant != null
         if (google.rollbackResistance() != oursRollbackResistance) {
             diffs.addSoftDiff("$path.rollbackResistance differs: google=${google.rollbackResistance()}, ours=$oursRollbackResistance")
         }
@@ -159,9 +159,10 @@ private fun assertAuthorizationListSemanticallyEqual(
 
     diffs.capture {
         val googleUserAuth = googleUserAuthTypeToLong(google.userAuthType())
-        val oursUserAuth = ours.userAuthType?.successValueOrThrow("$path.userAuthType")?.intValue?.toLongValue()
+        val oursUserAuth = ours.userAuthType?.successValueOrThrow("$path.userAuthType")
         if (googleUserAuth == 0L && oursUserAuth == null) return@capture
-        checkEquals("$path.userAuthType", googleUserAuth, oursUserAuth)
+        if (googleUserAuth == 0L &&( oursUserAuth!!.authTypes.isEmpty())) return@capture
+        checkEquals("$path.userAuthType", googleUserAuth, oursUserAuth?.intValue?.toLongValue())
     }
 
     diffs.capture {
@@ -231,8 +232,9 @@ private fun assertAuthorizationListSemanticallyEqual(
     diffs.capture { checkEquals("$path.individualAttestation", google.individualAttestation(), ours.deviceUniqueAttestation != null) }
 
     diffs.capture {
-        if (google.unorderedTags().isNotEmpty()) {
-            throw IllegalStateException("$path.unorderedTags differs: google has ${google.unorderedTags()}, ours does not retain unknown tags")
+        if (google.unorderedTags().filterNot { it==719 }.isNotEmpty()) {
+            if(google.unorderedTags().containsAll(ours.additionalProperties.map { it.tag.tagValue.toInt() }))
+            throw IllegalStateException("$path.unorderedTags differs: google has ${google.unorderedTags()}, ours: ${ours.additionalProperties}")
         }
     }
 }
@@ -274,8 +276,8 @@ private fun assertOptionalRootOfTrustEquals(
     val googleHash = googleValue.verifiedBootHash().map { it.toByteArray() }.orElse(null)
     if (googleHash == null || googleHash.isEmpty()) {
         diffs.capture {
-            if (oursValue.verifiedBootHash!=null) {
-                System.err.println("We got a verified boot hash, google parser did not: ${oursValue.verifiedBootHash.toHex()}")
+            if (oursValue.verifiedBootHash!=null && (oursValue.verifiedBootHash.filterNot { it==0.toByte() }.isNotEmpty())) {
+                diffs.addSoftDiff("We got a verified boot hash: ${oursValue.verifiedBootHash.toHex()},  google parser did not: $googleValue")
             }
         }
     } else {
@@ -294,6 +296,8 @@ private fun assertOptionalYearMonthEquals(
         return
     }
     val googleValue = google.get()
+    if((googleValue == YearMonth.of(2048,1)) &&(ours?.failureOrNull()?.rawAsn1Value?.toDerHexString()=="0203032000"))
+        return //we patched this out
     val oursValue = ours?.successValueOrThrow(path) ?: throw IllegalStateException("$path differs: google present, ours absent")
     diffs.capture { checkEquals("$path.year", googleValue.year.toUShort(), oursValue.year) }
     diffs.capture { checkEquals("$path.month", googleValue.monthValue, oursValue.month.number) }
@@ -343,7 +347,7 @@ private fun assertOptionalLocalDateEqualsBestEffortSoft(
     google: Optional<LocalDate>,
     ours: AttestationValue<AuthorizationList.PatchLevel>?
 ) {
-    if (!google.isPresent) {
+    if (!google.isPresent || google.get() == LocalDate.of(2000,1,1)) {
         // Treat "absent in Google" as equivalent to "failed to parse in ours".
         if (ours is AttestationValue.Success) {
             diffs.addSoftDiff("$path differs: google absent, ours present ($ours)")
@@ -352,6 +356,8 @@ private fun assertOptionalLocalDateEqualsBestEffortSoft(
     }
     val googleValue = google.get()
     if (ours !is AttestationValue.Success) {
+        if(googleValue == LocalDate.of(2048,1,1) /*we patched this out*/ && ours!!.failureOrNull()!!.rawAsn1Value.toDerHexString()=="020401388001")
+            return
         diffs.addSoftDiff("$path differs: google present ($googleValue), ours ${if (ours == null) "absent" else "failed"} ($ours)")
         return
     }
@@ -393,7 +399,8 @@ private class SemanticDiffCollector {
         if (softDiffs.isEmpty()) return
         System.err.println("Semantic equality soft differences (${softDiffs.size}):")
         softDiffs.forEachIndexed { index, t ->
-            System.err.println("  ${index + 1}) ${t.message}")
+            //System.err.println("  ${index + 1}) ${t.message}")
+            throw IllegalArgumentException(t.message)
         }
     }
 

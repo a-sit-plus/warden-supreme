@@ -9,7 +9,7 @@ Hence, two pieces of information are available to aid debugging:
 
 The `WardenDebugAttestationStatement` can be serialised to JSON by invoking `.serialize()` (or `serializeCompact()`) on it.
 It can later be deserialised by calling `deserialize()` (or `deserializeCompact()`) on its companion.
-By finally calling `replaySmart()` on such a deserialised debug info object, the whole attestation verification process is replayed.
+By finally calling `replay()` on such a deserialised debug info object, the whole attestation verification process is replayed.
 
 Attaching a debugger allows for step-by-step debugging of any attestation errors encountered.
 For the most straightforward debugging experience:

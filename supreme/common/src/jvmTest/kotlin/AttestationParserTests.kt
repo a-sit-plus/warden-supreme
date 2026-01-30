@@ -25,7 +25,7 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.*
 
-private val certificateFactory = CertificateFactory.getInstance("X.509")
+internal val certificateFactory = CertificateFactory.getInstance("X.509")
 
 val CustomParserTests by testSuite {
     val chain: Map<String, JsonObject> by lazy {
@@ -108,7 +108,7 @@ val CustomParserTests by testSuite {
                 "at.asitplus.atttest"
             ).shouldContain(
                 androidAttestationExtension.softwareEnforced.attestationApplicationId.shouldNotBeNull()
-                    .get().packageInfos.get(0).packageName
+                    .getOrThrow().packageInfos.first().packageName
             )
 
         }

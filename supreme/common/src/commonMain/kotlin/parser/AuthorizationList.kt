@@ -3,7 +3,6 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.KmmResult
-import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.*
 import at.asitplus.signum.indispensable.asn1.encoding.*
@@ -52,146 +51,237 @@ import kotlin.time.Instant
  * Also note that some online sources do not match the specified ASN.1 values (in the following one PKCS7 has value 65 instead of 64)
  * https://android.googlesource.com/platform/frameworks/base/+blame/45ff13e/core/java/android/security/keymaster/KeymasterDefs.java
  */
-data class AuthorizationList(
+data class AuthorizationList private constructor(
     // @formatter:off
-    val purpose                     : Set<AttestationValue<KeyPurpose>>?             = null,
-    val algorithm                   : AttestationValue<Algorithm>?                   = null,
-    val keySize                     : AttestationValue<KeySize>?                     = null,
-    val digest                      : Set<AttestationValue<Digest>>?                 = null,
-    val padding                     : Set<AttestationValue<Padding>>?                = null,
-    val ecCurve                     : AttestationValue<ECCurve>?                     = null,
-    val rsaPublicExponent           : AttestationValue<RsaPublicExponent>?           = null,
-    val mgfDigest                   : Set<AttestationValue<MgfDigest>>?              = null,
-    val rollbackResistance          : AttestationValue<RollbackResistance>?          = null,
-    val earlyBootOnly               : AttestationValue<EarlyBootOnly>?               = null,
-    val activeDateTime              : AttestationValue<ActiveDateTime>?              = null,
-    val originationExpireDateTime   : AttestationValue<OriginationExpireDateTime>?   = null,
-    val usageExpireDateTime         : AttestationValue<UsageExpireDateTime>?         = null,
-    val usageCountLimit             : AttestationValue<UsageCountLimit>?             = null,
-    val noAuthRequired              : AttestationValue<NoAuthRequired>?              = null,
-    val userAuthType                : AttestationValue<UserAuthType>?                = null, // TODO: implemented as list of enums as in reference implementation
-    val authTimeout                 : AttestationValue<AuthTimeout>?                 = null,
-    val allowWhileOnBody            : AttestationValue<AllowWhileOnBody>?            = null,
-    val trustedUserPresenceRequired : AttestationValue<TrustedUserPresenceRequired>? = null,
-    val trustedConfirmationRequired : AttestationValue<TrustedConfirmationRequired>? = null,
-    val unlockedDeviceRequired      : AttestationValue<UnlockedDeviceRequired>?      = null,
-    val allApplications             : AttestationValue<AllApplications>?             = null, // only up to version v4 // TODO add opt-in annotation?
-    val creationDateTime            : AttestationValue<CreationDateTime>?            = null,
-    val origin                      : AttestationValue<Origin>?                      = null,
-    val rollbackResistant           : AttestationValue<RollbackResistent>?           = null, // only up to version v2, "resistance" afterwards // TODO add opt-in annotation?
-    val rootOfTrust                 : AttestationValue<RootOfTrust>?                 = null,
-    val osVersion                   : AttestationValue<OsVersion>?                   = null,
-    val osPatchLevel                : AttestationValue<OsPatchLevel>?                = null,
-    val attestationApplicationId    : AttestationValue<AttestationApplicationId>?    = null,
-    val attestationIdBrand          : AttestationValue<AttestationId.Brand>?         = null,
-    val attestationIdDevice         : AttestationValue<AttestationId.Device>?        = null,
-    val attestationIdProduct        : AttestationValue<AttestationId.Product>?       = null,
-    val attestationIdSerial         : AttestationValue<AttestationId.Serial>?        = null,
-    val attestationIdImei           : AttestationValue<AttestationId.Imei>?          = null,
-    val attestationIdMeid           : AttestationValue<AttestationId.Meid>?          = null,
-    val attestationIdManufacturer   : AttestationValue<AttestationId.Manufacturer>?  = null,
-    val attestationIdModel          : AttestationValue<AttestationId.Model>?         = null,
-    val vendorPatchLevel            : AttestationValue<PatchLevel.Vendor>?           = null,
-    val bootPatchLevel              : AttestationValue<PatchLevel.Boot>?             = null,
-    val deviceUniqueAttestation     : AttestationValue<DeviceUniqueAttestation>?     = null,
-    val attestationIdSecondImei     : AttestationValue<AttestationId.SecondImei>?    = null,
-    val moduleHash                  : AttestationValue<ModuleHash>?                  = null,
+    val purposeIndexed                     : IndexedValue<Set<AttestationValue<KeyPurpose>>>?             = null,
+    val algorithmIndexed                   : IndexedValue<AttestationValue<Algorithm>>?                   = null,
+    val keySizeIndexed                     : IndexedValue<AttestationValue<KeySize>>?                     = null,
+    val digestIndexed                      : IndexedValue<Set<AttestationValue<Digest>>>?                 = null,
+    val paddingIndexed                     : IndexedValue<Set<AttestationValue<Padding>>>?                = null,
+    val ecCurveIndexed                     : IndexedValue<AttestationValue<ECCurve>>?                     = null,
+    val rsaPublicExponentIndexed           : IndexedValue<AttestationValue<RsaPublicExponent>>?           = null,
+    val mgfDigestIndexed                   : IndexedValue<Set<AttestationValue<MgfDigest>>>?              = null,
+    val rollbackResistanceIndexed          : IndexedValue<AttestationValue<RollbackResistance>>?          = null,
+    val earlyBootOnlyIndexed               : IndexedValue<AttestationValue<EarlyBootOnly>>?               = null,
+    val activeDateTimeIndexed              : IndexedValue<AttestationValue<ActiveDateTime>>?              = null,
+    val originationExpireDateTimeIndexed   : IndexedValue<AttestationValue<OriginationExpireDateTime>>?   = null,
+    val usageExpireDateTimeIndexed         : IndexedValue<AttestationValue<UsageExpireDateTime>>?         = null,
+    val usageCountLimitIndexed             : IndexedValue<AttestationValue<UsageCountLimit>>?             = null,
+    val noAuthRequiredIndexed              : IndexedValue<AttestationValue<NoAuthRequired>>?              = null,
+    val userAuthTypeIndexed                : IndexedValue<AttestationValue<UserAuth>>?                    = null,
+    val authTimeoutIndexed                 : IndexedValue<AttestationValue<AuthTimeout>>?                 = null,
+    val allowWhileOnBodyIndexed            : IndexedValue<AttestationValue<AllowWhileOnBody>>?            = null,
+    val trustedUserPresenceRequiredIndexed : IndexedValue<AttestationValue<TrustedUserPresenceRequired>>? = null,
+    val trustedConfirmationRequiredIndexed : IndexedValue<AttestationValue<TrustedConfirmationRequired>>? = null,
+    val unlockedDeviceRequiredIndexed      : IndexedValue<AttestationValue<UnlockedDeviceRequired>>?      = null,
+    val allApplicationsIndexed             : IndexedValue<AttestationValue<AllApplications>>?             = null, // only up to version v4 // TODO add opt-in annotation?
+    val creationDateTimeIndexed            : IndexedValue<AttestationValue<CreationDateTime>>?            = null,
+    val originIndexed                      : IndexedValue<AttestationValue<Origin>>?                      = null,
+    val rollbackResistantIndexed           : IndexedValue<AttestationValue<RollbackResistent>>?           = null, // only up to version v2, "resistance" afterwards // TODO add opt-in annotation?
+    val rootOfTrustIndexed                 : IndexedValue<AttestationValue<RootOfTrust>>?                 = null,
+    val osVersionIndexed                   : IndexedValue<AttestationValue<OsVersion>>?                   = null,
+    val osPatchLevelIndexed                : IndexedValue<AttestationValue<OsPatchLevel>>?                = null,
+    val attestationApplicationIdIndexed    : IndexedValue<AttestationValue<AttestationApplicationId>>?    = null,
+    val attestationIdBrandIndexed          : IndexedValue<AttestationValue<AttestationId.Brand>>?         = null,
+    val attestationIdDeviceIndexed         : IndexedValue<AttestationValue<AttestationId.Device>>?        = null,
+    val attestationIdProductIndexed        : IndexedValue<AttestationValue<AttestationId.Product>>?       = null,
+    val attestationIdSerialIndexed         : IndexedValue<AttestationValue<AttestationId.Serial>>?        = null,
+    val attestationIdImeiIndexed           : IndexedValue<AttestationValue<AttestationId.Imei>>?          = null,
+    val attestationIdMeidIndexed           : IndexedValue<AttestationValue<AttestationId.Meid>>?          = null,
+    val attestationIdManufacturerIndexed   : IndexedValue<AttestationValue<AttestationId.Manufacturer>>?  = null,
+    val attestationIdModelIndexed          : IndexedValue<AttestationValue<AttestationId.Model>>?         = null,
+    val vendorPatchLevelIndexed            : IndexedValue<AttestationValue<PatchLevel.Vendor>>?           = null,
+    val bootPatchLevelIndexed              : IndexedValue<AttestationValue<PatchLevel.Boot>>?             = null,
+    val deviceUniqueAttestationIndexed     : IndexedValue<AttestationValue<DeviceUniqueAttestation>>?     = null,
+    val attestationIdSecondImeiIndexed     : IndexedValue<AttestationValue<AttestationId.SecondImei>>?    = null,
+    val moduleHashIndexed                  : IndexedValue<AttestationValue<ModuleHash>>?                  = null,
     // @formatter:on
     val attestationVersion: Int? = null,
+    val additionalProperties : List<Asn1Element> = emptyList()
 ) : Asn1Encodable<Asn1Sequence>, PrettyPrintable {
-    constructor(
-        // @formatter:off
-        purpose                     : Set<KeyPurpose>?             = null,
-        algorithm                   : Algorithm?                   = null,
-        keySize                     : KeySize?                     = null,
-        digest                      : Set<Digest>?                 = null,
-        padding                     : Set<Padding>?                = null,
-        ecCurve                     : ECCurve?                     = null,
-        rsaPublicExponent           : RsaPublicExponent?           = null,
-        mgfDigest                   : Set<MgfDigest>?              = null,
-        rollbackResistance          : RollbackResistance?          = null,
-        earlyBootOnly               : EarlyBootOnly?               = null,
-        activeDateTime              : ActiveDateTime?              = null,
-        originationExpireDateTime   : OriginationExpireDateTime?   = null,
-        usageExpireDateTime         : UsageExpireDateTime?         = null,
-        usageCountLimit             : UsageCountLimit?             = null,
-        noAuthRequired              : NoAuthRequired?              = null,
-        userAuthType                : UserAuthType?                = null,
-        authTimeout                 : AuthTimeout?                 = null,
-        allowWhileOnBody            : AllowWhileOnBody?            = null,
-        trustedUserPresenceRequired : TrustedUserPresenceRequired? = null,
-        trustedConfirmationRequired : TrustedConfirmationRequired? = null,
-        unlockedDeviceRequired      : UnlockedDeviceRequired?      = null,
-        allApplications             : AllApplications?             = null,
-        creationDateTime            : CreationDateTime?            = null,
-        origin                      : Origin?                      = null,
-        rollbackResistant           : RollbackResistent?           = null,
-        rootOfTrust                 : RootOfTrust?                 = null,
-        osVersion                   : OsVersion?                   = null,
-        osPatchLevel                : OsPatchLevel?                = null,
-        attestationApplicationId    : AttestationApplicationId?    = null,
-        attestationIdBrand          : AttestationId.Brand?         = null,
-        attestationIdDevice         : AttestationId.Device?        = null,
-        attestationIdProduct        : AttestationId.Product?       = null,
-        attestationIdSerial         : AttestationId.Serial?        = null,
-        attestationIdImei           : AttestationId.Imei?          = null,
-        attestationIdMeid           : AttestationId.Meid?          = null,
-        attestationIdManufacturer   : AttestationId.Manufacturer?  = null,
-        attestationIdModel          : AttestationId.Model?         = null,
-        vendorPatchLevel            : PatchLevel.Vendor?           = null,
-        bootPatchLevel              : PatchLevel.Boot?             = null,
-        deviceUniqueAttestation     : DeviceUniqueAttestation?     = null,
-        attestationIdSecondImei     : AttestationId.SecondImei?    = null,
-        moduleHash                  : ModuleHash?                  = null,
-        // @formatter:on
-        attestationVersion: Int?
-    ) : this(
-        // @formatter:off
-        purpose                     = purpose                    ?.map { AttestationValue.Success(it, KeyPurpose) }?.toSet(),
-        algorithm                   = algorithm                  ?.let { AttestationValue.Success(it, Algorithm) },
-        keySize                     = keySize                    ?.let { AttestationValue.Success(it, KeySize) },
-        digest                      = digest                     ?.map { AttestationValue.Success(it, Digest) }?.toSet(),
-        padding                     = padding                    ?.map { AttestationValue.Success(it, Padding) }?.toSet(),
-        ecCurve                     = ecCurve                    ?.let { AttestationValue.Success(it, ECCurve) },
-        rsaPublicExponent           = rsaPublicExponent          ?.let { AttestationValue.Success(it, RsaPublicExponent) },
-        mgfDigest                   = mgfDigest                  ?.map { AttestationValue.Success(it, MgfDigest) }?.toSet(),
-        rollbackResistance          = rollbackResistance         ?.let { AttestationValue.Success(it, RollbackResistance) },
-        earlyBootOnly               = earlyBootOnly              ?.let { AttestationValue.Success(it, EarlyBootOnly) },
-        activeDateTime              = activeDateTime             ?.let { AttestationValue.Success(it, ActiveDateTime) },
-        originationExpireDateTime   = originationExpireDateTime  ?.let { AttestationValue.Success(it, OriginationExpireDateTime) },
-        usageExpireDateTime         = usageExpireDateTime        ?.let { AttestationValue.Success(it, UsageExpireDateTime) },
-        usageCountLimit             = usageCountLimit            ?.let { AttestationValue.Success(it, UsageCountLimit) },
-        noAuthRequired              = noAuthRequired             ?.let { AttestationValue.Success(it, NoAuthRequired) },
-        userAuthType                = userAuthType               ?.let { AttestationValue.Success(it, UserAuthType) },
-        authTimeout                 = authTimeout                ?.let { AttestationValue.Success(it, AuthTimeout) },
-        allowWhileOnBody            = allowWhileOnBody           ?.let { AttestationValue.Success(it, AllowWhileOnBody) },
-        trustedUserPresenceRequired = trustedUserPresenceRequired?.let { AttestationValue.Success(it, TrustedUserPresenceRequired) },
-        trustedConfirmationRequired = trustedConfirmationRequired?.let { AttestationValue.Success(it, TrustedConfirmationRequired) },
-        unlockedDeviceRequired      = unlockedDeviceRequired     ?.let { AttestationValue.Success(it, UnlockedDeviceRequired) },
-        allApplications             = allApplications            ?.let { AttestationValue.Success(it, AllApplications) },
-        creationDateTime            = creationDateTime           ?.let { AttestationValue.Success(it, CreationDateTime) },
-        origin                      = origin                     ?.let { AttestationValue.Success(it, Origin) },
-        rollbackResistant           = rollbackResistant          ?.let { AttestationValue.Success(it, RollbackResistent) },
-        rootOfTrust                 = rootOfTrust                ?.let { AttestationValue.Success(it, RootOfTrust) },
-        osVersion                   = osVersion                  ?.let { AttestationValue.Success(it, OsVersion) },
-        osPatchLevel                = osPatchLevel               ?.let { AttestationValue.Success(it, OsPatchLevel) },
-        attestationApplicationId    = attestationApplicationId   ?.let { AttestationValue.Success(it, AttestationApplicationId) },
-        attestationIdBrand          = attestationIdBrand         ?.let { AttestationValue.Success(it, AttestationId.Brand) },
-        attestationIdDevice         = attestationIdDevice        ?.let { AttestationValue.Success(it, AttestationId.Device) },
-        attestationIdProduct        = attestationIdProduct       ?.let { AttestationValue.Success(it, AttestationId.Product) },
-        attestationIdSerial         = attestationIdSerial        ?.let { AttestationValue.Success(it, AttestationId.Serial) },
-        attestationIdImei           = attestationIdImei          ?.let { AttestationValue.Success(it, AttestationId.Imei) },
-        attestationIdMeid           = attestationIdMeid          ?.let { AttestationValue.Success(it, AttestationId.Meid) },
-        attestationIdManufacturer   = attestationIdManufacturer  ?.let { AttestationValue.Success(it, AttestationId.Manufacturer) },
-        attestationIdModel          = attestationIdModel         ?.let { AttestationValue.Success(it, AttestationId.Model) },
-        vendorPatchLevel            = vendorPatchLevel           ?.let { AttestationValue.Success(it, PatchLevel.Vendor) },
-        bootPatchLevel              = bootPatchLevel             ?.let { AttestationValue.Success(it, PatchLevel.Boot) },
-        deviceUniqueAttestation     = deviceUniqueAttestation    ?.let { AttestationValue.Success(it, DeviceUniqueAttestation) },
-        attestationIdSecondImei     = attestationIdSecondImei    ?.let { AttestationValue.Success(it, AttestationId.SecondImei) },
-        moduleHash                  = moduleHash                 ?.let { AttestationValue.Success(it, ModuleHash) },
-        // @formatter:on
-        attestationVersion = attestationVersion,
-    )
+    /*   constructor(
+           // @formatter:off
+           purpose                     : Set<KeyPurpose>?             = null,
+           algorithm                   : Algorithm?                   = null,
+           keySize                     : KeySize?                     = null,
+           digest                      : Set<Digest>?                 = null,
+           padding                     : Set<Padding>?                = null,
+           ecCurve                     : ECCurve?                     = null,
+           rsaPublicExponent           : RsaPublicExponent?           = null,
+           mgfDigest                   : Set<MgfDigest>?              = null,
+           rollbackResistance          : RollbackResistance?          = null,
+           earlyBootOnly               : EarlyBootOnly?               = null,
+           activeDateTime              : ActiveDateTime?              = null,
+           originationExpireDateTime   : OriginationExpireDateTime?   = null,
+           usageExpireDateTime         : UsageExpireDateTime?         = null,
+           usageCountLimit             : UsageCountLimit?             = null,
+           noAuthRequired              : NoAuthRequired?              = null,
+           userAuthType                : UserAuth?                    = null,
+           authTimeout                 : AuthTimeout?                 = null,
+           allowWhileOnBody            : AllowWhileOnBody?            = null,
+           trustedUserPresenceRequired : TrustedUserPresenceRequired? = null,
+           trustedConfirmationRequired : TrustedConfirmationRequired? = null,
+           unlockedDeviceRequired      : UnlockedDeviceRequired?      = null,
+           allApplications             : AllApplications?             = null,
+           creationDateTime            : CreationDateTime?            = null,
+           origin                      : Origin?                      = null,
+           rollbackResistant           : RollbackResistent?           = null,
+           rootOfTrust                 : RootOfTrust?                 = null,
+           osVersion                   : OsVersion?                   = null,
+           osPatchLevel                : OsPatchLevel?                = null,
+           attestationApplicationId    : AttestationApplicationId?    = null,
+           attestationIdBrand          : AttestationId.Brand?         = null,
+           attestationIdDevice         : AttestationId.Device?        = null,
+           attestationIdProduct        : AttestationId.Product?       = null,
+           attestationIdSerial         : AttestationId.Serial?        = null,
+           attestationIdImei           : AttestationId.Imei?          = null,
+           attestationIdMeid           : AttestationId.Meid?          = null,
+           attestationIdManufacturer   : AttestationId.Manufacturer?  = null,
+           attestationIdModel          : AttestationId.Model?         = null,
+           vendorPatchLevel            : PatchLevel.Vendor?           = null,
+           bootPatchLevel              : PatchLevel.Boot?             = null,
+           deviceUniqueAttestation     : DeviceUniqueAttestation?     = null,
+           attestationIdSecondImei     : AttestationId.SecondImei?    = null,
+           moduleHash                  : ModuleHash?                  = null,
+           // @formatter:on
+           attestationVersion: Int?
+       ) : this(
+           // @formatter:off
+           purposeIndexed                     = purpose                    ?.map { AttestationValue.Success(it, KeyPurpose) }?.toSet(),
+           algorithmIndexed                   = algorithm                  ?.let { AttestationValue.Success(it, Algorithm) },
+           keySizeIndexed                     = keySize                    ?.let { AttestationValue.Success(it, KeySize) },
+           digestIndexed                      = digest                     ?.map { AttestationValue.Success(it, Digest) }?.toSet(),
+           paddingIndexed                     = padding                    ?.map { AttestationValue.Success(it, Padding) }?.toSet(),
+           ecCurveIndexed                     = ecCurve                    ?.let { AttestationValue.Success(it, ECCurve) },
+           rsaPublicExponentIndexed           = rsaPublicExponent          ?.let { AttestationValue.Success(it, RsaPublicExponent) },
+           mgfDigestIndexed                   = mgfDigest                  ?.map { AttestationValue.Success(it, MgfDigest) }?.toSet(),
+           rollbackResistanceIndexed          = rollbackResistance         ?.let { AttestationValue.Success(it, RollbackResistance) },
+           earlyBootOnlyIndexed               = earlyBootOnly              ?.let { AttestationValue.Success(it, EarlyBootOnly) },
+           activeDateTimeIndexed              = activeDateTime             ?.let { AttestationValue.Success(it, ActiveDateTime) },
+           originationExpireDateTimeIndexed   = originationExpireDateTime  ?.let { AttestationValue.Success(it, OriginationExpireDateTime) },
+           usageExpireDateTimeIndexed         = usageExpireDateTime        ?.let { AttestationValue.Success(it, UsageExpireDateTime) },
+           usageCountLimitIndexed             = usageCountLimit            ?.let { AttestationValue.Success(it, UsageCountLimit) },
+           noAuthRequiredIndexed              = noAuthRequired             ?.let { AttestationValue.Success(it, NoAuthRequired) },
+           userAuthTypeIndexed                = userAuthType               ?.let { AttestationValue.Success(it, UserAuth) },
+           authTimeoutIndexed                 = authTimeout                ?.let { AttestationValue.Success(it, AuthTimeout) },
+           allowWhileOnBodyIndexed            = allowWhileOnBody           ?.let { AttestationValue.Success(it, AllowWhileOnBody) },
+           trustedUserPresenceRequiredIndexed = trustedUserPresenceRequired?.let { AttestationValue.Success(it, TrustedUserPresenceRequired) },
+           trustedConfirmationRequiredIndexed = trustedConfirmationRequired?.let { AttestationValue.Success(it, TrustedConfirmationRequired) },
+           unlockedDeviceRequiredIndexed      = unlockedDeviceRequired     ?.let { AttestationValue.Success(it, UnlockedDeviceRequired) },
+           allApplicationsIndexed             = allApplications            ?.let { AttestationValue.Success(it, AllApplications) },
+           creationDateTimeIndexed            = creationDateTime           ?.let { AttestationValue.Success(it, CreationDateTime) },
+           originIndexed                      = origin                     ?.let { AttestationValue.Success(it, Origin) },
+           rollbackResistantIndexed           = rollbackResistant          ?.let { AttestationValue.Success(it, RollbackResistent) },
+           rootOfTrustIndexed                 = rootOfTrust                ?.let { AttestationValue.Success(it, RootOfTrust) },
+           osVersionIndexed                   = osVersion                  ?.let { AttestationValue.Success(it, OsVersion) },
+           osPatchLevelIndexed                = osPatchLevel               ?.let { AttestationValue.Success(it, OsPatchLevel) },
+           attestationApplicationIdIndexed    = attestationApplicationId   ?.let { AttestationValue.Success(it, AttestationApplicationId) },
+           attestationIdBrandIndexed          = attestationIdBrand         ?.let { AttestationValue.Success(it, AttestationId.Brand) },
+           attestationIdDeviceIndexed         = attestationIdDevice        ?.let { AttestationValue.Success(it, AttestationId.Device) },
+           attestationIdProductIndexed        = attestationIdProduct       ?.let { AttestationValue.Success(it, AttestationId.Product) },
+           attestationIdSerialIndexed         = attestationIdSerial        ?.let { AttestationValue.Success(it, AttestationId.Serial) },
+           attestationIdImeiIndexed           = attestationIdImei          ?.let { AttestationValue.Success(it, AttestationId.Imei) },
+           attestationIdMeidIndexed           = attestationIdMeid          ?.let { AttestationValue.Success(it, AttestationId.Meid) },
+           attestationIdManufacturerIndexed   = attestationIdManufacturer  ?.let { AttestationValue.Success(it, AttestationId.Manufacturer) },
+           attestationIdModelIndexed          = attestationIdModel         ?.let { AttestationValue.Success(it, AttestationId.Model) },
+           vendorPatchLevelIndexed            = vendorPatchLevel           ?.let { AttestationValue.Success(it, PatchLevel.Vendor) },
+           bootPatchLevelIndexed              = bootPatchLevel             ?.let { AttestationValue.Success(it, PatchLevel.Boot) },
+           deviceUniqueAttestationIndexed     = deviceUniqueAttestation    ?.let { AttestationValue.Success(it, DeviceUniqueAttestation) },
+           attestationIdSecondImeiIndexed     = attestationIdSecondImei    ?.let { AttestationValue.Success(it, AttestationId.SecondImei) },
+           moduleHashIndexed                  = moduleHash                 ?.let { AttestationValue.Success(it, ModuleHash) },
+           // @formatter:on
+       )*/
+
+    val purpose: Set<AttestationValue<KeyPurpose>>? get() = purposeIndexed?.value
+    val algorithm: AttestationValue<Algorithm>? get() = algorithmIndexed?.value
+    val keySize: AttestationValue<KeySize>? get() = keySizeIndexed?.value
+    val digest: Set<AttestationValue<Digest>>? get() = digestIndexed?.value
+    val padding: Set<AttestationValue<Padding>>? get() = paddingIndexed?.value
+    val ecCurve: AttestationValue<ECCurve>? get() = ecCurveIndexed?.value
+    val rsaPublicExponent: AttestationValue<RsaPublicExponent>? get() = rsaPublicExponentIndexed?.value
+    val mgfDigest: Set<AttestationValue<MgfDigest>>? get() = mgfDigestIndexed?.value
+    val rollbackResistance: AttestationValue<RollbackResistance>? get() = rollbackResistanceIndexed?.value
+    val earlyBootOnly: AttestationValue<EarlyBootOnly>? get() = earlyBootOnlyIndexed?.value
+    val activeDateTime: AttestationValue<ActiveDateTime>? get() = activeDateTimeIndexed?.value
+    val originationExpireDateTime: AttestationValue<OriginationExpireDateTime>? get() = originationExpireDateTimeIndexed?.value
+    val usageExpireDateTime: AttestationValue<UsageExpireDateTime>? get() = usageExpireDateTimeIndexed?.value
+    val usageCountLimit: AttestationValue<UsageCountLimit>? get() = usageCountLimitIndexed?.value
+    val noAuthRequired: AttestationValue<NoAuthRequired>? get() = noAuthRequiredIndexed?.value
+    val userAuthType: AttestationValue<UserAuth>? get() = userAuthTypeIndexed?.value
+    val authTimeout: AttestationValue<AuthTimeout>? get() = authTimeoutIndexed?.value
+    val allowWhileOnBody: AttestationValue<AllowWhileOnBody>? get() = allowWhileOnBodyIndexed?.value
+    val trustedUserPresenceRequired: AttestationValue<TrustedUserPresenceRequired>? get() = trustedUserPresenceRequiredIndexed?.value
+    val trustedConfirmationRequired: AttestationValue<TrustedConfirmationRequired>? get() = trustedConfirmationRequiredIndexed?.value
+    val unlockedDeviceRequired: AttestationValue<UnlockedDeviceRequired>? get() = unlockedDeviceRequiredIndexed?.value
+    val allApplications: AttestationValue<AllApplications>? get() = allApplicationsIndexed?.value // only up to version v4 // TODO add opt-in annotation?
+    val creationDateTime: AttestationValue<CreationDateTime>? get() = creationDateTimeIndexed?.value
+    val origin: AttestationValue<Origin>? get() = originIndexed?.value
+    val rollbackResistant: AttestationValue<RollbackResistent>? get() = rollbackResistantIndexed?.value // only up to version v2, "resistance" afterwards // TODO add opt-in annotation?
+    val rootOfTrust: AttestationValue<RootOfTrust>? get() = rootOfTrustIndexed?.value
+    val osVersion: AttestationValue<OsVersion>? get() = osVersionIndexed?.value
+    val osPatchLevel: AttestationValue<OsPatchLevel>? get() = osPatchLevelIndexed?.value
+    val attestationApplicationId: AttestationValue<AttestationApplicationId>? get() = attestationApplicationIdIndexed?.value
+    val attestationIdBrand: AttestationValue<AttestationId.Brand>? get() = attestationIdBrandIndexed?.value
+    val attestationIdDevice: AttestationValue<AttestationId.Device>? get() = attestationIdDeviceIndexed?.value
+    val attestationIdProduct: AttestationValue<AttestationId.Product>? get() = attestationIdProductIndexed?.value
+    val attestationIdSerial: AttestationValue<AttestationId.Serial>? get() = attestationIdSerialIndexed?.value
+    val attestationIdImei: AttestationValue<AttestationId.Imei>? get() = attestationIdImeiIndexed?.value
+    val attestationIdMeid: AttestationValue<AttestationId.Meid>? get() = attestationIdMeidIndexed?.value
+    val attestationIdManufacturer: AttestationValue<AttestationId.Manufacturer>? get() = attestationIdManufacturerIndexed?.value
+    val attestationIdModel: AttestationValue<AttestationId.Model>? get() = attestationIdModelIndexed?.value
+    val vendorPatchLevel: AttestationValue<PatchLevel.Vendor>? get() = vendorPatchLevelIndexed?.value
+    val bootPatchLevel: AttestationValue<PatchLevel.Boot>? get() = bootPatchLevelIndexed?.value
+    val deviceUniqueAttestation: AttestationValue<DeviceUniqueAttestation>? get() = deviceUniqueAttestationIndexed?.value
+    val attestationIdSecondImei: AttestationValue<AttestationId.SecondImei>? get() = attestationIdSecondImeiIndexed?.value
+    val moduleHash: AttestationValue<ModuleHash>? get() = moduleHashIndexed?.value
+    // @formatter:on
+
+    val indexedProperties: List<IndexedValue<*>>
+        get() = buildList {
+            purposeIndexed?.let { add(it) }
+            algorithmIndexed?.let { add(it) }
+            keySizeIndexed?.let { add(it) }
+            digestIndexed?.let { add(it) }
+            paddingIndexed?.let { add(it) }
+            ecCurveIndexed?.let { add(it) }
+            rsaPublicExponentIndexed?.let { add(it) }
+            mgfDigestIndexed?.let { add(it) }
+            rollbackResistanceIndexed?.let { add(it) }
+            earlyBootOnlyIndexed?.let { add(it) }
+            activeDateTimeIndexed?.let { add(it) }
+            originationExpireDateTimeIndexed?.let { add(it) }
+            usageExpireDateTimeIndexed?.let { add(it) }
+            usageCountLimitIndexed?.let { add(it) }
+            noAuthRequiredIndexed?.let { add(it) }
+            userAuthTypeIndexed?.let { add(it) }
+            authTimeoutIndexed?.let { add(it) }
+            allowWhileOnBodyIndexed?.let { add(it) }
+            trustedUserPresenceRequiredIndexed?.let { add(it) }
+            trustedConfirmationRequiredIndexed?.let { add(it) }
+            unlockedDeviceRequiredIndexed?.let { add(it) }
+            allApplicationsIndexed?.let { add(it) }
+            creationDateTimeIndexed?.let { add(it) }
+            originIndexed?.let { add(it) }
+            rollbackResistantIndexed?.let { add(it) }
+            rootOfTrustIndexed?.let { add(it) }
+            osVersionIndexed?.let { add(it) }
+            osPatchLevelIndexed?.let { add(it) }
+            attestationApplicationIdIndexed?.let { add(it) }
+            attestationIdBrandIndexed?.let { add(it) }
+            attestationIdDeviceIndexed?.let { add(it) }
+            attestationIdProductIndexed?.let { add(it) }
+            attestationIdSerialIndexed?.let { add(it) }
+            attestationIdImeiIndexed?.let { add(it) }
+            attestationIdMeidIndexed?.let { add(it) }
+            attestationIdManufacturerIndexed?.let { add(it) }
+            attestationIdModelIndexed?.let { add(it) }
+            vendorPatchLevelIndexed?.let { add(it) }
+            bootPatchLevelIndexed?.let { add(it) }
+            deviceUniqueAttestationIndexed?.let { add(it) }
+            attestationIdSecondImeiIndexed?.let { add(it) }
+            moduleHashIndexed?.let { add(it) }
+        }
+
 
     init {
         purpose?.let { require(it.isNotEmpty()) }
@@ -254,91 +344,60 @@ data class AuthorizationList(
 
     override fun encodeToTlv() = Asn1.Sequence {
 
-        add(purpose)
-        add(algorithm)
-        add(keySize)
-        add(digest)
-        add(padding)
-        add(ecCurve)
-        add(rsaPublicExponent)
-        add(mgfDigest)
-        add(rollbackResistance)
-        add(earlyBootOnly)
-        add(activeDateTime)
-        add(originationExpireDateTime)
-        add(usageExpireDateTime)
-        add(usageCountLimit)
-        add(noAuthRequired)
-        add(userAuthType)
-        add(authTimeout)
-        add(allowWhileOnBody)
-        add(trustedUserPresenceRequired)
-        add(trustedConfirmationRequired)
-        add(unlockedDeviceRequired)
-        add(allApplications)
-        add(creationDateTime)
-        add(origin)
-        add(rollbackResistant)
-        add(rootOfTrust)
-        add(osVersion)
-        add(osPatchLevel)
+        indexedProperties.sortedBy { (index, _) -> index }.forEach { (_, value) ->
+            when (value) {
 
-        // attestationApplicationId is encoded as OctetString
-        attestationApplicationId?.let { appId ->
-            +Asn1.ExplicitlyTagged(appId.tagged.explicitTag) {
-                +Asn1.OctetStringEncapsulating {
-                    +appId.encodeToTlv()
-                }
+                is AttestationValue<*> -> if (value.tagged.explicitTag == AttestationApplicationId.explicitTag) (value as AttestationValue<AttestationApplicationId>).let { appId ->
+                    +Asn1.ExplicitlyTagged(appId.tagged.explicitTag) {
+                        +Asn1.OctetStringEncapsulating {
+                            +appId.encodeToTlv()
+                        }
+                    }
+                } else add(value)
+
+                is Set<*> -> add(value as Set<AttestationValue<*>>)
             }
         }
 
-        add(attestationIdBrand)
-        add(attestationIdDevice)
-        add(attestationIdProduct)
-        add(attestationIdSerial)
-        add(attestationIdImei)
-        add(attestationIdMeid)
-        add(attestationIdManufacturer)
-        add(attestationIdModel)
-        add(vendorPatchLevel)
-        add(bootPatchLevel)
-        add(deviceUniqueAttestation)
-        add(attestationIdSecondImei)
-        add(moduleHash)
+        additionalProperties.forEach {
+            +it
+        }
+
     }
 
     companion object : Asn1Decodable<Asn1Sequence, AuthorizationList> {
         override fun doDecode(src: Asn1Sequence): AuthorizationList {
+            val src= TrackingSequence(src)
             // @formatter:off
-            val purpose                    : Set<AttestationValue<KeyPurpose>>?             = KeyPurpose.decodeSet(src)
-            val algorithm                  : AttestationValue<Algorithm>?                   = Algorithm.decode(src)
-            val keySize                    : AttestationValue<KeySize>?                     = KeySize.decode(src)
-            val digest                     : Set<AttestationValue<Digest>>?                 = Digest.decodeSet(src)
-            val padding                    : Set<AttestationValue<Padding>>?                = Padding.decodeSet(src)
-            val ecCurve                    : AttestationValue<ECCurve>?                     = ECCurve.decode(src)
-            val rsaPublicExponent          : AttestationValue<RsaPublicExponent>?           = RsaPublicExponent.decode(src)
-            val mgfDigest                  : Set<AttestationValue<MgfDigest>>?              = MgfDigest.decodeSet(src)
-            val rollbackResistance         : AttestationValue<RollbackResistance>?          = RollbackResistance.decodeNull(src)
-            val earlyBootOnly              : AttestationValue<EarlyBootOnly>?               = EarlyBootOnly.decodeNull(src)
-            val activeDateTime             : AttestationValue<ActiveDateTime>?              = ActiveDateTime.decode(src)
-            val originationExpireDateTime  : AttestationValue<OriginationExpireDateTime>?   = OriginationExpireDateTime.decode(src)
-            val usageExpireDateTime        : AttestationValue<UsageExpireDateTime>?         = UsageExpireDateTime.decode(src)
-            val usageCountLimit            : AttestationValue<UsageCountLimit>?             = UsageCountLimit.decode(src)
-            val noAuthRequired             : AttestationValue<NoAuthRequired>?              = NoAuthRequired.decodeNull(src)
-            val userAuthType               : AttestationValue<UserAuthType>?                = UserAuthType.decode(src)
-            val authTimeout                : AttestationValue<AuthTimeout>?                 = AuthTimeout.decode(src)
-            val allowWhileOnBody           : AttestationValue<AllowWhileOnBody>?            = AllowWhileOnBody.decodeNull(src)
-            val trustedUserPresenceRequired: AttestationValue<TrustedUserPresenceRequired>? = TrustedUserPresenceRequired.decodeNull(src)
-            val trustedConfirmationRequired: AttestationValue<TrustedConfirmationRequired>? = TrustedConfirmationRequired.decodeNull(src)
-            val unlockedDeviceRequired     : AttestationValue<UnlockedDeviceRequired>?      = UnlockedDeviceRequired.decodeNull(src)
-            val allApplications            : AttestationValue<AllApplications>?             = AllApplications.decodeNull(src)
-            val creationDateTime           : AttestationValue<CreationDateTime>?            = CreationDateTime.decode(src)
-            val origin                     : AttestationValue<Origin>?                      = Origin.decode(src)
-            val rollbackResistant          : AttestationValue<RollbackResistent>?           = RollbackResistent.decodeNull(src)
+            val purpose                    : IndexedValue<Set<AttestationValue<KeyPurpose>>>?             = KeyPurpose.decodeSet(src)
+            val algorithm                  : IndexedValue<AttestationValue<Algorithm>>?                   = Algorithm.decode(src)
+            val keySize                    : IndexedValue<AttestationValue<KeySize>>?                     = KeySize.decode(src)
+            val digest                     : IndexedValue<Set<AttestationValue<Digest>>>?                 = Digest.decodeSet(src)
+            val padding                    : IndexedValue<Set<AttestationValue<Padding>>>?                = Padding.decodeSet(src)
+            val ecCurve                    : IndexedValue<AttestationValue<ECCurve>>?                     = ECCurve.decode(src)
+            val rsaPublicExponent          : IndexedValue<AttestationValue<RsaPublicExponent>>?           = RsaPublicExponent.decode(src)
+            val mgfDigest                  : IndexedValue<Set<AttestationValue<MgfDigest>>>?              = MgfDigest.decodeSet(src)
+            val rollbackResistance         : IndexedValue<AttestationValue<RollbackResistance>>?          = RollbackResistance.decodeNull(src)
+            val earlyBootOnly              : IndexedValue<AttestationValue<EarlyBootOnly>>?               = EarlyBootOnly.decodeNull(src)
+            val activeDateTime             : IndexedValue<AttestationValue<ActiveDateTime>>?              = ActiveDateTime.decode(src)
+            val originationExpireDateTime  : IndexedValue<AttestationValue<OriginationExpireDateTime>>?   = OriginationExpireDateTime.decode(src)
+            val usageExpireDateTime        : IndexedValue<AttestationValue<UsageExpireDateTime>>?         = UsageExpireDateTime.decode(src)
+            val usageCountLimit            : IndexedValue<AttestationValue<UsageCountLimit>>?             = UsageCountLimit.decode(src)
+            val noAuthRequired             : IndexedValue<AttestationValue<NoAuthRequired>>?              = NoAuthRequired.decodeNull(src)
+            val userAuthType               : IndexedValue<AttestationValue<UserAuth>>?                    = UserAuth.decode(src)
+            val authTimeout                : IndexedValue<AttestationValue<AuthTimeout>>?                 = AuthTimeout.decode(src)
+            val allowWhileOnBody           : IndexedValue<AttestationValue<AllowWhileOnBody>>?            = AllowWhileOnBody.decodeNull(src)
+            val trustedUserPresenceRequired: IndexedValue<AttestationValue<TrustedUserPresenceRequired>>? = TrustedUserPresenceRequired.decodeNull(src)
+            val trustedConfirmationRequired: IndexedValue<AttestationValue<TrustedConfirmationRequired>>? = TrustedConfirmationRequired.decodeNull(src)
+            val unlockedDeviceRequired     : IndexedValue<AttestationValue<UnlockedDeviceRequired>>?      = UnlockedDeviceRequired.decodeNull(src)
+            val allApplications            : IndexedValue<AttestationValue<AllApplications>>?             = AllApplications.decodeNull(src)
+            val creationDateTime           : IndexedValue<AttestationValue<CreationDateTime>>?            = CreationDateTime.decode(src)
+            val origin                     : IndexedValue<AttestationValue<Origin>>?                      = Origin.decode(src)
+            val rollbackResistant          : IndexedValue<AttestationValue<RollbackResistent>>?           = RollbackResistent.decodeNull(src)
             // @formatter:on
 
-            val rootOfTrust: AttestationValue<RootOfTrust>? =
-                src[RootOfTrust.explicitTag]?.let { rot ->
+            val rootOfTrust: IndexedValue<AttestationValue<RootOfTrust>>? =
+                src[RootOfTrust.explicitTag]?.let { (index, rot) ->
                     RootOfTrust.decodeFromTlvSafe(rot.asSequence()).fold(
                         onSuccess = { AttestationValue.Success(it, RootOfTrust) },
                         onFailure = {
@@ -347,14 +406,14 @@ data class AuthorizationList(
                                 RootOfTrust,
                                 rot
                             ) as AttestationValue<RootOfTrust>
-                        })
+                        }).let { IndexedValue(index, it) }
                 }
-            val osVersion: AttestationValue<OsVersion>? = OsVersion.decode(src)
-            val osPatchLevel: AttestationValue<OsPatchLevel>? = OsPatchLevel.decode(src)
+            val osVersion: IndexedValue<AttestationValue<OsVersion>>? = OsVersion.decode(src)
+            val osPatchLevel: IndexedValue<AttestationValue<OsPatchLevel>>? = OsPatchLevel.decode(src)
 
-            val attestationApplicationId: AttestationValue<AttestationApplicationId>? =
-                src[AttestationApplicationId.explicitTag]?.let { appId ->
-                    catching {
+            val attestationApplicationId: IndexedValue<AttestationValue<AttestationApplicationId>>? =
+                src[AttestationApplicationId.explicitTag]?.let { (index, appId) ->
+                    catchingUnwrapped {
                         val children = appId.asEncapsulatingOctetString().children
                         require(children.size == 1) // TODO: check again, and also check others TLV entries so that at most 1 is given, should we give a warning? not lenient
                         AttestationApplicationId.decodeFromTlv(children.first().asSequence())
@@ -366,23 +425,23 @@ data class AuthorizationList(
                                 AttestationApplicationId,
                                 appId
                             ) as AttestationValue<AttestationApplicationId>
-                        })
+                        }).let { IndexedValue(index, it) }
                 }
 
             // @formatter:off
-            val attestationIdBrand       : AttestationValue<AttestationId.Brand>?          = AttestationId.Brand.decode(src)
-            val attestationIdDevice      : AttestationValue<AttestationId.Device>?         = AttestationId.Device.decode(src)
-            val attestationIdProduct     : AttestationValue<AttestationId.Product>?        = AttestationId.Product.decode(src)
-            val attestationIdSerial      : AttestationValue<AttestationId.Serial>?         = AttestationId.Serial.decode(src)
-            val attestationIdImei        : AttestationValue<AttestationId.Imei>?           = AttestationId.Imei.decode(src)
-            val attestationIdMeid        : AttestationValue<AttestationId.Meid>?           = AttestationId.Meid.decode(src)
-            val attestationIdManufacturer: AttestationValue<AttestationId.Manufacturer>?   = AttestationId.Manufacturer.decode(src)
-            val attestationIdModel       : AttestationValue<AttestationId.Model>?          = AttestationId.Model.decode(src)
-            val vendorPatchLevel         : AttestationValue<PatchLevel.Vendor>?            = PatchLevel.Vendor.decode(src)
-            val bootPatchLevel           : AttestationValue<PatchLevel.Boot>?              = PatchLevel.Boot.decode(src)
-            val deviceUniqueAttestation  : AttestationValue<DeviceUniqueAttestation>?      = DeviceUniqueAttestation.decodeNull(src)
-            val attestationIdSecondImei  : AttestationValue<AttestationId.SecondImei>?     = AttestationId.SecondImei.decode(src)
-            val moduleHash               : AttestationValue<ModuleHash>?                   = ModuleHash.decode(src)
+            val attestationIdBrand       : IndexedValue<AttestationValue<AttestationId.Brand>>?          = AttestationId.Brand.decode(src)
+            val attestationIdDevice      : IndexedValue<AttestationValue<AttestationId.Device>>?         = AttestationId.Device.decode(src)
+            val attestationIdProduct     : IndexedValue<AttestationValue<AttestationId.Product>>?        = AttestationId.Product.decode(src)
+            val attestationIdSerial      : IndexedValue<AttestationValue<AttestationId.Serial>>?         = AttestationId.Serial.decode(src)
+            val attestationIdImei        : IndexedValue<AttestationValue<AttestationId.Imei>>?           = AttestationId.Imei.decode(src)
+            val attestationIdMeid        : IndexedValue<AttestationValue<AttestationId.Meid>>?           = AttestationId.Meid.decode(src)
+            val attestationIdManufacturer: IndexedValue<AttestationValue<AttestationId.Manufacturer>>?   = AttestationId.Manufacturer.decode(src)
+            val attestationIdModel       : IndexedValue<AttestationValue<AttestationId.Model>>?          = AttestationId.Model.decode(src)
+            val vendorPatchLevel         : IndexedValue<AttestationValue<PatchLevel.Vendor>>?            = PatchLevel.Vendor.decode(src)
+            val bootPatchLevel           : IndexedValue<AttestationValue<PatchLevel.Boot>>?              = PatchLevel.Boot.decode(src)
+            val deviceUniqueAttestation  : IndexedValue<AttestationValue<DeviceUniqueAttestation>>?      = DeviceUniqueAttestation.decodeNull(src)
+            val attestationIdSecondImei  : IndexedValue<AttestationValue<AttestationId.SecondImei>>?     = AttestationId.SecondImei.decode(src)
+            val moduleHash               : IndexedValue<AttestationValue<ModuleHash>>?                   = ModuleHash.decode(src)
             // @formatter:on
 
             return AuthorizationList(
@@ -428,12 +487,13 @@ data class AuthorizationList(
                 deviceUniqueAttestation,
                 attestationIdSecondImei,
                 moduleHash,
+                additionalProperties = src.retainUnread()
             )
         }
 
         // TODO: check decode functions once more
-        private inline fun <reified T : Tagged, reified D : Asn1Encodable<Asn1Element>> T.decode(src: Asn1Sequence): AttestationValue<D>? =
-            src[explicitTag]?.let { element ->
+        private inline fun <reified T : Tagged, reified D : Asn1Encodable<Asn1Element>> T.decode(src: TrackingSequence): IndexedValue<AttestationValue<D>>? =
+            src[explicitTag]?.let { (index, element) ->
                 @Suppress("UNCHECKED_CAST")
                 (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(src = element).fold(
                     onSuccess = { AttestationValue.Success(it, this) },
@@ -443,12 +503,12 @@ data class AuthorizationList(
                             this,
                             element
                         ) as AttestationValue<D>
-                    })
+                    }).let { IndexedValue(index, it) }
             }
 
         private inline fun <reified T : Tagged, reified D : Asn1Encodable<Asn1Element>> T.decodeSet(
-            src: Asn1Sequence
-        ): Set<AttestationValue<D>>? = src[explicitTag]?.let {
+            src: TrackingSequence
+        ): IndexedValue<Set<AttestationValue<D>>>? = src[explicitTag]?.let { (index, it) ->
             @Suppress("UNCHECKED_CAST")
             ((it as Asn1Set).children.map { child ->
 
@@ -458,11 +518,16 @@ data class AuthorizationList(
                     onSuccess = { AttestationValue.Success(it, this) },
                     onFailure = { AttestationValue.Failure(D::class.simpleName!!, this, child) })
             }.toSet()
-                .let { it.ifEmpty { null } } as Set<AttestationValue<D>>?) // TODO isEmpty -> null? << do we really want null instead of empty sets? rather use empty set
+                .let { it.ifEmpty { null } } as Set<AttestationValue<D>>?)?.let {
+                IndexedValue(
+                    index,
+                    it
+                )
+            } // TODO isEmpty -> null? << do we really want null instead of empty sets? rather use empty set
         }
 
         private inline fun <reified T : Tagged, reified D : Asn1Encodable<Asn1Element>> T.decodeSequence(
-            src: Asn1Sequence
+            src: TrackingSequence
         ): List<KmmResult<D>>? = src[explicitTag]?.let {
             @Suppress("UNCHECKED_CAST")
             (it as Asn1Sequence).children.mapNotNull {
@@ -472,25 +537,32 @@ data class AuthorizationList(
             }.toList().let { if (it.isEmpty()) null else it }
         }
 
-        private operator fun Asn1Sequence.get(tag: ULong): Asn1Element? {
+        private operator fun TrackingSequence.get(tag: ULong): IndexedValue<Asn1Element>? {
             val asn1Tag = Asn1.ExplicitTag(tag)
-            return ((children.firstOrNull { (it as Asn1ExplicitlyTagged).tag == asn1Tag } as Asn1ExplicitlyTagged?)?.children)?.singleOrNull
+            val found = src.children.withIndex().firstOrNull { (it.value as Asn1ExplicitlyTagged).tag == asn1Tag }
+                ?.let { (index, value) -> IndexedValue(index, value as Asn1ExplicitlyTagged) }
+            return found?.value?.children?.singleOrNull?.let { IndexedValue(found.index, it) }?.apply { markExtracted(asn1Tag)}
         }
 
-        private inline fun <reified A : Asn1Encodable<Asn1Primitive>> A.decodeNull(src: Asn1Sequence): AttestationValue<A>? {
+
+        private inline fun <reified A : Asn1Encodable<Asn1Primitive>> A.decodeNull(src: TrackingSequence): IndexedValue<AttestationValue<A>>? {
             val tag = (this as Tagged).explicitTag
             val asn1Tag = Asn1.ExplicitTag(tag)
-            return ((src.children.firstOrNull { (it as Asn1ExplicitlyTagged).tag == asn1Tag } as Asn1ExplicitlyTagged?)?.children)?.let {
-                if (it.isEmpty()) null
-                (if (it.size != 1) AttestationValue.Failure(this::class.simpleName!!, this, src)
+            val indexedFound =
+                src.src.children.withIndex().firstOrNull { (it.value as Asn1ExplicitlyTagged).tag == asn1Tag }
+                    ?: return null
+
+            return ((indexedFound.value as Asn1ExplicitlyTagged?)?.children)?.let {
+                if (it.isEmpty()) return@let null
+                (if (it.size != 1) AttestationValue.Failure(this::class.simpleName!!, this, src.src)
                 else {
                     val first = it.first()
                     catchingUnwrapped { first.asPrimitive().readNull() }
                         .fold(
                             onSuccess = { AttestationValue.Success(this, this) },
                             onFailure = { AttestationValue.Failure(this::class.simpleName!!, this, first) })
-                }) as AttestationValue<A>?
-            }
+                })
+            }.let { IndexedValue(indexedFound.index, it) as IndexedValue<AttestationValue<A>>? }.apply { src.markExtracted(asn1Tag) }
         }
 
         private val List<Asn1Element>.singleOrNull: Asn1Element? get() = if (size == 1) first() else null
@@ -963,19 +1035,47 @@ data class AuthorizationList(
         override fun encodeToTlv() = Asn1.Null()
     }
 
-    enum class UserAuthType(override val intValue: Asn1Integer) : IntEncodable {
-        NONE(Asn1Integer(0)),
-        PASSWORD(Asn1Integer(1)),
-        FINGERPRINT(Asn1Integer(2)),
-        ANY(Asn1Integer(UInt.MAX_VALUE));
-        // source: https://android.googlesource.com/platform/hardware/interfaces/+/refs/heads/main/keymaster/aidl/android/hardware/keymaster/HardwareAuthenticatorType.aidl
 
-        companion object Tag : Tagged(504uL), Asn1Decodable<Asn1Primitive, UserAuthType> {
-            fun valueOf(int: Asn1Integer) = entries.first { it.intValue == int }
-            override fun doDecode(src: Asn1Primitive) = valueOf(src.decodeToAsn1Integer())
+    /**
+     * As per the [KeyMaster AIDL](https://android.googlesource.com/platform/hardware/interfaces/+/refs/heads/main/keymaster/aidl/android/hardware/keymaster/HardwareAuthenticatorType.aidl)
+     * * `NONE` is modelled as empty set.
+     * * `ANY` has a distinct representation as a set containing only the [Type.ANY] element
+     */
+    data class UserAuth(override val intValue: Asn1Integer) : IntEncodable {
+        val authTypes: Set<Type> = when (intValue) {
+            Type.ANY.intValue -> setOf(Type.ANY)
+            Asn1Integer.ZERO -> emptySet()
+            else -> {
+                val raw = intValue.toBigInteger().longValue(exactRequired = false)
+                val collected = mutableSetOf<Type>()
+                if (raw and 1L > 0L) collected += Type.PASSWORD
+                if (raw and 2L > 0L) collected += Type.FINGERPRINT
+                collected
+            }
+        }
+
+        companion object Tag : Tagged(504uL), Asn1Decodable<Asn1Primitive, UserAuth> {
+            override fun doDecode(src: Asn1Primitive) = UserAuth(src.decodeToAsn1Integer())
+
+            val NONE = UserAuth(Asn1Integer(0))
+            val ANY = UserAuth(Asn1Integer(UInt.MAX_VALUE))
+        }
+
+        enum class Type(val intValue: Asn1Integer) {
+            ANY(Asn1Integer(UInt.MAX_VALUE)),
+            PASSWORD(Asn1Integer(1u)),
+            FINGERPRINT(Asn1Integer(2u));
         }
 
         override val tagged get() = Tag
+        override fun toString(): String {
+            return "UserAuth(" +
+                    "authTypes=$authTypes, " +
+                    "intValue=$intValue" +
+                    ")"
+        }
+
+
     }
 
     class AuthTimeout private constructor(override val intValue: Asn1Integer) : IntEncodable {
@@ -1054,19 +1154,44 @@ data class AuthorizationList(
         override fun encodeToTlv() = Asn1.Null()
     }
 
-    class RootOfTrust(
+    class RootOfTrust private constructor(
         val verifiedBootKeyDigest: ByteArray,
         val deviceLocked: Boolean,
         val verifiedBootState: VerifiedBootState,
-        val verifiedBootHash: ByteArray?
+        val verifiedBootHash: ByteArray?,
+        val actualBooleanValue: ByteArray
     ) : Asn1Encodable<Asn1Sequence>, Tagged.WithTag<Asn1Sequence>, PrettyPrintable {
+
+        constructor(
+            verifiedBootKeyDigest: ByteArray,
+            deviceLocked: Boolean,
+            verifiedBootState: VerifiedBootState,
+            verifiedBootHash: ByteArray?
+        ) : this(
+            verifiedBootKeyDigest = verifiedBootKeyDigest,
+            deviceLocked = deviceLocked,
+            verifiedBootState = verifiedBootState,
+            verifiedBootHash = verifiedBootHash,
+            actualBooleanValue = Asn1.Bool(deviceLocked).content
+        )
+
         companion object Tag : Tagged(704uL), Asn1Decodable<Asn1Sequence, RootOfTrust> {
             override fun doDecode(src: Asn1Sequence) = src.iterator().run {
+                //NON-DER encoding. Why are the biggest players most incompetent?
+                val verifiedBootKeyDigest = next().asPrimitive().content
+                val (deviceLocked, actualBooleanValue) = next().asPrimitive().decode(Asn1Element.Tag.BOOL) {
+                    //This isn't even DER-compliant!
+                    (it.firstOrNull { it != 0.toByte() } != null) to it
+                }
+                val verifiedBootState = VerifiedBootState.decodeFromTlv(next().asPrimitive())
+                val verifiedBootHash = if (hasNext()) next().asPrimitive().content else null
+
                 RootOfTrust(
-                    next().asPrimitive().content,
-                    next().asPrimitive().decodeToBoolean(),
-                    VerifiedBootState.decodeFromTlv(next().asPrimitive()),
-                    if (hasNext()) next().asPrimitive().content else null
+                    verifiedBootKeyDigest,
+                    deviceLocked,
+                    verifiedBootState,
+                    verifiedBootHash,
+                    actualBooleanValue
                 )
             }
         }
@@ -1075,7 +1200,7 @@ data class AuthorizationList(
 
         override fun encodeToTlv() = Asn1.Sequence {
             +Asn1.OctetString(verifiedBootKeyDigest)
-            +Asn1.Bool(deviceLocked)
+            +Asn1Primitive(Asn1Element.Tag.BOOL, actualBooleanValue)
             +verifiedBootState
             verifiedBootHash?.let { +Asn1.OctetString(it) }
         }
@@ -1411,20 +1536,20 @@ data class AuthorizationList(
     sealed class PatchLevel(
         val year: UShort,
         val month: Month,
-        val day: UShort?
+        val day: UShort? /*This is non-compliant, but many OEMs mess this up AND the legacy google parser is also lenient here*/
     ) : IntEncodable {
         override val intValue =
-            if(day==null)
-            Asn1Integer( month.number.toUInt() + year.toUInt() * 100u)
-        else
-            Asn1Integer(day.toUInt() + month.number.toUInt() * 100u + year.toUInt() * 10000u)
+            if (day == null)
+                Asn1Integer(month.number.toUInt() + year.toUInt() * 100u)
+            else
+                Asn1Integer(day.toUInt() + month.number.toUInt() * 100u + year.toUInt() * 10000u)
 
         companion object {
             fun Asn1Primitive.decode(): Triple<UShort, Month, UShort?> {
                 val raw = Long.decodeFromAsn1ContentBytes(
                     decodeToAsn1Integer().encodeToAsn1ContentBytes()
                 )
-                if(raw >999999) {
+                if (raw > 999999) {
                     val day = raw % 100
                     val monthNumber = (raw % 10000) / 100
                     val year = raw / 10000
@@ -1433,7 +1558,7 @@ data class AuthorizationList(
                         Month(monthNumber.toInt()),
                         day.toUShort()
                     )
-                }else {
+                } else {
                     val monthNumber = (raw % 100)
                     val year = raw / 100
                     return Triple(
@@ -1543,4 +1668,12 @@ data class AuthorizationList(
 
         override val tagged get() = Tag
     }
+}
+
+private class TrackingSequence(val src: Asn1Structure) {
+    val readTags: List<Asn1Element.Tag> = mutableListOf()
+    fun markExtracted(tag: Asn1Element.Tag) {
+        (readTags as MutableList<Asn1Element.Tag>) += tag
+    }
+    fun retainUnread() = src.children.toMutableList().apply { removeAll { readTags.contains(it.tag) }}
 }
