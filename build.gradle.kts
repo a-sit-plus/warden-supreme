@@ -24,6 +24,8 @@ dokka {
 }
 
 subprojects {
+    repositories {
+        mavenLocal() }
     rootProject.dependencies.add("dokka", this)
 }
 
