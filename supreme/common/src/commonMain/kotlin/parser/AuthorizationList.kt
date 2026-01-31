@@ -323,7 +323,7 @@ data class AuthorizationList private constructor(
 
     companion object : Asn1Decodable<Asn1Sequence, AuthorizationList> {
         override fun doDecode(src: Asn1Sequence): AuthorizationList {
-            val elements = buildList<Element> {
+            val elements = buildList {
                 for (child in src.children) {
                     val explicitlyTagged = child as? Asn1ExplicitlyTagged ?: run {
                         add(Element.Unknown(child))
@@ -335,217 +335,57 @@ data class AuthorizationList private constructor(
                         continue
                     }
 
+                    // @formatter:off
                     val added = when (explicitlyTagged.tag) {
-                        Asn1.ExplicitTag(KeyPurpose.explicitTag) ->
-                            (inner as? Asn1Set)?.let { KeyPurpose.decodeSetElement<KeyPurpose>(it) }
-                                ?.also { add(Element.SetOf(it)) }
-
-                        Asn1.ExplicitTag(Algorithm.explicitTag) -> add(
-                            Element.Single(
-                                Algorithm.decodeElement<Algorithm>(
-                                    inner
-                                )
-                            )
-                        )
-
-                        Asn1.ExplicitTag(KeySize.explicitTag) -> add(Element.Single(KeySize.decodeElement<KeySize>(inner)))
-
-                        Asn1.ExplicitTag(Digest.explicitTag) ->
-                            (inner as? Asn1Set)?.let { Digest.decodeSetElement<Digest>(it) }
-                                ?.also { add(Element.SetOf(it)) }
-
-                        Asn1.ExplicitTag(Padding.explicitTag) ->
-                            (inner as? Asn1Set)?.let { Padding.decodeSetElement<Padding>(it) }
-                                ?.also { add(Element.SetOf(it)) }
-
-                        Asn1.ExplicitTag(ECCurve.explicitTag) -> add(Element.Single(ECCurve.decodeElement<ECCurve>(inner)))
-                        Asn1.ExplicitTag(RsaPublicExponent.explicitTag) ->
-                            add(Element.Single(RsaPublicExponent.decodeElement<RsaPublicExponent>(inner)))
-
-                        Asn1.ExplicitTag(MgfDigest.explicitTag) ->
-                            (inner as? Asn1Set)?.let { MgfDigest.decodeSetElement<MgfDigest>(it) }
-                                ?.also { add(Element.SetOf(it)) }
-
-                        Asn1.ExplicitTag(RollbackResistance.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(RollbackResistance.decodeNullElement(it))) }
-
-                        Asn1.ExplicitTag(EarlyBootOnly.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(EarlyBootOnly.decodeNullElement(it))) }
-
-                        Asn1.ExplicitTag(ActiveDateTime.explicitTag) -> add(
-                            Element.Single(
-                                ActiveDateTime.decodeElement<ActiveDateTime>(
-                                    inner
-                                )
-                            )
-                        )
-
-                        Asn1.ExplicitTag(OriginationExpireDateTime.explicitTag) ->
-                            add(Element.Single(OriginationExpireDateTime.decodeElement<OriginationExpireDateTime>(inner)))
-
-                        Asn1.ExplicitTag(UsageExpireDateTime.explicitTag) ->
-                            add(Element.Single(UsageExpireDateTime.decodeElement<UsageExpireDateTime>(inner)))
-
-                        Asn1.ExplicitTag(UsageCountLimit.explicitTag) ->
-                            add(Element.Single(UsageCountLimit.decodeElement<UsageCountLimit>(inner)))
-
-                        Asn1.ExplicitTag(NoAuthRequired.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(NoAuthRequired.decodeNullElement(it))) }
-
-                        Asn1.ExplicitTag(UserAuth.explicitTag) -> add(
-                            Element.Single(
-                                UserAuth.decodeElement<UserAuth>(
-                                    inner
-                                )
-                            )
-                        )
-
-                        Asn1.ExplicitTag(AuthTimeout.explicitTag) -> add(
-                            Element.Single(
-                                AuthTimeout.decodeElement<AuthTimeout>(
-                                    inner
-                                )
-                            )
-                        )
-
-                        Asn1.ExplicitTag(AllowWhileOnBody.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(AllowWhileOnBody.decodeNullElement(it))) }
-
-                        Asn1.ExplicitTag(TrustedUserPresenceRequired.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let {
-                                add(
-                                    Element.Single(
-                                        TrustedUserPresenceRequired.decodeNullElement(
-                                            it
-                                        )
-                                    )
-                                )
-                            }
-
-                        Asn1.ExplicitTag(TrustedConfirmationRequired.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let {
-                                add(
-                                    Element.Single(
-                                        TrustedConfirmationRequired.decodeNullElement(
-                                            it
-                                        )
-                                    )
-                                )
-                            }
-
-                        Asn1.ExplicitTag(UnlockedDeviceRequired.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let {
-                                add(
-                                    Element.Single(
-                                        UnlockedDeviceRequired.decodeNullElement(
-                                            it
-                                        )
-                                    )
-                                )
-                            }
-
-                        Asn1.ExplicitTag(AllApplications.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(AllApplications.decodeNullElement(it))) }
-
-                        Asn1.ExplicitTag(CreationDateTime.explicitTag) ->
-                            add(Element.Single(CreationDateTime.decodeElement<CreationDateTime>(inner)))
-
-                        Asn1.ExplicitTag(Origin.explicitTag) -> add(Element.Single(Origin.decodeElement<Origin>(inner)))
-
-                        Asn1.ExplicitTag(RollbackResistent.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(RollbackResistent.decodeNullElement(it))) }
-
-                        Asn1.ExplicitTag(RootOfTrust.explicitTag) -> add(
-                            Element.Single(
-                                RootOfTrust.decodeElement<RootOfTrust>(
-                                    inner
-                                )
-                            )
-                        )
-
-                        Asn1.ExplicitTag(OsVersion.explicitTag) -> add(
-                            Element.Single(
-                                OsVersion.decodeElement<OsVersion>(
-                                    inner
-                                )
-                            )
-                        )
-
-                        Asn1.ExplicitTag(OsPatchLevel.explicitTag) -> add(
-                            Element.Single(
-                                OsPatchLevel.decodeElement<OsPatchLevel>(
-                                    inner
-                                )
-                            )
-                        )
-
-                        Asn1.ExplicitTag(AttestationApplicationId.explicitTag) ->
-                            add(Element.Single(AttestationApplicationId.decodeElement<AttestationApplicationId>(inner)))
-
-                        Asn1.ExplicitTag(AttestationId.Brand.explicitTag) ->
-                            add(Element.Single(AttestationId.Brand.decodeElement<AttestationId.Brand>(inner)))
-
-                        Asn1.ExplicitTag(AttestationId.Device.explicitTag) ->
-                            add(Element.Single(AttestationId.Device.decodeElement<AttestationId.Device>(inner)))
-
-                        Asn1.ExplicitTag(AttestationId.Product.explicitTag) ->
-                            add(Element.Single(AttestationId.Product.decodeElement<AttestationId.Product>(inner)))
-
-                        Asn1.ExplicitTag(AttestationId.Serial.explicitTag) ->
-                            add(Element.Single(AttestationId.Serial.decodeElement<AttestationId.Serial>(inner)))
-
-                        Asn1.ExplicitTag(AttestationId.Imei.explicitTag) ->
-                            add(Element.Single(AttestationId.Imei.decodeElement<AttestationId.Imei>(inner)))
-
-                        Asn1.ExplicitTag(AttestationId.Meid.explicitTag) ->
-                            add(Element.Single(AttestationId.Meid.decodeElement<AttestationId.Meid>(inner)))
-
-                        Asn1.ExplicitTag(AttestationId.Manufacturer.explicitTag) ->
-                            add(
-                                Element.Single(
-                                    AttestationId.Manufacturer.decodeElement<AttestationId.Manufacturer>(
-                                        inner
-                                    )
-                                )
-                            )
-
-                        Asn1.ExplicitTag(AttestationId.Model.explicitTag) ->
-                            add(Element.Single(AttestationId.Model.decodeElement<AttestationId.Model>(inner)))
-
-                        Asn1.ExplicitTag(PatchLevel.Vendor.explicitTag) ->
-                            add(Element.Single(PatchLevel.Vendor.decodeElement<PatchLevel.Vendor>(inner)))
-
-                        Asn1.ExplicitTag(PatchLevel.Boot.explicitTag) ->
-                            add(Element.Single(PatchLevel.Boot.decodeElement<PatchLevel.Boot>(inner)))
-
-                        Asn1.ExplicitTag(DeviceUniqueAttestation.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let {
-                                add(
-                                    Element.Single(
-                                        DeviceUniqueAttestation.decodeNullElement(
-                                            it
-                                        )
-                                    )
-                                )
-                            }
-
-                        Asn1.ExplicitTag(AttestationId.SecondImei.explicitTag) ->
-                            add(Element.Single(AttestationId.SecondImei.decodeElement<AttestationId.SecondImei>(inner)))
-
-                        Asn1.ExplicitTag(ModuleHash.explicitTag) -> add(
-                            Element.Single(
-                                ModuleHash.decodeElement<ModuleHash>(
-                                    inner
-                                )
-                            )
-                        )
+                        Asn1.ExplicitTag(KeyPurpose.explicitTag)                  -> (inner as? Asn1Set)        ?.let { KeyPurpose                  .decodeSetElement<KeyPurpose>(it) }?.also { add(Element.SetOf(it)) }
+                        Asn1.ExplicitTag(Algorithm.explicitTag)                   -> add(Element.Single(        value = Algorithm                   .decodeElement<Algorithm>(inner)))
+                        Asn1.ExplicitTag(KeySize.explicitTag)                     -> add(Element.Single(        value = KeySize                     .decodeElement<KeySize>(inner)))
+                        Asn1.ExplicitTag(Digest.explicitTag)                      -> (inner as? Asn1Set)        ?.let { Digest                      .decodeSetElement<Digest>(it) }?.also { add(Element.SetOf(it)) }
+                        Asn1.ExplicitTag(Padding.explicitTag)                     -> (inner as? Asn1Set)        ?.let { Padding                     .decodeSetElement<Padding>(it) }?.also { add(Element.SetOf(it)) }
+                        Asn1.ExplicitTag(ECCurve.explicitTag)                     -> add(Element.Single(        value = ECCurve                     .decodeElement<ECCurve>(inner)))
+                        Asn1.ExplicitTag(RsaPublicExponent.explicitTag)           -> add(Element.Single(        value = RsaPublicExponent           .decodeElement<RsaPublicExponent>(inner)))
+                        Asn1.ExplicitTag(MgfDigest.explicitTag)                   -> (inner as? Asn1Set)        ?.let { MgfDigest                   .decodeSetElement<MgfDigest>(it) }?.also { add(Element.SetOf(it)) }
+                        Asn1.ExplicitTag(RollbackResistance.explicitTag)          -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  RollbackResistance.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(EarlyBootOnly.explicitTag)               -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  EarlyBootOnly.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(ActiveDateTime.explicitTag)              -> add(Element.Single(        value = ActiveDateTime              .decodeElement<ActiveDateTime>(inner)))
+                        Asn1.ExplicitTag(OriginationExpireDateTime.explicitTag)   -> add(Element.Single(        value = OriginationExpireDateTime   .decodeElement<OriginationExpireDateTime>(inner)))
+                        Asn1.ExplicitTag(UsageExpireDateTime.explicitTag)         -> add(Element.Single(        value = UsageExpireDateTime         .decodeElement<UsageExpireDateTime>(inner)))
+                        Asn1.ExplicitTag(UsageCountLimit.explicitTag)             -> add(Element.Single(        value = UsageCountLimit             .decodeElement<UsageCountLimit>(inner)))
+                        Asn1.ExplicitTag(NoAuthRequired.explicitTag)              -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  NoAuthRequired.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(UserAuth.explicitTag)                    -> add(Element.Single(        value = UserAuth                    .decodeElement<UserAuth>(inner)))
+                        Asn1.ExplicitTag(AuthTimeout.explicitTag)                 -> add(Element.Single(        value = AuthTimeout                 .decodeElement<AuthTimeout>(inner)))
+                        Asn1.ExplicitTag(AllowWhileOnBody.explicitTag)            -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  AllowWhileOnBody.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(TrustedUserPresenceRequired.explicitTag) -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  TrustedUserPresenceRequired.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(TrustedConfirmationRequired.explicitTag) -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  TrustedConfirmationRequired.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(UnlockedDeviceRequired.explicitTag)      -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  UnlockedDeviceRequired.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(AllApplications.explicitTag)             -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  AllApplications.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(CreationDateTime.explicitTag)            -> add(Element.Single(        value = CreationDateTime            .decodeElement<CreationDateTime>(inner)))
+                        Asn1.ExplicitTag(Origin.explicitTag)                      -> add(Element.Single(        value = Origin                      .decodeElement<Origin>(inner)))
+                        Asn1.ExplicitTag(RollbackResistent.explicitTag)           -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  RollbackResistent.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(RootOfTrust.explicitTag)                 -> add(Element.Single(        value = RootOfTrust                 .decodeElement<RootOfTrust>(inner)))
+                        Asn1.ExplicitTag(OsVersion.explicitTag)                   -> add(Element.Single(        value = OsVersion                   .decodeElement<OsVersion>(inner)))
+                        Asn1.ExplicitTag(OsPatchLevel.explicitTag)                -> add(Element.Single(        value = OsPatchLevel                .decodeElement<OsPatchLevel>(inner)))
+                        Asn1.ExplicitTag(AttestationApplicationId.explicitTag)    -> add(Element.Single(        value = AttestationApplicationId    .decodeElement<AttestationApplicationId>(inner)))
+                        Asn1.ExplicitTag(AttestationId.Brand.explicitTag)         -> add(Element.Single(        value = AttestationId.Brand         .decodeElement<AttestationId.Brand>(inner)))
+                        Asn1.ExplicitTag(AttestationId.Device.explicitTag)        -> add(Element.Single(        value = AttestationId.Device        .decodeElement<AttestationId.Device>(inner)))
+                        Asn1.ExplicitTag(AttestationId.Product.explicitTag)       -> add(Element.Single(        value = AttestationId.Product       .decodeElement<AttestationId.Product>(inner)))
+                        Asn1.ExplicitTag(AttestationId.Serial.explicitTag)        -> add(Element.Single(        value = AttestationId.Serial        .decodeElement<AttestationId.Serial>(inner)))
+                        Asn1.ExplicitTag(AttestationId.Imei.explicitTag)          -> add(Element.Single(        value = AttestationId.Imei          .decodeElement<AttestationId.Imei>(inner)))
+                        Asn1.ExplicitTag(AttestationId.Meid.explicitTag)          -> add(Element.Single(        value = AttestationId.Meid          .decodeElement<AttestationId.Meid>(inner)))
+                        Asn1.ExplicitTag(AttestationId.Manufacturer.explicitTag)  -> add(Element.Single(        value = AttestationId.Manufacturer  .decodeElement<AttestationId.Manufacturer>(inner)))
+                        Asn1.ExplicitTag(AttestationId.Model.explicitTag)         -> add(Element.Single(        value = AttestationId.Model         .decodeElement<AttestationId.Model>(inner)))
+                        Asn1.ExplicitTag(PatchLevel.Vendor.explicitTag)           -> add(Element.Single(        value = PatchLevel.Vendor           .decodeElement<PatchLevel.Vendor>(inner)))
+                        Asn1.ExplicitTag(PatchLevel.Boot.explicitTag)             -> add(Element.Single(        value = PatchLevel.Boot             .decodeElement<PatchLevel.Boot>(inner)))
+                        Asn1.ExplicitTag(DeviceUniqueAttestation.explicitTag)     -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  DeviceUniqueAttestation.decodeNullElement(it))) }
+                        Asn1.ExplicitTag(AttestationId.SecondImei.explicitTag)    -> add(Element.Single(        value = AttestationId.SecondImei    .decodeElement<AttestationId.SecondImei>(inner)))
+                        Asn1.ExplicitTag(ModuleHash.explicitTag)                  -> add(Element.Single(        value = ModuleHash                  .decodeElement<ModuleHash>(inner)))
 
                         else -> null
                     }
+                    // @formatter:on
 
-                    if (added == null) {
-                        add(Element.Unknown(child))
-                    }
+                    if (added == null) add(Element.Unknown(child))
+
                 }
             }
 
