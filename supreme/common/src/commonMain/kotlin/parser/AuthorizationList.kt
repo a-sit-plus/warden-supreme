@@ -58,6 +58,11 @@ data class AuthorizationList private constructor(
         data class SetOf(val value: Set<Tagged.WithTag<*>>) : Element
         data class Unknown(val value: Asn1Element) : Element
     }
+
+    private class OrderPreservingSet<E>(
+        private val delegate: LinkedHashSet<E>
+    ) : Set<E> by delegate
+
     constructor(
         // @formatter:off
         purpose                     : Set<KeyPurpose>?             = null,
@@ -410,9 +415,10 @@ data class AuthorizationList private constructor(
             element: Asn1Set
         ): Set<AttestationValue<*>>? {
             @Suppress("UNCHECKED_CAST")
-            val values = element.children.map { child ->
+            val values = LinkedHashSet<AttestationValue<*>>(element.children.size)
+            for (child in element.children) {
                 val primitiveOrNull = catchingUnwrapped { child.asPrimitive() }.getOrNull()
-                if (primitiveOrNull == null) {
+                val decoded = if (primitiveOrNull == null) {
                     AttestationValue.Failure(D::class.simpleName!!, this, child)
                 } else {
                     (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(primitiveOrNull).fold(
@@ -420,9 +426,11 @@ data class AuthorizationList private constructor(
                         onFailure = { AttestationValue.Failure(D::class.simpleName!!, this, child) }
                     )
                 }
-            }.toSet()
+                values += decoded
+            }
 
-            return values.ifEmpty { null }
+            if (values.isEmpty()) return null
+            return OrderPreservingSet(values)
         }
 
         private fun <A> A.decodeNullElement(element: Asn1Primitive): AttestationValue<*>
@@ -447,8 +455,11 @@ data class AuthorizationList private constructor(
 
     private val Set<Tagged.WithTag<*>>.explicitTag get() = first().tagged.explicitTag
     private fun Set<Tagged.WithTag<*>>.encode() = Asn1.ExplicitlyTagged(explicitTag) {
-        +Asn1.SetOf { forEach { +it } }
-
+        if (this@encode is OrderPreservingSet<*>) {
+            +Asn1Set.fromPresorted(map { it.encodeToTlv() })
+        } else {
+            +Asn1.SetOf { forEach { +it } }
+        }
     }
 
 
@@ -1077,14 +1088,9 @@ data class AuthorizationList private constructor(
         }
     }
 
-    /**
-     * TODO: encodeSorted beschreiben und erklären warum listen und nicht sets
-     * eventuell auch für andrere SETs wie digets padding...
-     */
-    class AttestationApplicationId internal constructor(
-        val packageInfos: List<AttestationPackageInfo>,
-        val signatureDigests: List<ByteArray>,
-        private val encodeSorted: Boolean
+    class AttestationApplicationId(
+        val packageInfos: Set<AttestationPackageInfo>,
+        val signatureDigests: Set<ByteArray>
     ) : Asn1Encodable<Asn1Element>, Tagged.WithTag<Asn1Element>, PrettyPrintable {
         companion object Tag : Tagged(709uL), Asn1Decodable<Asn1Element, AttestationApplicationId> {
             override fun doDecode(src: Asn1Element): AttestationApplicationId {
@@ -1093,28 +1099,36 @@ data class AuthorizationList private constructor(
                 val sequence = children.first().asSequence()
 
                 return sequence.iterator().run {
+                    val decodedPackageInfos = next().asSet().children.fold(LinkedHashSet<AttestationPackageInfo>()) { acc, el ->
+                        acc += AttestationPackageInfo.decodeFromTlv(el.asSequence())
+                        acc
+                    }
+                    val decodedSignatureDigests = next().asSet().children.fold(LinkedHashSet<ByteArray>()) { acc, el ->
+                        acc += el.asOctetString().content
+                        acc
+                    }
                     AttestationApplicationId(
-                        next().asSet().children.map { AttestationPackageInfo.decodeFromTlv(it.asSequence()) },
-                        next().asSet().children.map { it.asOctetString().content },
-                        encodeSorted = false
+                        OrderPreservingSet(decodedPackageInfos),
+                        OrderPreservingSet(decodedSignatureDigests)
                     )
                 }
             }
         }
 
-        constructor(packageInfos: Set<AttestationPackageInfo>, signatureDigests: Set<ByteArray>)
-                : this(packageInfos.toList(), signatureDigests.toList(), encodeSorted = true)
-
         override val tagged get() = Tag
 
         override fun encodeToTlv(): Asn1Element = Asn1.OctetStringEncapsulating {
             +Asn1.Sequence {
-                if (encodeSorted) {
-                    +Asn1.SetOf { packageInfos.forEach { +it } }
-                    +Asn1.SetOf { signatureDigests.forEach { +Asn1.OctetString(it) } }
-                } else {
+                if (packageInfos is OrderPreservingSet<*>) {
                     +Asn1Set.fromPresorted(packageInfos.map { it.encodeToTlv() })
+                } else {
+                    +Asn1.SetOf { packageInfos.forEach { +it } }
+                }
+
+                if (signatureDigests is OrderPreservingSet<*>) {
                     +Asn1Set.fromPresorted(signatureDigests.map { it.encodeToAsn1OctetStringPrimitive() })
+                } else {
+                    +Asn1.SetOf { signatureDigests.forEach { +Asn1.OctetString(it) } }
                 }
             }
         }
@@ -1130,7 +1144,6 @@ data class AuthorizationList private constructor(
 
             other as AttestationApplicationId
 
-            if (encodeSorted != other.encodeSorted) return false
             if (packageInfos != other.packageInfos) return false
             if (signatureDigests != other.signatureDigests) return false
 
@@ -1138,8 +1151,7 @@ data class AuthorizationList private constructor(
         }
 
         override fun hashCode(): Int {
-            var result = encodeSorted.hashCode()
-            result = 31 * result + packageInfos.hashCode()
+            var result = packageInfos.hashCode()
             result = 31 * result + signatureDigests.hashCode()
             return result
         }
