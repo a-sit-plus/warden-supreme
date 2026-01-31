@@ -58,98 +58,99 @@ data class AuthorizationList private constructor(
         data class SetOf(val value: Set<Tagged.WithTag<*>>) : Element
         data class Unknown(val value: Asn1Element) : Element
     }
-    /*   constructor(
-           // @formatter:off
-           purpose                     : Set<KeyPurpose>?             = null,
-           algorithm                   : Algorithm?                   = null,
-           keySize                     : KeySize?                     = null,
-           digest                      : Set<Digest>?                 = null,
-           padding                     : Set<Padding>?                = null,
-           ecCurve                     : ECCurve?                     = null,
-           rsaPublicExponent           : RsaPublicExponent?           = null,
-           mgfDigest                   : Set<MgfDigest>?              = null,
-           rollbackResistance          : RollbackResistance?          = null,
-           earlyBootOnly               : EarlyBootOnly?               = null,
-           activeDateTime              : ActiveDateTime?              = null,
-           originationExpireDateTime   : OriginationExpireDateTime?   = null,
-           usageExpireDateTime         : UsageExpireDateTime?         = null,
-           usageCountLimit             : UsageCountLimit?             = null,
-           noAuthRequired              : NoAuthRequired?              = null,
-           userAuthType                : UserAuth?                    = null,
-           authTimeout                 : AuthTimeout?                 = null,
-           allowWhileOnBody            : AllowWhileOnBody?            = null,
-           trustedUserPresenceRequired : TrustedUserPresenceRequired? = null,
-           trustedConfirmationRequired : TrustedConfirmationRequired? = null,
-           unlockedDeviceRequired      : UnlockedDeviceRequired?      = null,
-           allApplications             : AllApplications?             = null,
-           creationDateTime            : CreationDateTime?            = null,
-           origin                      : Origin?                      = null,
-           rollbackResistant           : RollbackResistent?           = null,
-           rootOfTrust                 : RootOfTrust?                 = null,
-           osVersion                   : OsVersion?                   = null,
-           osPatchLevel                : OsPatchLevel?                = null,
-           attestationApplicationId    : AttestationApplicationId?    = null,
-           attestationIdBrand          : AttestationId.Brand?         = null,
-           attestationIdDevice         : AttestationId.Device?        = null,
-           attestationIdProduct        : AttestationId.Product?       = null,
-           attestationIdSerial         : AttestationId.Serial?        = null,
-           attestationIdImei           : AttestationId.Imei?          = null,
-           attestationIdMeid           : AttestationId.Meid?          = null,
-           attestationIdManufacturer   : AttestationId.Manufacturer?  = null,
-           attestationIdModel          : AttestationId.Model?         = null,
-           vendorPatchLevel            : PatchLevel.Vendor?           = null,
-           bootPatchLevel              : PatchLevel.Boot?             = null,
-           deviceUniqueAttestation     : DeviceUniqueAttestation?     = null,
-           attestationIdSecondImei     : AttestationId.SecondImei?    = null,
-           moduleHash                  : ModuleHash?                  = null,
-           // @formatter:on
-           attestationVersion: Int?
-       ) : this(
-           // @formatter:off
-           purposeIndexed                     = purpose                    ?.map { AttestationValue.Success(it, KeyPurpose) }?.toSet(),
-           algorithmIndexed                   = algorithm                  ?.let { AttestationValue.Success(it, Algorithm) },
-           keySizeIndexed                     = keySize                    ?.let { AttestationValue.Success(it, KeySize) },
-           digestIndexed                      = digest                     ?.map { AttestationValue.Success(it, Digest) }?.toSet(),
-           paddingIndexed                     = padding                    ?.map { AttestationValue.Success(it, Padding) }?.toSet(),
-           ecCurveIndexed                     = ecCurve                    ?.let { AttestationValue.Success(it, ECCurve) },
-           rsaPublicExponentIndexed           = rsaPublicExponent          ?.let { AttestationValue.Success(it, RsaPublicExponent) },
-           mgfDigestIndexed                   = mgfDigest                  ?.map { AttestationValue.Success(it, MgfDigest) }?.toSet(),
-           rollbackResistanceIndexed          = rollbackResistance         ?.let { AttestationValue.Success(it, RollbackResistance) },
-           earlyBootOnlyIndexed               = earlyBootOnly              ?.let { AttestationValue.Success(it, EarlyBootOnly) },
-           activeDateTimeIndexed              = activeDateTime             ?.let { AttestationValue.Success(it, ActiveDateTime) },
-           originationExpireDateTimeIndexed   = originationExpireDateTime  ?.let { AttestationValue.Success(it, OriginationExpireDateTime) },
-           usageExpireDateTimeIndexed         = usageExpireDateTime        ?.let { AttestationValue.Success(it, UsageExpireDateTime) },
-           usageCountLimitIndexed             = usageCountLimit            ?.let { AttestationValue.Success(it, UsageCountLimit) },
-           noAuthRequiredIndexed              = noAuthRequired             ?.let { AttestationValue.Success(it, NoAuthRequired) },
-           userAuthTypeIndexed                = userAuthType               ?.let { AttestationValue.Success(it, UserAuth) },
-           authTimeoutIndexed                 = authTimeout                ?.let { AttestationValue.Success(it, AuthTimeout) },
-           allowWhileOnBodyIndexed            = allowWhileOnBody           ?.let { AttestationValue.Success(it, AllowWhileOnBody) },
-           trustedUserPresenceRequiredIndexed = trustedUserPresenceRequired?.let { AttestationValue.Success(it, TrustedUserPresenceRequired) },
-           trustedConfirmationRequiredIndexed = trustedConfirmationRequired?.let { AttestationValue.Success(it, TrustedConfirmationRequired) },
-           unlockedDeviceRequiredIndexed      = unlockedDeviceRequired     ?.let { AttestationValue.Success(it, UnlockedDeviceRequired) },
-           allApplicationsIndexed             = allApplications            ?.let { AttestationValue.Success(it, AllApplications) },
-           creationDateTimeIndexed            = creationDateTime           ?.let { AttestationValue.Success(it, CreationDateTime) },
-           originIndexed                      = origin                     ?.let { AttestationValue.Success(it, Origin) },
-           rollbackResistantIndexed           = rollbackResistant          ?.let { AttestationValue.Success(it, RollbackResistent) },
-           rootOfTrustIndexed                 = rootOfTrust                ?.let { AttestationValue.Success(it, RootOfTrust) },
-           osVersionIndexed                   = osVersion                  ?.let { AttestationValue.Success(it, OsVersion) },
-           osPatchLevelIndexed                = osPatchLevel               ?.let { AttestationValue.Success(it, OsPatchLevel) },
-           attestationApplicationIdIndexed    = attestationApplicationId   ?.let { AttestationValue.Success(it, AttestationApplicationId) },
-           attestationIdBrandIndexed          = attestationIdBrand         ?.let { AttestationValue.Success(it, AttestationId.Brand) },
-           attestationIdDeviceIndexed         = attestationIdDevice        ?.let { AttestationValue.Success(it, AttestationId.Device) },
-           attestationIdProductIndexed        = attestationIdProduct       ?.let { AttestationValue.Success(it, AttestationId.Product) },
-           attestationIdSerialIndexed         = attestationIdSerial        ?.let { AttestationValue.Success(it, AttestationId.Serial) },
-           attestationIdImeiIndexed           = attestationIdImei          ?.let { AttestationValue.Success(it, AttestationId.Imei) },
-           attestationIdMeidIndexed           = attestationIdMeid          ?.let { AttestationValue.Success(it, AttestationId.Meid) },
-           attestationIdManufacturerIndexed   = attestationIdManufacturer  ?.let { AttestationValue.Success(it, AttestationId.Manufacturer) },
-           attestationIdModelIndexed          = attestationIdModel         ?.let { AttestationValue.Success(it, AttestationId.Model) },
-           vendorPatchLevelIndexed            = vendorPatchLevel           ?.let { AttestationValue.Success(it, PatchLevel.Vendor) },
-           bootPatchLevelIndexed              = bootPatchLevel             ?.let { AttestationValue.Success(it, PatchLevel.Boot) },
-           deviceUniqueAttestationIndexed     = deviceUniqueAttestation    ?.let { AttestationValue.Success(it, DeviceUniqueAttestation) },
-           attestationIdSecondImeiIndexed     = attestationIdSecondImei    ?.let { AttestationValue.Success(it, AttestationId.SecondImei) },
-           moduleHashIndexed                  = moduleHash                 ?.let { AttestationValue.Success(it, ModuleHash) },
-           // @formatter:on
-       )*/
+    constructor(
+        // @formatter:off
+        purpose                     : Set<KeyPurpose>?             = null,
+        algorithm                   : Algorithm?                   = null,
+        keySize                     : KeySize?                     = null,
+        digest                      : Set<Digest>?                 = null,
+        padding                     : Set<Padding>?                = null,
+        ecCurve                     : ECCurve?                     = null,
+        rsaPublicExponent           : RsaPublicExponent?           = null,
+        mgfDigest                   : Set<MgfDigest>?              = null,
+        rollbackResistance          : RollbackResistance?          = null,
+        earlyBootOnly               : EarlyBootOnly?               = null,
+        activeDateTime              : ActiveDateTime?              = null,
+        originationExpireDateTime   : OriginationExpireDateTime?   = null,
+        usageExpireDateTime         : UsageExpireDateTime?         = null,
+        usageCountLimit             : UsageCountLimit?             = null,
+        noAuthRequired              : NoAuthRequired?              = null,
+        userAuthType                : UserAuth?                    = null,
+        authTimeout                 : AuthTimeout?                 = null,
+        allowWhileOnBody            : AllowWhileOnBody?            = null,
+        trustedUserPresenceRequired : TrustedUserPresenceRequired? = null,
+        trustedConfirmationRequired : TrustedConfirmationRequired? = null,
+        unlockedDeviceRequired      : UnlockedDeviceRequired?      = null,
+        allApplications             : AllApplications?             = null,
+        creationDateTime            : CreationDateTime?            = null,
+        origin                      : Origin?                      = null,
+        rollbackResistant           : RollbackResistent?           = null,
+        rootOfTrust                 : RootOfTrust?                 = null,
+        osVersion                   : OsVersion?                   = null,
+        osPatchLevel                : OsPatchLevel?                = null,
+        attestationApplicationId    : AttestationApplicationId?    = null,
+        attestationIdBrand          : AttestationId.Brand?         = null,
+        attestationIdDevice         : AttestationId.Device?        = null,
+        attestationIdProduct        : AttestationId.Product?       = null,
+        attestationIdSerial         : AttestationId.Serial?        = null,
+        attestationIdImei           : AttestationId.Imei?          = null,
+        attestationIdMeid           : AttestationId.Meid?          = null,
+        attestationIdManufacturer   : AttestationId.Manufacturer?  = null,
+        attestationIdModel          : AttestationId.Model?         = null,
+        vendorPatchLevel            : PatchLevel.Vendor?           = null,
+        bootPatchLevel              : PatchLevel.Boot?             = null,
+        deviceUniqueAttestation     : DeviceUniqueAttestation?     = null,
+        attestationIdSecondImei     : AttestationId.SecondImei?    = null,
+        moduleHash                  : ModuleHash?                  = null,
+        trailingProperties        : List<Asn1Element>            = emptyList(),
+        // @formatter:on
+    ) : this(
+        buildList {
+            purpose?.let { add(Element.SetOf(it.map { AttestationValue.Success(it, KeyPurpose) }.toSet())) }
+            algorithm?.let { add(Element.Single(AttestationValue.Success(it, Algorithm))) }
+            keySize?.let { add(Element.Single(AttestationValue.Success(it, KeySize))) }
+            digest?.let { add(Element.SetOf(it.map { AttestationValue.Success(it, Digest) }.toSet())) }
+            padding?.let { add(Element.SetOf(it.map { AttestationValue.Success(it, Padding) }.toSet())) }
+            ecCurve?.let { add(Element.Single(AttestationValue.Success(it, ECCurve))) }
+            rsaPublicExponent?.let { add(Element.Single(AttestationValue.Success(it, RsaPublicExponent))) }
+            mgfDigest?.let { add(Element.SetOf(it.map { AttestationValue.Success(it, MgfDigest) }.toSet())) }
+            rollbackResistance?.let { add(Element.Single(AttestationValue.Success(it, RollbackResistance))) }
+            earlyBootOnly?.let { add(Element.Single(AttestationValue.Success(it, EarlyBootOnly))) }
+            activeDateTime?.let { add(Element.Single(AttestationValue.Success(it, ActiveDateTime))) }
+            originationExpireDateTime?.let { add(Element.Single(AttestationValue.Success(it, OriginationExpireDateTime))) }
+            usageExpireDateTime?.let { add(Element.Single(AttestationValue.Success(it, UsageExpireDateTime))) }
+            usageCountLimit?.let { add(Element.Single(AttestationValue.Success(it, UsageCountLimit))) }
+            noAuthRequired?.let { add(Element.Single(AttestationValue.Success(it, NoAuthRequired))) }
+            userAuthType?.let { add(Element.Single(AttestationValue.Success(it, UserAuth))) }
+            authTimeout?.let { add(Element.Single(AttestationValue.Success(it, AuthTimeout))) }
+            allowWhileOnBody?.let { add(Element.Single(AttestationValue.Success(it, AllowWhileOnBody))) }
+            trustedUserPresenceRequired?.let { add(Element.Single(AttestationValue.Success(it, TrustedUserPresenceRequired))) }
+            trustedConfirmationRequired?.let { add(Element.Single(AttestationValue.Success(it, TrustedConfirmationRequired))) }
+            unlockedDeviceRequired?.let { add(Element.Single(AttestationValue.Success(it, UnlockedDeviceRequired))) }
+            allApplications?.let { add(Element.Single(AttestationValue.Success(it, AllApplications))) }
+            creationDateTime?.let { add(Element.Single(AttestationValue.Success(it, CreationDateTime))) }
+            origin?.let { add(Element.Single(AttestationValue.Success(it, Origin))) }
+            rollbackResistant?.let { add(Element.Single(AttestationValue.Success(it, RollbackResistent))) }
+            rootOfTrust?.let { add(Element.Single(AttestationValue.Success(it, RootOfTrust))) }
+            osVersion?.let { add(Element.Single(AttestationValue.Success(it, OsVersion))) }
+            osPatchLevel?.let { add(Element.Single(AttestationValue.Success(it, OsPatchLevel))) }
+            attestationApplicationId?.let { add(Element.Single(AttestationValue.Success(it, AttestationApplicationId))) }
+            attestationIdBrand?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Brand))) }
+            attestationIdDevice?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Device))) }
+            attestationIdProduct?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Product))) }
+            attestationIdSerial?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Serial))) }
+            attestationIdImei?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Imei))) }
+            attestationIdMeid?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Meid))) }
+            attestationIdManufacturer?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Manufacturer))) }
+            attestationIdModel?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Model))) }
+            vendorPatchLevel?.let { add(Element.Single(AttestationValue.Success(it, PatchLevel.Vendor))) }
+            bootPatchLevel?.let { add(Element.Single(AttestationValue.Success(it, PatchLevel.Boot))) }
+            deviceUniqueAttestation?.let { add(Element.Single(AttestationValue.Success(it, DeviceUniqueAttestation))) }
+            attestationIdSecondImei?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.SecondImei))) }
+            moduleHash?.let { add(Element.Single(AttestationValue.Success(it, ModuleHash))) }
+            trailingProperties.forEach { add(Element.Unknown(it)) }
+        }
+    )
 
     val additionalProperties: List<Asn1Element>
         get() = elements.asSequence().mapNotNull { (it as? Element.Unknown)?.value }.toList()
