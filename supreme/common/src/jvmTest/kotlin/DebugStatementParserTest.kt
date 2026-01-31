@@ -44,10 +44,15 @@ val DebugStatementParserTest by testSuite {
 
             }
         }.getOrElse {
-
-            if (System.getenv("NO_PRIVATE_TEST_DATA") != "true") throw RuntimeException("NO PRIVATE TEST DATA PRESENT. Fine for CI, but not for local tests")
             emptyList()
         }
+
+    if (proofs.isEmpty()) {
+        if (System.getenv("NO_PRIVATE_TEST_DATA") != "true") throw RuntimeException("NO PRIVATE TEST DATA PRESENT. Fine for CI, but not for local tests")
+
+        "No private test data present" {}
+        return@testSuite
+    }
 
     withData(proofs) - {
         val attestationCertChain =

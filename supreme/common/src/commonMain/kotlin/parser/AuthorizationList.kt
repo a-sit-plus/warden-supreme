@@ -2,6 +2,7 @@
 
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.AuthorizationList.UserAuth.Type
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.*
 import at.asitplus.signum.indispensable.asn1.encoding.*
@@ -89,6 +90,17 @@ data class AuthorizationList private constructor(
         private val delegate: LinkedHashSet<E>
     ) : Set<E> by delegate
 
+    /**
+     * Convenience constructor that builds an [AuthorizationList] from the fields defined by Android’s attestation schema.
+     *
+     * The resulting [elements] list is emitted in schema order (independent of the argument order). Any
+     * [trailingProperties] are wrapped as [Element.Unknown] entries and appended *at the end* of the sequence.
+     *
+     * If you need full control over ordering or want to interleave properties outside the attestation schema, construct
+     * an [AuthorizationList] from a manually assembled [elements] list via the primary constructor.
+     *
+     * @param trailingProperties Additional ASN.1 elements to append after all schema-defined fields.
+     */
     constructor(
         // @formatter:off
         purpose                     : Set<KeyPurpose>?             = null,
@@ -133,53 +145,56 @@ data class AuthorizationList private constructor(
         deviceUniqueAttestation     : DeviceUniqueAttestation?     = null,
         attestationIdSecondImei     : AttestationId.SecondImei?    = null,
         moduleHash                  : ModuleHash?                  = null,
-        trailingProperties        : List<Asn1Element>            = emptyList(),
+        trailingProperties          : List<Asn1Element>            = emptyList(),
         // @formatter:on
     ) : this(
         buildList {
-            purpose?.let { add(Element.SetOf(it.map { AttestationValue.Success(it, KeyPurpose) }.toSet())) }
-            algorithm?.let { add(Element.Single(AttestationValue.Success(it, Algorithm))) }
-            keySize?.let { add(Element.Single(AttestationValue.Success(it, KeySize))) }
-            digest?.let { add(Element.SetOf(it.map { AttestationValue.Success(it, Digest) }.toSet())) }
-            padding?.let { add(Element.SetOf(it.map { AttestationValue.Success(it, Padding) }.toSet())) }
-            ecCurve?.let { add(Element.Single(AttestationValue.Success(it, ECCurve))) }
-            rsaPublicExponent?.let { add(Element.Single(AttestationValue.Success(it, RsaPublicExponent))) }
-            mgfDigest?.let { add(Element.SetOf(it.map { AttestationValue.Success(it, MgfDigest) }.toSet())) }
-            rollbackResistance?.let { add(Element.Single(AttestationValue.Success(it, RollbackResistance))) }
-            earlyBootOnly?.let { add(Element.Single(AttestationValue.Success(it, EarlyBootOnly))) }
-            activeDateTime?.let { add(Element.Single(AttestationValue.Success(it, ActiveDateTime))) }
-            originationExpireDateTime?.let { add(Element.Single(AttestationValue.Success(it, OriginationExpireDateTime))) }
-            usageExpireDateTime?.let { add(Element.Single(AttestationValue.Success(it, UsageExpireDateTime))) }
-            usageCountLimit?.let { add(Element.Single(AttestationValue.Success(it, UsageCountLimit))) }
-            noAuthRequired?.let { add(Element.Single(AttestationValue.Success(it, NoAuthRequired))) }
-            userAuthType?.let { add(Element.Single(AttestationValue.Success(it, UserAuth))) }
-            authTimeout?.let { add(Element.Single(AttestationValue.Success(it, AuthTimeout))) }
-            allowWhileOnBody?.let { add(Element.Single(AttestationValue.Success(it, AllowWhileOnBody))) }
-            trustedUserPresenceRequired?.let { add(Element.Single(AttestationValue.Success(it, TrustedUserPresenceRequired))) }
-            trustedConfirmationRequired?.let { add(Element.Single(AttestationValue.Success(it, TrustedConfirmationRequired))) }
-            unlockedDeviceRequired?.let { add(Element.Single(AttestationValue.Success(it, UnlockedDeviceRequired))) }
-            allApplications?.let { add(Element.Single(AttestationValue.Success(it, AllApplications))) }
-            creationDateTime?.let { add(Element.Single(AttestationValue.Success(it, CreationDateTime))) }
-            origin?.let { add(Element.Single(AttestationValue.Success(it, Origin))) }
-            rollbackResistant?.let { add(Element.Single(AttestationValue.Success(it, RollbackResistent))) }
-            rootOfTrust?.let { add(Element.Single(AttestationValue.Success(it, RootOfTrust))) }
-            osVersion?.let { add(Element.Single(AttestationValue.Success(it, OsVersion))) }
-            osPatchLevel?.let { add(Element.Single(AttestationValue.Success(it, OsPatchLevel))) }
-            attestationApplicationId?.let { add(Element.Single(AttestationValue.Success(it, AttestationApplicationId))) }
-            attestationIdBrand?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Brand))) }
-            attestationIdDevice?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Device))) }
-            attestationIdProduct?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Product))) }
-            attestationIdSerial?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Serial))) }
-            attestationIdImei?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Imei))) }
-            attestationIdMeid?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Meid))) }
-            attestationIdManufacturer?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Manufacturer))) }
-            attestationIdModel?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.Model))) }
-            vendorPatchLevel?.let { add(Element.Single(AttestationValue.Success(it, PatchLevel.Vendor))) }
-            bootPatchLevel?.let { add(Element.Single(AttestationValue.Success(it, PatchLevel.Boot))) }
-            deviceUniqueAttestation?.let { add(Element.Single(AttestationValue.Success(it, DeviceUniqueAttestation))) }
-            attestationIdSecondImei?.let { add(Element.Single(AttestationValue.Success(it, AttestationId.SecondImei))) }
-            moduleHash?.let { add(Element.Single(AttestationValue.Success(it, ModuleHash))) }
-            trailingProperties.forEach { add(Element.Unknown(it)) }
+            // @formatter:off
+            purpose                      ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, KeyPurpose)        }.toSet()   )) }
+            algorithm                    ?.let { add(Element. Single ( value =  AttestationValue.Success(it, Algorithm)                     )) }
+            keySize                      ?.let { add(Element. Single ( value =  AttestationValue.Success(it, KeySize)                       )) }
+            digest                       ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, Digest)            }.toSet()   )) }
+            padding                      ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, Padding)           }.toSet()   )) }
+            ecCurve                      ?.let { add(Element. Single ( value =  AttestationValue.Success(it, ECCurve)                       )) }
+            rsaPublicExponent            ?.let { add(Element. Single ( value =  AttestationValue.Success(it, RsaPublicExponent)             )) }
+            mgfDigest                    ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, MgfDigest)         }.toSet()   )) }
+            rollbackResistance           ?.let { add(Element. Single ( value =  AttestationValue.Success(it, RollbackResistance)            )) }
+            earlyBootOnly                ?.let { add(Element. Single ( value =  AttestationValue.Success(it, EarlyBootOnly)                 )) }
+            activeDateTime               ?.let { add(Element. Single ( value =  AttestationValue.Success(it, ActiveDateTime)                )) }
+            originationExpireDateTime    ?.let { add(Element. Single ( value =  AttestationValue.Success(it, OriginationExpireDateTime)     )) }
+            usageExpireDateTime          ?.let { add(Element. Single ( value =  AttestationValue.Success(it, UsageExpireDateTime)           )) }
+            usageCountLimit              ?.let { add(Element. Single ( value =  AttestationValue.Success(it, UsageCountLimit)               )) }
+            noAuthRequired               ?.let { add(Element. Single ( value =  AttestationValue.Success(it, NoAuthRequired)                )) }
+            userAuthType                 ?.let { add(Element. Single ( value =  AttestationValue.Success(it, UserAuth)                      )) }
+            authTimeout                  ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AuthTimeout)                   )) }
+            allowWhileOnBody             ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AllowWhileOnBody)              )) }
+            trustedUserPresenceRequired  ?.let { add(Element. Single ( value =  AttestationValue.Success(it, TrustedUserPresenceRequired)   )) }
+            trustedConfirmationRequired  ?.let { add(Element. Single ( value =  AttestationValue.Success(it, TrustedConfirmationRequired)   )) }
+            unlockedDeviceRequired       ?.let { add(Element. Single ( value =  AttestationValue.Success(it, UnlockedDeviceRequired)        )) }
+            allApplications              ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AllApplications)               )) }
+            creationDateTime             ?.let { add(Element. Single ( value =  AttestationValue.Success(it, CreationDateTime)              )) }
+            origin                       ?.let { add(Element. Single ( value =  AttestationValue.Success(it, Origin)                        )) }
+            rollbackResistant            ?.let { add(Element. Single ( value =  AttestationValue.Success(it, RollbackResistent)             )) }
+            rootOfTrust                  ?.let { add(Element. Single ( value =  AttestationValue.Success(it, RootOfTrust)                   )) }
+            osVersion                    ?.let { add(Element. Single ( value =  AttestationValue.Success(it, OsVersion)                     )) }
+            osPatchLevel                 ?.let { add(Element. Single ( value =  AttestationValue.Success(it, OsPatchLevel)                  )) }
+            attestationApplicationId     ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationApplicationId)      )) }
+            attestationIdBrand           ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.Brand)           )) }
+            attestationIdDevice          ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.Device)          )) }
+            attestationIdProduct         ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.Product)         )) }
+            attestationIdSerial          ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.Serial)          )) }
+            attestationIdImei            ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.Imei)            )) }
+            attestationIdMeid            ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.Meid)            )) }
+            attestationIdManufacturer    ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.Manufacturer)    )) }
+            attestationIdModel           ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.Model)           )) }
+            vendorPatchLevel             ?.let { add(Element. Single ( value =  AttestationValue.Success(it, PatchLevel.Vendor)             )) }
+            bootPatchLevel               ?.let { add(Element. Single ( value =  AttestationValue.Success(it, PatchLevel.Boot)               )) }
+            deviceUniqueAttestation      ?.let { add(Element. Single ( value =  AttestationValue.Success(it, DeviceUniqueAttestation)       )) }
+            attestationIdSecondImei      ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AttestationId.SecondImei)      )) }
+            moduleHash                   ?.let { add(Element. Single ( value =  AttestationValue.Success(it, ModuleHash)                    )) }
+
+            trailingProperties.forEach       { add(Element.Unknown(it)) }
+// @formatter:on
         }
     )
 
@@ -191,58 +206,60 @@ data class AuthorizationList private constructor(
         (elements.firstOrNull { it is Element.Single && it.value.tagged.explicitTag == tag.explicitTag } as? Element.Single)
             ?.value as? T
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> firstSetByTag(tag: Tagged): Set<T>? =
-        (elements.firstOrNull { it is Element.SetOf && it.value.first().tagged.explicitTag == tag.explicitTag } as? Element.SetOf)
-            ?.value as? Set<T>
+	    @Suppress("UNCHECKED_CAST")
+	    private fun <T> firstSetByTag(tag: Tagged): Set<T>? =
+	        (elements.firstOrNull { it is Element.SetOf && it.value.first().tagged.explicitTag == tag.explicitTag } as? Element.SetOf)
+	            ?.value as? Set<T>
 
-    val purpose: Set<AttestationValue<KeyPurpose>>? get() = firstSetByTag(KeyPurpose)
-    val algorithm: AttestationValue<Algorithm>? get() = firstSingleByTag(Algorithm)
-    val keySize: AttestationValue<KeySize>? get() = firstSingleByTag(KeySize)
-    val digest: Set<AttestationValue<Digest>>? get() = firstSetByTag(Digest)
-    val padding: Set<AttestationValue<Padding>>? get() = firstSetByTag(Padding)
-    val ecCurve: AttestationValue<ECCurve>? get() = firstSingleByTag(ECCurve)
-    val rsaPublicExponent: AttestationValue<RsaPublicExponent>? get() = firstSingleByTag(RsaPublicExponent)
-    val mgfDigest: Set<AttestationValue<MgfDigest>>? get() = firstSetByTag(MgfDigest)
-    val rollbackResistance: AttestationValue<RollbackResistance>? get() = firstSingleByTag(RollbackResistance)
-    val earlyBootOnly: AttestationValue<EarlyBootOnly>? get() = firstSingleByTag(EarlyBootOnly)
-    val activeDateTime: AttestationValue<ActiveDateTime>? get() = firstSingleByTag(ActiveDateTime)
-    val originationExpireDateTime: AttestationValue<OriginationExpireDateTime>? get() = firstSingleByTag(OriginationExpireDateTime)
-    val usageExpireDateTime: AttestationValue<UsageExpireDateTime>? get() = firstSingleByTag(UsageExpireDateTime)
-    val usageCountLimit: AttestationValue<UsageCountLimit>? get() = firstSingleByTag(UsageCountLimit)
-    val noAuthRequired: AttestationValue<NoAuthRequired>? get() = firstSingleByTag(NoAuthRequired)
-    val userAuthType: AttestationValue<UserAuth>? get() = firstSingleByTag(UserAuth)
-    val authTimeout: AttestationValue<AuthTimeout>? get() = firstSingleByTag(AuthTimeout)
-    val allowWhileOnBody: AttestationValue<AllowWhileOnBody>? get() = firstSingleByTag(AllowWhileOnBody)
-    val trustedUserPresenceRequired: AttestationValue<TrustedUserPresenceRequired>? get() = firstSingleByTag(TrustedUserPresenceRequired)
-    val trustedConfirmationRequired: AttestationValue<TrustedConfirmationRequired>? get() = firstSingleByTag(TrustedConfirmationRequired)
-    val unlockedDeviceRequired: AttestationValue<UnlockedDeviceRequired>? get() = firstSingleByTag(UnlockedDeviceRequired)
-    val allApplications: AttestationValue<AllApplications>? get() = firstSingleByTag(AllApplications) // only up to version v4 // TODO add opt-in annotation?
-    val creationDateTime: AttestationValue<CreationDateTime>? get() = firstSingleByTag(CreationDateTime)
-    val origin: AttestationValue<Origin>? get() = firstSingleByTag(Origin)
-    val rollbackResistant: AttestationValue<RollbackResistent>? get() = firstSingleByTag(RollbackResistent) // only up to version v2, "resistance" afterwards // TODO add opt-in annotation?
-    val rootOfTrust: AttestationValue<RootOfTrust>? get() = firstSingleByTag(RootOfTrust)
-    val osVersion: AttestationValue<OsVersion>? get() = firstSingleByTag(OsVersion)
-    val osPatchLevel: AttestationValue<OsPatchLevel>? get() = firstSingleByTag(OsPatchLevel)
-    val attestationApplicationId: AttestationValue<AttestationApplicationId>? get() = firstSingleByTag(AttestationApplicationId)
-    val attestationIdBrand: AttestationValue<AttestationId.Brand>? get() = firstSingleByTag(AttestationId.Brand)
-    val attestationIdDevice: AttestationValue<AttestationId.Device>? get() = firstSingleByTag(AttestationId.Device)
-    val attestationIdProduct: AttestationValue<AttestationId.Product>? get() = firstSingleByTag(AttestationId.Product)
-    val attestationIdSerial: AttestationValue<AttestationId.Serial>? get() = firstSingleByTag(AttestationId.Serial)
-    val attestationIdImei: AttestationValue<AttestationId.Imei>? get() = firstSingleByTag(AttestationId.Imei)
-    val attestationIdMeid: AttestationValue<AttestationId.Meid>? get() = firstSingleByTag(AttestationId.Meid)
-    val attestationIdManufacturer: AttestationValue<AttestationId.Manufacturer>? get() = firstSingleByTag(AttestationId.Manufacturer)
-    val attestationIdModel: AttestationValue<AttestationId.Model>? get() = firstSingleByTag(AttestationId.Model)
-    val vendorPatchLevel: AttestationValue<PatchLevel.Vendor>? get() = firstSingleByTag(PatchLevel.Vendor)
-    val bootPatchLevel: AttestationValue<PatchLevel.Boot>? get() = firstSingleByTag(PatchLevel.Boot)
-    val deviceUniqueAttestation: AttestationValue<DeviceUniqueAttestation>? get() = firstSingleByTag(DeviceUniqueAttestation)
-    val attestationIdSecondImei: AttestationValue<AttestationId.SecondImei>? get() = firstSingleByTag(AttestationId.SecondImei)
-    val moduleHash: AttestationValue<ModuleHash>? get() = firstSingleByTag(ModuleHash)
+	    // @formatter:off
+	    val purpose                     : Set<AttestationValue< KeyPurpose                  >>? get() = firstSetByTag     ( KeyPurpose                  )
+	    val algorithm                   :     AttestationValue< Algorithm                   >?  get() = firstSingleByTag  ( Algorithm                   )
+	    val keySize                     :     AttestationValue< KeySize                     >?  get() = firstSingleByTag  ( KeySize                     )
+	    val digest                      : Set<AttestationValue< Digest                      >>? get() = firstSetByTag     ( Digest                      )
+	    val padding                     : Set<AttestationValue< Padding                     >>? get() = firstSetByTag     ( Padding                     )
+	    val ecCurve                     :     AttestationValue< ECCurve                     >?  get() = firstSingleByTag  ( ECCurve                     )
+	    val rsaPublicExponent           :     AttestationValue< RsaPublicExponent           >?  get() = firstSingleByTag  ( RsaPublicExponent           )
+	    val mgfDigest                   : Set<AttestationValue< MgfDigest                   >>? get() = firstSetByTag     ( MgfDigest                   )
+	    val rollbackResistance          :     AttestationValue< RollbackResistance          >?  get() = firstSingleByTag  ( RollbackResistance          )
+	    val earlyBootOnly               :     AttestationValue< EarlyBootOnly               >?  get() = firstSingleByTag  ( EarlyBootOnly               )
+	    val activeDateTime              :     AttestationValue< ActiveDateTime              >?  get() = firstSingleByTag  ( ActiveDateTime              )
+	    val originationExpireDateTime   :     AttestationValue< OriginationExpireDateTime   >?  get() = firstSingleByTag  ( OriginationExpireDateTime   )
+	    val usageExpireDateTime         :     AttestationValue< UsageExpireDateTime         >?  get() = firstSingleByTag  ( UsageExpireDateTime         )
+	    val usageCountLimit             :     AttestationValue< UsageCountLimit             >?  get() = firstSingleByTag  ( UsageCountLimit             )
+	    val noAuthRequired              :     AttestationValue< NoAuthRequired              >?  get() = firstSingleByTag  ( NoAuthRequired              )
+	    val userAuthType                :     AttestationValue< UserAuth                    >?  get() = firstSingleByTag  ( UserAuth                    )
+	    val authTimeout                 :     AttestationValue< AuthTimeout                 >?  get() = firstSingleByTag  ( AuthTimeout                 )
+	    val allowWhileOnBody            :     AttestationValue< AllowWhileOnBody            >?  get() = firstSingleByTag  ( AllowWhileOnBody            )
+	    val trustedUserPresenceRequired :     AttestationValue< TrustedUserPresenceRequired >?  get() = firstSingleByTag  ( TrustedUserPresenceRequired )
+	    val trustedConfirmationRequired :     AttestationValue< TrustedConfirmationRequired >?  get() = firstSingleByTag  ( TrustedConfirmationRequired )
+	    val unlockedDeviceRequired      :     AttestationValue< UnlockedDeviceRequired      >?  get() = firstSingleByTag  ( UnlockedDeviceRequired      )
+	    val allApplications             :     AttestationValue< AllApplications             >?  get() = firstSingleByTag  ( AllApplications             ) // only up to version v4 // TODO add opt-in annotation?
+	    val creationDateTime            :     AttestationValue< CreationDateTime            >?  get() = firstSingleByTag  ( CreationDateTime            )
+	    val origin                      :     AttestationValue< Origin                      >?  get() = firstSingleByTag  ( Origin                      )
+	    val rollbackResistant           :     AttestationValue< RollbackResistent           >?  get() = firstSingleByTag  ( RollbackResistent           ) // only up to version v2, "resistance" afterwards // TODO add opt-in annotation?
+	    val rootOfTrust                 :     AttestationValue< RootOfTrust                 >?  get() = firstSingleByTag  ( RootOfTrust                 )
+	    val osVersion                   :     AttestationValue< OsVersion                   >?  get() = firstSingleByTag  ( OsVersion                   )
+	    val osPatchLevel                :     AttestationValue< OsPatchLevel                >?  get() = firstSingleByTag  ( OsPatchLevel                )
+	    val attestationApplicationId    :     AttestationValue< AttestationApplicationId    >?  get() = firstSingleByTag  ( AttestationApplicationId    )
+	    val attestationIdBrand          :     AttestationValue< AttestationId.Brand         >?  get() = firstSingleByTag  ( AttestationId.Brand         )
+	    val attestationIdDevice         :     AttestationValue< AttestationId.Device        >?  get() = firstSingleByTag  ( AttestationId.Device        )
+	    val attestationIdProduct        :     AttestationValue< AttestationId.Product       >?  get() = firstSingleByTag  ( AttestationId.Product       )
+	    val attestationIdSerial         :     AttestationValue< AttestationId.Serial        >?  get() = firstSingleByTag  ( AttestationId.Serial        )
+	    val attestationIdImei           :     AttestationValue< AttestationId.Imei          >?  get() = firstSingleByTag  ( AttestationId.Imei          )
+	    val attestationIdMeid           :     AttestationValue< AttestationId.Meid          >?  get() = firstSingleByTag  ( AttestationId.Meid          )
+	    val attestationIdManufacturer   :     AttestationValue< AttestationId.Manufacturer  >?  get() = firstSingleByTag  ( AttestationId.Manufacturer  )
+	    val attestationIdModel          :     AttestationValue< AttestationId.Model         >?  get() = firstSingleByTag  ( AttestationId.Model         )
+	    val vendorPatchLevel            :     AttestationValue< PatchLevel.Vendor           >?  get() = firstSingleByTag  ( PatchLevel.Vendor           )
+	    val bootPatchLevel              :     AttestationValue< PatchLevel.Boot             >?  get() = firstSingleByTag  ( PatchLevel.Boot             )
+	    val deviceUniqueAttestation     :     AttestationValue< DeviceUniqueAttestation     >?  get() = firstSingleByTag  ( DeviceUniqueAttestation     )
+	    val attestationIdSecondImei     :     AttestationValue< AttestationId.SecondImei    >?  get() = firstSingleByTag  ( AttestationId.SecondImei    )
+	    val moduleHash                  :     AttestationValue< ModuleHash                  >?  get() = firstSingleByTag  ( ModuleHash                  )
+	    // @formatter:on
 
-    init {
-        purpose?.let { require(it.isNotEmpty()) }
-        digest?.let { require(it.isNotEmpty()) }
-        padding?.let { require(it.isNotEmpty()) }
+	    init {
+	        purpose?.let { require(it.isNotEmpty()) }
+	        digest?.let { require(it.isNotEmpty()) }
+	        padding?.let { require(it.isNotEmpty()) }
         mgfDigest?.let { require(it.isNotEmpty()) }
     }
 
@@ -256,7 +273,7 @@ data class AuthorizationList private constructor(
         if (attestationVersion < 300) {
             require(attestationIdSecondImei == null)
         }
-            // no changes from 100 to 200
+        // no changes from 100 to 200
         if (attestationVersion < 100) {
             require(mgfDigest == null) // isNullOrEmpty ? TODO
             require(usageCountLimit == null)
@@ -320,23 +337,34 @@ data class AuthorizationList private constructor(
 
                     val added = when (explicitlyTagged.tag) {
                         Asn1.ExplicitTag(KeyPurpose.explicitTag) ->
-                            (inner as? Asn1Set)?.let { KeyPurpose.decodeSetElement<KeyPurpose>(it) }?.also { add(Element.SetOf(it)) }
+                            (inner as? Asn1Set)?.let { KeyPurpose.decodeSetElement<KeyPurpose>(it) }
+                                ?.also { add(Element.SetOf(it)) }
 
-                        Asn1.ExplicitTag(Algorithm.explicitTag) -> add(Element.Single(Algorithm.decodeElement<Algorithm>(inner)))
+                        Asn1.ExplicitTag(Algorithm.explicitTag) -> add(
+                            Element.Single(
+                                Algorithm.decodeElement<Algorithm>(
+                                    inner
+                                )
+                            )
+                        )
+
                         Asn1.ExplicitTag(KeySize.explicitTag) -> add(Element.Single(KeySize.decodeElement<KeySize>(inner)))
 
                         Asn1.ExplicitTag(Digest.explicitTag) ->
-                            (inner as? Asn1Set)?.let { Digest.decodeSetElement<Digest>(it) }?.also { add(Element.SetOf(it)) }
+                            (inner as? Asn1Set)?.let { Digest.decodeSetElement<Digest>(it) }
+                                ?.also { add(Element.SetOf(it)) }
 
                         Asn1.ExplicitTag(Padding.explicitTag) ->
-                            (inner as? Asn1Set)?.let { Padding.decodeSetElement<Padding>(it) }?.also { add(Element.SetOf(it)) }
+                            (inner as? Asn1Set)?.let { Padding.decodeSetElement<Padding>(it) }
+                                ?.also { add(Element.SetOf(it)) }
 
                         Asn1.ExplicitTag(ECCurve.explicitTag) -> add(Element.Single(ECCurve.decodeElement<ECCurve>(inner)))
                         Asn1.ExplicitTag(RsaPublicExponent.explicitTag) ->
                             add(Element.Single(RsaPublicExponent.decodeElement<RsaPublicExponent>(inner)))
 
                         Asn1.ExplicitTag(MgfDigest.explicitTag) ->
-                            (inner as? Asn1Set)?.let { MgfDigest.decodeSetElement<MgfDigest>(it) }?.also { add(Element.SetOf(it)) }
+                            (inner as? Asn1Set)?.let { MgfDigest.decodeSetElement<MgfDigest>(it) }
+                                ?.also { add(Element.SetOf(it)) }
 
                         Asn1.ExplicitTag(RollbackResistance.explicitTag) ->
                             (inner as? Asn1Primitive)?.let { add(Element.Single(RollbackResistance.decodeNullElement(it))) }
@@ -344,76 +372,173 @@ data class AuthorizationList private constructor(
                         Asn1.ExplicitTag(EarlyBootOnly.explicitTag) ->
                             (inner as? Asn1Primitive)?.let { add(Element.Single(EarlyBootOnly.decodeNullElement(it))) }
 
-                        Asn1.ExplicitTag(ActiveDateTime.explicitTag) -> add(Element.Single(ActiveDateTime.decodeElement<ActiveDateTime>(inner)))
+                        Asn1.ExplicitTag(ActiveDateTime.explicitTag) -> add(
+                            Element.Single(
+                                ActiveDateTime.decodeElement<ActiveDateTime>(
+                                    inner
+                                )
+                            )
+                        )
+
                         Asn1.ExplicitTag(OriginationExpireDateTime.explicitTag) ->
                             add(Element.Single(OriginationExpireDateTime.decodeElement<OriginationExpireDateTime>(inner)))
+
                         Asn1.ExplicitTag(UsageExpireDateTime.explicitTag) ->
                             add(Element.Single(UsageExpireDateTime.decodeElement<UsageExpireDateTime>(inner)))
+
                         Asn1.ExplicitTag(UsageCountLimit.explicitTag) ->
                             add(Element.Single(UsageCountLimit.decodeElement<UsageCountLimit>(inner)))
 
                         Asn1.ExplicitTag(NoAuthRequired.explicitTag) ->
                             (inner as? Asn1Primitive)?.let { add(Element.Single(NoAuthRequired.decodeNullElement(it))) }
 
-                        Asn1.ExplicitTag(UserAuth.explicitTag) -> add(Element.Single(UserAuth.decodeElement<UserAuth>(inner)))
-                        Asn1.ExplicitTag(AuthTimeout.explicitTag) -> add(Element.Single(AuthTimeout.decodeElement<AuthTimeout>(inner)))
+                        Asn1.ExplicitTag(UserAuth.explicitTag) -> add(
+                            Element.Single(
+                                UserAuth.decodeElement<UserAuth>(
+                                    inner
+                                )
+                            )
+                        )
+
+                        Asn1.ExplicitTag(AuthTimeout.explicitTag) -> add(
+                            Element.Single(
+                                AuthTimeout.decodeElement<AuthTimeout>(
+                                    inner
+                                )
+                            )
+                        )
 
                         Asn1.ExplicitTag(AllowWhileOnBody.explicitTag) ->
                             (inner as? Asn1Primitive)?.let { add(Element.Single(AllowWhileOnBody.decodeNullElement(it))) }
 
                         Asn1.ExplicitTag(TrustedUserPresenceRequired.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(TrustedUserPresenceRequired.decodeNullElement(it))) }
+                            (inner as? Asn1Primitive)?.let {
+                                add(
+                                    Element.Single(
+                                        TrustedUserPresenceRequired.decodeNullElement(
+                                            it
+                                        )
+                                    )
+                                )
+                            }
 
                         Asn1.ExplicitTag(TrustedConfirmationRequired.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(TrustedConfirmationRequired.decodeNullElement(it))) }
+                            (inner as? Asn1Primitive)?.let {
+                                add(
+                                    Element.Single(
+                                        TrustedConfirmationRequired.decodeNullElement(
+                                            it
+                                        )
+                                    )
+                                )
+                            }
 
                         Asn1.ExplicitTag(UnlockedDeviceRequired.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(UnlockedDeviceRequired.decodeNullElement(it))) }
+                            (inner as? Asn1Primitive)?.let {
+                                add(
+                                    Element.Single(
+                                        UnlockedDeviceRequired.decodeNullElement(
+                                            it
+                                        )
+                                    )
+                                )
+                            }
 
                         Asn1.ExplicitTag(AllApplications.explicitTag) ->
                             (inner as? Asn1Primitive)?.let { add(Element.Single(AllApplications.decodeNullElement(it))) }
 
                         Asn1.ExplicitTag(CreationDateTime.explicitTag) ->
                             add(Element.Single(CreationDateTime.decodeElement<CreationDateTime>(inner)))
+
                         Asn1.ExplicitTag(Origin.explicitTag) -> add(Element.Single(Origin.decodeElement<Origin>(inner)))
 
                         Asn1.ExplicitTag(RollbackResistent.explicitTag) ->
                             (inner as? Asn1Primitive)?.let { add(Element.Single(RollbackResistent.decodeNullElement(it))) }
 
-                        Asn1.ExplicitTag(RootOfTrust.explicitTag) -> add(Element.Single(RootOfTrust.decodeElement<RootOfTrust>(inner)))
-                        Asn1.ExplicitTag(OsVersion.explicitTag) -> add(Element.Single(OsVersion.decodeElement<OsVersion>(inner)))
-                        Asn1.ExplicitTag(OsPatchLevel.explicitTag) -> add(Element.Single(OsPatchLevel.decodeElement<OsPatchLevel>(inner)))
+                        Asn1.ExplicitTag(RootOfTrust.explicitTag) -> add(
+                            Element.Single(
+                                RootOfTrust.decodeElement<RootOfTrust>(
+                                    inner
+                                )
+                            )
+                        )
+
+                        Asn1.ExplicitTag(OsVersion.explicitTag) -> add(
+                            Element.Single(
+                                OsVersion.decodeElement<OsVersion>(
+                                    inner
+                                )
+                            )
+                        )
+
+                        Asn1.ExplicitTag(OsPatchLevel.explicitTag) -> add(
+                            Element.Single(
+                                OsPatchLevel.decodeElement<OsPatchLevel>(
+                                    inner
+                                )
+                            )
+                        )
+
                         Asn1.ExplicitTag(AttestationApplicationId.explicitTag) ->
                             add(Element.Single(AttestationApplicationId.decodeElement<AttestationApplicationId>(inner)))
 
                         Asn1.ExplicitTag(AttestationId.Brand.explicitTag) ->
                             add(Element.Single(AttestationId.Brand.decodeElement<AttestationId.Brand>(inner)))
+
                         Asn1.ExplicitTag(AttestationId.Device.explicitTag) ->
                             add(Element.Single(AttestationId.Device.decodeElement<AttestationId.Device>(inner)))
+
                         Asn1.ExplicitTag(AttestationId.Product.explicitTag) ->
                             add(Element.Single(AttestationId.Product.decodeElement<AttestationId.Product>(inner)))
+
                         Asn1.ExplicitTag(AttestationId.Serial.explicitTag) ->
                             add(Element.Single(AttestationId.Serial.decodeElement<AttestationId.Serial>(inner)))
+
                         Asn1.ExplicitTag(AttestationId.Imei.explicitTag) ->
                             add(Element.Single(AttestationId.Imei.decodeElement<AttestationId.Imei>(inner)))
+
                         Asn1.ExplicitTag(AttestationId.Meid.explicitTag) ->
                             add(Element.Single(AttestationId.Meid.decodeElement<AttestationId.Meid>(inner)))
+
                         Asn1.ExplicitTag(AttestationId.Manufacturer.explicitTag) ->
-                            add(Element.Single(AttestationId.Manufacturer.decodeElement<AttestationId.Manufacturer>(inner)))
+                            add(
+                                Element.Single(
+                                    AttestationId.Manufacturer.decodeElement<AttestationId.Manufacturer>(
+                                        inner
+                                    )
+                                )
+                            )
+
                         Asn1.ExplicitTag(AttestationId.Model.explicitTag) ->
                             add(Element.Single(AttestationId.Model.decodeElement<AttestationId.Model>(inner)))
 
                         Asn1.ExplicitTag(PatchLevel.Vendor.explicitTag) ->
                             add(Element.Single(PatchLevel.Vendor.decodeElement<PatchLevel.Vendor>(inner)))
+
                         Asn1.ExplicitTag(PatchLevel.Boot.explicitTag) ->
                             add(Element.Single(PatchLevel.Boot.decodeElement<PatchLevel.Boot>(inner)))
 
                         Asn1.ExplicitTag(DeviceUniqueAttestation.explicitTag) ->
-                            (inner as? Asn1Primitive)?.let { add(Element.Single(DeviceUniqueAttestation.decodeNullElement(it))) }
+                            (inner as? Asn1Primitive)?.let {
+                                add(
+                                    Element.Single(
+                                        DeviceUniqueAttestation.decodeNullElement(
+                                            it
+                                        )
+                                    )
+                                )
+                            }
 
                         Asn1.ExplicitTag(AttestationId.SecondImei.explicitTag) ->
                             add(Element.Single(AttestationId.SecondImei.decodeElement<AttestationId.SecondImei>(inner)))
-                        Asn1.ExplicitTag(ModuleHash.explicitTag) -> add(Element.Single(ModuleHash.decodeElement<ModuleHash>(inner)))
+
+                        Asn1.ExplicitTag(ModuleHash.explicitTag) -> add(
+                            Element.Single(
+                                ModuleHash.decodeElement<ModuleHash>(
+                                    inner
+                                )
+                            )
+                        )
 
                         else -> null
                     }
@@ -460,7 +585,7 @@ data class AuthorizationList private constructor(
         }
 
         private fun <A> A.decodeNullElement(element: Asn1Primitive): AttestationValue<*>
-            where A : Asn1Encodable<Asn1Primitive>, A : Tagged =
+                where A : Asn1Encodable<Asn1Primitive>, A : Tagged =
             catchingUnwrapped { element.readNull() }.fold(
                 onSuccess = { AttestationValue.Success(this, this) },
                 onFailure = { AttestationValue.Failure(this::class.simpleName!!, this, element) }
@@ -923,8 +1048,16 @@ data class AuthorizationList private constructor(
      * As per the [KeyMaster AIDL](https://android.googlesource.com/platform/hardware/interfaces/+/refs/heads/main/keymaster/aidl/android/hardware/keymaster/HardwareAuthenticatorType.aidl)
      * * `NONE` is modelled as empty set.
      * * `ANY` has a distinct representation as a set containing only the [Type.ANY] element
+     *
+     * If you want to set multiple flags, just `or` them togehter. It will produce the expected intValue: `UserAuth(Type.PASSWORD or Type.FINGERPRINT)`
+     *
      */
     data class UserAuth(override val intValue: Asn1Integer) : IntEncodable {
+        /**
+         * Creates a [UserAuth] instance from a single [Type] value.
+         */
+        constructor(type: Type) : this(type.intValue)
+
         val authTypes: Set<Type> = when (intValue) {
             Type.ANY.intValue -> setOf(Type.ANY)
             Asn1Integer.ZERO -> emptySet()
@@ -1284,10 +1417,11 @@ data class AuthorizationList private constructor(
                 val sequence = children.first().asSequence()
 
                 return sequence.iterator().run {
-                    val decodedPackageInfos = next().asSet().children.fold(LinkedHashSet<AttestationPackageInfo>()) { acc, el ->
-                        acc += AttestationPackageInfo.decodeFromTlv(el.asSequence())
-                        acc
-                    }
+                    val decodedPackageInfos =
+                        next().asSet().children.fold(LinkedHashSet<AttestationPackageInfo>()) { acc, el ->
+                            acc += AttestationPackageInfo.decodeFromTlv(el.asSequence())
+                            acc
+                        }
                     val decodedSignatureDigests = next().asSet().children.fold(LinkedHashSet<ByteArray>()) { acc, el ->
                         acc += el.asOctetString().content
                         acc
@@ -1679,3 +1813,11 @@ data class AuthorizationList private constructor(
         override val tagged get() = Tag
     }
 }
+
+
+//TODO these could be made more efficient, but its not worth it at the moment
+infix fun Asn1Integer.or(other: AuthorizationList.UserAuth.Type) = other or this
+infix fun AuthorizationList.UserAuth.Type.or(other: Type): Asn1Integer =
+    (this.intValue.toBigInteger().or(other.intValue.toBigInteger())).toAsn1Integer()
+infix fun AuthorizationList.UserAuth.Type.or(other: Asn1Integer) =
+    intValue.toBigInteger().or(other.toBigInteger()).toAsn1Integer()
