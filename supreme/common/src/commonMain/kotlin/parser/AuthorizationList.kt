@@ -347,13 +347,7 @@ data class AuthorizationList private constructor(
         indexedProperties.sortedBy { (index, _) -> index }.forEach { (_, value) ->
             when (value) {
 
-                is AttestationValue<*> -> if (value.tagged.explicitTag == AttestationApplicationId.explicitTag) (value as AttestationValue<AttestationApplicationId>).let { appId ->
-                    +Asn1.ExplicitlyTagged(appId.tagged.explicitTag) {
-                        +Asn1.OctetStringEncapsulating {
-                            +appId.encodeToTlv()
-                        }
-                    }
-                } else add(value)
+                is AttestationValue<*> -> add(value)
 
                 is Set<*> -> add(value as Set<AttestationValue<*>>)
             }
@@ -410,23 +404,8 @@ data class AuthorizationList private constructor(
                 }
             val osVersion: IndexedValue<AttestationValue<OsVersion>>? = OsVersion.decode(src)
             val osPatchLevel: IndexedValue<AttestationValue<OsPatchLevel>>? = OsPatchLevel.decode(src)
-
             val attestationApplicationId: IndexedValue<AttestationValue<AttestationApplicationId>>? =
-                src[AttestationApplicationId.explicitTag]?.let { (index, appId) ->
-                    catchingUnwrapped {
-                        val children = appId.asEncapsulatingOctetString().children
-                        require(children.size == 1) // TODO: check again, and also check others TLV entries so that at most 1 is given, should we give a warning? not lenient
-                        AttestationApplicationId.decodeFromTlv(children.first().asSequence())
-                    }.fold(
-                        onSuccess = { AttestationValue.Success(it, AttestationApplicationId) },
-                        onFailure = {
-                            AttestationValue.Failure(
-                                AttestationApplicationId::class.simpleName!!,
-                                AttestationApplicationId,
-                                appId
-                            ) as AttestationValue<AttestationApplicationId>
-                        }).let { IndexedValue(index, it) }
-                }
+                AttestationApplicationId.decode(src)
 
             // @formatter:off
             val attestationIdBrand       : IndexedValue<AttestationValue<AttestationId.Brand>>?          = AttestationId.Brand.decode(src)
@@ -1317,14 +1296,20 @@ data class AuthorizationList private constructor(
         val packageInfos: List<AttestationPackageInfo>,
         val signatureDigests: List<ByteArray>,
         private val encodeSorted: Boolean
-    ) : Asn1Encodable<Asn1Sequence>, Tagged.WithTag<Asn1Sequence>, PrettyPrintable {
-        companion object Tag : Tagged(709uL), Asn1Decodable<Asn1Sequence, AttestationApplicationId> {
-            override fun doDecode(src: Asn1Sequence) = src.iterator().run {
-                AttestationApplicationId(
-                    next().asSet().children.map { AttestationPackageInfo.decodeFromTlv(it.asSequence()) },
-                    next().asSet().children.map { it.asOctetString().content },
-                    encodeSorted = false
-                )
+    ) : Asn1Encodable<Asn1Element>, Tagged.WithTag<Asn1Element>, PrettyPrintable {
+        companion object Tag : Tagged(709uL), Asn1Decodable<Asn1Element, AttestationApplicationId> {
+            override fun doDecode(src: Asn1Element): AttestationApplicationId {
+                val children = src.asEncapsulatingOctetString().children
+                require(children.size == 1) // TODO: check others TLV entries so that at most 1 is given
+                val sequence = children.first().asSequence()
+
+                return sequence.iterator().run {
+                    AttestationApplicationId(
+                        next().asSet().children.map { AttestationPackageInfo.decodeFromTlv(it.asSequence()) },
+                        next().asSet().children.map { it.asOctetString().content },
+                        encodeSorted = false
+                    )
+                }
             }
         }
 
@@ -1333,13 +1318,15 @@ data class AuthorizationList private constructor(
 
         override val tagged get() = Tag
 
-        override fun encodeToTlv() = Asn1.Sequence {
-            if (encodeSorted) {
-                +Asn1.SetOf { packageInfos.forEach { +it } }
-                +Asn1.SetOf { signatureDigests.forEach { +Asn1.OctetString(it) } }
-            } else {
-                +Asn1Set.fromPresorted(packageInfos.map { it.encodeToTlv() })
-                +Asn1Set.fromPresorted(signatureDigests.map { it.encodeToAsn1OctetStringPrimitive() })
+        override fun encodeToTlv(): Asn1Element = Asn1.OctetStringEncapsulating {
+            +Asn1.Sequence {
+                if (encodeSorted) {
+                    +Asn1.SetOf { packageInfos.forEach { +it } }
+                    +Asn1.SetOf { signatureDigests.forEach { +Asn1.OctetString(it) } }
+                } else {
+                    +Asn1Set.fromPresorted(packageInfos.map { it.encodeToTlv() })
+                    +Asn1Set.fromPresorted(signatureDigests.map { it.encodeToAsn1OctetStringPrimitive() })
+                }
             }
         }
 
