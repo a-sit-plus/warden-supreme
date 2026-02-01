@@ -5,11 +5,16 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # 1.0.0-SNAPSHOT
+* Fatrues:
+    * Rework custom Attestation extension parser
+        * Now list-based to handle arbitrary properties
+        * Add missing properties to custom parser
+        * Expose known properties as getters from this list
+        * Custom Parser correctly handles UserAuthType and many more
+        * -> **Warden Supreme now parses more Attestation extensions correctly than Google's shiny new parser AND with better semantics and Debugging**
 * Fixes:
     * Relax the upstream parser to glitch out less often
         * -> **Warden Supreme now parses more Attestation extensions than WARDEN-roboto ever could.**
-    * Custom Parser correctly handles UserAuthType and many more
-        * -> **Warden Supreme now parses more Attestation extensions correctly than Google's shiny new parser AND with better semantics and Debugging**
     * Correctly re-encode cursed X.509 certificate extensions that encode `critical=true` instead of omitting it
 * Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
 * Revised and expanded documentation
