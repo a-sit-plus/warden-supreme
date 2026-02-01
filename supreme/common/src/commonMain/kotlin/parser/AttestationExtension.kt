@@ -6,6 +6,7 @@ import at.asitplus.signum.indispensable.asn1.encoding.Asn1
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToEnum
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToInt
 import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1ContentBytes
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.X509Certificate
 
 /**
@@ -189,3 +190,19 @@ val X509Certificate.androidAttestationExtension: AttestationKeyDescription?
                 null
             }
         }
+
+/**
+ * As per Google's parser:
+ * Parse the attestation record that is closest to the root. This prevents an adversary from
+ * attesting an attestation record of their choice with an otherwise trusted chain using the
+ * following attack:
+ * 1. having the TEE attest a key under the adversary's control,
+ * 2. using that key to sign a new leaf certificate with an attestation extension that has their
+ *   chosen attestation record, then
+ * 3. appending that certificate to the original certificate chain.
+ *
+ * @return the [AttestationKeyDescription] closest to the root or `null` if non is present
+ *
+ */
+val CertificateChain.androidAttestationExtension: AttestationKeyDescription?
+    get() = lastOrNull { cert -> cert.androidAttestationExtension != null }?.androidAttestationExtension

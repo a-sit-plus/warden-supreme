@@ -80,6 +80,9 @@ val CustomParserTests by testSuite {
             chain.map { certificateFactory.generateCertificate(ByteArrayInputStream(it)) as X509Certificate }
         val androidAttestationExtension = attestationCertChain.first().androidAttestationExtension
 
+        "Chain vs. leaf" {
+            attestationCertChain.androidAttestationExtension shouldBe androidAttestationExtension
+        }
         "convert" - {
             withData(nameFn = { it.subjectX500Principal.toString() }, attestationCertChain) {
                 it.toKmpCertificate().isSuccess shouldBe true

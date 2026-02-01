@@ -93,6 +93,7 @@ val DebugStatementParserTest by testSuite {
                     return@invoke//well, well, well…}
                 }
                 androidAttestationExtension.shouldNotBeNull()
+                attestationCertChain.androidAttestationExtension shouldBe androidAttestationExtension
                 catchingUnwrapped {
 
                     val reencoded = androidAttestationExtension.encodeToDer()

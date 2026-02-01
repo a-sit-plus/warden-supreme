@@ -88,7 +88,18 @@ data class AuthorizationList private constructor(
      */
     private class OrderPreservingSet<E>(
         private val delegate: LinkedHashSet<E>
-    ) : Set<E> by delegate
+    ) : Set<E> by delegate {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is Set<*>) return false
+            if (other.size != this.size) return false
+            return catchingUnwrapped {
+                this.containsAll(other)
+            }.getOrElse { false }
+        }
+
+        override fun hashCode(): Int = delegate.hashCode()
+    }
 
     /**
      * Convenience constructor that builds an [AuthorizationList] from the fields defined by Android’s attestation schema.
@@ -151,7 +162,7 @@ data class AuthorizationList private constructor(
         moduleHash                  : ModuleHash?                  = null,
         trailingProperties          : List<Asn1Element>            = emptyList(),
         // @formatter:on
-	    ) : this(
+    ) : this(
         buildList {
             // @formatter:off
             purpose                      ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, KeyPurpose)        }.toSet()   )) }
@@ -835,13 +846,14 @@ data class AuthorizationList private constructor(
                                       get() = firstSingleByTag(  ModuleHash  )
     // @formatter:on
 
-	    init {
-	        purpose?.let { require(it.isNotEmpty()) }
-	        blockMode?.let { require(it.isNotEmpty()) }
-	        digest?.let { require(it.isNotEmpty()) }
-	        padding?.let { require(it.isNotEmpty()) }
-	        mgfDigest?.let { require(it.isNotEmpty()) }
-	    }
+    init {
+        purpose?.let { require(it.isNotEmpty()) }
+        blockMode?.let { require(it.isNotEmpty()) }
+        digest?.let { require(it.isNotEmpty()) }
+        padding?.let { require(it.isNotEmpty()) }
+        mgfDigest?.let { require(it.isNotEmpty()) }
+    }
+
     /**
      * Useful for debugging, but too strict in reality
      */
@@ -1282,44 +1294,44 @@ data class AuthorizationList private constructor(
     /**
      * Key size (in bits).
      */
-	    class KeySize private constructor(override val intValue: Asn1Integer) : IntEncodable {
-	        constructor(keyLength: BitLength) : this(Asn1Integer(keyLength.bits))
+    class KeySize private constructor(override val intValue: Asn1Integer) : IntEncodable {
+        constructor(keyLength: BitLength) : this(Asn1Integer(keyLength.bits))
 
-	        companion object Tag : Tagged(3uL), Asn1Decodable<Asn1Primitive, KeySize> {
-	            override fun doDecode(src: Asn1Primitive) = KeySize(src.decodeToAsn1Integer())
-	        }
+        companion object Tag : Tagged(3uL), Asn1Decodable<Asn1Primitive, KeySize> {
+            override fun doDecode(src: Asn1Primitive) = KeySize(src.decodeToAsn1Integer())
+        }
 
-	        override val tagged get() = Tag
-	        override fun toString(): String {
-	            return "KeySize(intValue=$intValue)"
-	        }
-	    }
+        override val tagged get() = Tag
+        override fun toString(): String {
+            return "KeySize(intValue=$intValue)"
+        }
+    }
 
-	    /**
-	     * Block modes as defined by KeyMint.
-	     *
-	     * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/BlockMode.aidl
-	     */
-	    enum class BlockMode(override val intValue: Asn1Integer) : IntEncodable {
-	        ECB(Asn1Integer(1)),
-	        CBC(Asn1Integer(2)),
-	        CTR(Asn1Integer(3)),
-	        GCM(Asn1Integer(32));
-	        // From: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/BlockMode.aidl
+    /**
+     * Block modes as defined by KeyMint.
+     *
+     * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/BlockMode.aidl
+     */
+    enum class BlockMode(override val intValue: Asn1Integer) : IntEncodable {
+        ECB(Asn1Integer(1)),
+        CBC(Asn1Integer(2)),
+        CTR(Asn1Integer(3)),
+        GCM(Asn1Integer(32));
+        // From: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/BlockMode.aidl
 
-	        companion object Tag : Tagged(4uL), Asn1Decodable<Asn1Primitive, BlockMode> {
-	            fun valueOf(int: Asn1Integer) = entries.first { it.intValue == int }
-	            override fun doDecode(src: Asn1Primitive) = valueOf(src.decodeToAsn1Integer())
-	        }
+        companion object Tag : Tagged(4uL), Asn1Decodable<Asn1Primitive, BlockMode> {
+            fun valueOf(int: Asn1Integer) = entries.first { it.intValue == int }
+            override fun doDecode(src: Asn1Primitive) = valueOf(src.decodeToAsn1Integer())
+        }
 
-	        override val tagged get() = Tag
-	    }
+        override val tagged get() = Tag
+    }
 
-	    /**
-	     * Digest modes as defined by KeyMint.
-	 *
-	 * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/Digest.aidl
-	 */
+    /**
+     * Digest modes as defined by KeyMint.
+     *
+     * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/Digest.aidl
+     */
     enum class Digest(override val intValue: Asn1Integer) : IntEncodable {
         NONE(Asn1Integer(0)),
         MD5(Asn1Integer(1)),
@@ -1388,8 +1400,8 @@ data class AuthorizationList private constructor(
 
     /**
      * Elliptic curve identifiers as defined by KeyMint.
-	 *
-	 * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/EcCurve.aidl
+     *
+     * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/EcCurve.aidl
      */
     enum class ECCurve(override val intValue: Asn1Integer) : IntEncodable {
         P_224(Asn1Integer(0)),
@@ -2315,5 +2327,6 @@ data class AuthorizationList private constructor(
 infix fun Asn1Integer.or(other: AuthorizationList.UserAuth.Type) = other or this
 infix fun AuthorizationList.UserAuth.Type.or(other: Type): Asn1Integer =
     (this.intValue.toBigInteger().or(other.intValue.toBigInteger())).toAsn1Integer()
+
 infix fun AuthorizationList.UserAuth.Type.or(other: Asn1Integer) =
     intValue.toBigInteger().or(other.toBigInteger()).toAsn1Integer()
