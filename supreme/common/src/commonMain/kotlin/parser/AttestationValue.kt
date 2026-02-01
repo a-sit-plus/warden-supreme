@@ -67,6 +67,24 @@ sealed class AttestationValue<out A : Asn1Encodable<*>>() :
             append(indent).append(")")
         }
 
+         override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is Failure<*>) return false
+
+            if (elementName != other.elementName) return false
+            if (tagged != other.tagged) return false
+            if (!rawAsn1Value.derEncoded.contentEquals(other.rawAsn1Value.derEncoded)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = elementName.hashCode()
+            result = 31 * result + tagged.hashCode()
+            result = 31 * result + rawAsn1Value.derEncoded.contentHashCode()
+            return result
+        }
+
         /**
          * Converts the current object into an [AttestationValueException] with a detailed error message.
          * The generated exception includes information such as the element name, explicit tag,

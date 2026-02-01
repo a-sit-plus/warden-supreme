@@ -5,8 +5,9 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # 1.0.0-SNAPSHOT
-* Fatrues:
-    * Rework custom Attestation extension parser
+* Features:
+    * Get Attestation extension from certificate chain same as Google's parser (return the attestation extension closest to the root)
+    * Rework custom Attestation extension parser 
         * Now list-based to handle arbitrary properties
         * Add missing properties to custom parser
         * Expose known properties as getters from this list

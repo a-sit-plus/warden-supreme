@@ -34,10 +34,12 @@ It will then pretty-print the attestation extension's contents.
     include `at.asitplus.warden:supreme-common` in your project, and you are ready to go!
 
 As an added bonus, there is a nullable `androidAttestationExtension` extension property on the Java `X509Certificate`
-and on Signum's `X509Certificate` class, which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.
+and on Signum's `X509Certificate` class (and certificate chains), which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.
 It will even parse malformed values and print those malformed values' DER-encoded hex representation.
 The underlying parser and the renderer are still experimental, so your mileage may vary.
-Nonetheless, it is still a huge improvement over relying solely on `ParsedAttestationRecord` for debugging.
+However, it has been tested against literally thousands of attestation proofs captured from real devices and
+_seems to be_ more robust than Google's parsers, old and new.
+Plus, its `prettyPrint` is a huge improvement over relying solely on `ParsedAttestationRecord` for debugging.
 
 !!! example "Example of a Pretty-Printed Attestation Record from an Emulator"
     ```properties
