@@ -13,7 +13,7 @@ import at.asitplus.signum.indispensable.pki.X509Certificate
  * Attestation certificate extension [used by Google](https://source.android.com/docs/security/features/keystore/attestation#schema).
  * While we could use sophisticated sanity checks to ensure
  * that only valid extensions that conform to the schema in every aspect,
- * the reality is ugly, with device manufacturers being very  _creative_ about
+ * the reality is ugly, with device manufacturers being very _creative_ about
  * how and what will be encoded into [softwareEnforced] and [hardwareEnforced].
  * Hence, we must be able to parse extensions that are structurally valid
  * at first glance, even when the actual values inside look like they have been through a meat grinder.
@@ -21,7 +21,7 @@ import at.asitplus.signum.indispensable.pki.X509Certificate
  * required for a successful assessment, we're golden!
  * Hence, barely any sanity checks are enforced.
  */
-class AttestationKeyDescription(
+data class AttestationKeyDescription(
     val attestationVersion: Int,
     val attestationSecurityLevel: SecurityLevel,
     val keyMintVersion: Int,

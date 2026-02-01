@@ -1,5 +1,6 @@
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.androidAttestationExtension
+import at.asitplus.attestation.android.prettyPrint
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.toKmpCertificate
 import at.asitplus.testballoon.invoke
@@ -7,6 +8,7 @@ import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
 import com.google.android.attestation.ParsedAttestationRecord
 import de.infix.testBalloon.framework.core.testSuite
+import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeGreaterThan
@@ -81,7 +83,9 @@ val CustomParserTests by testSuite {
         val androidAttestationExtension = attestationCertChain.first().androidAttestationExtension
 
         "Chain vs. leaf" {
-            attestationCertChain.androidAttestationExtension shouldBe androidAttestationExtension
+            withClue(androidAttestationExtension?.prettyPrint()) {
+                attestationCertChain.androidAttestationExtension shouldBe androidAttestationExtension
+            }
         }
         "convert" - {
             withData(nameFn = { it.subjectX500Principal.toString() }, attestationCertChain) {

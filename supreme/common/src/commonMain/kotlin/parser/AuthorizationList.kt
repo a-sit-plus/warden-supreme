@@ -99,6 +99,9 @@ data class AuthorizationList private constructor(
         }
 
         override fun hashCode(): Int = delegate.hashCode()
+        override fun toString(): String {
+            return "OrderPreservingSet[${delegate.joinToString(prefix = "", postfix = "", separator = ", ") { it.toString() }}]"
+        }
     }
 
     /**
@@ -1294,7 +1297,8 @@ data class AuthorizationList private constructor(
     /**
      * Key size (in bits).
      */
-    class KeySize private constructor(override val intValue: Asn1Integer) : IntEncodable {
+    @ConsistentCopyVisibility
+    data class KeySize private constructor(override val intValue: Asn1Integer) : IntEncodable {
         constructor(keyLength: BitLength) : this(Asn1Integer(keyLength.bits))
 
         companion object Tag : Tagged(3uL), Asn1Decodable<Asn1Primitive, KeySize> {
@@ -1386,7 +1390,7 @@ data class AuthorizationList private constructor(
     /**
      * Minimum MAC length (in bits).
      */
-    class MinMacLength private constructor(override val intValue: Asn1Integer) : IntEncodable {
+    data class MinMacLength private constructor(override val intValue: Asn1Integer) : IntEncodable {
         constructor(macLength: BitLength) : this(Asn1Integer(macLength.bits))
 
         companion object Tag : Tagged(8uL), Asn1Decodable<Asn1Primitive, MinMacLength> {
@@ -1422,7 +1426,7 @@ data class AuthorizationList private constructor(
     /**
      * RSA public exponent.
      */
-    class RsaPublicExponent private constructor(override val intValue: Asn1Integer) : IntEncodable {
+    data class RsaPublicExponent private constructor(override val intValue: Asn1Integer) : IntEncodable {
         constructor(exponent: Asn1Integer.Positive) : this(intValue = exponent)
 
         companion object Tag : Tagged(200uL), Asn1Decodable<Asn1Primitive, RsaPublicExponent> {
@@ -1444,7 +1448,7 @@ data class AuthorizationList private constructor(
      * Present in key attestation versions `100`, `200`, `300`, `400` (KeyMint only).
      * The tag number is stored in [Tag.explicitTag].
      */
-    class MgfDigest(override val intValue: Asn1Integer) : IntEncodable {
+    data class MgfDigest(override val intValue: Asn1Integer) : IntEncodable {
         companion object Tag : Tagged(203uL), Asn1Decodable<Asn1Primitive, MgfDigest> {
             override fun doDecode(src: Asn1Primitive) = MgfDigest(src.decodeToAsn1Integer())
         }
@@ -1473,7 +1477,7 @@ data class AuthorizationList private constructor(
     /**
      * “Active date time” (notBefore) timestamp in milliseconds since epoch.
      */
-    class ActiveDateTime private constructor(override val intValue: Asn1Integer) : IntEncodable {
+    data class ActiveDateTime private constructor(override val intValue: Asn1Integer) : IntEncodable {
         constructor(notBefore: Instant) : this(Asn1Integer(notBefore.toEpochMilliseconds()))
 
         companion object Tag : Tagged(400uL), Asn1Decodable<Asn1Primitive, ActiveDateTime> {
@@ -1486,7 +1490,7 @@ data class AuthorizationList private constructor(
     /**
      * “Origination expire date time” (notAfter) timestamp in milliseconds since epoch.
      */
-    class OriginationExpireDateTime private constructor(override val intValue: Asn1Integer) :
+    data class OriginationExpireDateTime private constructor(override val intValue: Asn1Integer) :
         IntEncodable {
         constructor(notAfter: Instant) : this(Asn1Integer(notAfter.toEpochMilliseconds()))
 
@@ -1502,7 +1506,7 @@ data class AuthorizationList private constructor(
     /**
      * “Usage expire date time” timestamp in milliseconds since epoch.
      */
-    class UsageExpireDateTime private constructor(override val intValue: Asn1Integer) :
+    data class UsageExpireDateTime private constructor(override val intValue: Asn1Integer) :
         IntEncodable {
         constructor(notAfter: Instant) : this(Asn1Integer(notAfter.toEpochMilliseconds()))
 
@@ -1516,7 +1520,7 @@ data class AuthorizationList private constructor(
     /**
      * Limits the number of permitted uses of a key.
      */
-    class UsageCountLimit(override val intValue: Asn1Integer) : IntEncodable {
+    data class UsageCountLimit(override val intValue: Asn1Integer) : IntEncodable {
         companion object Tag : Tagged(405uL), Asn1Decodable<Asn1Primitive, UsageCountLimit> {
             override fun doDecode(src: Asn1Primitive) = UsageCountLimit(src.decodeToAsn1Integer())
         }
@@ -1529,7 +1533,7 @@ data class AuthorizationList private constructor(
      *
      * This value identifies the Gatekeeper / biometric enrollment set that can authorize this key.
      */
-    class UserSecureId private constructor(override val intValue: Asn1Integer) : IntEncodable {
+    data class UserSecureId private constructor(override val intValue: Asn1Integer) : IntEncodable {
         constructor(id: Long) : this(Asn1Integer(id)) {
             require(id >= 0) { "UserSecureId must be non-negative" }
         }
@@ -1566,7 +1570,7 @@ data class AuthorizationList private constructor(
          */
         constructor(type: Type) : this(type.intValue)
 
-        val authTypes: Set<Type> = when (intValue) {
+        val authTypes: Set<Type> get() = when (intValue) {
             Type.ANY.intValue -> setOf(Type.ANY)
             Asn1Integer.ZERO -> emptySet()
             else -> {
@@ -1611,7 +1615,7 @@ data class AuthorizationList private constructor(
     /**
      * Authentication timeout.
      */
-    class AuthTimeout private constructor(override val intValue: Asn1Integer) : IntEncodable {
+    data class AuthTimeout private constructor(override val intValue: Asn1Integer) : IntEncodable {
         constructor(duration: Duration) : this(Asn1Integer(duration.inWholeSeconds))
 
         val duration: Duration =
@@ -1679,7 +1683,8 @@ data class AuthorizationList private constructor(
     /**
      * Key creation timestamp in milliseconds since epoch.
      */
-    class CreationDateTime private constructor(override val intValue: Asn1Integer) : IntEncodable {
+    @ConsistentCopyVisibility
+    data class CreationDateTime private constructor(override val intValue: Asn1Integer) : IntEncodable {
         constructor(timestamp: Instant) : this(Asn1Integer(timestamp.toEpochMilliseconds()))
 
         val timestamp: Instant =
@@ -1692,6 +1697,19 @@ data class AuthorizationList private constructor(
         override val tagged get() = Tag
         override fun toString(): String {
             return "CreationDateTime(intValue=$intValue, timestamp=$timestamp)"
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is CreationDateTime) return false
+
+            if (intValue != other.intValue) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return intValue.hashCode()
         }
     }
 
@@ -1731,7 +1749,7 @@ data class AuthorizationList private constructor(
      * This structure is known to appear in non-DER encodings (e.g., the boolean may not be encoded canonically), so the
      * implementation preserves the original boolean content for round-trip encoding.
      */
-    class RootOfTrust private constructor(
+    data class RootOfTrust private constructor(
         val verifiedBootKeyDigest: ByteArray,
         val deviceLocked: Boolean,
         val verifiedBootState: VerifiedBootState,
@@ -1844,7 +1862,7 @@ data class AuthorizationList private constructor(
     /**
      * OS version, encoded as an integer `MMmmss` (major/minor/sub) as per the schema.
      */
-    class OsVersion(
+    data class OsVersion(
         val major: UByte,
         val minor: UByte,
         val sub: UByte
@@ -1873,7 +1891,7 @@ data class AuthorizationList private constructor(
     /**
      * OS patch level as [year] and [month], encoded as `year * 100 + month` as per the schema.
      */
-    class OsPatchLevel(
+    data class OsPatchLevel(
         val year: UShort,
         val month: Month
     ) : IntEncodable {
@@ -1914,10 +1932,23 @@ data class AuthorizationList private constructor(
      * the original element order (even if the source violates DER sorting). When encoding, such order-preserving sets
      * are emitted without re-sorting.
      */
-    class AttestationApplicationId(
+    data class AttestationApplicationId(
         val packageInfos: Set<AttestationPackageInfo>,
         val signatureDigests: Set<ByteArray>
     ) : Asn1Encodable<Asn1Element>, Tagged.WithTag<Asn1Element>, PrettyPrintable {
+        private class DigestKey(private val bytes: ByteArray) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is DigestKey) return false
+                return bytes.contentEquals(other.bytes)
+            }
+
+            override fun hashCode(): Int = bytes.contentHashCode()
+        }
+
+        private fun signatureDigestKeySet(): Set<DigestKey> =
+            signatureDigests.mapTo(LinkedHashSet()) { DigestKey(it) }
+
         companion object Tag : Tagged(709uL), Asn1Decodable<Asn1Element, AttestationApplicationId> {
             override fun doDecode(src: Asn1Element): AttestationApplicationId {
                 val children = src.asEncapsulatingOctetString().children
@@ -1972,14 +2003,15 @@ data class AuthorizationList private constructor(
             other as AttestationApplicationId
 
             if (packageInfos != other.packageInfos) return false
-            if (signatureDigests != other.signatureDigests) return false
+            if (signatureDigestKeySet() != other.signatureDigestKeySet()) return false
 
             return true
         }
 
         override fun hashCode(): Int {
             var result = packageInfos.hashCode()
-            result = 31 * result + signatureDigests.hashCode()
+            val digestsHash = signatureDigestKeySet().fold(0) { acc, d -> acc + d.hashCode() }
+            result = 31 * result + digestsHash
             return result
         }
 
@@ -2080,6 +2112,20 @@ data class AuthorizationList private constructor(
         override fun encodeToTlv() = Asn1.OctetString(stringValue.encodeToByteArray())
         override fun toString(): String {
             return "AttestationId(stringValue='$stringValue')"
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is AttestationId) return false
+
+            if(tagged != other.tagged) return false
+            if (stringValue != other.stringValue) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return stringValue.hashCode()
         }
 
         /** Device brand. */
@@ -2254,6 +2300,26 @@ data class AuthorizationList private constructor(
         override fun toString(): String {
             return "PatchLevel(year=$year, month=$month, day=$day, intValue=$intValue)"
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is PatchLevel) return false
+
+            if (year != other.year) return false
+            if (month != other.month) return false
+            if (day != other.day) return false
+            if (intValue != other.intValue) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = year.hashCode()
+            result = 31 * result + month.hashCode()
+            result = 31 * result + (day?.hashCode() ?: 0)
+            result = 31 * result + intValue.hashCode()
+            return result
+        }
     }
 
     /**
@@ -2292,7 +2358,7 @@ data class AuthorizationList private constructor(
      *
      * For a detailed definition of the `Modules` and `Module` structures, as well as the computation of `moduleHash`, you can refer to the Android Open Source Project's documentation on Keymaster's attestation process.
      */
-    class ModuleHash(val sha256Digest: ByteArray) : Asn1Encodable<Asn1Primitive>,
+    data class ModuleHash(val sha256Digest: ByteArray) : Asn1Encodable<Asn1Primitive>,
         Tagged.WithTag<Asn1Primitive> {
         override fun encodeToTlv() = Asn1.OctetString(sha256Digest)
 
@@ -2301,24 +2367,26 @@ data class AuthorizationList private constructor(
             return "ModuleHash(sha256Digest=${sha256Digest.toHexString()})"
         }
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is ModuleHash) return false
-
-            if (!sha256Digest.contentEquals(other.sha256Digest)) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return sha256Digest.contentHashCode()
-        }
-
         companion object Tag : Tagged(724uL), Asn1Decodable<Asn1Primitive, ModuleHash> {
             override fun doDecode(src: Asn1Primitive) = ModuleHash(src.asOctetString().content)
         }
 
         override val tagged get() = Tag
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is ModuleHash) return false
+
+            if (!sha256Digest.contentEquals(other.sha256Digest)) return false
+            if (tagged != other.tagged) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = sha256Digest.contentHashCode()
+            result = 31 * result + tagged.hashCode()
+            return result
+        }
     }
 }
 
