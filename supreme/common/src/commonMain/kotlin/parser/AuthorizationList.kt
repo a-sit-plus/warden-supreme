@@ -57,7 +57,7 @@ import kotlin.time.Instant
  * [AuthorizationList] preserves the original order of the ASN.1 sequence during decoding by storing all decoded entries
  * (including unknown tags) in [elements].
  *
- * For ASN.1 SET fields (e.g. [purpose], [digest], [padding], [mgfDigest], and also
+ * For ASN.1 SET fields (e.g. [purpose], [blockMode], [digest], [padding], [mgfDigest], and also
  * [AttestationApplicationId.packageInfos]/[AttestationApplicationId.signatureDigests]):
  * - When decoding, an internal order-preserving [Set] implementation is used so iteration keeps the original element
  *   order from the input (even if the input violates DER sorting).
@@ -106,8 +106,11 @@ data class AuthorizationList private constructor(
         purpose                     : Set<KeyPurpose>?             = null,
         algorithm                   : Algorithm?                   = null,
         keySize                     : KeySize?                     = null,
+        blockMode                   : Set<BlockMode>?              = null,
         digest                      : Set<Digest>?                 = null,
         padding                     : Set<Padding>?                = null,
+        callerNonce                 : CallerNonce?                 = null,
+        minMacLength                : MinMacLength?                = null,
         ecCurve                     : ECCurve?                     = null,
         rsaPublicExponent           : RsaPublicExponent?           = null,
         mgfDigest                   : Set<MgfDigest>?              = null,
@@ -117,6 +120,7 @@ data class AuthorizationList private constructor(
         originationExpireDateTime   : OriginationExpireDateTime?   = null,
         usageExpireDateTime         : UsageExpireDateTime?         = null,
         usageCountLimit             : UsageCountLimit?             = null,
+        userSecureId                : UserSecureId?                = null,
         noAuthRequired              : NoAuthRequired?              = null,
         userAuthType                : UserAuth?                    = null,
         authTimeout                 : AuthTimeout?                 = null,
@@ -147,14 +151,17 @@ data class AuthorizationList private constructor(
         moduleHash                  : ModuleHash?                  = null,
         trailingProperties          : List<Asn1Element>            = emptyList(),
         // @formatter:on
-    ) : this(
+	    ) : this(
         buildList {
             // @formatter:off
             purpose                      ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, KeyPurpose)        }.toSet()   )) }
             algorithm                    ?.let { add(Element. Single ( value =  AttestationValue.Success(it, Algorithm)                     )) }
             keySize                      ?.let { add(Element. Single ( value =  AttestationValue.Success(it, KeySize)                       )) }
+            blockMode                    ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, BlockMode)          }.toSet()   )) }
             digest                       ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, Digest)            }.toSet()   )) }
             padding                      ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, Padding)           }.toSet()   )) }
+            callerNonce                  ?.let { add(Element. Single ( value =  AttestationValue.Success(it, CallerNonce)                  )) }
+            minMacLength                 ?.let { add(Element. Single ( value =  AttestationValue.Success(it, MinMacLength)                 )) }
             ecCurve                      ?.let { add(Element. Single ( value =  AttestationValue.Success(it, ECCurve)                       )) }
             rsaPublicExponent            ?.let { add(Element. Single ( value =  AttestationValue.Success(it, RsaPublicExponent)             )) }
             mgfDigest                    ?.let { add(Element. SetOf  ( it.map { AttestationValue.Success(it, MgfDigest)         }.toSet()   )) }
@@ -164,6 +171,7 @@ data class AuthorizationList private constructor(
             originationExpireDateTime    ?.let { add(Element. Single ( value =  AttestationValue.Success(it, OriginationExpireDateTime)     )) }
             usageExpireDateTime          ?.let { add(Element. Single ( value =  AttestationValue.Success(it, UsageExpireDateTime)           )) }
             usageCountLimit              ?.let { add(Element. Single ( value =  AttestationValue.Success(it, UsageCountLimit)               )) }
+            userSecureId                 ?.let { add(Element. Single ( value =  AttestationValue.Success(it, UserSecureId)                 )) }
             noAuthRequired               ?.let { add(Element. Single ( value =  AttestationValue.Success(it, NoAuthRequired)                )) }
             userAuthType                 ?.let { add(Element. Single ( value =  AttestationValue.Success(it, UserAuth)                      )) }
             authTimeout                  ?.let { add(Element. Single ( value =  AttestationValue.Success(it, AuthTimeout)                   )) }
@@ -194,7 +202,7 @@ data class AuthorizationList private constructor(
             moduleHash                   ?.let { add(Element. Single ( value =  AttestationValue.Success(it, ModuleHash)                    )) }
 
             trailingProperties.forEach       { add(Element.Unknown(it)) }
-// @formatter:on
+            // @formatter:on
         }
     )
 
@@ -206,63 +214,634 @@ data class AuthorizationList private constructor(
         (elements.firstOrNull { it is Element.Single && it.value.tagged.explicitTag == tag.explicitTag } as? Element.Single)
             ?.value as? T
 
-	    @Suppress("UNCHECKED_CAST")
-	    private fun <T> firstSetByTag(tag: Tagged): Set<T>? =
-	        (elements.firstOrNull { it is Element.SetOf && it.value.first().tagged.explicitTag == tag.explicitTag } as? Element.SetOf)
-	            ?.value as? Set<T>
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> firstSetByTag(tag: Tagged): Set<T>? =
+        (elements.firstOrNull { it is Element.SetOf && it.value.first().tagged.explicitTag == tag.explicitTag } as? Element.SetOf)
+            ?.value as? Set<T>
 
-	    // @formatter:off
-	    val purpose                     : Set<AttestationValue< KeyPurpose                  >>? get() = firstSetByTag     ( KeyPurpose                  )
-	    val algorithm                   :     AttestationValue< Algorithm                   >?  get() = firstSingleByTag  ( Algorithm                   )
-	    val keySize                     :     AttestationValue< KeySize                     >?  get() = firstSingleByTag  ( KeySize                     )
-	    val digest                      : Set<AttestationValue< Digest                      >>? get() = firstSetByTag     ( Digest                      )
-	    val padding                     : Set<AttestationValue< Padding                     >>? get() = firstSetByTag     ( Padding                     )
-	    val ecCurve                     :     AttestationValue< ECCurve                     >?  get() = firstSingleByTag  ( ECCurve                     )
-	    val rsaPublicExponent           :     AttestationValue< RsaPublicExponent           >?  get() = firstSingleByTag  ( RsaPublicExponent           )
-	    val mgfDigest                   : Set<AttestationValue< MgfDigest                   >>? get() = firstSetByTag     ( MgfDigest                   )
-	    val rollbackResistance          :     AttestationValue< RollbackResistance          >?  get() = firstSingleByTag  ( RollbackResistance          )
-	    val earlyBootOnly               :     AttestationValue< EarlyBootOnly               >?  get() = firstSingleByTag  ( EarlyBootOnly               )
-	    val activeDateTime              :     AttestationValue< ActiveDateTime              >?  get() = firstSingleByTag  ( ActiveDateTime              )
-	    val originationExpireDateTime   :     AttestationValue< OriginationExpireDateTime   >?  get() = firstSingleByTag  ( OriginationExpireDateTime   )
-	    val usageExpireDateTime         :     AttestationValue< UsageExpireDateTime         >?  get() = firstSingleByTag  ( UsageExpireDateTime         )
-	    val usageCountLimit             :     AttestationValue< UsageCountLimit             >?  get() = firstSingleByTag  ( UsageCountLimit             )
-	    val noAuthRequired              :     AttestationValue< NoAuthRequired              >?  get() = firstSingleByTag  ( NoAuthRequired              )
-	    val userAuthType                :     AttestationValue< UserAuth                    >?  get() = firstSingleByTag  ( UserAuth                    )
-	    val authTimeout                 :     AttestationValue< AuthTimeout                 >?  get() = firstSingleByTag  ( AuthTimeout                 )
-	    val allowWhileOnBody            :     AttestationValue< AllowWhileOnBody            >?  get() = firstSingleByTag  ( AllowWhileOnBody            )
-	    val trustedUserPresenceRequired :     AttestationValue< TrustedUserPresenceRequired >?  get() = firstSingleByTag  ( TrustedUserPresenceRequired )
-	    val trustedConfirmationRequired :     AttestationValue< TrustedConfirmationRequired >?  get() = firstSingleByTag  ( TrustedConfirmationRequired )
-	    val unlockedDeviceRequired      :     AttestationValue< UnlockedDeviceRequired      >?  get() = firstSingleByTag  ( UnlockedDeviceRequired      )
-	    val allApplications             :     AttestationValue< AllApplications             >?  get() = firstSingleByTag  ( AllApplications             ) // only up to version v4 // TODO add opt-in annotation?
-	    val creationDateTime            :     AttestationValue< CreationDateTime            >?  get() = firstSingleByTag  ( CreationDateTime            )
-	    val origin                      :     AttestationValue< Origin                      >?  get() = firstSingleByTag  ( Origin                      )
-	    val rollbackResistant           :     AttestationValue< RollbackResistent           >?  get() = firstSingleByTag  ( RollbackResistent           ) // only up to version v2, "resistance" afterwards // TODO add opt-in annotation?
-	    val rootOfTrust                 :     AttestationValue< RootOfTrust                 >?  get() = firstSingleByTag  ( RootOfTrust                 )
-	    val osVersion                   :     AttestationValue< OsVersion                   >?  get() = firstSingleByTag  ( OsVersion                   )
-	    val osPatchLevel                :     AttestationValue< OsPatchLevel                >?  get() = firstSingleByTag  ( OsPatchLevel                )
-	    val attestationApplicationId    :     AttestationValue< AttestationApplicationId    >?  get() = firstSingleByTag  ( AttestationApplicationId    )
-	    val attestationIdBrand          :     AttestationValue< AttestationId.Brand         >?  get() = firstSingleByTag  ( AttestationId.Brand         )
-	    val attestationIdDevice         :     AttestationValue< AttestationId.Device        >?  get() = firstSingleByTag  ( AttestationId.Device        )
-	    val attestationIdProduct        :     AttestationValue< AttestationId.Product       >?  get() = firstSingleByTag  ( AttestationId.Product       )
-	    val attestationIdSerial         :     AttestationValue< AttestationId.Serial        >?  get() = firstSingleByTag  ( AttestationId.Serial        )
-	    val attestationIdImei           :     AttestationValue< AttestationId.Imei          >?  get() = firstSingleByTag  ( AttestationId.Imei          )
-	    val attestationIdMeid           :     AttestationValue< AttestationId.Meid          >?  get() = firstSingleByTag  ( AttestationId.Meid          )
-	    val attestationIdManufacturer   :     AttestationValue< AttestationId.Manufacturer  >?  get() = firstSingleByTag  ( AttestationId.Manufacturer  )
-	    val attestationIdModel          :     AttestationValue< AttestationId.Model         >?  get() = firstSingleByTag  ( AttestationId.Model         )
-	    val vendorPatchLevel            :     AttestationValue< PatchLevel.Vendor           >?  get() = firstSingleByTag  ( PatchLevel.Vendor           )
-	    val bootPatchLevel              :     AttestationValue< PatchLevel.Boot             >?  get() = firstSingleByTag  ( PatchLevel.Boot             )
-	    val deviceUniqueAttestation     :     AttestationValue< DeviceUniqueAttestation     >?  get() = firstSingleByTag  ( DeviceUniqueAttestation     )
-	    val attestationIdSecondImei     :     AttestationValue< AttestationId.SecondImei    >?  get() = firstSingleByTag  ( AttestationId.SecondImei    )
-	    val moduleHash                  :     AttestationValue< ModuleHash                  >?  get() = firstSingleByTag  ( ModuleHash                  )
-	    // @formatter:on
+    // @formatter:off
+    /**
+     * Key purposes.
+     *
+     * Corresponds to the `Tag::PURPOSE` authorization tag, which uses a tag ID value of `1`.
+     *
+     * ASN.1: `purpose [1] EXPLICIT SET OF INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [KeyPurpose.Tag.explicitTag].
+     */
+    val purpose                    :  Set<AttestationValue<   KeyPurpose  >>?
+                                      get() = firstSetByTag(  KeyPurpose  )
+
+    /**
+     * Key algorithm.
+     *
+     * Corresponds to the `Tag::ALGORITHM` authorization tag, which uses a tag ID value of `2`.
+     *
+     * ASN.1: `algorithm [2] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [Algorithm.Tag.explicitTag].
+     */
+    val algorithm                  :  AttestationValue<          Algorithm  >?
+                                      get() = firstSingleByTag(  Algorithm  )
+
+    /**
+     * Key size (in bits).
+     *
+     * Corresponds to the `Tag::KEY_SIZE` authorization tag, which uses a tag ID value of `3`.
+     *
+     * ASN.1: `keySize [3] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [KeySize.Tag.explicitTag].
+     */
+    val keySize                    :  AttestationValue<          KeySize  >?
+                                      get() = firstSingleByTag(  KeySize  )
+
+    /**
+     * Block modes.
+     *
+     * Corresponds to the `Tag::BLOCK_MODE` authorization tag, which uses a tag ID value of `4`.
+     *
+     * ASN.1: `blockMode [4] EXPLICIT SET OF INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [BlockMode.Tag.explicitTag].
+     */
+    val blockMode                  :  Set<AttestationValue<   BlockMode  >>?
+                                      get() = firstSetByTag(  BlockMode  )
+
+    /**
+     * Digest modes.
+     *
+     * Corresponds to the `Tag::DIGEST` authorization tag, which uses a tag ID value of `5`.
+     *
+     * ASN.1: `digest [5] EXPLICIT SET OF INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [Digest.Tag.explicitTag].
+     */
+    val digest                     :  Set<AttestationValue<   Digest  >>?
+                                      get() = firstSetByTag(  Digest  )
+
+    /**
+     * Padding modes.
+     *
+     * Corresponds to the `Tag::PADDING` authorization tag, which uses a tag ID value of `6`.
+     *
+     * ASN.1: `padding [6] EXPLICIT SET OF INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [Padding.Tag.explicitTag].
+     */
+    val padding                    :  Set<AttestationValue<   Padding  >>?
+                                      get() = firstSetByTag(  Padding  )
+
+    /**
+     * Caller-provided nonce flag.
+     *
+     * Corresponds to the `Tag::CALLER_NONCE` authorization tag, which uses a tag ID value of `7`.
+     *
+     * ASN.1: `callerNonce [7] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [CallerNonce.explicitTag].
+     */
+    val callerNonce                :  AttestationValue<          CallerNonce  >?
+                                      get() = firstSingleByTag(  CallerNonce  )
+
+    /**
+     * Minimum MAC length (in bits).
+     *
+     * Corresponds to the `Tag::MIN_MAC_LENGTH` authorization tag, which uses a tag ID value of `8`.
+     *
+     * ASN.1: `minMacLength [8] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [MinMacLength.Tag.explicitTag].
+     */
+    val minMacLength               :  AttestationValue<          MinMacLength  >?
+                                      get() = firstSingleByTag(  MinMacLength  )
+
+    /**
+     * Elliptic curve identifier.
+     *
+     * Corresponds to the `Tag::EC_CURVE` authorization tag, which uses a tag ID value of `10`.
+     *
+     * ASN.1: `ecCurve [10] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [ECCurve.Tag.explicitTag].
+     */
+    val ecCurve                    :  AttestationValue<          ECCurve  >?
+                                      get() = firstSingleByTag(  ECCurve  )
+
+    /**
+     * RSA public exponent.
+     *
+     * Corresponds to the `Tag::RSA_PUBLIC_EXPONENT` authorization tag, which uses a tag ID value of `200`.
+     *
+     * ASN.1: `rsaPublicExponent [200] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [RsaPublicExponent.Tag.explicitTag].
+     */
+    val rsaPublicExponent          :  AttestationValue<          RsaPublicExponent  >?
+                                      get() = firstSingleByTag(  RsaPublicExponent  )
+
+    /**
+     * RSA OAEP MGF digest.
+     *
+     * Corresponds to the `Tag::RSA_OAEP_MGF_DIGEST` authorization tag, which uses a tag ID value of `203`.
+     *
+     * ASN.1: `mgfDigest [203] EXPLICIT SET OF INTEGER OPTIONAL`.
+     * Present in key attestation versions `100`, `200`, `300`, `400` (KeyMint only).
+     *
+     * See [MgfDigest.Tag.explicitTag].
+     */
+    val mgfDigest                  :  Set<AttestationValue<   MgfDigest  >>?
+                                      get() = firstSetByTag(  MgfDigest  )
+
+    /**
+     * Rollback resistance.
+     *
+     * Corresponds to the `Tag::ROLLBACK_RESISTANCE` authorization tag, which uses a tag ID value of `303`.
+     *
+     * ASN.1: `rollbackResistance [303] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [RollbackResistance.explicitTag].
+     */
+    val rollbackResistance         :  AttestationValue<          RollbackResistance  >?
+                                      get() = firstSingleByTag(  RollbackResistance  )
+
+    /**
+     * Early-boot-only restriction.
+     *
+     * Corresponds to the `Tag::EARLY_BOOT_ONLY` authorization tag, which uses a tag ID value of `305`.
+     *
+     * ASN.1: `earlyBootOnly [305] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [EarlyBootOnly.explicitTag].
+     */
+    val earlyBootOnly              :  AttestationValue<          EarlyBootOnly  >?
+                                      get() = firstSingleByTag(  EarlyBootOnly  )
+
+    /**
+     * Key validity "not before" timestamp.
+     *
+     * Corresponds to the `Tag::ACTIVE_DATETIME` authorization tag, which uses a tag ID value of `400`.
+     *
+     * ASN.1: `activeDateTime [400] EXPLICIT INTEGER OPTIONAL`, encoded as milliseconds since epoch.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [ActiveDateTime.Tag.explicitTag].
+     */
+    val activeDateTime             :  AttestationValue<          ActiveDateTime  >?
+                                      get() = firstSingleByTag(  ActiveDateTime  )
+
+    /**
+     * Key origination validity "not after" timestamp.
+     *
+     * Corresponds to the `Tag::ORIGINATION_EXPIRE_DATETIME` authorization tag, which uses a tag ID value of `401`.
+     *
+     * ASN.1: `originationExpireDateTime [401] EXPLICIT INTEGER OPTIONAL`, encoded as milliseconds since epoch.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [OriginationExpireDateTime.Tag.explicitTag].
+     */
+    val originationExpireDateTime  :  AttestationValue<          OriginationExpireDateTime  >?
+                                      get() = firstSingleByTag(  OriginationExpireDateTime  )
+
+    /**
+     * Key usage validity "not after" timestamp.
+     *
+     * Corresponds to the `Tag::USAGE_EXPIRE_DATETIME` authorization tag, which uses a tag ID value of `402`.
+     *
+     * ASN.1: `usageExpireDateTime [402] EXPLICIT INTEGER OPTIONAL`, encoded as milliseconds since epoch.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [UsageExpireDateTime.Tag.explicitTag].
+     */
+    val usageExpireDateTime        :  AttestationValue<          UsageExpireDateTime  >?
+                                      get() = firstSingleByTag(  UsageExpireDateTime  )
+
+    /**
+     * Key usage count limit.
+     *
+     * Corresponds to the `Tag::USAGE_COUNT_LIMIT` authorization tag, which uses a tag ID value of `405`.
+     *
+     * ASN.1: `usageCountLimit [405] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [UsageCountLimit.Tag.explicitTag].
+     */
+    val usageCountLimit            :  AttestationValue<          UsageCountLimit  >?
+                                      get() = firstSingleByTag(  UsageCountLimit  )
+
+    /**
+     * Secure user ID (SID).
+     *
+     * Corresponds to the `Tag::USER_SECURE_ID` authorization tag, which uses a tag ID value of `502`.
+     *
+     * ASN.1: `userSecureId [502] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [UserSecureId.Tag.explicitTag].
+     */
+    val userSecureId               :  AttestationValue<          UserSecureId  >?
+                                      get() = firstSingleByTag(  UserSecureId  )
+
+    /**
+     * No-authentication-required flag.
+     *
+     * Corresponds to the `Tag::NO_AUTH_REQUIRED` authorization tag, which uses a tag ID value of `503`.
+     *
+     * ASN.1: `noAuthRequired [503] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [NoAuthRequired.explicitTag].
+     */
+    val noAuthRequired             :  AttestationValue<          NoAuthRequired  >?
+                                      get() = firstSingleByTag(  NoAuthRequired  )
+
+    /**
+     * Hardware authenticator type (user authentication type).
+     *
+     * Corresponds to the `Tag::USER_AUTH_TYPE` authorization tag, which uses a tag ID value of `504`.
+     *
+     * ASN.1: `userAuthType [504] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [UserAuth.Tag.explicitTag].
+     */
+    val userAuthType               :  AttestationValue<          UserAuth  >?
+                                      get() = firstSingleByTag(  UserAuth  )
+
+    /**
+     * User authentication timeout.
+     *
+     * Corresponds to the `Tag::AUTH_TIMEOUT` authorization tag, which uses a tag ID value of `505`.
+     *
+     * ASN.1: `authTimeout [505] EXPLICIT INTEGER OPTIONAL`, encoded as seconds.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AuthTimeout.Tag.explicitTag].
+     */
+    val authTimeout                :  AttestationValue<          AuthTimeout  >?
+                                      get() = firstSingleByTag(  AuthTimeout  )
+
+    /**
+     * Allow-while-on-body flag.
+     *
+     * Corresponds to the `Tag::ALLOW_WHILE_ON_BODY` authorization tag, which uses a tag ID value of `506`.
+     *
+     * ASN.1: `allowWhileOnBody [506] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [AllowWhileOnBody.explicitTag].
+     */
+    val allowWhileOnBody           :  AttestationValue<          AllowWhileOnBody  >?
+                                      get() = firstSingleByTag(  AllowWhileOnBody  )
+
+    /**
+     * Trusted user presence required flag.
+     *
+     * Corresponds to the `Tag::TRUSTED_USER_PRESENCE_REQUIRED` authorization tag, which uses a tag ID value of `507`.
+     *
+     * ASN.1: `trustedUserPresenceRequired [507] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [TrustedUserPresenceRequired.explicitTag].
+     */
+    val trustedUserPresenceRequired:  AttestationValue<          TrustedUserPresenceRequired  >?
+                                      get() = firstSingleByTag(  TrustedUserPresenceRequired  )
+
+    /**
+     * Trusted confirmation required flag.
+     *
+     * Corresponds to the `Tag::TRUSTED_CONFIRMATION_REQUIRED` authorization tag, which uses a tag ID value of `508`.
+     *
+     * ASN.1: `trustedConfirmationRequired [508] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [TrustedConfirmationRequired.explicitTag].
+     */
+    val trustedConfirmationRequired:  AttestationValue<          TrustedConfirmationRequired  >?
+                                      get() = firstSingleByTag(  TrustedConfirmationRequired  )
+
+    /**
+     * Unlocked device required flag.
+     *
+     * Corresponds to the `Tag::UNLOCKED_DEVICE_REQUIRED` authorization tag, which uses a tag ID value of `509`.
+     *
+     * ASN.1: `unlockedDeviceRequired [509] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [UnlockedDeviceRequired.explicitTag].
+     */
+    val unlockedDeviceRequired     :  AttestationValue<          UnlockedDeviceRequired  >?
+                                      get() = firstSingleByTag(  UnlockedDeviceRequired  )
+
+    /**
+     * "All applications" flag (legacy / keymaster).
+     *
+     * This tag is part of older schema versions and is not present in KeyMint (attestation versions `100+`).
+     *
+     * Corresponds to the legacy `KM_TAG_ALL_APPLICATIONS` / `Tag::ALL_APPLICATIONS` authorization tag, which uses a
+     * tag ID value of `600`.
+     *
+     * ASN.1: `allApplications [600] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `1`, `2` only.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [AllApplications.explicitTag].
+     */
+    val allApplications            :  AttestationValue<          AllApplications  >?
+                                      get() = firstSingleByTag(  AllApplications  )
+
+    /**
+     * Key creation timestamp.
+     *
+     * Corresponds to the `Tag::CREATION_DATETIME` authorization tag, which uses a tag ID value of `701`.
+     *
+     * ASN.1: `creationDateTime [701] EXPLICIT INTEGER OPTIONAL`, encoded as milliseconds since epoch.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [CreationDateTime.Tag.explicitTag].
+     */
+    val creationDateTime           :  AttestationValue<          CreationDateTime  >?
+                                      get() = firstSingleByTag(  CreationDateTime  )
+
+    /**
+     * Key origin.
+     *
+     * Corresponds to the `Tag::ORIGIN` authorization tag, which uses a tag ID value of `702`.
+     *
+     * ASN.1: `origin [702] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [Origin.Tag.explicitTag].
+     */
+    val origin                     :  AttestationValue<          Origin  >?
+                                      get() = firstSingleByTag(  Origin  )
+
+    /**
+     * Legacy rollback-resistant flag (keymaster attestation versions 1–2).
+     *
+     * This is the predecessor of [rollbackResistance] (`[303]`), and is not present in newer schemas.
+     *
+     * Corresponds to the legacy `KM_TAG_ROLLBACK_RESISTANT` authorization tag, which uses a tag ID value of `703`.
+     *
+     * ASN.1: `rollbackResistant [703] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `1`, `2` only.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [RollbackResistent.explicitTag].
+     */
+    val rollbackResistant          :  AttestationValue<          RollbackResistent  >?
+                                      get() = firstSingleByTag(  RollbackResistent  )
+
+    /**
+     * Root of trust information (verified boot state, device lock state, etc).
+     *
+     * Corresponds to the `Tag::ROOT_OF_TRUST` authorization tag, which uses a tag ID value of `704`.
+     *
+     * ASN.1: `rootOfTrust [704] EXPLICIT SEQUENCE OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [RootOfTrust.Tag.explicitTag].
+     */
+    val rootOfTrust                :  AttestationValue<          RootOfTrust  >?
+                                      get() = firstSingleByTag(  RootOfTrust  )
+
+    /**
+     * Operating system version.
+     *
+     * Corresponds to the `Tag::OS_VERSION` authorization tag, which uses a tag ID value of `705`.
+     *
+     * ASN.1: `osVersion [705] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [OsVersion.Tag.explicitTag].
+     */
+    val osVersion                  :  AttestationValue<          OsVersion  >?
+                                      get() = firstSingleByTag(  OsVersion  )
+
+    /**
+     * Operating system patch level.
+     *
+     * Corresponds to the `Tag::OS_PATCHLEVEL` authorization tag, which uses a tag ID value of `706`.
+     *
+     * ASN.1: `osPatchLevel [706] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `1`, `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [OsPatchLevel.Tag.explicitTag].
+     */
+    val osPatchLevel               :  AttestationValue<          OsPatchLevel  >?
+                                      get() = firstSingleByTag(  OsPatchLevel  )
+
+    /**
+     * Attestation application ID.
+     *
+     * Corresponds to the `Tag::ATTESTATION_APPLICATION_ID` authorization tag, which uses a tag ID value of `709`.
+     *
+     * ASN.1: `attestationApplicationId [709] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationApplicationId.Tag.explicitTag].
+     */
+    val attestationApplicationId   :  AttestationValue<          AttestationApplicationId  >?
+                                      get() = firstSingleByTag(  AttestationApplicationId  )
+
+    /**
+     * Device brand.
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_BRAND` authorization tag, which uses a tag ID value of `710`.
+     *
+     * ASN.1: `attestationIdBrand [710] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationId.Brand.Tag.explicitTag].
+     */
+    val attestationIdBrand         :  AttestationValue<          AttestationId.Brand  >?
+                                      get() = firstSingleByTag(  AttestationId.Brand  )
+
+    /**
+     * Device name.
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_DEVICE` authorization tag, which uses a tag ID value of `711`.
+     *
+     * ASN.1: `attestationIdDevice [711] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationId.Device.Tag.explicitTag].
+     */
+    val attestationIdDevice        :  AttestationValue<          AttestationId.Device  >?
+                                      get() = firstSingleByTag(  AttestationId.Device  )
+
+    /**
+     * Product name.
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_PRODUCT` authorization tag, which uses a tag ID value of `712`.
+     *
+     * ASN.1: `attestationIdProduct [712] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationId.Product.Tag.explicitTag].
+     */
+    val attestationIdProduct       :  AttestationValue<          AttestationId.Product  >?
+                                      get() = firstSingleByTag(  AttestationId.Product  )
+
+    /**
+     * Device serial number.
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_SERIAL` authorization tag, which uses a tag ID value of `713`.
+     *
+     * ASN.1: `attestationIdSerial [713] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationId.Serial.Tag.explicitTag].
+     */
+    val attestationIdSerial        :  AttestationValue<          AttestationId.Serial  >?
+                                      get() = firstSingleByTag(  AttestationId.Serial  )
+
+    /**
+     * IMEI (first slot).
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_IMEI` authorization tag, which uses a tag ID value of `714`.
+     *
+     * ASN.1: `attestationIdImei [714] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationId.Imei.Tag.explicitTag].
+     */
+    val attestationIdImei          :  AttestationValue<          AttestationId.Imei  >?
+                                      get() = firstSingleByTag(  AttestationId.Imei  )
+
+    /**
+     * MEID.
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_MEID` authorization tag, which uses a tag ID value of `715`.
+     *
+     * ASN.1: `attestationIdMeid [715] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationId.Meid.Tag.explicitTag].
+     */
+    val attestationIdMeid          :  AttestationValue<          AttestationId.Meid  >?
+                                      get() = firstSingleByTag(  AttestationId.Meid  )
+
+    /**
+     * Manufacturer name.
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_MANUFACTURER` authorization tag, which uses a tag ID value of `716`.
+     *
+     * ASN.1: `attestationIdManufacturer [716] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationId.Manufacturer.Tag.explicitTag].
+     */
+    val attestationIdManufacturer  :  AttestationValue<          AttestationId.Manufacturer  >?
+                                      get() = firstSingleByTag(  AttestationId.Manufacturer  )
+
+    /**
+     * Device model.
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_MODEL` authorization tag, which uses a tag ID value of `717`.
+     *
+     * ASN.1: `attestationIdModel [717] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `2`, `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [AttestationId.Model.Tag.explicitTag].
+     */
+    val attestationIdModel         :  AttestationValue<          AttestationId.Model  >?
+                                      get() = firstSingleByTag(  AttestationId.Model  )
+
+    /**
+     * Vendor patch level.
+     *
+     * Corresponds to the `Tag::VENDOR_PATCHLEVEL` authorization tag, which uses a tag ID value of `718`.
+     *
+     * ASN.1: `vendorPatchLevel [718] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [PatchLevel.Vendor.Tag.explicitTag].
+     */
+    val vendorPatchLevel           :  AttestationValue<          PatchLevel.Vendor  >?
+                                      get() = firstSingleByTag(  PatchLevel.Vendor  )
+
+    /**
+     * Boot patch level.
+     *
+     * Corresponds to the `Tag::BOOT_PATCHLEVEL` authorization tag, which uses a tag ID value of `719`.
+     *
+     * ASN.1: `bootPatchLevel [719] EXPLICIT INTEGER OPTIONAL`.
+     * Present in key attestation versions `3`, `4`, `100`, `200`, `300`, `400`.
+     *
+     * See [PatchLevel.Boot.Tag.explicitTag].
+     */
+    val bootPatchLevel             :  AttestationValue<          PatchLevel.Boot  >?
+                                      get() = firstSingleByTag(  PatchLevel.Boot  )
+
+    /**
+     * Device-unique attestation flag.
+     *
+     * Corresponds to the `Tag::DEVICE_UNIQUE_ATTESTATION` authorization tag, which uses a tag ID value of `720`.
+     *
+     * ASN.1: `deviceUniqueAttestation [720] EXPLICIT NULL OPTIONAL`.
+     * Present in key attestation versions `4`, `100`, `200`, `300`, `400`.
+     *
+     * Note: in this API, presence/absence of this field is represented by `null` vs non-`null`.
+     * See [DeviceUniqueAttestation.explicitTag].
+     */
+    val deviceUniqueAttestation    :  AttestationValue<          DeviceUniqueAttestation  >?
+                                      get() = firstSingleByTag(  DeviceUniqueAttestation  )
+
+    /**
+     * IMEI (second slot).
+     *
+     * Corresponds to the `Tag::ATTESTATION_ID_SECOND_IMEI` authorization tag, which uses a tag ID value of `723`.
+     *
+     * ASN.1: `attestationIdSecondImei [723] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation versions `300`, `400` only.
+     *
+     * See [AttestationId.SecondImei.Tag.explicitTag].
+     */
+    val attestationIdSecondImei    :  AttestationValue<          AttestationId.SecondImei  >?
+                                      get() = firstSingleByTag(  AttestationId.SecondImei  )
+
+    /**
+     * Module hash.
+     *
+     * Corresponds to the `Tag::MODULE_HASH` authorization tag, which uses a tag ID value of `724`.
+     *
+     * ASN.1: `moduleHash [724] EXPLICIT OCTET STRING OPTIONAL`.
+     * Present in key attestation version `400` only.
+     *
+     * See [ModuleHash.Tag.explicitTag].
+     */
+    val moduleHash                 :  AttestationValue<          ModuleHash  >?
+                                      get() = firstSingleByTag(  ModuleHash  )
+    // @formatter:on
 
 	    init {
 	        purpose?.let { require(it.isNotEmpty()) }
+	        blockMode?.let { require(it.isNotEmpty()) }
 	        digest?.let { require(it.isNotEmpty()) }
 	        padding?.let { require(it.isNotEmpty()) }
-        mgfDigest?.let { require(it.isNotEmpty()) }
-    }
-
+	        mgfDigest?.let { require(it.isNotEmpty()) }
+	    }
     /**
      * Useful for debugging, but too strict in reality
      */
@@ -292,6 +871,7 @@ data class AuthorizationList private constructor(
             require(unlockedDeviceRequired == null)
             require(vendorPatchLevel == null)
             require(bootPatchLevel == null)
+            require(userSecureId == null)
             //if(rootOfTrust != null) require(rootOfTrust.getOrNull().verifiedBootHash == 0) // TODO decoding must be changed!!
         }
         if (attestationVersion > 2) {
@@ -340,8 +920,11 @@ data class AuthorizationList private constructor(
                         Asn1.ExplicitTag(KeyPurpose.explicitTag)                  -> (inner as? Asn1Set)        ?.let { KeyPurpose                  .decodeSetElement<KeyPurpose>(it) }?.also { add(Element.SetOf(it)) }
                         Asn1.ExplicitTag(Algorithm.explicitTag)                   -> add(Element.Single(        value = Algorithm                   .decodeElement<Algorithm>(inner)))
                         Asn1.ExplicitTag(KeySize.explicitTag)                     -> add(Element.Single(        value = KeySize                     .decodeElement<KeySize>(inner)))
+                        Asn1.ExplicitTag(BlockMode.explicitTag)                   -> (inner as? Asn1Set)        ?.let { BlockMode                  .decodeSetElement<BlockMode>(it) }?.also { add(Element.SetOf(it)) }
                         Asn1.ExplicitTag(Digest.explicitTag)                      -> (inner as? Asn1Set)        ?.let { Digest                      .decodeSetElement<Digest>(it) }?.also { add(Element.SetOf(it)) }
                         Asn1.ExplicitTag(Padding.explicitTag)                     -> (inner as? Asn1Set)        ?.let { Padding                     .decodeSetElement<Padding>(it) }?.also { add(Element.SetOf(it)) }
+                        Asn1.ExplicitTag(CallerNonce.explicitTag)                 -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  CallerNonce                 .decodeNullElement(it))) }
+                        Asn1.ExplicitTag(MinMacLength.explicitTag)                -> add(Element.Single(        value = MinMacLength                .decodeElement<MinMacLength>(inner)))
                         Asn1.ExplicitTag(ECCurve.explicitTag)                     -> add(Element.Single(        value = ECCurve                     .decodeElement<ECCurve>(inner)))
                         Asn1.ExplicitTag(RsaPublicExponent.explicitTag)           -> add(Element.Single(        value = RsaPublicExponent           .decodeElement<RsaPublicExponent>(inner)))
                         Asn1.ExplicitTag(MgfDigest.explicitTag)                   -> (inner as? Asn1Set)        ?.let { MgfDigest                   .decodeSetElement<MgfDigest>(it) }?.also { add(Element.SetOf(it)) }
@@ -351,6 +934,7 @@ data class AuthorizationList private constructor(
                         Asn1.ExplicitTag(OriginationExpireDateTime.explicitTag)   -> add(Element.Single(        value = OriginationExpireDateTime   .decodeElement<OriginationExpireDateTime>(inner)))
                         Asn1.ExplicitTag(UsageExpireDateTime.explicitTag)         -> add(Element.Single(        value = UsageExpireDateTime         .decodeElement<UsageExpireDateTime>(inner)))
                         Asn1.ExplicitTag(UsageCountLimit.explicitTag)             -> add(Element.Single(        value = UsageCountLimit             .decodeElement<UsageCountLimit>(inner)))
+                        Asn1.ExplicitTag(UserSecureId.explicitTag)                -> add(Element.Single(        value = UserSecureId                .decodeElement<UserSecureId>(inner)))
                         Asn1.ExplicitTag(NoAuthRequired.explicitTag)              -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  NoAuthRequired.decodeNullElement(it))) }
                         Asn1.ExplicitTag(UserAuth.explicitTag)                    -> add(Element.Single(        value = UserAuth                    .decodeElement<UserAuth>(inner)))
                         Asn1.ExplicitTag(AuthTimeout.explicitTag)                 -> add(Element.Single(        value = AuthTimeout                 .decodeElement<AuthTimeout>(inner)))
@@ -460,8 +1044,11 @@ data class AuthorizationList private constructor(
                 "purpose=$purpose, " +
                 "algorithm=$algorithm, " +
                 "keySize=$keySize, " +
+                "blockMode=$blockMode, " +
                 "digest=$digest, " +
                 "padding=$padding, " +
+                "callerNonce=${callerNonce != null}, " +
+                "minMacLength=$minMacLength, " +
                 "ecCurve=$ecCurve, " +
                 "rsaPublicExponent=$rsaPublicExponent, " +
                 "mgfDigest=$mgfDigest, " +
@@ -471,6 +1058,7 @@ data class AuthorizationList private constructor(
                 "originationExpireDateTime=$originationExpireDateTime, " +
                 "usageExpireDateTime=$usageExpireDateTime, " +
                 "usageCountLimit=$usageCountLimit, " +
+                "userSecureId=$userSecureId, " +
                 "noAuthRequired=${noAuthRequired != null}, " +
                 "userAuthType=$userAuthType, " +
                 "authTimeout=$authTimeout, " +
@@ -498,7 +1086,7 @@ data class AuthorizationList private constructor(
                 "bootPatchLevel=$bootPatchLevel, " +
                 "deviceUniqueAttestation=${deviceUniqueAttestation != null}, " +
                 "attestationIdSecondImei=$attestationIdSecondImei, " +
-                "moduleHash=$moduleHash" +
+                "moduleHash=$moduleHash," +
                 ")"
     }
 
@@ -558,8 +1146,11 @@ data class AuthorizationList private constructor(
             appendSet("purpose", purpose as Set<AttestationValue<*>>?)
             appendSingle("algorithm", algorithm)
             appendSingle("keySize", keySize)
+            appendSet("blockMode", blockMode as Set<AttestationValue<*>>?)
             appendSet("digest", digest as Set<AttestationValue<*>>?)
             appendSet("padding", padding as Set<AttestationValue<*>>?)
+            appendBool("callerNonce", callerNonce != null)
+            appendSingle("minMacLength", minMacLength)
             appendSingle("ecCurve", ecCurve)
             appendSingle("rsaPublicExponent", rsaPublicExponent)
             appendSet("mgfDigest", mgfDigest as Set<AttestationValue<*>>?)
@@ -571,6 +1162,7 @@ data class AuthorizationList private constructor(
             appendSingle("originationExpireDateTime", originationExpireDateTime)
             appendSingle("usageExpireDateTime", usageExpireDateTime)
             appendSingle("usageCountLimit", usageCountLimit)
+            appendSingle("userSecureId", userSecureId)
 
             appendBool("noAuthRequired", noAuthRequired != null)
 
@@ -690,24 +1282,44 @@ data class AuthorizationList private constructor(
     /**
      * Key size (in bits).
      */
-    class KeySize private constructor(override val intValue: Asn1Integer) : IntEncodable {
-        constructor(keyLength: BitLength) : this(Asn1Integer(keyLength.bits))
+	    class KeySize private constructor(override val intValue: Asn1Integer) : IntEncodable {
+	        constructor(keyLength: BitLength) : this(Asn1Integer(keyLength.bits))
 
-        companion object Tag : Tagged(3uL), Asn1Decodable<Asn1Primitive, KeySize> {
-            override fun doDecode(src: Asn1Primitive) = KeySize(src.decodeToAsn1Integer())
-        }
+	        companion object Tag : Tagged(3uL), Asn1Decodable<Asn1Primitive, KeySize> {
+	            override fun doDecode(src: Asn1Primitive) = KeySize(src.decodeToAsn1Integer())
+	        }
 
-        override val tagged get() = Tag
-        override fun toString(): String {
-            return "KeySize(intValue=$intValue)"
-        }
-    }
+	        override val tagged get() = Tag
+	        override fun toString(): String {
+	            return "KeySize(intValue=$intValue)"
+	        }
+	    }
 
-    /**
-     * Digest modes as defined by KeyMint.
-     *
-     * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/Digest.aidl
-     */
+	    /**
+	     * Block modes as defined by KeyMint.
+	     *
+	     * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/BlockMode.aidl
+	     */
+	    enum class BlockMode(override val intValue: Asn1Integer) : IntEncodable {
+	        ECB(Asn1Integer(1)),
+	        CBC(Asn1Integer(2)),
+	        CTR(Asn1Integer(3)),
+	        GCM(Asn1Integer(32));
+	        // From: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/BlockMode.aidl
+
+	        companion object Tag : Tagged(4uL), Asn1Decodable<Asn1Primitive, BlockMode> {
+	            fun valueOf(int: Asn1Integer) = entries.first { it.intValue == int }
+	            override fun doDecode(src: Asn1Primitive) = valueOf(src.decodeToAsn1Integer())
+	        }
+
+	        override val tagged get() = Tag
+	    }
+
+	    /**
+	     * Digest modes as defined by KeyMint.
+	 *
+	 * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/Digest.aidl
+	 */
     enum class Digest(override val intValue: Asn1Integer) : IntEncodable {
         NONE(Asn1Integer(0)),
         MD5(Asn1Integer(1)),
@@ -750,11 +1362,34 @@ data class AuthorizationList private constructor(
         override val tagged get() = Tag
     }
 
+    /**
+     * Indicates "caller nonce".
+     *
+     * Schema representation: presence/absence of a NULL value wrapped by this explicit tag.
+     */
+    object CallerNonce : Tagged(7uL), Asn1Encodable<Asn1Primitive> {
+        override fun encodeToTlv() = Asn1.Null()
+    }
+
+    /**
+     * Minimum MAC length (in bits).
+     */
+    class MinMacLength private constructor(override val intValue: Asn1Integer) : IntEncodable {
+        constructor(macLength: BitLength) : this(Asn1Integer(macLength.bits))
+
+        companion object Tag : Tagged(8uL), Asn1Decodable<Asn1Primitive, MinMacLength> {
+            override fun doDecode(src: Asn1Primitive) = MinMacLength(src.decodeToAsn1Integer())
+        }
+
+        override val tagged get() = Tag
+        override fun toString(): String = "MinMacLength(intValue=$intValue)"
+    }
+
 
     /**
      * Elliptic curve identifiers as defined by KeyMint.
-     *
-     * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/EcCurve.aidl
+	 *
+	 * Source: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/keymint/aidl/android/hardware/security/keymint/EcCurve.aidl
      */
     enum class ECCurve(override val intValue: Asn1Integer) : IntEncodable {
         P_224(Asn1Integer(0)),
@@ -792,7 +1427,10 @@ data class AuthorizationList private constructor(
     /**
      * MGF digest.
      *
-     * Note: this value is undocumented in the public schema; it appears in practice.
+     * Corresponds to the `Tag::RSA_OAEP_MGF_DIGEST` authorization tag (tag ID `203`).
+     *
+     * Present in key attestation versions `100`, `200`, `300`, `400` (KeyMint only).
+     * The tag number is stored in [Tag.explicitTag].
      */
     class MgfDigest(override val intValue: Asn1Integer) : IntEncodable {
         companion object Tag : Tagged(203uL), Asn1Decodable<Asn1Primitive, MgfDigest> {
@@ -872,6 +1510,24 @@ data class AuthorizationList private constructor(
         }
 
         override val tagged get() = Tag
+    }
+
+    /**
+     * Secure user ID (SID).
+     *
+     * This value identifies the Gatekeeper / biometric enrollment set that can authorize this key.
+     */
+    class UserSecureId private constructor(override val intValue: Asn1Integer) : IntEncodable {
+        constructor(id: Long) : this(Asn1Integer(id)) {
+            require(id >= 0) { "UserSecureId must be non-negative" }
+        }
+
+        companion object Tag : Tagged(502uL), Asn1Decodable<Asn1Primitive, UserSecureId> {
+            override fun doDecode(src: Asn1Primitive) = UserSecureId(src.decodeToAsn1Integer())
+        }
+
+        override val tagged get() = Tag
+        override fun toString(): String = "UserSecureId(intValue=$intValue)"
     }
 
     /**
