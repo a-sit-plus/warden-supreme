@@ -15,7 +15,6 @@ import java.security.cert.X509Certificate
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
-import kotlin.time.toJavaInstant
 
 /**
  * Modern, better, independent KMP-first Attestation engine based on in-house clean-room
@@ -144,9 +143,21 @@ sealed class SupremeAttestationEngine(
             it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
                 val fromAttestation = osPatchLevel?.getOrNull()?.let { YearMonth(it.year.toInt(), it.month) }
 
-                val currentYearMonth = verificationDate.toLocalDateTime(TimeZone.UTC).let { YearMonth(it.year, it.month) }
-                if ((fromAttestation==null) || ( (monthsBetween(fromAttestation,currentYearMonth)) > maxFuturePatchLevelMonths)) throw AttestationValueException(
-                    "Patch level is ${fromAttestation?.let { monthsBetween(it,currentYearMonth) }} months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
+                val currentYearMonth =
+                    verificationDate.toLocalDateTime(TimeZone.UTC).let { YearMonth(it.year, it.month) }
+                if ((fromAttestation == null) || ((monthsBetween(
+                        currentYearMonth,
+                        fromAttestation
+                    )) > maxFuturePatchLevelMonths)
+                ) throw AttestationValueException(
+                    "Patch level is ${
+                        fromAttestation?.let {
+                            monthsBetween(
+                                it,
+                                currentYearMonth
+                            )
+                        }
+                    } months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
                     reason = AttestationValueException.Reason.OS_VERSION,
                     expectedValue = it,
                     actualValue = osPatchLevel
@@ -184,7 +195,7 @@ sealed class SupremeAttestationEngine(
             actualValue = false
         )
 
-        if (parsedRootOfTrust.verifiedBootState  != AuthorizationList.RootOfTrust.VerifiedBootState.Verified
+        if (parsedRootOfTrust.verifiedBootState != AuthorizationList.RootOfTrust.VerifiedBootState.Verified
         ) throw AttestationValueException(
             "System image not verified",
             reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
@@ -196,7 +207,7 @@ sealed class SupremeAttestationEngine(
     @Throws(AttestationValueException::class)
     override fun AuthorizationList.verifyRollbackResistance() {
         if (attestationConfiguration.requireRollbackResistance)
-            if (rollbackResistant?.getOrNull()?:rollbackResistance?.getOrNull() ==null) throw AttestationValueException(
+            if (rollbackResistant?.getOrNull() ?: rollbackResistance?.getOrNull() == null) throw AttestationValueException(
                 "No rollback resistance",
                 reason = AttestationValueException.Reason.ROLLBACK_RESISTANCE,
                 expectedValue = true,
