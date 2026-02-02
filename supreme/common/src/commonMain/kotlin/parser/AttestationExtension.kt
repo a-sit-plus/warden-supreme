@@ -9,6 +9,14 @@ import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1ContentBytes
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.X509Certificate
 
+
+interface AttestationExtension<A: AttestationExtension.AuthList> {
+    interface AuthList
+
+    val softwareEnforced: A
+    val hardwareEnforced: A
+}
+
 /**
  * Attestation certificate extension [used by Google](https://source.android.com/docs/security/features/keystore/attestation#schema).
  * While we could use sophisticated sanity checks to ensure
@@ -28,9 +36,9 @@ data class AttestationKeyDescription(
     val keyMintSecurityLevel: SecurityLevel,
     val attestationChallenge: ByteArray,
     val uniqueId: ByteArray,
-    val softwareEnforced: AuthorizationList,
-    val hardwareEnforced: AuthorizationList
-) : Asn1Encodable<Asn1Sequence>, Identifiable, PrettyPrintable {
+    override val softwareEnforced: AuthorizationList,
+    override val hardwareEnforced: AuthorizationList
+) : Asn1Encodable<Asn1Sequence>, Identifiable, PrettyPrintable, AttestationExtension<AuthorizationList> {
 
     /**
      * alias for [keyMintVersion] for backwards compatibility for attestationVersion<=4

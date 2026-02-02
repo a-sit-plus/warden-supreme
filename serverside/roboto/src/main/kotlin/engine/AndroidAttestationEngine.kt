@@ -1,6 +1,7 @@
 package  at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.AttestationExtension
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.exceptions.AttestationValueException
@@ -9,12 +10,13 @@ import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
 import io.ktor.util.*
 import java.util.*
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
 
-sealed class AndroidAttestationEngine<AttRecord, AuthList, Cert>(
+sealed class AndroidAttestationEngine<AttRecord: AttestationExtension<AuthList>, AuthList: AttestationExtension.AuthList, Cert>(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
     protected val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
 ) {
@@ -98,10 +100,82 @@ sealed class AndroidAttestationEngine<AttRecord, AuthList, Cert>(
     }
 
 
-    protected abstract fun AttRecord.verifyAttestationTime(verificationDate: Instant)
+    protected fun AttRecord.verifyAttestationTime(verificationDate: Instant) {
+        val checkTime = verificationDate + (attestationConfiguration.verificationSecondsOffset).seconds
+        if (attestationConfiguration.attestationStatementValiditySeconds == null) return //no validity, no checks!
+        val creationTime = createdAt ?: throw AttestationValueException(
+            "Attestation statement creation time missing",
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
+            expectedValue = checkTime,
+            actualValue = null
+        )
+
+        val difference = checkTime - creationTime
+        if (difference < Duration.ZERO) throw AttestationValueException(
+            "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
+            expectedValue = checkTime,
+            actualValue = createdAt
+        )
+
+        if (difference > attestationConfiguration.attestationStatementValiditySeconds.seconds) throw AttestationValueException(
+            "Attestation statement creation time too far in the past: $createdAt, check time: $checkTime, attestation statement validity in seconds: ${attestationConfiguration.attestationStatementValiditySeconds}",
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
+            expectedValue = checkTime,
+            actualValue = createdAt
+        )
+
+    }
 
     @Throws(AttestationValueException::class)
-    protected abstract fun AttRecord.verifyApplication(application: AndroidAttestationConfiguration.AppData)
+    protected fun AttRecord.verifyApplication(application: AndroidAttestationConfiguration.AppData) {
+        val appId = softwareEnforced.appIdForDiagnostics
+
+        catchingUnwrapped {
+        val matchingPackageVersions = softwareEnforced.findMatchingPackageVersions(application.packageName)
+
+            if (matchingPackageVersions.isEmpty()) {
+                throw AttestationValueException(
+                    "Invalid Application Package: $matchingPackageVersions (should contain: ${application.packageName})",
+                    reason = AttestationValueException.Reason.PACKAGE_NAME,
+                    expectedValue = application.packageName,
+                    actualValue = appId
+                )
+            }
+            application.appVersion?.let { configuredVersion ->
+                if (matchingPackageVersions.firstOrNull { it >= configuredVersion.toUInt() } == null) {
+                    throw AttestationValueException(
+                        "Application Version not supported",
+                        reason = AttestationValueException.Reason.APP_VERSION,
+                        expectedValue = configuredVersion,
+                        actualValue = matchingPackageVersions
+                    )
+                }
+            }
+            val signatureDigests = softwareEnforced.signerFingerprints
+            if (signatureDigests?.firstOrNull { fromAttestation ->
+                    application.signerFingerprints.any { it.contentEquals(fromAttestation) }
+                } == null) {
+                throw AttestationValueException(
+                    "Invalid Application Signature Digest",
+                    reason = AttestationValueException.Reason.APP_SIGNER_DIGEST,
+                    expectedValue = application.signerFingerprints,
+                    actualValue = signatureDigests
+                )
+            }
+        }.onFailure {
+            throw when (it) {
+                is AttestationValueException -> it
+                else -> AttestationValueException(
+                    "Could not verify Client Application",
+                    it,
+                    reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                    expectedValue = "Correct app data",
+                    actualValue = appId
+                )
+            }
+        }
+    }
 
     protected abstract fun AttRecord.verifyAndroidVersion(
         versionOverride: Int?,
@@ -127,9 +201,29 @@ sealed class AndroidAttestationEngine<AttRecord, AuthList, Cert>(
     protected abstract fun AuthList.verifySystemLocked()
 
     @Throws(AttestationValueException::class)
-    protected abstract fun AuthList.verifyRollbackResistance()
+    protected fun AuthList.verifyRollbackResistance(){
+        if (attestationConfiguration.requireRollbackResistance)
+            if (!rollbackResistant) throw AttestationValueException(
+                "No rollback resistance",
+                reason = AttestationValueException.Reason.ROLLBACK_RESISTANCE,
+                expectedValue = true,
+                actualValue = false
+            )
+    }
 
     @Throws(AttestationValueException::class)
     protected abstract fun AttRecord.verifySecurityLevel(appOverride: Boolean?)
+
+    protected abstract val AttRecord.createdAt: Instant?
+
+    protected abstract val AuthList.appIdForDiagnostics : Any?
+
+    @Throws(Throwable::class)
+    protected abstract fun AuthList.findMatchingPackageVersions(packageName: String): List<UInt>
+
+    @get:Throws(Throwable::class)
+    protected abstract val AuthList.signerFingerprints : Set<ByteArray>?
+
+    protected abstract val AuthList.rollbackResistant: Boolean
 
 }

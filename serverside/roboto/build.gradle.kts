@@ -55,6 +55,12 @@ sourceSets.main {
                 it.delete()
             }
         }
+        //not because we patched functionally, but to have it extend and interface
+        File("${project.rootDir}/dependencies/android-key-attestation/src/main/java/com/google/android/attestation/ParsedAttestationRecord.java").let {
+            if (it.exists()) {
+                it.delete()
+            }
+        }
     }
 }
 

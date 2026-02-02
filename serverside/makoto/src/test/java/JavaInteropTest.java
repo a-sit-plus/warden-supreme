@@ -5,6 +5,7 @@ import at.asitplus.attestation.KeyAttestation;
 import at.asitplus.attestation.android.Roboto;
 import at.asitplus.attestation.android.AndroidAttestationConfiguration;
 import at.asitplus.attestation.android.PatchLevel;
+import at.asitplus.attestation.android.SoftwareAttestationVerifier;
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException;
 import at.asitplus.attestation.android.exceptions.AttestationValueException;
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException;

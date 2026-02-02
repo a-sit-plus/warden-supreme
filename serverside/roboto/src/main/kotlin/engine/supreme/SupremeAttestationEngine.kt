@@ -12,8 +12,6 @@ import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import java.security.cert.X509Certificate
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 /**
@@ -34,84 +32,24 @@ sealed class SupremeAttestationEngine(
     override val AttestationKeyDescription.challenge: ByteArray
         get() = attestationChallenge
 
-    override fun AttestationKeyDescription.verifyAttestationTime(verificationDate: Instant) {
-        val checkTime = verificationDate + (attestationConfiguration.verificationSecondsOffset).seconds
-        if (attestationConfiguration.attestationStatementValiditySeconds == null) return //no validity, no checks!
-        //TODO: be more lenient here and accept month and day zero, but this should be configurable
-        val createdAt = hardwareEnforced.creationDateTime?.getOrNull()?.timestamp
+    //TODO: be more lenient here and accept month and day zero, but this should be configurable
+    override val AttestationKeyDescription.createdAt: Instant?
+        get() = hardwareEnforced.creationDateTime?.getOrNull()?.timestamp
             ?: softwareEnforced.creationDateTime?.getOrNull()?.timestamp
-        if (createdAt == null) throw AttestationValueException(
-            "Attestation statement creation time missing",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = null
-        )
 
-        val difference = checkTime - createdAt
-        if (difference < Duration.ZERO) throw AttestationValueException(
-            "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = createdAt
-        )
+    override val AuthorizationList.appIdForDiagnostics: AttestationValue<AuthorizationList.AttestationApplicationId>?
+        get() = attestationApplicationId
 
-        if (difference > attestationConfiguration.attestationStatementValiditySeconds.seconds) throw AttestationValueException(
-            "Attestation statement creation time too far in the past: $createdAt, check time: $checkTime, attestation statement validity in seconds: ${attestationConfiguration.attestationStatementValiditySeconds}",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = createdAt
-        )
-    }
+    @Throws(Throwable::class)
+    override fun AuthorizationList.findMatchingPackageVersions(packageName: String): List<UInt> =
+        attestationApplicationId?.getOrThrow()?.packageInfos?.filter {
+            it.packageName == packageName
+        }?.map { it.version } ?: emptyList()
 
-    override fun AttestationKeyDescription.verifyApplication(application: AndroidAttestationConfiguration.AppData) {
-        //TODO extract raw ASN! value for failire instead of `getOrNull`
-        catchingUnwrapped {
-            val parsedValue = softwareEnforced.attestationApplicationId
-            val matchingPackage = parsedValue?.getOrNull()?.packageInfos?.filter {
-                it.packageName == application.packageName
-            } ?: emptyList()
-            if (matchingPackage.isEmpty()) {
-                throw AttestationValueException(
-                    "Invalid Application Package: $parsedValue (should be: ${application.packageName})",
-                    reason = AttestationValueException.Reason.PACKAGE_NAME,
-                    expectedValue = application.packageName,
-                    actualValue = parsedValue
-                )
-            }
-            application.appVersion?.let { configuredVersion ->
-                if (matchingPackage.firstOrNull { it.version >= configuredVersion.toUInt() } == null) {
-                    throw AttestationValueException(
-                        "Application Version not supported",
-                        reason = AttestationValueException.Reason.APP_VERSION,
-                        expectedValue = configuredVersion,
-                        actualValue = matchingPackage.map { it.version }
-                    )
-                }
-            }
+    @get:Throws(Throwable::class)
+    override val AuthorizationList.signerFingerprints: Set<ByteArray>?
+        get() = attestationApplicationId?.getOrThrow()?.signatureDigests
 
-            if (parsedValue?.getOrNull()?.signatureDigests?.firstOrNull { fromAttestation ->
-                    application.signerFingerprints.any { it.contentEquals(fromAttestation) }
-                } == null) {
-                throw AttestationValueException(
-                    "Invalid Application Signature Digest",
-                    reason = AttestationValueException.Reason.APP_SIGNER_DIGEST,
-                    expectedValue = application.signerFingerprints,
-                    actualValue = parsedValue?.getOrNull()?.signatureDigests
-                )
-            }
-        }.onFailure {
-            throw when (it) {
-                is AttestationValueException -> it
-                else -> AttestationValueException(
-                    "Could not verify Client Application",
-                    it,
-                    reason = AttestationValueException.Reason.APP_UNEXPECTED,
-                    expectedValue = "Correct app data",
-                    actualValue = softwareEnforced
-                )
-            }
-        }
-    }
 
     override fun AuthorizationList.verifyAndroidVersionFromAuthList(
         versionOverride: Int?,
@@ -204,16 +142,9 @@ sealed class SupremeAttestationEngine(
         )
     }
 
-    @Throws(AttestationValueException::class)
-    override fun AuthorizationList.verifyRollbackResistance() {
-        if (attestationConfiguration.requireRollbackResistance)
-            if (rollbackResistant?.getOrNull() ?: rollbackResistance?.getOrNull() == null) throw AttestationValueException(
-                "No rollback resistance",
-                reason = AttestationValueException.Reason.ROLLBACK_RESISTANCE,
-                expectedValue = true,
-                actualValue = false
-            )
-    }
+    override val AuthorizationList.rollbackResistant: Boolean
+        get() = (rollbackResistant?.getOrNull() ?: rollbackResistance?.getOrNull()) != null
+
 
     class Hardware(
         attestationConfiguration: AndroidAttestationConfiguration,

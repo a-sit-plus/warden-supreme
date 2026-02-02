@@ -8,10 +8,11 @@ import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.catchingUnwrapped
-import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.coroutines.runBlocking
 import java.security.cert.X509Certificate
 import java.util.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
 
 /**
@@ -34,6 +35,7 @@ constructor(
         val version: String = wardenVersion
     }
 
+    //this works because all share the same config -> same revocation lists
     internal suspend fun revocationListsFromLastCall() =
         engines.first().certChainValidator.revocationListsFromLastCall()
 
@@ -67,7 +69,10 @@ constructor(
         require(engines.isNotEmpty()) { "Attestation engine list is empty" }
     }
 
+
     /**
+     * **Java-Friendly method**
+     *
      * Packs
      * * the current configuration
      * * the passed attestation proof
@@ -76,11 +81,12 @@ constructor(
      * into a serializable data structure for easy debugging
      */
     @JvmName("collectDebugInfo")
-    fun collectDebugInfoBlocking(
+    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("collectDebugInfo"))
+    fun collectDebugInfoJ(
         certificates: List<X509Certificate>,
         expectedChallenge: ByteArray,
         verificationDate: Date = Date(),
-    ) = runBlocking { collectDebugInfo(certificates, expectedChallenge, verificationDate) }
+    ) = collectDebugInfoBlocking(certificates, expectedChallenge, verificationDate.toInstant().toKotlinInstant())
 
     /**
      * Packs
@@ -94,7 +100,7 @@ constructor(
     suspend fun collectDebugInfo(
         certificates: List<X509Certificate>,
         expectedChallenge: ByteArray,
-        verificationDate: Date = Date(),
+        verificationDate: Instant = Clock.System.now(),
     ) = AndroidDebugAttestationStatement(
         this,
         attestationConfiguration,
@@ -104,24 +110,28 @@ constructor(
     )
 
     /**
+     * **Java-Friendly method**
+     *
      * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
      * Checks are performed according to the properties set in the [attestationConfiguration].
      *
      * @See [AndroidAttestationConfiguration] for details on what is and is not checked.
      *
-     * @return [ParsedAttestationRecord] on success
+     * @return [AttestationExtension] on success
      * @throws AttestationValueException if a property fails to verify according to the current configuration
      * @throws RevocationException if a certificate has been revoked
      * @throws CertificateInvalidException if certificates fail to verify
      *
      */
+    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("verifyAttestation"))
     @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
     @JvmName("verifyAttestation")
-    fun verifyAttestationBlocking(
+    fun verifyAttestationJ(
         certificates: List<X509Certificate>,
         verificationDate: Date = Date(),
         expectedChallenge: ByteArray
-    ): Any = runBlocking { verifyAttestation(certificates, verificationDate, expectedChallenge) }
+    ): AttestationExtension<*> =
+        verifyAttestationBlocking(certificates, verificationDate.toInstant().toKotlinInstant(), expectedChallenge)
 
     /**
      * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
@@ -129,7 +139,7 @@ constructor(
      *
      * @See [AndroidAttestationConfiguration] for details on what is and is not checked.
      *
-     * @return [ParsedAttestationRecord] on success
+     * @return [AttestationExtension] on success
      * @throws AttestationValueException if a property fails to verify according to the current configuration
      * @throws RevocationException if a certificate has been revoked
      * @throws CertificateInvalidException if certificates fail to verify
@@ -139,14 +149,14 @@ constructor(
     @JvmName("verifyAttestationSuspending")
     suspend fun verifyAttestation(
         certificates: List<X509Certificate>,
-        verificationDate: Date = Date(),
+        verificationDate: Instant = Clock.System.now(),
         expectedChallenge: ByteArray
-    ): Any {
+    ): AttestationExtension<*> {
         val results = engines.map {
             catchingUnwrapped {
                 it.verifyAttestation(
                     certificates,
-                    verificationDate.toInstant().toKotlinInstant(),
+                    verificationDate,
                     expectedChallenge
                 )
             }
@@ -161,8 +171,26 @@ constructor(
 
             throw results.last() //this way we are most lenient
                 .exceptionOrNull()!!
-        } else results.first { it.isSuccess }.getOrThrow()!!
+        } else results.first { it.isSuccess }.getOrThrow()
 
     }
-
 }
+
+/**
+ * Blocking version of [Roboto.verifyAttestation]
+ */
+@Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
+fun Roboto.verifyAttestationBlocking(
+    certificates: List<X509Certificate>,
+    verificationDate: Instant = Clock.System.now(),
+    expectedChallenge: ByteArray
+): AttestationExtension<*> = runBlocking { verifyAttestation(certificates, verificationDate, expectedChallenge) }
+
+/**
+ * Blocking version of [Roboto.collectDebugInfo]
+ */
+fun Roboto.collectDebugInfoBlocking(
+    certificates: List<X509Certificate>,
+    expectedChallenge: ByteArray,
+    verificationDate: Instant = Clock.System.now(),
+) = runBlocking { collectDebugInfo(certificates, expectedChallenge, verificationDate) }

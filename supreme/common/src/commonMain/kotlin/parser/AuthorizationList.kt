@@ -68,7 +68,7 @@ import kotlin.time.Instant
  */
 data class AuthorizationList private constructor(
     val elements: List<Element>
-) : Asn1Encodable<Asn1Sequence>, PrettyPrintable {
+) : Asn1Encodable<Asn1Sequence>, PrettyPrintable, AttestationExtension.AuthList {
     /**
      * A single entry inside the [AuthorizationList] ASN.1 sequence.
      *

@@ -570,7 +570,7 @@ class Makoto
             )
 
         //throws exception on fail, so if we get past it -> all green
-        androidAttestationVerifier.verifyAttestation(certificates, (clock.now()).toJavaDate(),expectedChallenge)
+        androidAttestationVerifier.verifyAttestation(certificates, clock.now(),expectedChallenge)
 
         AttestationResult.Android.Verified(certificates)
     }.getOrElse {
