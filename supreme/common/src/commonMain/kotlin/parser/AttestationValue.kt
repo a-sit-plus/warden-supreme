@@ -153,7 +153,7 @@ sealed class AttestationValue<out A : Asn1Encodable<*>>() :
         level = DeprecationLevel.ERROR
     )
     @Throws(NoSuchElementException::class)
-    inline fun get(): A = //  TODO TODO
+    inline fun get(): A = // will be removed, to borked semantics don't matter
         when (this) {
             is Success -> value
             is Failure<*> -> throw NoSuchElementException("No value present; elementName=$elementName, tagged=$tagged, rawAsn1Value=$rawAsn1Value")
