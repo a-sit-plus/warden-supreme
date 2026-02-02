@@ -9,9 +9,7 @@ import at.asitplus.attestation.wardenVersion
 import at.asitplus.catchingUnwrapped
 import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
-import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.withLock
 import java.security.cert.*
 import java.util.*
 import kotlin.time.toKotlinInstant
@@ -25,7 +23,7 @@ const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
 class Roboto
 @JvmOverloads
 constructor(
-    protected val attestationConfiguration: AndroidAttestationConfiguration,
+    val attestationConfiguration: AndroidAttestationConfiguration,
     private val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
 ) {
     companion object Companion {

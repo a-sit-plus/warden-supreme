@@ -13,6 +13,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
+
 sealed class AndroidAttestationEngine<AttRecord, AuthList, Cert>(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
     protected val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
