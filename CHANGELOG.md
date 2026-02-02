@@ -13,10 +13,12 @@ this changelog also includes the original WARDEN changelog.
         * Expose known properties as getters from this list
         * Custom Parser correctly handles UserAuthType and many more
         * -> **Warden Supreme now parses more Attestation extensions correctly than Google's shiny new parser AND with better semantics and Debugging**
-        * Refactor Roboto
-            * Directly instantiate `Roboto`; it will check software and/or wardware attestation based on config
-            * Delegate actual checks to `Engines` to prepare replacing Google's parser and PKIX cert path validator
-            * F**irst preview of attestation checks based on own parser**
+    * Refactor Roboto
+        * `Roboto` changes from abstract base class to a concrete wired based on config (experimentalParser, HW/SW toggles)
+        * Delegate actual checks to `Engines` to prepare replacing Google's parser and PKIX cert path validator  
+          (set `experimentalParser = true` in config to try it out)
+        * Return type changes from `ParsedAttestationRecord` to `AttestationExtension<*>`
+        * **First preview of attestation checks based on own parser**
 * Fixes:
     * Relax the upstream parser to glitch out less often
         * -> **Warden Supreme now parses more Attestation extensions than WARDEN-roboto ever could.**
@@ -24,7 +26,13 @@ this changelog also includes the original WARDEN changelog.
     * Artefacts don't need `google()` maven repo any more
     * No mire init crash in Java projects using Warden Supreme
 * API-Changes:
-    * Directly instantiate Roboto (see "Refactor Roboto") 
+    * Roboto refactor 
+        * Directly instantiate Roboto (see "Refactor Roboto")
+        * Roboto's functions now expect Kotlin `Instant` instead of Java `Date`
+        * Blocking functions have been made extensions instead of members
+        * Java-compatible signature remain
+        * `HardwareAttestationVerifier` / `SoftwareAttestationVerifier` are no longer classes
+            * Now they are deprecated factory objects returning a `Roboto` instance
     * Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
     * Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
 * Revised and expanded documentation

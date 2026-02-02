@@ -222,7 +222,7 @@ class Makoto
             androidAttestationConfiguration.copy(verificationSecondsOffset = androidOffset)
 
         catchingUnwrapped {  Roboto(correctlyOffsetAndroidConfig){ expected, actual -> expected contentEquals actual }}.getOrElse {
-            throw  throw AttestationException.Configuration(
+            throw AttestationException.Configuration(
                 Platform.ANDROID,
                 it.message,
                 cause = it
