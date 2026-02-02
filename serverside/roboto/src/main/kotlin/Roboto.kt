@@ -5,6 +5,7 @@ import at.asitplus.attestation.android.engine.RtgAttestationEngine
 import at.asitplus.attestation.android.engine.SupremeAttestationEngine
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
+import at.asitplus.attestation.android.exceptions.ConfigurationException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.catchingUnwrapped
@@ -43,30 +44,18 @@ constructor(
     private val engines = mutableListOf<AndroidAttestationEngine<*, *, X509Certificate>>().apply {
         if (!attestationConfiguration.disableHardwareAttestation) add(
             if (attestationConfiguration.experimentalParser)
-                SupremeAttestationEngine.Hardware(
-                    attestationConfiguration,
-                    verifyChallenge
-                )
-            else RtgAttestationEngine.Hardware(
-                attestationConfiguration,
-                verifyChallenge
-            )
+                SupremeAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
+            else RtgAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
         )
         if (attestationConfiguration.enableSoftwareAttestation) add(
             if (attestationConfiguration.experimentalParser)
-                SupremeAttestationEngine.Software(
-                    attestationConfiguration,
-                    verifyChallenge
-                )
-            else RtgAttestationEngine.Software(
-                attestationConfiguration,
-                verifyChallenge
-            )
+                SupremeAttestationEngine.Software(attestationConfiguration, verifyChallenge)
+            else RtgAttestationEngine.Software(attestationConfiguration, verifyChallenge)
         )
     }
 
     init {
-        require(engines.isNotEmpty()) { "Attestation engine list is empty" }
+        if(engines.isEmpty()) throw ConfigurationException("Neither hardware nor software attestation enabled")
     }
 
 

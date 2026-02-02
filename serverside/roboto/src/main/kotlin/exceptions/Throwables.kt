@@ -21,6 +21,10 @@ abstract class AndroidAttestationException(message: String?, cause: Throwable?) 
     }
 }
 
+/**
+ * Thrown if neither hardware nor software attestation is enabled or configuration objects
+ * are passed into incompatible verifiers.
+ */
 class ConfigurationException(message:String): AndroidAttestationException(message, null)
 
 
