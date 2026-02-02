@@ -59,7 +59,7 @@ sealed class SupremeAttestationEngine(
             (versionOverride ?: attestationConfiguration.androidVersion)?.let {
                 val osVersionFromRecord = osVersion?.getOrNull()?.intValue?.toBigInteger()
                 if ((osVersionFromRecord == null) || osVersionFromRecord < BigInteger(it)) throw AttestationValueException(
-                    "Android version not supported: $osVersionFromRecord} (should be at least $it)",
+                    "Android version not supported: $osVersionFromRecord (should be at least $it)",
                     reason = AttestationValueException.Reason.OS_VERSION,
                     expectedValue = it,
                     actualValue = osVersion
@@ -83,19 +83,10 @@ sealed class SupremeAttestationEngine(
 
                     val currentYearMonth =
                         verificationDate.toLocalDateTime(TimeZone.UTC).let { YearMonth(it.year, it.month) }
-                    if ((fromAttestation == null) || ((monthsBetween(
-                            currentYearMonth,
-                            fromAttestation
-                        )) > maxFuturePatchLevelMonths)
+                    val difference = fromAttestation?.let { monthsBetween(currentYearMonth, it) }
+                    if ((difference == null) || (difference > maxFuturePatchLevelMonths)
                     ) throw AttestationValueException(
-                        "Patch level is ${
-                            fromAttestation?.let {
-                                monthsBetween(
-                                    it,
-                                    currentYearMonth
-                                )
-                            }
-                        } months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
+                        "Patch level is $difference months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
                         reason = AttestationValueException.Reason.OS_VERSION,
                         expectedValue = it,
                         actualValue = osPatchLevel

@@ -55,7 +55,9 @@ constructor(
     }
 
     init {
-        if(engines.isEmpty()) throw ConfigurationException("Neither hardware nor software attestation enabled")
+        if (engines.isEmpty()) throw ConfigurationException("Neither hardware nor software attestation enabled")
+        // Fail fast on misconfiguration (e.g., missing trust anchors) instead of deferring to first verification call.
+        engines.forEach { it.trustAnchors }
     }
 
 
