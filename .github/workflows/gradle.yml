@@ -3,6 +3,8 @@ on: [push]
 jobs:
   build:
     runs-on: macos-latest
+    env:
+      NO_PRIVATE_TEST_DATA: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v3

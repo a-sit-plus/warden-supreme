@@ -50,6 +50,11 @@ sourceSets.main {
                 it.delete()
             }
         }
+        File("${project.rootDir}/dependencies/android-key-attestation/src/main/java/com/google/android/attestation/RootOfTrust.java").let {
+            if (it.exists()) {
+                it.delete()
+            }
+        }
     }
 }
 

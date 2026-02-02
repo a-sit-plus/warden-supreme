@@ -9,7 +9,7 @@ Hence, two pieces of information are available to aid debugging:
 
 The `WardenDebugAttestationStatement` can be serialised to JSON by invoking `.serialize()` (or `serializeCompact()`) on it.
 It can later be deserialised by calling `deserialize()` (or `deserializeCompact()`) on its companion.
-By finally calling `replaySmart()` on such a deserialised debug info object, the whole attestation verification process is replayed.
+By finally calling `replay()` on such a deserialised debug info object, the whole attestation verification process is replayed.
 
 Attaching a debugger allows for step-by-step debugging of any attestation errors encountered.
 For the most straightforward debugging experience:
@@ -34,35 +34,34 @@ It will then pretty-print the attestation extension's contents.
     include `at.asitplus.warden:supreme-common` in your project, and you are ready to go!
 
 As an added bonus, there is a nullable `androidAttestationExtension` extension property on the Java `X509Certificate`
-and on Signum's `X509Certificate` class, which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.
+and on Signum's `X509Certificate` class (and certificate chains), which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.
 It will even parse malformed values and print those malformed values' DER-encoded hex representation.
 The underlying parser and the renderer are still experimental, so your mileage may vary.
-Nonetheless, it is still a huge improvement over relying solely on `ParsedAttestationRecord` for debugging.
+However, it has been tested against literally thousands of attestation proofs captured from real devices and
+_seems to be_ more robust than Google's parsers, old and new.
+Plus, its `prettyPrint` is a huge improvement over relying solely on `ParsedAttestationRecord` for debugging.
 
 !!! example "Example of a Pretty-Printed Attestation Record from an Emulator"
     ```properties
     AttestationKeyDescription(
-      attestationVersion = 4
-      attestationSecurityLevel = SOFTWARE
+      attestationVersion = 3
+      attestationSecurityLevel = TRUSTED_ENVIRONMENT
       keyMintVersion = 41
-      keyMintSecurityLevel = SOFTWARE
-      attestationChallenge = 751188b89844f23d2dea561b55fbac804d7b096bc65976299d3c5cc74059f3b1
+      keyMintSecurityLevel = TRUSTED_ENVIRONMENT
+      attestationChallenge = b5a4a68423c5d2f610328b3dcc8b408d352afc78fb7eb0d4803bd9ef581654eb
       uniqueId = 
       softwareEnforced =
         AuthorizationList(
-          purpose = [
-            - SIGN
-            - VERIFY
-          ]
-          algorithm = RSA
-          keySize = KeySize(intValue=4096)
-          digest = [
-            - SHA1
-            - SHA_2_256
-          ]
+          purpose = null
+          algorithm = null
+          keySize = null
+          blockMode = null
+          digest = null
           padding = null
+          callerNonce = false
+          minMacLength = null
           ecCurve = null
-          rsaPublicExponent = RsaPublicExponent(65537)
+          rsaPublicExponent = null
           mgfDigest = null
           rollbackResistance = false
           earlyBootOnly = false
@@ -70,7 +69,8 @@ Nonetheless, it is still a huge improvement over relying solely on `ParsedAttest
           originationExpireDateTime = null
           usageExpireDateTime = null
           usageCountLimit = null
-          noAuthRequired = true
+          userSecureId = null
+          noAuthRequired = false
           userAuthType = null
           authTimeout = null
           allowWhileOnBody = false
@@ -78,18 +78,12 @@ Nonetheless, it is still a huge improvement over relying solely on `ParsedAttest
           trustedConfirmationRequired = false
           unlockedDeviceRequired = false
           allApplications = false
-          creationDateTime = CreationDateTime(intValue=1694020749000, timestamp=2023-09-06T17:19:09Z)
-          origin = GENERATED
+          creationDateTime = CreationDateTime(intValue=1752703332000, timestamp=2025-07-16T22:02:12Z)
+          origin = null
           rollbackResistant = null
-          rootOfTrust = 
-            RootOfTrust(
-              verifiedBootKeyDigest=0000000000000000000000000000000000000000000000000000000000000000
-              deviceLocked=false
-              verifiedBootState=Unverified
-              verifiedBootHash=0000000000000000000000000000000000000000000000000000000000000000
-            )
-          osVersion = OsVersion(major=11, minor=0, sub=0, intValue=110000)
-          osPatchLevel = OsPatchLevel(year=2020, month=NOVEMBER, intValue=202011)
+          rootOfTrust = null
+          osVersion = null
+          osPatchLevel = null
           attestationApplicationId = 
             AttestationApplicationId(
               packageInfos = [
@@ -115,12 +109,20 @@ Nonetheless, it is still a huge improvement over relying solely on `ParsedAttest
         )
       hardwareEnforced =
         AuthorizationList(
-          purpose = null
-          algorithm = null
-          keySize = null
-          digest = null
+          purpose = [
+            - SIGN
+            - VERIFY
+          ]
+          algorithm = EC
+          keySize = KeySize(intValue=256)
+          blockMode = null
+          digest = [
+            - SHA_2_256
+          ]
           padding = null
-          ecCurve = null
+          callerNonce = false
+          minMacLength = null
+          ecCurve = P_256
           rsaPublicExponent = null
           mgfDigest = null
           rollbackResistance = false
@@ -129,8 +131,9 @@ Nonetheless, it is still a huge improvement over relying solely on `ParsedAttest
           originationExpireDateTime = null
           usageExpireDateTime = null
           usageCountLimit = null
+          userSecureId = null
           noAuthRequired = false
-          userAuthType = null
+          userAuthType = UserAuth(authTypes=[FINGERPRINT], intValue=2)
           authTimeout = null
           allowWhileOnBody = false
           trustedUserPresenceRequired = false
@@ -138,11 +141,17 @@ Nonetheless, it is still a huge improvement over relying solely on `ParsedAttest
           unlockedDeviceRequired = false
           allApplications = false
           creationDateTime = null
-          origin = null
+          origin = GENERATED
           rollbackResistant = null
-          rootOfTrust = null
-          osVersion = null
-          osPatchLevel = null
+          rootOfTrust = 
+            RootOfTrust(
+              verifiedBootKeyDigest=c2224571c9cd5c89200a7311b1e37aa9cf751e2e19753e8d3702bca00be1d42c
+              deviceLocked=true
+              verifiedBootState=Verified
+              verifiedBootHash=d415abd0e620d3e8a942a62920195ad893ff0515ab8236931a156bc1f49de444
+            )
+          osVersion = OsVersion(major=13, minor=0, sub=0, intValue=130000)
+          osPatchLevel = OsPatchLevel(year=2025, month=MAY, intValue=202505)
           attestationApplicationId = null
           attestationIdBrand = null
           attestationIdDevice = null
@@ -152,8 +161,8 @@ Nonetheless, it is still a huge improvement over relying solely on `ParsedAttest
           attestationIdMeid = null
           attestationIdManufacturer = null
           attestationIdModel = null
-          vendorPatchLevel = null
-          bootPatchLevel = null
+          vendorPatchLevel = PatchLevel(year=2025, month=MAY, day=1, intValue=20250501)
+          bootPatchLevel = PatchLevel(year=2025, month=MAY, day=1, intValue=20250501)
           deviceUniqueAttestation = false
           attestationIdSecondImei = null
           moduleHash = null

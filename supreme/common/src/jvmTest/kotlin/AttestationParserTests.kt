@@ -1,5 +1,6 @@
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.androidAttestationExtension
+import at.asitplus.attestation.android.prettyPrint
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.toKmpCertificate
 import at.asitplus.testballoon.invoke
@@ -7,6 +8,7 @@ import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
 import com.google.android.attestation.ParsedAttestationRecord
 import de.infix.testBalloon.framework.core.testSuite
+import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeGreaterThan
@@ -25,7 +27,7 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.*
 
-private val certificateFactory = CertificateFactory.getInstance("X.509")
+internal val certificateFactory = CertificateFactory.getInstance("X.509")
 
 val CustomParserTests by testSuite {
     val chain: Map<String, JsonObject> by lazy {
@@ -80,6 +82,11 @@ val CustomParserTests by testSuite {
             chain.map { certificateFactory.generateCertificate(ByteArrayInputStream(it)) as X509Certificate }
         val androidAttestationExtension = attestationCertChain.first().androidAttestationExtension
 
+        "Chain vs. leaf" {
+            withClue(androidAttestationExtension?.prettyPrint()) {
+                attestationCertChain.androidAttestationExtension shouldBe androidAttestationExtension
+            }
+        }
         "convert" - {
             withData(nameFn = { it.subjectX500Principal.toString() }, attestationCertChain) {
                 it.toKmpCertificate().isSuccess shouldBe true
@@ -108,7 +115,7 @@ val CustomParserTests by testSuite {
                 "at.asitplus.atttest"
             ).shouldContain(
                 androidAttestationExtension.softwareEnforced.attestationApplicationId.shouldNotBeNull()
-                    .get().packageInfos.get(0).packageName
+                    .getOrThrow().packageInfos.first().packageName
             )
 
         }

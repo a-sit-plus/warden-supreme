@@ -6,13 +6,14 @@ import at.asitplus.signum.indispensable.asn1.encoding.Asn1
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToEnum
 import at.asitplus.signum.indispensable.asn1.encoding.decodeToInt
 import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1ContentBytes
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.X509Certificate
 
 /**
  * Attestation certificate extension [used by Google](https://source.android.com/docs/security/features/keystore/attestation#schema).
  * While we could use sophisticated sanity checks to ensure
  * that only valid extensions that conform to the schema in every aspect,
- * the reality is ugly, with device manufacturers being very  _creative_ about
+ * the reality is ugly, with device manufacturers being very _creative_ about
  * how and what will be encoded into [softwareEnforced] and [hardwareEnforced].
  * Hence, we must be able to parse extensions that are structurally valid
  * at first glance, even when the actual values inside look like they have been through a meat grinder.
@@ -20,7 +21,7 @@ import at.asitplus.signum.indispensable.pki.X509Certificate
  * required for a successful assessment, we're golden!
  * Hence, barely any sanity checks are enforced.
  */
-class AttestationKeyDescription(
+data class AttestationKeyDescription(
     val attestationVersion: Int,
     val attestationSecurityLevel: SecurityLevel,
     val keyMintVersion: Int,
@@ -137,10 +138,8 @@ class AttestationKeyDescription(
             val keyMintSecurityLevel = SecurityLevel.decodeFromTlv(next().asPrimitive())
             val attestationChallenge = next().asOctetString().content
             val uniqueId = next().asOctetString().content
-            val softwareEnforced =
-                AuthorizationList.decodeFromTlv(next().asSequence()).copy(attestationVersion = version)
-            val hardwareEnforced =
-                AuthorizationList.decodeFromTlv(next().asSequence()).copy(attestationVersion = version)
+            val softwareEnforced = AuthorizationList.decodeFromTlv(next().asSequence())
+            val hardwareEnforced = AuthorizationList.decodeFromTlv(next().asSequence())
             //if there's more, we don't are not allowed to care
             return AttestationKeyDescription(
                 version,
@@ -192,3 +191,18 @@ val X509Certificate.androidAttestationExtension: AttestationKeyDescription?
             }
         }
 
+/**
+ * As per Google's parser:
+ * Parse the attestation record that is closest to the root. This prevents an adversary from
+ * attesting an attestation record of their choice with an otherwise trusted chain using the
+ * following attack:
+ * 1. having the TEE attest a key under the adversary's control,
+ * 2. using that key to sign a new leaf certificate with an attestation extension that has their
+ *   chosen attestation record, then
+ * 3. appending that certificate to the original certificate chain.
+ *
+ * @return the [AttestationKeyDescription] closest to the root or `null` if non is present
+ *
+ */
+val CertificateChain.androidAttestationExtension: AttestationKeyDescription?
+    get() = lastOrNull { cert -> cert.androidAttestationExtension != null }?.androidAttestationExtension

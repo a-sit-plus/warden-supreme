@@ -680,6 +680,7 @@ public abstract class AuthorizationList {
     try {
       return YearMonth.parse(value, DateTimeFormatter.ofPattern("yyyyMM"));
     } catch (DateTimeParseException e) {
+      if(value.endsWith("00")) return toYearMonth(value.substring(0,value.length()-2)+"01");
       throw new IllegalArgumentException(e);
     }
   }
@@ -712,6 +713,7 @@ public abstract class AuthorizationList {
 
     ImmutableSet<UserAuthType> result = builder.build();
     if (result.isEmpty()) {
+      if (userAuthType % 2 == 0) return result; /*Other powers of two, so its OK*/
       throw new IllegalArgumentException("Invalid User Auth Type.");
     }
 

@@ -5,6 +5,23 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # 1.0.0-SNAPSHOT
+* Features:
+    * Get Attestation extension from certificate chain same as Google's parser (return the attestation extension closest to the root)
+    * Rework custom Attestation extension parser 
+        * Now list-based to handle arbitrary properties
+        * Add missing properties to custom parser
+        * Expose known properties as getters from this list
+        * Custom Parser correctly handles UserAuthType and many more
+        * -> **Warden Supreme now parses more Attestation extensions correctly than Google's shiny new parser AND with better semantics and Debugging**
+* Fixes:
+    * Relax the upstream parser to glitch out less often
+        * -> **Warden Supreme now parses more Attestation extensions than WARDEN-roboto ever could.**
+    * Correctly re-encode cursed X.509 certificate extensions that encode `critical=true` instead of omitting it
+* Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
+* Revised and expanded documentation
+* Dependency Updates:
+    * Signum 3.19.3 / Supreme 0.11.3
+
 
 # 1.0.0-RC2
 * Features:
