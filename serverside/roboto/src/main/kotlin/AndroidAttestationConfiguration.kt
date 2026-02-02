@@ -418,8 +418,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * @see AndroidRevocationList.HttpLoader.Configuration
      * @see AndroidRevocationList.FileLoader.Configuration
      */
-    val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
+    val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
+    /**
+     * Flag to try out the new experimental parser
+     */
+    val experimentalParser: Boolean = false,
 
 ) : AttestationConfiguration {
 
@@ -523,6 +527,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * for attestation checks to pass
          */
         requireRemoteKeyProvisioning: Boolean = false,
+
+        /**
+         * Flag to try out the new experimental parser
+         */
+        experimentalParser: Boolean = false,
     ) : this(
         listOf(singleApp),
         androidVersion = androidVersion,
@@ -539,6 +548,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+        experimentalParser = experimentalParser,
     )
 
     /**
@@ -647,6 +657,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * for attestation checks to pass
          */
         requireRemoteKeyProvisioning: Boolean = false,
+
+        /**
+         * Flag to try out the new experimental parser
+         */
+        experimentalParser: Boolean = false,
     ) : this(
         applications = apps,
         androidVersion = version,
@@ -663,6 +678,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+        experimentalParser = experimentalParser,
     )
 
     /**
@@ -918,6 +934,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
 
+        private var experimentalParser: Boolean = false
+
         /**
          * specifies a minimum Android version
          * @see AndroidAttestationConfiguration.androidVersion
@@ -1041,6 +1059,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * @see at.asitplus.attestation.android.AndroidAttestationConfiguration.requireRemoteKeyProvisioning
          */
         fun requireRemoteKeyProvisioning(required: Boolean) = apply { requireRemoteKeyProvisioning = required }
+        /**
+         * Flag to try out the new experimental parser
+         */
+        fun experimentalParser(experimentalParser: Boolean) = apply { this.experimentalParser = experimentalParser }
 
         fun build() = AndroidAttestationConfiguration(
             applications = applications,
@@ -1058,6 +1080,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             enableSoftwareAttestation = enableSwAttestation,
             revocation = revocation,
             requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+            experimentalParser = experimentalParser,
         )
 
     }
@@ -1078,7 +1101,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "disableHardwareAttestation=$disableHardwareAttestation, " +
                 "enableSoftwareAttestation=$enableSoftwareAttestation, " +
                 "revocation=$revocation, " +
-                "osPatchLevel=$osPatchLevel" +
+                "osPatchLevel=$osPatchLevel, " +
+                "experimentalParser=$experimentalParser" +
                 ")"
     }
 
@@ -1105,6 +1129,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (revocation != other.revocation) return false
 
         if (requireRemoteKeyProvisioning != other.requireRemoteKeyProvisioning) return false
+        if(experimentalParser != other.experimentalParser) return false
 
         return true
     }
@@ -1126,6 +1151,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + softwareTrustedRoots.hashCode()
         result = 31 * result + (revocation.hashCode() ?: 0)
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
+        result = 31 * result + experimentalParser.hashCode()
         return result
     }
 
