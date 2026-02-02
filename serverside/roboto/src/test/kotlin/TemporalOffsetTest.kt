@@ -78,54 +78,56 @@ val TemporalOffsetTest by testSuite {
         )
     )
 
-
-    "Exact Time of Validity" - {
-        withData(exactStartOfValidity) {
-            attestationService().verifyAttestation(
-                it.attestationCertChain,
-                it.verificationDate,
-                it.challenge
-            )
-        }
-    }
-
-    "Exact Time of Validity + 1D" - {
-        withData(exactStartOfValidity) {
-            attestationService(
-                attestationStatementValiditiy = 1.days + 1.seconds
-            ).verifyAttestation(
-                it.attestationCertChain,
-                it.verificationDate + 1.days,
-                it.challenge,
-            )
-        }
-    }
-
-    "Exact Time of Validity - 1D" - {
-        withDataSuites(exactStartOfValidity) {
+    withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
+        "Exact Time of Validity" - {
             withData(exactStartOfValidity) {
-                shouldThrow<AttestationValueException> {
-                    attestationService().verifyAttestation(
-                        it.attestationCertChain,
-                        it.verificationDate - 1.seconds,
-                        it.challenge,
-                    )
-                }.message!!.shouldContain("too far in the future")
+                attestationService(experimental).verifyAttestation(
+                    it.attestationCertChain,
+                    it.verificationDate,
+                    it.challenge
+                )
+            }
+        }
+
+        "Exact Time of Validity + 1D" - {
+            withData(exactStartOfValidity) {
+                attestationService(
+                    experimental,
+                    attestationStatementValiditiy = 1.days + 1.seconds
+                ).verifyAttestation(
+                    it.attestationCertChain,
+                    it.verificationDate + 1.days,
+                    it.challenge,
+                )
+            }
+        }
+
+        "Exact Time of Validity - 1D" - {
+            withDataSuites(exactStartOfValidity) {
+                withData(exactStartOfValidity) {
+                    shouldThrow<AttestationValueException> {
+                        attestationService(experimental).verifyAttestation(
+                            it.attestationCertChain,
+                            it.verificationDate - 1.seconds,
+                            it.challenge,
+                        )
+                    }.message!!.shouldContain("too far in the future")
+                }
+
+
+                withData(exactStartOfValidity) {
+                    shouldThrow<AttestationValueException> {
+                        attestationService(experimental).verifyAttestation(
+                            it.attestationCertChain,
+                            it.verificationDate + 10.minutes,
+                            it.challenge,
+                        )
+                    }.message!!.shouldContain("too far in the past")
+                }
+
             }
 
-
-            withData(exactStartOfValidity) {
-                shouldThrow<AttestationValueException> {
-                    attestationService().verifyAttestation(
-                        it.attestationCertChain,
-                        it.verificationDate + 10.minutes,
-                        it.challenge,
-                    )
-                }.message!!.shouldContain("too far in the past")
-            }
-
         }
-
     }
+
 }
-

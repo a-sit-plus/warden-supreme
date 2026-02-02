@@ -1,4 +1,4 @@
-package  at.asitplus.attestation.android.engine
+package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AttestationExtension
