@@ -3,8 +3,6 @@ package at.asitplus.attestation.android.engine
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.attestation.android.engine.AndroidAttestationEngine
-import at.asitplus.attestation.android.engine.JvmCertChainValidator
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
@@ -16,12 +14,8 @@ import java.security.cert.X509Certificate
 import java.time.YearMonth
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
-import java.util.Calendar
-import java.util.Date
-import java.util.TimeZone
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
@@ -46,18 +40,20 @@ sealed class RtgAttestationEngine(
         get() = this.attestationChallenge().toByteArray()
 
     override val ParsedAttestationRecord.createdAt: Instant?
-        get() = (teeEnforced().creationDateTime().getOrNull() ?: softwareEnforced().creationDateTime().getOrNull())?.toKotlinInstant()
+        get() = (teeEnforced().creationDateTime().getOrNull() ?: softwareEnforced().creationDateTime()
+            .getOrNull())?.toKotlinInstant()
 
     override val AuthorizationList.appIdForDiagnostics: AttestationApplicationId?
-        get() = catchingUnwrapped {  attestationApplicationId().get()}.getOrNull()
+        get() = catchingUnwrapped { attestationApplicationId().get() }.getOrNull()
 
     @Throws(Throwable::class)
     override fun AuthorizationList.findMatchingPackageVersions(packageName: String): List<UInt> =
-        attestationApplicationId().get().packageInfos().map { it.version().toUInt() }
+        attestationApplicationId().get().packageInfos().filter { it.packageName() == packageName }
+            .map { it.version().toUInt() }
 
     @get:Throws(Throwable::class)
     override val AuthorizationList.signerFingerprints: Set<ByteArray>?
-        get() =  attestationApplicationId().get().signatureDigests().map { it.toByteArray() }.toSet()
+        get() = attestationApplicationId().get().signatureDigests().map { it.toByteArray() }.toSet()
 
     override fun AuthorizationList.verifyAndroidVersionFromAuthList(
         versionOverride: Int?,
@@ -138,8 +134,21 @@ sealed class RtgAttestationEngine(
         )
     }
 
-    override val AuthorizationList.rollbackResistant: Boolean
-        get() = rollbackResistance()
+    override val AuthorizationList.rollbackResistant: Boolean get() = rollbackResistance()
+
+    override val ParsedAttestationRecord.attestationSecLevel: GeneralizedSecurityLevel
+        get() = when (attestationSecurityLevel()) {
+            ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+            ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
+        }
+
+    override val ParsedAttestationRecord.keymasterSecLevel: GeneralizedSecurityLevel
+        get() = when (keymasterSecurityLevel()) {
+            ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+            ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
+        }
 
 
     class Hardware(
@@ -161,50 +170,18 @@ sealed class RtgAttestationEngine(
             versionOverride: Int?,
             osPatchLevel: PatchLevel?,
             verificationDate: Instant
-        ) = teeEnforced().verifyAndroidVersionFromAuthList(versionOverride, osPatchLevel, verificationDate)
+        ) = hardwareEnforced.verifyAndroidVersionFromAuthList(versionOverride, osPatchLevel, verificationDate)
 
         @Throws(AttestationValueException::class)
-        override fun ParsedAttestationRecord.verifyBootStateAndSystemImage() = teeEnforced().verifySystemLocked()
+        override fun ParsedAttestationRecord.verifyBootStateAndSystemImage() = hardwareEnforced.verifySystemLocked()
 
         @Throws(AttestationValueException::class)
-        override fun ParsedAttestationRecord.verifyRollbackResistance() = teeEnforced().verifyRollbackResistance()
-
+        override fun ParsedAttestationRecord.verifyRollbackResistance() = hardwareEnforced.verifyRollbackResistance()
 
         @Throws(AttestationValueException::class)
-        override fun ParsedAttestationRecord.verifySecurityLevel(appOverride: Boolean?) {
-            if (appOverride ?: attestationConfiguration.requireStrongBox) {
-                if (attestationSecurityLevel() != ParsedAttestationRecord.SecurityLevel.STRONG_BOX)
-                    throw AttestationValueException(
-                        "Attestation security level not StrongBox",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = attestationSecurityLevel()
-                    )
-                if (keymasterSecurityLevel() != ParsedAttestationRecord.SecurityLevel.STRONG_BOX)
-                    throw AttestationValueException(
-                        "Keymaster security level not StrongBox",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = keymasterSecurityLevel()
-                    )
-            } else {
-                if (attestationSecurityLevel() == ParsedAttestationRecord.SecurityLevel.SOFTWARE)
-                    throw AttestationValueException(
-                        "Attestation security level software",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                        actualValue = attestationSecurityLevel()
-                    )
-                if (keymasterSecurityLevel() == ParsedAttestationRecord.SecurityLevel.SOFTWARE)
-                    throw AttestationValueException(
-                        "Keymaster security level software",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                        actualValue = keymasterSecurityLevel()
-                    )
-            }
+        override fun ParsedAttestationRecord.verifySecurityLevel(appOverride: Boolean?) =
+            verifySecurityLevelIsHardware(appOverride)
 
-        }
     }
 
     class Software(
@@ -235,18 +212,8 @@ sealed class RtgAttestationEngine(
         }
 
         @Throws(AttestationValueException::class)
-        override fun ParsedAttestationRecord.verifySecurityLevel(appOverride: Boolean? /*irrelevant*/) {
-            if (attestationSecurityLevel() != ParsedAttestationRecord.SecurityLevel.SOFTWARE) throw AttestationValueException(
-                "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-                actualValue = attestationSecurityLevel()
-            )
-            if (keymasterSecurityLevel() != ParsedAttestationRecord.SecurityLevel.SOFTWARE) throw AttestationValueException(
-                "Keymaster security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-                actualValue = keymasterSecurityLevel()
-            )
-        }
+        override fun ParsedAttestationRecord.verifySecurityLevel(appOverride: Boolean? /*irrelevant*/) =
+            verifySecurityLevelIsSoftware()
 
     }
 }

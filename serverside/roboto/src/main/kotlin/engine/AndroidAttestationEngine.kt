@@ -8,6 +8,7 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
+import com.google.android.attestation.ParsedAttestationRecord
 import io.ktor.util.*
 import java.util.*
 import kotlin.time.Duration
@@ -16,7 +17,7 @@ import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
 
-sealed class AndroidAttestationEngine<AttRecord: AttestationExtension<AuthList>, AuthList: AttestationExtension.AuthList, Cert>(
+sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList, Cert>(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
     protected val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
 ) {
@@ -50,7 +51,9 @@ sealed class AndroidAttestationEngine<AttRecord: AttestationExtension<AuthList>,
 
 
         //do this before we check everything else to actually identify the app we're having here
-        val parsedAttestationRecord = catchingUnwrapped { certificates.attestationRecord?:throw IllegalArgumentException("No attestation record present") }.getOrElse {
+        val parsedAttestationRecord = catchingUnwrapped {
+            certificates.attestationRecord ?: throw IllegalArgumentException("No attestation record present")
+        }.getOrElse {
             throw AttestationValueException(
                 "Could not parse attestation record",
                 it,
@@ -132,7 +135,7 @@ sealed class AndroidAttestationEngine<AttRecord: AttestationExtension<AuthList>,
         val appId = softwareEnforced.appIdForDiagnostics
 
         catchingUnwrapped {
-        val matchingPackageVersions = softwareEnforced.findMatchingPackageVersions(application.packageName)
+            val matchingPackageVersions = softwareEnforced.findMatchingPackageVersions(application.packageName)
 
             if (matchingPackageVersions.isEmpty()) {
                 throw AttestationValueException(
@@ -201,7 +204,7 @@ sealed class AndroidAttestationEngine<AttRecord: AttestationExtension<AuthList>,
     protected abstract fun AuthList.verifySystemLocked()
 
     @Throws(AttestationValueException::class)
-    protected fun AuthList.verifyRollbackResistance(){
+    protected fun AuthList.verifyRollbackResistance() {
         if (attestationConfiguration.requireRollbackResistance)
             if (!rollbackResistant) throw AttestationValueException(
                 "No rollback resistance",
@@ -216,14 +219,70 @@ sealed class AndroidAttestationEngine<AttRecord: AttestationExtension<AuthList>,
 
     protected abstract val AttRecord.createdAt: Instant?
 
-    protected abstract val AuthList.appIdForDiagnostics : Any?
+    protected abstract val AuthList.appIdForDiagnostics: Any?
 
     @Throws(Throwable::class)
     protected abstract fun AuthList.findMatchingPackageVersions(packageName: String): List<UInt>
 
     @get:Throws(Throwable::class)
-    protected abstract val AuthList.signerFingerprints : Set<ByteArray>?
+    protected abstract val AuthList.signerFingerprints: Set<ByteArray>?
 
     protected abstract val AuthList.rollbackResistant: Boolean
 
+    protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
+    protected abstract val AttRecord.keymasterSecLevel: GeneralizedSecurityLevel
+
+    protected fun AttRecord.verifySecurityLevelIsHardware(appOverride: Boolean?) {
+        if (appOverride ?: attestationConfiguration.requireStrongBox) {
+            if (attestationSecLevel != GeneralizedSecurityLevel.STRONGBOX)
+                throw AttestationValueException(
+                    "Attestation security level not StrongBox",
+                    reason = AttestationValueException.Reason.SEC_LEVEL,
+                    expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
+                    actualValue = attestationSecLevel
+                )
+            if (keymasterSecLevel != GeneralizedSecurityLevel.STRONGBOX)
+                throw AttestationValueException(
+                    "Keymaster security level not StrongBox",
+                    reason = AttestationValueException.Reason.SEC_LEVEL,
+                    expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
+                    actualValue = keymasterSecLevel
+                )
+        } else {
+            if (attestationSecLevel == GeneralizedSecurityLevel.SOFTWARE)
+                throw AttestationValueException(
+                    "Attestation security level software",
+                    reason = AttestationValueException.Reason.SEC_LEVEL,
+                    expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
+                    actualValue = attestationSecLevel
+                )
+            if (keymasterSecLevel == GeneralizedSecurityLevel.SOFTWARE)
+                throw AttestationValueException(
+                    "Keymaster security level software",
+                    reason = AttestationValueException.Reason.SEC_LEVEL,
+                    expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
+                    actualValue = keymasterSecLevel
+                )
+        }
+    }
+
+    protected fun AttRecord.verifySecurityLevelIsSoftware() {
+        if (attestationSecLevel != GeneralizedSecurityLevel.SOFTWARE) throw AttestationValueException(
+            "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
+            expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
+            actualValue =attestationSecLevel
+        )
+        if (keymasterSecLevel != GeneralizedSecurityLevel.SOFTWARE) throw AttestationValueException(
+            "Keymaster security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
+            expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
+            actualValue = keymasterSecLevel
+        )
+    }
+}
+
+
+enum class GeneralizedSecurityLevel {
+    SOFTWARE,
+    TEE,
+    STRONGBOX
 }

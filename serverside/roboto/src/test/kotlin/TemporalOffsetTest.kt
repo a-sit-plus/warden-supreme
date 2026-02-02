@@ -11,13 +11,10 @@ import at.asitplus.testballoon.withDataSuites
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.string.shouldContain
-import java.util.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
-import kotlin.time.toJavaInstant
-import kotlin.time.toKotlinInstant
 
 val TemporalOffsetTest by testSuite {
 
@@ -98,7 +95,7 @@ val TemporalOffsetTest by testSuite {
                 attestationStatementValiditiy = 1.days + 1.seconds
             ).verifyAttestation(
                 it.attestationCertChain,
-                Date.from((it.verificationDate.toInstant().toKotlinInstant() + 1.days).toJavaInstant()),
+                it.verificationDate + 1.days,
                 it.challenge,
             )
         }
@@ -110,7 +107,7 @@ val TemporalOffsetTest by testSuite {
                 shouldThrow<AttestationValueException> {
                     attestationService().verifyAttestation(
                         it.attestationCertChain,
-                        Date.from((it.verificationDate.toInstant().toKotlinInstant() - 1.seconds).toJavaInstant()),
+                        it.verificationDate - 1.seconds,
                         it.challenge,
                     )
                 }.message!!.shouldContain("too far in the future")
@@ -121,7 +118,7 @@ val TemporalOffsetTest by testSuite {
                 shouldThrow<AttestationValueException> {
                     attestationService().verifyAttestation(
                         it.attestationCertChain,
-                        Date.from((it.verificationDate.toInstant().toKotlinInstant() + 10.minutes).toJavaInstant()),
+                        it.verificationDate + 10.minutes,
                         it.challenge,
                     )
                 }.message!!.shouldContain("too far in the past")

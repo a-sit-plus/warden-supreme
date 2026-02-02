@@ -10,8 +10,9 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import java.time.YearMonth
 import java.time.ZoneOffset
-import java.util.*
+import java.util.Date
 import kotlin.random.Random
+import kotlin.time.toKotlinInstant
 
 val FakeAttestationTests by testSuite {
 
@@ -89,12 +90,11 @@ val FakeAttestationTests by testSuite {
         "patch levels from the future" - {
 
             val yearMonth = YearMonth.of(patchLevel.year, patchLevel.month)
-            val verificationDate = Date(
-                yearMonth
-                    .atDay(1)
-                    .atStartOfDay(ZoneOffset.UTC)
-                    .toInstant().toEpochMilli()
-            )
+            val verificationDate = yearMonth
+                .atDay(1)
+                .atStartOfDay(ZoneOffset.UTC)
+                .toInstant().toKotlinInstant()
+
 
             "within default tolerance" {
 
@@ -105,7 +105,7 @@ val FakeAttestationTests by testSuite {
                     appVersion = appVersion,
                     androidVersion = androidVersion,
                     androidPatchLevel = patchLevel.asSingleInt,
-                    creationTime = verificationDate,
+                    creationTime = Date(verificationDate.toEpochMilliseconds()),
                 )
 
                 Roboto(
@@ -138,7 +138,7 @@ val FakeAttestationTests by testSuite {
                     appVersion = appVersion,
                     androidVersion = androidVersion,
                     androidPatchLevel = patchLevel.asSingleInt + 1, // advance one month
-                    creationTime = verificationDate,
+                    creationTime = Date(verificationDate.toEpochMilliseconds()),
                 )
 
                 Roboto(
@@ -186,7 +186,6 @@ val FakeAttestationTests by testSuite {
                 }
 
 
-
                 //now we verify for the same month without tolerance. this should work
                 val attestationProofSameMonth = AttestationCreator.createAttestation(
                     challenge = challenge,
@@ -195,7 +194,7 @@ val FakeAttestationTests by testSuite {
                     appVersion = appVersion,
                     androidVersion = androidVersion,
                     androidPatchLevel = patchLevel.asSingleInt,
-                    creationTime = verificationDate,
+                    creationTime = Date(verificationDate.toEpochMilliseconds()),
                 )
 
                 Roboto(
@@ -229,7 +228,7 @@ val FakeAttestationTests by testSuite {
                     appVersion = appVersion,
                     androidVersion = androidVersion,
                     androidPatchLevel = patchLevel.asSingleInt + 300,
-                    creationTime = verificationDate,
+                    creationTime = Date(verificationDate.toEpochMilliseconds()),
                 )
 
                 Roboto(

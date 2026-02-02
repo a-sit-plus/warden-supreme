@@ -10,7 +10,6 @@ import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
-import com.google.android.attestation.ParsedAttestationRecord
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
@@ -29,7 +28,6 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
-import kotlin.time.toKotlinInstant
 
 @OptIn(ExperimentalStdlibApi::class)
 val WardenTest by testSuite {
@@ -136,7 +134,7 @@ val WardenTest by testSuite {
                     "at.asitplus.oegv-demo-app",
                     sandbox = true
                 )
-            ), FixedTimeClock(iosIDA.verificationDate.toInstant().toKotlinInstant())
+            ), FixedTimeClock(iosIDA.verificationDate)
         ).apply {
             verifyKeyAttestation(
                 iosIDA.attestationProof, iosIDA.challenge, iosIDA.publicKey!!
@@ -164,7 +162,7 @@ val WardenTest by testSuite {
                             iosSandbox = !(recordedAttestation.isProductionOverride
                                 ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
                             timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                recordedAttestation.verificationDate
                             ),
                             androidAttestationStatementValidity = 10.hours
                         ).apply {
@@ -228,7 +226,7 @@ val WardenTest by testSuite {
                     "time drift" - {
                         withData(nameFn = {
                             "${
-                                recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                recordedAttestation.verificationDate
                             } + ${it.toIsoString()}"
                         }, 3000.days, (-3000).days) { leeway ->
                             val attestationService = attestationService(
@@ -238,7 +236,7 @@ val WardenTest by testSuite {
                                     ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
                                 androidPatchLevel = null,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant().toKotlinInstant() - leeway
+                                    recordedAttestation.verificationDate - leeway
                                 ),
                                 offset = leeway,
                             )
@@ -274,8 +272,8 @@ val WardenTest by testSuite {
                                     ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
                                 unlockedBootloaderAllowed = false,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant()
-                                        .toKotlinInstant() - 3000.days
+                                    recordedAttestation.verificationDate
+                                            - 3000.days
                                 ),
                             )
                             attestationService.verifyAttestation(
@@ -307,8 +305,8 @@ val WardenTest by testSuite {
                                     ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
                                 unlockedBootloaderAllowed = false,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant()
-                                        .toKotlinInstant() + 3000.days
+                                    recordedAttestation.verificationDate
+                                            + 3000.days
                                 ),
                             )
                             attestationService.verifyAttestation(
@@ -340,8 +338,8 @@ val WardenTest by testSuite {
                             androidPackageName = "org.wrong.package.name",
                             iosBundleIdentifier = "org.wrong.bundle.identifier",
                             timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate.toInstant()
-                                    .toKotlinInstant()
+                                recordedAttestation.verificationDate
+
                             ),
                         )
                         attestationService.verifyAttestation(
@@ -388,7 +386,7 @@ val WardenTest by testSuite {
                             iosSandbox = !(recordedAttestation.isProductionOverride
                                 ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
                             timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                recordedAttestation.verificationDate
                             ),
                         )
                         attestationService.verifyAttestation(
@@ -438,8 +436,8 @@ val WardenTest by testSuite {
                                 buildNumber = "999ZZ0"
                             ),
                             timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate.toInstant()
-                                    .toKotlinInstant()
+                                recordedAttestation.verificationDate
+
                             ),
                         )
                         attestationService.verifyAttestation(
@@ -485,8 +483,8 @@ val WardenTest by testSuite {
                             iosSandbox = !(recordedAttestation.isProductionOverride
                                 ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
                             timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate.toInstant()
-                                    .toKotlinInstant()
+                                recordedAttestation.verificationDate
+
                             ),
                         )
                         val keyToBeAttested = KeyPairGenerator.getInstance("EC")
@@ -551,8 +549,8 @@ val WardenTest by testSuite {
                                 iosSandbox = !(recordedAttestation.isProductionOverride
                                     ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant()
-                                        .toKotlinInstant()
+                                    recordedAttestation.verificationDate
+
                                 ),
                             )
                             attestationService.verifyAttestation(
@@ -582,8 +580,8 @@ val WardenTest by testSuite {
                             val attestationService = attestationService(
                                 iosTeamIdentifier = "1234567890",
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant()
-                                        .toKotlinInstant()
+                                    recordedAttestation.verificationDate
+
                                 ),
                             )
                             attestationService.verifyAttestation(
@@ -624,7 +622,7 @@ val WardenTest by testSuite {
                             val attestationService = attestationService(
                                 androidPatchLevel = null,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                    recordedAttestation.verificationDate
                                 ),
                             )
                             attestationService.verifyAttestation(
@@ -647,7 +645,7 @@ val WardenTest by testSuite {
                             val attestationService = attestationService(
                                 unlockedBootloaderAllowed = false,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                    recordedAttestation.verificationDate
                                 ),
                             )
                             attestationService.verifyAttestation(
@@ -670,7 +668,7 @@ val WardenTest by testSuite {
                             val attestationService = attestationService(
                                 unlockedBootloaderAllowed = true,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                    recordedAttestation.verificationDate
                                 ),
                             )
                             attestationService.verifyAttestation(
@@ -692,7 +690,7 @@ val WardenTest by testSuite {
 
                     "Wrongfully disabled HW attestation" {
                         val clock =
-                            FixedTimeClock(recordedAttestation.verificationDate.toInstant().toKotlinInstant())
+                            FixedTimeClock(recordedAttestation.verificationDate)
                         Makoto(
                             androidAttestationConfiguration = AndroidAttestationConfiguration(
                                 listOf(
@@ -743,7 +741,7 @@ val WardenTest by testSuite {
                                 attestationService(
                                     unlockedBootloaderAllowed = false,
                                     timeSource = FixedTimeClock(
-                                        recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                        recordedAttestation.verificationDate
                                     ),
                                 ).apply {
                                     val dbg = collectDebugInfo(
@@ -769,7 +767,7 @@ val WardenTest by testSuite {
                                 attestationService(
                                     unlockedBootloaderAllowed = false,
                                     timeSource = FixedTimeClock(
-                                        recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                        recordedAttestation.verificationDate
                                     ),
                                 ).apply {
                                     val dbg = collectDebugInfo(
@@ -795,7 +793,7 @@ val WardenTest by testSuite {
                                 attestationService(
                                     unlockedBootloaderAllowed = false,
                                     timeSource = FixedTimeClock(
-                                        recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                        recordedAttestation.verificationDate
                                     ),
                                 ).apply {
                                     val dbg = collectDebugInfo(
@@ -824,7 +822,7 @@ val WardenTest by testSuite {
                             attestationService(
                                 requireStrongBox = true,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant().toKotlinInstant()
+                                    recordedAttestation.verificationDate
                                 ),
                             ).apply {
                                 val dbg = collectDebugInfo(
@@ -853,8 +851,8 @@ val WardenTest by testSuite {
                                     "LvfTC77F/uSecSfJDeLdxQ3gZrVLHX8+NNBp7AiUO0E=".decodeBase64ToArray()!!
                                 ),
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant()
-                                        .toKotlinInstant()
+                                    recordedAttestation.verificationDate
+
                                 ),
                             ).apply {
                                 val dbg = collectDebugInfo(
@@ -881,8 +879,7 @@ val WardenTest by testSuite {
                                 attestationService(
                                     androidAppSignatureDigest = listOf(),
                                     timeSource = FixedTimeClock(
-                                        recordedAttestation.verificationDate.toInstant()
-                                            .toKotlinInstant()
+                                        recordedAttestation.verificationDate
                                     ),
                                 )
                             }
@@ -892,8 +889,7 @@ val WardenTest by testSuite {
                             attestationService(
                                 androidAppVersion = 200000,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant()
-                                        .toKotlinInstant()
+                                    recordedAttestation.verificationDate
                                 ),
                             ).apply {
                                 val dbg = collectDebugInfo(
@@ -919,8 +915,8 @@ val WardenTest by testSuite {
                             attestationService(
                                 androidPatchLevel = PatchLevel(2030, 1),
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant()
-                                        .toKotlinInstant()
+                                    recordedAttestation.verificationDate
+
                                 ),
                             ).apply {
                                 val dbg = collectDebugInfo(
@@ -945,8 +941,8 @@ val WardenTest by testSuite {
                             attestationService(
                                 requireRollbackResistance = true,
                                 timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate.toInstant()
-                                        .toKotlinInstant()
+                                    recordedAttestation.verificationDate
+
                                 ),
                             ).apply {
                                 val dbg = collectDebugInfo(
@@ -1026,7 +1022,7 @@ val WardenTest by testSuite {
                 pubKeyB64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgQC2Fo5nb6dlnJh2h4tg0vnJmjPN8x2t+tlwbZEjWO6uJWlqu5uTPFkYKzgpxF6HVoOFYWwPFBZgB4ktwU3ysw=="
             ).apply {
 
-                val clock = FixedTimeClock(verificationDate.toInstant().toKotlinInstant())
+                val clock = FixedTimeClock(verificationDate)
                 "HW Attestation should fail" {
                     attestationService(
                         timeSource = clock,
@@ -1104,7 +1100,7 @@ val WardenTest by testSuite {
             )
             val packageName = "com.example.trustedapplication"
 
-            val clock = FixedTimeClock(data.verificationDate.toInstant().toKotlinInstant())
+            val clock = FixedTimeClock(data.verificationDate)
 
             "Hardware attestation should fail" {
                 Makoto(

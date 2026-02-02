@@ -118,8 +118,7 @@ sealed class SupremeAttestationEngine(
     override fun AuthorizationList.verifySystemLocked() {
         if (attestationConfiguration.allowBootloaderUnlock) return
 
-        val parsedRootOfTrust = rootOfTrust?.getOrNull()
-        if (parsedRootOfTrust == null) throw AttestationValueException(
+        val parsedRootOfTrust = rootOfTrust?.getOrNull() ?: throw AttestationValueException(
             "Root of Trust not present/valid",
             reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
             expectedValue = "Present Root of Trust",
@@ -144,6 +143,20 @@ sealed class SupremeAttestationEngine(
 
     override val AuthorizationList.rollbackResistant: Boolean
         get() = (rollbackResistant?.getOrNull() ?: rollbackResistance?.getOrNull()) != null
+
+    override val AttestationKeyDescription.attestationSecLevel: GeneralizedSecurityLevel
+        get() = when (attestationSecurityLevel) {
+            AttestationKeyDescription.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+            AttestationKeyDescription.SecurityLevel.STRONGBOX -> GeneralizedSecurityLevel.STRONGBOX
+        }
+
+    override val AttestationKeyDescription.keymasterSecLevel: GeneralizedSecurityLevel
+        get() = when (keymasterSecurityLevel) {
+            AttestationKeyDescription.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+            AttestationKeyDescription.SecurityLevel.STRONGBOX -> GeneralizedSecurityLevel.STRONGBOX
+        }
 
 
     class Hardware(
@@ -175,40 +188,7 @@ sealed class SupremeAttestationEngine(
 
 
         @Throws(AttestationValueException::class)
-        override fun AttestationKeyDescription.verifySecurityLevel(appOverride: Boolean?) {
-            if (appOverride ?: attestationConfiguration.requireStrongBox) {
-                if (attestationSecurityLevel != AttestationKeyDescription.SecurityLevel.STRONGBOX)
-                    throw AttestationValueException(
-                        "Attestation security level not StrongBox",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = attestationSecurityLevel
-                    )
-                if (keymasterSecurityLevel != AttestationKeyDescription.SecurityLevel.STRONGBOX)
-                    throw AttestationValueException(
-                        "Keymaster security level not StrongBox",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = keymasterSecurityLevel
-                    )
-            } else {
-                if (attestationSecurityLevel == AttestationKeyDescription.SecurityLevel.SOFTWARE)
-                    throw AttestationValueException(
-                        "Attestation security level software",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                        actualValue = attestationSecurityLevel
-                    )
-                if (keymasterSecurityLevel == AttestationKeyDescription.SecurityLevel.SOFTWARE)
-                    throw AttestationValueException(
-                        "Keymaster security level software",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                        actualValue = keymasterSecurityLevel
-                    )
-            }
-
-        }
+        override fun AttestationKeyDescription.verifySecurityLevel(appOverride: Boolean?) =verifySecurityLevelIsHardware(appOverride)
     }
 
     class Software(
@@ -239,18 +219,7 @@ sealed class SupremeAttestationEngine(
         }
 
         @Throws(AttestationValueException::class)
-        override fun AttestationKeyDescription.verifySecurityLevel(appOverride: Boolean? /*irrelevant*/) {
-            if (attestationSecurityLevel != AttestationKeyDescription.SecurityLevel.SOFTWARE) throw AttestationValueException(
-                "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-                actualValue = attestationSecurityLevel
-            )
-            if (keymasterSecurityLevel != AttestationKeyDescription.SecurityLevel.SOFTWARE) throw AttestationValueException(
-                "Keymaster security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-                actualValue = keymasterSecurityLevel
-            )
-        }
+        override fun AttestationKeyDescription.verifySecurityLevel(appOverride: Boolean? /*irrelevant*/) =verifySecurityLevelIsSoftware()
 
     }
 

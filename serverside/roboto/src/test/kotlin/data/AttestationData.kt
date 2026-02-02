@@ -8,6 +8,7 @@ import java.security.cert.X509Certificate
 import java.security.spec.X509EncodedKeySpec
 import java.time.Instant
 import java.util.*
+import kotlin.time.toKotlinInstant
 
 internal val certificateFactory = CertificateFactory.getInstance("X.509")
 internal val mimeDecoder = Base64.getMimeDecoder()
@@ -24,7 +25,7 @@ class AttestationData(
     val isProductionOverride: Boolean? = null
 ) {
 
-    val verificationDate: Date = Date.from(Instant.parse(isoDate))
+    val verificationDate: kotlin.time.Instant = Instant.parse(isoDate).toKotlinInstant()
 
     val challenge by lazy { mimeDecoder.decode(challengeB64) }
 

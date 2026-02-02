@@ -83,12 +83,12 @@ public abstract class ParsedAttestationRecord implements AttestationExtension<Au
   }
 
   @Override
-  public @NotNull AuthList getSoftwareEnforced() {
+  public @NotNull AuthorizationList getSoftwareEnforced() {
     return softwareEnforced();
   }
 
   @Override
-  public @NotNull AuthList getHardwareEnforced() {
+  public @NotNull AuthorizationList getHardwareEnforced() {
     return teeEnforced();
   }
 

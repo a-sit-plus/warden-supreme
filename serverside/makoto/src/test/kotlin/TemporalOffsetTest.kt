@@ -22,7 +22,7 @@ val TemporalOffsetTest by testSuite {
 
     "Exact Time of Validity" - {
         withData(exactStartOfValidity) {
-            val attestationService = attestationService(timeSource = FixedTimeClock(it.verificationDate.time))
+            val attestationService = attestationService(timeSource = FixedTimeClock(it.verificationDate))
             attestationService.verifyAttestation(
                 it.attestationProof,
                 it.challenge
@@ -38,7 +38,7 @@ val TemporalOffsetTest by testSuite {
     "Exact Time of Validity + 1D" - {
         withData(exactStartOfValidity) {
             val attestationService = attestationService(
-                timeSource = FixedTimeClock(it.verificationDate.time),
+                timeSource = FixedTimeClock(it.verificationDate),
                 offset = 1.days,
                 androidAttestationStatementValidity = 1.days + 1.seconds,
                 iosAttestationStatementValidity = 1.days + 1.seconds,
@@ -58,7 +58,7 @@ val TemporalOffsetTest by testSuite {
     "Exact Time of Validity - 1D" - {
         withData(mapOf("KeyMint 200" to pixel6KeyMint200Good)) {
             val attestationService = attestationService(
-                timeSource = FixedTimeClock(it.verificationDate.time),
+                timeSource = FixedTimeClock(it.verificationDate),
                 offset = (-1).days,
                 androidSW = true
             )
@@ -79,7 +79,7 @@ val TemporalOffsetTest by testSuite {
     "KeyMint eternal leaves - 1D" - {
         withData("eternal" to true, "expiring" to false) {
             val attestationService = attestationService(
-                timeSource = FixedTimeClock(pixel6KeyMint200Good.verificationDate.time),
+                timeSource = FixedTimeClock(pixel6KeyMint200Good.verificationDate),
                 offset = (-1).days,
                  androidSW = true
             )
@@ -102,7 +102,7 @@ val TemporalOffsetTest by testSuite {
     "iOS Temporal Offset Strict Fail" - {
         withData(nameFn = { it.toIsoString() }, 1.days, -1.days) { offset ->
             val attestationService = attestationService(
-                timeSource = FixedTimeClock(ios16.verificationDate.time),
+                timeSource = FixedTimeClock(ios16.verificationDate),
                 offset = offset,
                 iosAttestationStatementValidity = 23.hours,
                 androidAttestationStatementValidity = 23.hours

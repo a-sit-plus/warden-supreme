@@ -16,8 +16,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.util.*
 import org.bouncycastle.util.encoders.Base64
-import java.sql.Date
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
 
@@ -238,7 +238,7 @@ val AttestationTests by testSuite {
     }
 
 
-    "Captured Real Devices"  - {
+    "Captured Real Devices" - {
         listOf(
             AttestationData(
                 "Nokia X10",
@@ -537,10 +537,8 @@ val AttestationTests by testSuite {
                             shouldThrow<CertificateInvalidException> {
                                 service.verifyAttestation(
                                     recordedAttestation.attestationCertChain,
-                                    Date.from(
-                                        recordedAttestation.verificationDate.toInstant()
-                                            .minus(java.time.Duration.ofDays(30000))
-                                    ),
+
+                                    recordedAttestation.verificationDate - 30_000.days,
                                     recordedAttestation.challenge
                                 )
                             }.reason shouldBe CertificateInvalidException.Reason.TIME
@@ -549,10 +547,7 @@ val AttestationTests by testSuite {
                                 service.collectDebugInfo(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.challenge,
-                                    Date.from(
-                                        recordedAttestation.verificationDate.toInstant()
-                                            .minus(java.time.Duration.ofDays(30000))
-                                    ),
+                                    recordedAttestation.verificationDate - 30_000.days,
                                 ).serialize()
 
                             shouldThrow<CertificateInvalidException> {
@@ -564,10 +559,7 @@ val AttestationTests by testSuite {
                             shouldThrow<CertificateInvalidException> {
                                 service.verifyAttestation(
                                     recordedAttestation.attestationCertChain,
-                                    Date.from(
-                                        recordedAttestation.verificationDate.toInstant()
-                                            .plus(java.time.Duration.ofDays(30000))
-                                    ),
+                                    recordedAttestation.verificationDate - 30_000.days,
                                     recordedAttestation.challenge
                                 )
                             }.reason shouldBe CertificateInvalidException.Reason.TIME
