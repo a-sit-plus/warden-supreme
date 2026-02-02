@@ -81,7 +81,6 @@ constructor(
      * into a serializable data structure for easy debugging
      */
     @JvmName("collectDebugInfo")
-    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("collectDebugInfo"))
     fun collectDebugInfoJ(
         certificates: List<X509Certificate>,
         expectedChallenge: ByteArray,
@@ -123,7 +122,6 @@ constructor(
      * @throws CertificateInvalidException if certificates fail to verify
      *
      */
-    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("verifyAttestation"))
     @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
     @JvmName("verifyAttestation")
     fun verifyAttestationJ(
