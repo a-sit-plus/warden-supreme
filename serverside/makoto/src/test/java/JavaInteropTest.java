@@ -135,7 +135,7 @@ public class JavaInteropTest {
 
         Roboto checker = new Roboto(config);
         try {
-            ParsedAttestationRecord attestationRecord = checker.verifyAttestation(certificateChain, new Date(), challenge);
+           checker.verifyAttestation(certificateChain, new Date(), challenge);
             //all good
         } catch (AttestationValueException | CertificateInvalidException | RevocationException e) {
             //untrusted device/app

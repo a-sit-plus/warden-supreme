@@ -2,15 +2,15 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.engine.AndroidAttestationEngine
 import at.asitplus.attestation.android.engine.RtgAttestationEngine
+import at.asitplus.attestation.android.engine.SupremeAttestationEngine
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.catchingUnwrapped
-import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.coroutines.runBlocking
-import java.security.cert.*
+import java.security.cert.X509Certificate
 import java.util.*
 import kotlin.time.toKotlinInstant
 
@@ -34,27 +34,39 @@ constructor(
         val version: String = wardenVersion
     }
 
-    internal suspend fun  revocationListsFromLastCall() = engines.first().certChainValidator.revocationListsFromLastCall()
+    internal suspend fun revocationListsFromLastCall() =
+        engines.first().certChainValidator.revocationListsFromLastCall()
 
 
-    private val engines = mutableListOf<AndroidAttestationEngine<ParsedAttestationRecord, AuthorizationList, X509Certificate>>().apply {
+    private val engines = mutableListOf<AndroidAttestationEngine<*, *, X509Certificate>>().apply {
         if (!attestationConfiguration.disableHardwareAttestation) add(
-            RtgAttestationEngine.Hardware(
+            if (attestationConfiguration.experimentalParser)
+                SupremeAttestationEngine.Hardware(
+                    attestationConfiguration,
+                    verifyChallenge
+                )
+            else RtgAttestationEngine.Hardware(
                 attestationConfiguration,
                 verifyChallenge
             )
         )
         if (attestationConfiguration.enableSoftwareAttestation) add(
-            RtgAttestationEngine.Software(
+            if (attestationConfiguration.experimentalParser)
+                SupremeAttestationEngine.Software(
+                    attestationConfiguration,
+                    verifyChallenge
+                )
+            else RtgAttestationEngine.Software(
                 attestationConfiguration,
                 verifyChallenge
             )
         )
     }
 
-   init {
-       require(engines.isNotEmpty()) { "Attestation engine list is empty" }
-   }
+    init {
+        require(engines.isNotEmpty()) { "Attestation engine list is empty" }
+    }
+
     /**
      * Packs
      * * the current configuration
@@ -109,7 +121,7 @@ constructor(
         certificates: List<X509Certificate>,
         verificationDate: Date = Date(),
         expectedChallenge: ByteArray
-    ): ParsedAttestationRecord = runBlocking { verifyAttestation(certificates, verificationDate, expectedChallenge) }
+    ): Any = runBlocking { verifyAttestation(certificates, verificationDate, expectedChallenge) }
 
     /**
      * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
@@ -129,7 +141,7 @@ constructor(
         certificates: List<X509Certificate>,
         verificationDate: Date = Date(),
         expectedChallenge: ByteArray
-    ): ParsedAttestationRecord  {
+    ): Any {
         val results = engines.map {
             catchingUnwrapped {
                 it.verifyAttestation(
@@ -149,7 +161,7 @@ constructor(
 
             throw results.last() //this way we are most lenient
                 .exceptionOrNull()!!
-        }else results.first { it.isSuccess }.getOrThrow()
+        } else results.first { it.isSuccess }.getOrThrow()!!
 
     }
 
