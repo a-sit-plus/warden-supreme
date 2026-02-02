@@ -125,10 +125,13 @@ private fun assertAuthorizationListSemanticallyEqual(
 
     diffs.capture {
         // Soft diff only: our model has both rollbackResistance and rollbackResistant variants depending on attestation version.
-        val oursRollbackResistance = ours.rollbackResistance != null //TODO: || ours.rollbackResistant != null
+        val oursRollbackResistance = ours.rollbackResistance != null
         if (google.rollbackResistance() != oursRollbackResistance) {
             diffs.addSoftDiff("$path.rollbackResistance differs: google=${google.rollbackResistance()}, ours=$oursRollbackResistance")
         }
+
+        if(google.unorderedTags().contains(703) && ours.rollbackResistant== null)
+            diffs.addSoftDiff("$path.rollbackResistant differs: google has it, ours not")
     }
 
     diffs.capture {
