@@ -4,7 +4,6 @@ import at.asitplus.attestation.IosAttestationConfiguration;
 import at.asitplus.attestation.KeyAttestation;
 import at.asitplus.attestation.android.Roboto;
 import at.asitplus.attestation.android.AndroidAttestationConfiguration;
-import at.asitplus.attestation.android.HardwareAttestationVerifier;
 import at.asitplus.attestation.android.PatchLevel;
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException;
 import at.asitplus.attestation.android.exceptions.AttestationValueException;
@@ -134,7 +133,7 @@ public class JavaInteropTest {
                 .verificationSecondsOffset(-500) //we to account for time drift
                 .build();
 
-        Roboto checker = new HardwareAttestationVerifier(config);
+        Roboto checker = new Roboto(config);
         try {
             ParsedAttestationRecord attestationRecord = checker.verifyAttestation(certificateChain, new Date(), challenge);
             //all good

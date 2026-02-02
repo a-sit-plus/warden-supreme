@@ -1,70 +1,20 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
-import at.asitplus.attestation.android.exceptions.AttestationValueException
-import com.google.android.attestation.ParsedAttestationRecord
-import java.util.*
 
-class HardwareAttestationVerifier @JvmOverloads constructor(
-    attestationConfiguration: AndroidAttestationConfiguration,
-    verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
-) : Roboto(attestationConfiguration, verifyChallenge) {
+@Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("Roboto"))
+object HardwareAttestationVerifier {
 
-    init {
+    @JvmOverloads
+    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("Roboto"))
+    operator fun invoke(
+        attestationConfiguration: AndroidAttestationConfiguration,
+        verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
+    ): Roboto {
         if (attestationConfiguration.disableHardwareAttestation) throw object :
             AndroidAttestationException("Hardware attestation is disabled!", null) {}
         if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw object :
             AndroidAttestationException("No hardware attestation trust anchors configured", null) {}
+        return Roboto(attestationConfiguration, verifyChallenge)
     }
-
-    @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean?) {
-        if (override ?: attestationConfiguration.requireStrongBox) {
-            if (attestationSecurityLevel() != ParsedAttestationRecord.SecurityLevel.STRONG_BOX)
-                throw AttestationValueException(
-                    "Attestation security level not StrongBox",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                    actualValue = attestationSecurityLevel()
-                )
-            if (keymasterSecurityLevel() != ParsedAttestationRecord.SecurityLevel.STRONG_BOX)
-                throw AttestationValueException(
-                    "Keymaster security level not StrongBox",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                    actualValue = keymasterSecurityLevel()
-                )
-        } else {
-            if (attestationSecurityLevel() == ParsedAttestationRecord.SecurityLevel.SOFTWARE)
-                throw AttestationValueException(
-                    "Attestation security level software",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                    actualValue = attestationSecurityLevel()
-                )
-            if (keymasterSecurityLevel() == ParsedAttestationRecord.SecurityLevel.SOFTWARE)
-                throw AttestationValueException(
-                    "Keymaster security level software",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                    actualValue = keymasterSecurityLevel()
-                )
-        }
-    }
-
-    override val trustAnchors = attestationConfiguration.hardwareTrustedRoots
-
-    @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyAndroidVersion(
-        versionOverride: Int?,
-        osPatchLevel: PatchLevel?,
-        verificationDate: Date
-    ) =
-        teeEnforced().verifyAndroidVersion(versionOverride, osPatchLevel, verificationDate)
-
-    @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyBootStateAndSystemImage() = teeEnforced().verifySystemLocked()
-
-    @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyRollbackResistance() = teeEnforced().verifyRollbackResistance()
 }
