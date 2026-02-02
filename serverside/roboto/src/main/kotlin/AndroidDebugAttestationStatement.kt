@@ -38,7 +38,6 @@ data class ConfigWithList(val config: Configuration<*>, val list: AndroidRevocat
 @Serializable
 class AndroidDebugAttestationStatement(
     override val version: String,
-    val kind: Type,
     val configuration: AndroidAttestationConfiguration,
     @Serializable(with = DateTimeSerializer::class) val verificationTime: Date,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray,
@@ -50,14 +49,12 @@ class AndroidDebugAttestationStatement(
         require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
     }
 
-    fun checkerFromConfig(): Roboto =
-        when (kind) {
-            Type.HARDWARE -> HardwareAttestationVerifier(configuration)
-            Type.SOFTWARE -> SoftwareAttestationVerifier(configuration)
-        }
+    fun checkerFromConfig(): Roboto =Roboto(configuration)
 
     override suspend fun replay() =
         checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)
+
+    //todo replayBlocking as extension on interface
 
     override fun serialize() = jsonDebug.encodeToString(this)
 
@@ -82,16 +79,11 @@ class AndroidDebugAttestationStatement(
             attestationStatement: List<X509Certificate>
         ) = AndroidDebugAttestationStatement(
             wardenVersion,
-            when (verifier) {
-                is HardwareAttestationVerifier -> Type.HARDWARE
-                is SoftwareAttestationVerifier -> Type.SOFTWARE
-                else -> throw IllegalArgumentException("Unknown checker type")
-            },
             configuration,
             verificationTime,
             challenge,
             attestationStatement,
-            verifier.revocationListFromLastCall()
+            verifier.revocationListsFromLastCall()
         )
 
         override fun deserialize(string: String): AndroidDebugAttestationStatement =

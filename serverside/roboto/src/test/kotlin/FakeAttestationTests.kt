@@ -32,7 +32,7 @@ val FakeAttestationTests by testSuite {
             androidPatchLevel = patchLevel.asSingleInt,
         )
 
-        val checker = HardwareAttestationVerifier(
+        val checker = Roboto(
             AndroidAttestationConfiguration(
                 AndroidAttestationConfiguration.AppData(
                     packageName = packageName,
@@ -58,7 +58,7 @@ val FakeAttestationTests by testSuite {
                 vendorPatchLevel = 0,
             )
 
-            HardwareAttestationVerifier(
+            Roboto(
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
@@ -108,7 +108,7 @@ val FakeAttestationTests by testSuite {
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationVerifier(
+                Roboto(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -141,7 +141,7 @@ val FakeAttestationTests by testSuite {
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationVerifier(
+                Roboto(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -162,7 +162,7 @@ val FakeAttestationTests by testSuite {
                 )
 
                 shouldThrow<AttestationValueException> {
-                    HardwareAttestationVerifier(
+                    Roboto(
                         AndroidAttestationConfiguration(
                             AndroidAttestationConfiguration.AppData(
                                 packageName = packageName,
@@ -198,7 +198,7 @@ val FakeAttestationTests by testSuite {
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationVerifier(
+                Roboto(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -232,7 +232,7 @@ val FakeAttestationTests by testSuite {
                     creationTime = verificationDate,
                 )
 
-                HardwareAttestationVerifier(
+                Roboto(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -258,7 +258,7 @@ val FakeAttestationTests by testSuite {
 
         "but not with a real cert from a real device" - {
 
-            val checker = HardwareAttestationVerifier(
+            val checker = Roboto(
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
@@ -278,7 +278,7 @@ val FakeAttestationTests by testSuite {
             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
             "unless overridden" {
-                val checker = HardwareAttestationVerifier(
+                val checker = Roboto(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -304,7 +304,7 @@ val FakeAttestationTests by testSuite {
             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
             "but never without trust anchors" {
-                val checker = HardwareAttestationVerifier(
+                val checker = Roboto(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -327,7 +327,7 @@ val FakeAttestationTests by testSuite {
         }
 
         "and the fake attestation must not verify against the google root key" {
-            val trustedChecker = HardwareAttestationVerifier(
+            val trustedChecker = Roboto(
                 AndroidAttestationConfiguration(
                     applications = listOf(
                         AndroidAttestationConfiguration.AppData(

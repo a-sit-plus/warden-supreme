@@ -95,7 +95,7 @@ val AttestationTests by testSuite {
             val signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray())
 
             "should fail with HardwareAttestationChecker" {
-                HardwareAttestationVerifier(
+                Roboto(
                     AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -124,7 +124,7 @@ val AttestationTests by testSuite {
             }
 
             "should work with SoftwareAttestationChecker" {
-                SoftwareAttestationVerifier(
+                Roboto(
                     AndroidAttestationConfiguration(
                         listOf(
                             AndroidAttestationConfiguration.AppData(
@@ -133,6 +133,7 @@ val AttestationTests by testSuite {
                             )
                         ),
                         enableSoftwareAttestation = true,
+                        disableHardwareAttestation = true,
                         ignoreLeafValidity = true
                     )
                 ).apply {
@@ -177,7 +178,7 @@ val AttestationTests by testSuite {
         val packageName = "com.example.trustedapplication"
 
         "should fail with HardwareAttestationChecker" {
-            HardwareAttestationVerifier(
+            Roboto(
                 AndroidAttestationConfiguration(
                     listOf(
                         AndroidAttestationConfiguration.AppData(
@@ -206,7 +207,7 @@ val AttestationTests by testSuite {
         }
 
         "should fail with SoftwareAttestationChecker" {
-            HardwareAttestationVerifier(
+            Roboto(
                 AndroidAttestationConfiguration(
                     listOf(
                         AndroidAttestationConfiguration.AppData(
@@ -215,22 +216,23 @@ val AttestationTests by testSuite {
                         )
                     ),
                     enableSoftwareAttestation = true,
+                    disableHardwareAttestation = true,
                     ignoreLeafValidity = true
                 )
             ).apply {
-                shouldThrow<CertificateInvalidException> {
+                shouldThrow<AttestationValueException> {
                     verifyAttestation(
                         data.attestationCertChain,
                         data.verificationDate,
                         data.challenge
                     )
-                }.reason shouldBe CertificateInvalidException.Reason.TRUST
+                }.reason shouldBe AttestationValueException.Reason.SEC_LEVEL
                 val collectDebugInfo =
                     collectDebugInfo(data.attestationCertChain, data.challenge, data.verificationDate).serialize()
 
-                shouldThrow<CertificateInvalidException> {
+                shouldThrow<AttestationValueException> {
                     AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
-                }.reason shouldBe CertificateInvalidException.Reason.TRUST
+                }.reason shouldBe AttestationValueException.Reason.SEC_LEVEL
             }
         }
     }
@@ -447,7 +449,7 @@ val AttestationTests by testSuite {
                 }
 
                 "Should fail with Software attestation" {
-                    SoftwareAttestationVerifier(
+                    Roboto(
                         AndroidAttestationConfiguration(
                             listOf(
                                 AndroidAttestationConfiguration.AppData(
@@ -455,7 +457,8 @@ val AttestationTests by testSuite {
                                     ATT_CLIENT_DIGESTS,
                                 )
                             ),
-                            enableSoftwareAttestation = true
+                            enableSoftwareAttestation = true,
+                            disableHardwareAttestation = true,
                         )
                     ).apply {
                         shouldThrow<CertificateInvalidException> {
@@ -671,7 +674,7 @@ fun attestationService(
     attestationStatementValiditiy: Duration = 5.minutes,
     rkpRequired: Boolean = false,
     rkpAppRequired: Boolean? = null,
-) = HardwareAttestationVerifier(
+) = Roboto(
     AndroidAttestationConfiguration(
         listOf(
             AndroidAttestationConfiguration.AppData(

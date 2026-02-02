@@ -1,37 +1,19 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.engine.AndroidAttestationEngine
+import at.asitplus.attestation.android.engine.RtgAttestationEngine
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.encoding.parse
-import co.nstant.`in`.cbor.CborDecoder
-import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
-import com.android.keyattestation.verifier.provider.KeyAttestationProvider
-import com.android.keyattestation.verifier.provisioningInfo
 import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
-import com.google.android.attestation.RootOfTrust
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.math.BigInteger
-import java.security.Principal
-import java.security.PublicKey
-import java.security.Security
 import java.security.cert.*
-import java.time.Duration
-import java.time.Instant
-import java.time.YearMonth
-import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 import java.util.*
-import javax.security.auth.x500.X500Principal
-import kotlin.jvm.optionals.getOrNull
-import kotlin.time.ExperimentalTime
 import kotlin.time.toKotlinInstant
 
 /**
@@ -39,17 +21,14 @@ import kotlin.time.toKotlinInstant
  */
 const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
 
-abstract class Roboto(
+
+class Roboto
+@JvmOverloads
+constructor(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
-    private val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
+    private val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
 ) {
     companion object Companion {
-        init {
-            Security.addProvider(KeyAttestationProvider())
-        }
-
-        private fun getValidator() = CertPathValidator.getInstance("KeyAttestation")
-
 
         /**
          * Version String of the current Warden Supreme release
@@ -57,361 +36,27 @@ abstract class Roboto(
         val version: String = wardenVersion
     }
 
-    private val newPkixCertPathValidator = getValidator()
-
-    private val revocationCheckers: List<Pair<AndroidRevocationList.Loader.Configuration<*>, AndroidRevocationList.Loader>> by lazy {
-        attestationConfiguration.revocation.map { (it to it.createLoader()) }
-    }
-
-    private val revocationMutex = Mutex()
-    private var revocationListsFromLastCall = listOf<ConfigWithList>()
-    internal suspend fun revocationListFromLastCall() = revocationMutex.withLock { revocationListsFromLastCall }
+    internal suspend fun  revocationListsFromLastCall() = engines.first().certChainValidator.revocationListsFromLastCall()
 
 
-    @Throws(CertificateInvalidException::class, RevocationException::class)
-    private suspend fun List<X509Certificate>.verifyCertificateChain(
-        verificationDate: Date,
-        actualTrustAnchors: Collection<TrustedRoot>,
-        requireRKP: Boolean
-    ) {
-        val trustedRoot = catchingUnwrapped { verifyRootCertificate(verificationDate, actualTrustAnchors) }
-            .getOrElse {
-                throw if (it is CertificateInvalidException) it else CertificateInvalidException.InvalidRoot(
-                    message = "could not verify root certificate (valid from: ${last().notBefore} to ${last().notAfter}), verification date: $verificationDate",
-                    cause = it,
-                    reason = if ((it is CertificateExpiredException) || (it is CertificateNotYetValidException)) CertificateInvalidException.Reason.TIME else CertificateInvalidException.Reason.TRUST,
-                    certificateChain = this,
-                    invalidCertificate = last()
-                )
-            }
-        val certificateChain =
-            if (attestationConfiguration.ignoreLeafValidity) mapIndexed { i, cert ->
-                if (i == 0) EternalX509Certificate(cert) else cert
-            } else this
-
-
-
-        certificateChain.reversed().zipWithNext { parent, certificate ->
-            verifyCertificatePair(certificate, parent, verificationDate, certificateChain)
-        }
-
-        //now we double-check against the new validator to rule out manipulations of the certificate chain
-        catchingUnwrapped {
-            newPkixCertPathValidator.validate(
-                KeyAttestationCertPath(certificateChain),
-                PKIXParameters(setOf(trustedRoot.trustAnchor)).apply {
-                    date = verificationDate
-                    isRevocationEnabled =
-                        false //we check manually as per the official documentation, and we've done that already
-                }
+    private val engines = mutableListOf<AndroidAttestationEngine<ParsedAttestationRecord, AuthorizationList, X509Certificate>>().apply {
+        if (!attestationConfiguration.disableHardwareAttestation) add(
+            RtgAttestationEngine.Hardware(
+                attestationConfiguration,
+                verifyChallenge
             )
-        }.onFailure {
-            throw CertificateInvalidException(
-                message = "PKIX cert path validation failed",
-                it,
-                reason = CertificateInvalidException.Reason.TRUST, //we have ruled out time beforehand
-                certificateChain = certificateChain,
-                invalidCertificate = null
-            )
-        }
-
-        //add it at the bottom, when we know we can trust the chain.
-        //also: adding it here, makes sure it never interferes with other checks, so behavior stays the same
-        if (requireRKP) {
-            if (!certificateChain.isRemoteKeyProvisioned()) throw AttestationValueException(
-                "Certificate chain does not contain a remotely-provisioned attestation certificate",
-                reason = AttestationValueException.Reason.SEC_LEVEL, expectedValue = true, actualValue = false
-            )
-        }
-
-    }
-
-    @OptIn(ExperimentalTime::class)
-    @Throws(RevocationException::class, CertificateInvalidException::class)
-    private suspend fun verifyCertificatePair(
-        certificate: X509Certificate,
-        parent: X509Certificate,
-        verificationDate: Date,
-        fullChainForDebugging: List<X509Certificate>
-    ) {
-        catchingUnwrapped {
-            certificate.checkValidity(verificationDate)
-            certificate.verify(parent.publicKey)
-        }.onFailure {
-            throw CertificateInvalidException(
-                message = "Certificate ${certificate.serialNumber} could not be verified",
-                cause = it,
-                reason = if ((it is CertificateExpiredException) || (it is CertificateNotYetValidException)) CertificateInvalidException.Reason.TIME else CertificateInvalidException.Reason.TRUST,
-                certificateChain = fullChainForDebugging,
-                invalidCertificate = certificate
-            )
-        }
-        if (revocationCheckers.isNotEmpty()) revocationMutex.withLock {
-            catchingUnwrapped {
-                revocationCheckers.map { (cfg, loader) ->
-                    ConfigWithList(
-                        cfg,
-                        loader.load(verificationDate.toInstant().toKotlinInstant())
-                    )
-                }
-            }.onSuccess { revocationLists ->
-                revocationListsFromLastCall = revocationLists
-                revocationLists.forEach {
-                    it.list.find(certificate.serialNumber)?.let { entry ->
-                        throw RevocationException.Revoked(
-                            "Certificate ${certificate.serialNumber} revoked",
-                            certificateChain = fullChainForDebugging,
-                            revokedCertificate = certificate,
-                            entry = entry
-                        )
-                    }
-                }
-
-            }.onFailure {
-                throw RevocationException.ListUnavailable(
-                    "Could not init revocation list",
-                    it
-                )
-            }
-        }
-    }
-
-    private fun List<X509Certificate>.verifyRootCertificate(
-        verificationDate: Date,
-        actualTrustAnchors: Collection<TrustedRoot>,
-    ): TrustedRoot {
-        val root = last()
-        root.checkValidity(verificationDate)
-        val matchingTrustAnchor = actualTrustAnchors.filter { it is TrustedRoot.Certificate }
-            .firstOrNull { root.encoded.contentEquals(it.derEncoded) }
-            ?: actualTrustAnchors.filter { it is TrustedRoot.PublicKey }
-                .firstOrNull { root.publicKey.encoded.contentEquals(it.derEncoded) }
-            ?: run {
-                throw if (GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.publicKey.encoded }
-                        .firstOrNull { it.contentEquals(root.publicKey.encoded) } != null)
-                    CertificateInvalidException.OtherMatchingRoot(
-                        message = "No matching root certificate. Found a default HARDWARE Root",
-                        invalidCertificate = root,
-                        certificateChain = this,
-                        rootCertStage = CertificateInvalidException.OtherMatchingRoot.Stage.HARDWARE
-                    )
-                else if (GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.map { it.publicKey.encoded }
-                        .firstOrNull { it.contentEquals(root.publicKey.encoded) } != null)
-                    CertificateInvalidException.OtherMatchingRoot(
-                        message = "No matching root certificate. Found a default SOFTWARE (pre-Android-13) Root",
-                        invalidCertificate = root,
-                        certificateChain = this,
-                        rootCertStage = CertificateInvalidException.OtherMatchingRoot.Stage.SOFTWARE
-                    )
-                else CertificateInvalidException.NoMatchingRoot(
-                    "No matching root certificate. Found an unknown Root",
-                    invalidCertificate = root,
-                    certificateChain = this
-                )
-            }
-        root.verify(matchingTrustAnchor.publicKey)
-        return matchingTrustAnchor.let {
-            if (it is TrustedRoot.PublicKey && it.caName == null) it.copy(caName = root.issuerX500Principal)
-            else it
-        }
-    }
-
-    protected abstract val trustAnchors: Collection<TrustedRoot>
-
-    protected open fun ParsedAttestationRecord.verifyAttestationTime(verificationDate: Instant) {
-        val checkTime = verificationDate.plusSeconds(attestationConfiguration.verificationSecondsOffset)
-        if (attestationConfiguration.attestationStatementValiditySeconds == null) return //no validity, no checks!
-        val createdAt =
-            teeEnforced().creationDateTime().getOrNull() ?: softwareEnforced().creationDateTime().getOrNull()
-        if (createdAt == null) throw AttestationValueException(
-            "Attestation statement creation time missing",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = null
         )
-
-        val difference = Duration.between(createdAt, checkTime)
-        if (difference.isNegative) throw AttestationValueException(
-            "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = createdAt
-        )
-
-        if (difference > Duration.ofSeconds(attestationConfiguration.attestationStatementValiditySeconds.toLong())) throw AttestationValueException(
-            "Attestation statement creation time too far in the past: $createdAt, check time: $checkTime, attestation statement validity in seconds: ${attestationConfiguration.attestationStatementValiditySeconds}",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = createdAt
-        )
-
-
-    }
-
-    @Throws(AttestationValueException::class)
-    private fun ParsedAttestationRecord.verifyApplication(application: AndroidAttestationConfiguration.AppData) {
-        //TODO revamp this
-        catchingUnwrapped {
-            if (!(softwareEnforced().attestationApplicationId().get().packageInfos().any {
-                    it.packageName() == application.packageName
-                })
-            ) {
-                throw AttestationValueException(
-                    "Invalid Application Package: ${
-                        softwareEnforced().attestationApplicationId().get().packageInfos()
-                            .joinToString { it.packageName() }
-                    } (should be: ${application.packageName})",
-                    reason = AttestationValueException.Reason.PACKAGE_NAME,
-                    expectedValue = application.packageName,
-                    actualValue = softwareEnforced().attestationApplicationId().get().packageInfos()
-                        .joinToString { it.packageName() }
-                )
-            }
-            application.appVersion?.let { configuredVersion ->
-                if (softwareEnforced().attestationApplicationId().get().packageInfos().first()
-                        .version() < configuredVersion
-                ) {
-                    throw AttestationValueException(
-                        "Application Version not supported",
-                        reason = AttestationValueException.Reason.APP_VERSION,
-                        expectedValue = configuredVersion,
-                        actualValue = softwareEnforced().attestationApplicationId().get().packageInfos().first()
-                            .version()
-                    )
-                }
-            }
-
-            if (!softwareEnforced().attestationApplicationId().get().signatureDigests().any { fromAttestation ->
-                    application.signerFingerprints.any { it.contentEquals(fromAttestation.toByteArray()) }
-                }) {
-                throw AttestationValueException(
-                    "Invalid Application Signature Digest",
-                    reason = AttestationValueException.Reason.APP_SIGNER_DIGEST,
-                    expectedValue = application.signerFingerprints,
-                    actualValue = softwareEnforced().attestationApplicationId().get().signatureDigests()
-                        .map { it.toByteArray() }
-                )
-            }
-        }.onFailure {
-            throw when (it) {
-                is AttestationValueException -> it
-                else -> AttestationValueException(
-                    "Could not verify Client Application",
-                    it,
-                    reason = AttestationValueException.Reason.APP_UNEXPECTED,
-                    expectedValue = "Correct app data",
-                    actualValue = softwareEnforced()
-                )
-            }
-        }
-    }
-
-
-    @Throws(AttestationValueException::class)
-    protected abstract fun ParsedAttestationRecord.verifyAndroidVersion(
-        versionOverride: Int? = null,
-        osPatchLevel: PatchLevel?,
-        verificationDate: Date
-    ): Unit?
-
-    @Throws(AttestationValueException::class)
-    protected fun AuthorizationList.verifyAndroidVersion(
-        versionOverride: Int?,
-        patchLevel: PatchLevel?,
-        verificationDate: Date
-    ) = catchingUnwrapped {
-        (versionOverride ?: attestationConfiguration.androidVersion)?.let {
-            if ((osVersion().get()) < it) throw AttestationValueException(
-                "Android version not supported: ${osVersion().get()} (should be at least $it)",
-                reason = AttestationValueException.Reason.OS_VERSION,
-                expectedValue = it,
-                actualValue = osVersion().get()
+        if (attestationConfiguration.enableSoftwareAttestation) add(
+            RtgAttestationEngine.Software(
+                attestationConfiguration,
+                verifyChallenge
             )
-        }
-
-        (patchLevel ?: attestationConfiguration.patchLevel)?.let {
-            if ((osPatchLevel().get()).isBefore(YearMonth.of(it.year, it.month))) throw AttestationValueException(
-                "Patch level not supported: ${osPatchLevel().get()} (should be at least $it)",
-                reason = AttestationValueException.Reason.OS_VERSION,
-                expectedValue = it,
-                actualValue = osPatchLevel().get()
-            )
-        }
-
-        (patchLevel ?: attestationConfiguration.patchLevel)?.let {
-            it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
-                val fromAttestation = osPatchLevel().get()
-                val calendar =
-                    Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC)).apply { time = verificationDate }
-                val currentYearMonth = YearMonth.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1)
-                val difference = currentYearMonth.until(fromAttestation, ChronoUnit.MONTHS)
-                if (difference > maxFuturePatchLevelMonths.toLong()) throw AttestationValueException(
-                    "Patch level is $difference months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
-                    reason = AttestationValueException.Reason.OS_VERSION,
-                    expectedValue = it,
-                    actualValue = osPatchLevel().get()
-                )
-            }
-        }
-    }.getOrElse {
-        throw when (it) {
-            is AttestationValueException -> it
-            else -> AttestationValueException(
-                "Could not verify Android Version",
-                it,
-                AttestationValueException.Reason.OS_VERSION,
-                expectedValue = "Correct Android OS version",
-                actualValue = this
-            )
-        }
-    }
-
-
-    @Throws(AttestationValueException::class)
-    protected abstract fun ParsedAttestationRecord.verifyBootStateAndSystemImage()
-
-    @Throws(AttestationValueException::class)
-    protected fun AuthorizationList.verifySystemLocked() {
-        if (attestationConfiguration.allowBootloaderUnlock) return
-
-        if (rootOfTrust() == null) throw AttestationValueException(
-            "Root of Trust not present",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = "Present Root of Trust",
-            actualValue = null
-        )
-
-        if (!rootOfTrust().get().deviceLocked()) throw AttestationValueException(
-            "Bootloader not locked",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = true,
-            actualValue = false
-        )
-
-        if ((rootOfTrust().get().verifiedBootState()
-                ?: RootOfTrust.VerifiedBootState.FAILED) != RootOfTrust.VerifiedBootState.VERIFIED
-        ) throw AttestationValueException(
-            "System image not verified",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = RootOfTrust.VerifiedBootState.VERIFIED,
-            actualValue = rootOfTrust().get().verifiedBootState()
         )
     }
 
-    @Throws(AttestationValueException::class)
-    protected abstract fun ParsedAttestationRecord.verifyRollbackResistance()
-
-    @Throws(AttestationValueException::class)
-    protected fun AuthorizationList.verifyRollbackResistance() {
-        if (attestationConfiguration.requireRollbackResistance)
-            if (!rollbackResistance()) throw AttestationValueException(
-                "No rollback resistance",
-                reason = AttestationValueException.Reason.ROLLBACK_RESISTANCE,
-                expectedValue = true,
-                actualValue = false
-            )
-    }
-
+   init {
+       require(engines.isNotEmpty()) { "Attestation engine list is empty" }
+   }
     /**
      * Packs
      * * the current configuration
@@ -486,188 +131,28 @@ abstract class Roboto(
         certificates: List<X509Certificate>,
         verificationDate: Date = Date(),
         expectedChallenge: ByteArray
-    ): ParsedAttestationRecord = verifyAttestationInternal(certificates, verificationDate, expectedChallenge)
-
-    /**
-     * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
-     * Checks are performed according to the properties set in the [attestationConfiguration].
-     *
-     * @See [AndroidAttestationConfiguration] for details on what is and is not checked.
-     *
-     * @return [ParsedAttestationRecord] on success
-     * @throws AttestationValueException if a property fails to verify according to the current configuration
-     * @throws RevocationException if a certificate has been revoked
-     * @throws CertificateInvalidException if certificates fail to verify
-     *
-     */
-    @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
-    protected suspend fun verifyAttestationInternal(
-        certificates: List<X509Certificate>,
-        verificationDate: Date = Date(),
-        expectedChallenge: ByteArray
-    ): ParsedAttestationRecord {
-        val actualVerificationDate =
-            Date.from(verificationDate.toInstant().plusSeconds(attestationConfiguration.verificationSecondsOffset))
-
-
-        //do this before we check everything else to actually identify the app we're having here
-        val parsedAttestationRecord = ParsedAttestationRecord.createParsedAttestationRecord(certificates)
-        val attestedApp = attestationConfiguration.applications.associateWith { app ->
-            catchingUnwrapped { parsedAttestationRecord.verifyApplication(app) }
-        }.let {
-            it.entries.firstOrNull { (_, result) -> result.isSuccess } ?: it.values.first().exceptionOrNull()!!
-                .let { throw it }
-        }.key
-
-        val thisAppsTrustAnchors = attestedApp.trustedRootOverrides ?: trustAnchors
-        val rkpRequired =
-            attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
-        certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
-
-        val receivedChallenge = parsedAttestationRecord.attestationChallenge().toByteArray()
-        if (!verifyChallenge(
-                expectedChallenge,
-                receivedChallenge
-            )
-        ) throw AttestationValueException(
-            "verification of attestation challenge failed. Expected challenge: ${expectedChallenge.encodeBase64()}, received challenge: ${receivedChallenge.encodeBase64()}",
-            reason = AttestationValueException.Reason.CHALLENGE,
-            expectedValue = expectedChallenge,
-            actualValue = receivedChallenge
-        )
-        parsedAttestationRecord.verifyAttestationTime(verificationDate.toInstant())
-        parsedAttestationRecord.verifySecurityLevel(attestedApp.requireStrongBoxOverride)
-        parsedAttestationRecord.verifyBootStateAndSystemImage()
-        parsedAttestationRecord.verifyRollbackResistance()
-
-
-        parsedAttestationRecord.verifyAndroidVersion(
-            attestedApp.androidVersionOverride,
-            attestedApp.patchLevelOverride,
-            verificationDate
-        )
-        return parsedAttestationRecord
-    }
-
-    @Throws(AttestationValueException::class)
-    protected abstract fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean? = null)
-}
-
-
-class EternalX509Certificate(private val delegate: X509Certificate) : X509Certificate() {
-    override fun toString() = delegate.toString()
-
-    override fun getEncoded(): ByteArray = delegate.encoded
-
-    override fun verify(key: PublicKey?) = delegate.verify(key)
-
-    override fun verify(key: PublicKey?, sigProvider: String?) = delegate.verify(key, sigProvider)
-
-    override fun getPublicKey(): PublicKey = delegate.publicKey
-
-    override fun hasUnsupportedCriticalExtension(): Boolean = delegate.hasUnsupportedCriticalExtension()
-
-    override fun getCriticalExtensionOIDs(): MutableSet<String> = delegate.criticalExtensionOIDs
-
-    override fun getNonCriticalExtensionOIDs(): MutableSet<String> = delegate.nonCriticalExtensionOIDs
-
-    override fun getExtensionValue(oid: String?): ByteArray = delegate.getExtensionValue(oid)
-
-    override fun checkValidity() {
-        /*NOOP*/
-    }
-
-    override fun checkValidity(date: Date?) {
-        /*NOOP*/
-    }
-
-    override fun getVersion(): Int = delegate.version
-
-    override fun getSerialNumber(): BigInteger = delegate.serialNumber
-
-    override fun getIssuerDN(): Principal = delegate.issuerDN
-
-    override fun getSubjectDN(): Principal = delegate.subjectDN
-
-    override fun getNotBefore(): Date = delegate.notBefore
-
-    override fun getNotAfter(): Date = delegate.notAfter
-
-    override fun getTBSCertificate(): ByteArray = delegate.tbsCertificate
-
-    override fun getSignature(): ByteArray = delegate.signature
-
-    override fun getSigAlgName(): String = delegate.sigAlgName
-
-    override fun getSigAlgOID(): String = delegate.sigAlgOID
-
-    override fun getSigAlgParams(): ByteArray = delegate.sigAlgParams
-
-    override fun getIssuerUniqueID(): BooleanArray = delegate.issuerUniqueID
-
-    override fun getSubjectUniqueID(): BooleanArray = delegate.subjectUniqueID
-
-    override fun getKeyUsage(): BooleanArray = delegate.keyUsage
-
-    override fun getBasicConstraints(): Int = delegate.basicConstraints
-
-}
-
-
-/**
- * Returns the parsed, but generic contents of the [Remote Key Provisioning
- * extension](https://source.android.com/docs/security/features/keystore/attestation#provisioninginfo_extension),
- * if present in an Android attestation certificate chain.
- * One would assume that we could define a type-safe data structure for that, but Samsung being Samsung
- * has kindly reminded us of the fact that phrases like "conforms schema" are thrown around far too often in specifications.
- *
- * Google's code has such a type for that, but I wouldn't trust vendors to observe the CBOR schema,
- * so we just check for valid CBOR as a baseline.
- *
- * @see provisioningInfo to get the number of issued certificates
- */
-fun List<X509Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
-    require(isRemoteKeyProvisioned())
-    get(1).getExtensionValue(OID_RKP)?.let {
-        val rkpData = CborDecoder.decode(Asn1Element.parse(it).asOctetString().content)
-        rkpData.first() as co.nstant.`in`.cbor.model.Map
-    }
-}.getOrNull()
-
-/**
- * **TRIES** to parse the number of remotely provisioned attestation certificates.
- * Note that this method returning `null` does not necessarily mean that a remotely provisioned
- * certificate is not present. It could very well be that the extension is present but botched.
- * (Looking at you, Samsung!).
- *
- * @see isRemoteKeyProvisioned
- */
-fun List<X509Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
-    require(isRemoteKeyProvisioned())
-    get(1).provisioningInfo()?.certificatesIssued
-}.getOrNull()
-
-/**
- * Indicates whether the attestation certificate in this certificate chain is remotely provisioned.
- *
- * This snippet incorporates [code](https://github.com/android/keyattestation/blob/main/src/main/kotlin/provider/KeyAttestationCertPath.kt#L119) from Google's CertPathValidator
- */
-fun List<X509Certificate>.isRemoteKeyProvisioned(): Boolean {
-    val principal = get(size - 2).subjectX500Principal
-    val rdn = parseDN(principal.getName(X500Principal.RFC1779))
-    return rdn["CN"] == "Droid CA2" && rdn["O"] == "Google LLC"
-}
-
-//taken from https://github.com/android/keyattestation/blob/main/src/main/kotlin/provider/KeyAttestationCertPath.kt#L143C1-L154C2 as it is private in the incorporated code
-private fun parseDN(dn: String): Map<String, String> {
-    val attributes = mutableMapOf<String, String>()
-    val parts = dn.split(",")
-
-    for (part in parts) {
-        val keyValue = part.trim().split("=", limit = 2)
-        if (keyValue.size == 2) {
-            attributes[keyValue[0].trim()] = keyValue[1].trim()
+    ): ParsedAttestationRecord  {
+        val results = engines.map {
+            catchingUnwrapped {
+                it.verifyAttestation(
+                    certificates,
+                    verificationDate.toInstant().toKotlinInstant(),
+                    expectedChallenge
+                )
+            }
         }
+        return if (results.filter { it.isFailure }.size == engines.size) {
+            //if time is off, then we need to treat is separately
+            results.firstOrNull {
+                (it.exceptionOrNull() is CertificateInvalidException &&
+                        (it.exceptionOrNull() as CertificateInvalidException).reason == CertificateInvalidException.Reason.TIME)
+                        || (it.exceptionOrNull() is RevocationException)
+            }?.exceptionOrNull()?.let { throw it }
+
+            throw results.last() //this way we are most lenient
+                .exceptionOrNull()!!
+        }else results.first { it.isSuccess }.getOrThrow()
+
     }
-    return attributes
+
 }

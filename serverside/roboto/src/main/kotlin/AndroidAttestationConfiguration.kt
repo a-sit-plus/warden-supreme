@@ -265,17 +265,19 @@ val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
     ).toJcaPublicKey().getOrThrow()
 
 )
-
-
 private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("EC")
         .generatePublic(
-            X509EncodedKeySpec(Base64.getDecoder().decode(SoftwareAttestationVerifier.GOOGLE_SOFTWARE_EC_ROOT))
+            X509EncodedKeySpec(Base64.getDecoder().decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+                    "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="))
         ),
     KeyFactory.getInstance("RSA")
         .generatePublic(
             X509EncodedKeySpec(
-                Base64.getDecoder().decode(SoftwareAttestationVerifier.GOOGLE_SOFTWARE_RSA_ROOT)
+                Base64.getDecoder().decode(    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+                        "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+                        "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+                        "+Vfkl5YLCazOkjWFmwIDAQAB")
             )
         )
 )
@@ -338,7 +340,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
      * Can be overridden for individual apps.
      */
-    val patchLevel: PatchLevel? = null,
+    internal val patchLevel: PatchLevel? = null,
 
     /**
      * Set to `true` if *StrongBox* security level should be required.
@@ -445,14 +447,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -558,14 +560,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -1133,7 +1135,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonString(): String = jsonDebug.encodeToString(this)
 
     /**
-     * Serialises this config into its canonical form (YAML). Can be loaded using [fromYamlString] afterwards.
+     * Serialises this config into its canonical form (YAML). Can be loaded using [fromJsonString] afterwards.
      */
     override fun toYamlString(): String = yaml.encodeToString(this)
 
@@ -1157,7 +1159,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             jsonDebug.decodeFromString<AndroidAttestationConfiguration>(jsonRepresentation)
 
         /**
-         * Loads the config from its canonical form (YAML), as produced by [toYamlString].
+         * Loads the config from its canonical form (JSON), as produced by [toJsonString].
          */
         override fun fromYamlString(yamlRepresentation: String): AndroidAttestationConfiguration =
             yaml.decodeFromString(yamlRepresentation)
