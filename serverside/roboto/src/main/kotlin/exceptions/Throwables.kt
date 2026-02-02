@@ -21,6 +21,8 @@ abstract class AndroidAttestationException(message: String?, cause: Throwable?) 
     }
 }
 
+class ConfigurationException(message:String): AndroidAttestationException(message, null)
+
 
 /**
  * Indicates an attestation error during App or OS attestation

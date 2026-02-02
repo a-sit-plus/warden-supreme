@@ -5,7 +5,6 @@ import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.toBigInteger
-import com.google.android.attestation.ParsedAttestationRecord
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.YearMonth
@@ -55,63 +54,65 @@ sealed class SupremeAttestationEngine(
         versionOverride: Int?,
         patchLevel: PatchLevel?,
         verificationDate: Instant
-    ) = catchingUnwrapped {
-        (versionOverride ?: attestationConfiguration.androidVersion)?.let {
-            val osVersionFromRecord = osVersion?.getOrNull()?.intValue?.toBigInteger()
-            if ((osVersionFromRecord == null) || osVersionFromRecord < BigInteger(it)) throw AttestationValueException(
-                "Android version not supported: $osVersionFromRecord} (should be at least $it)",
-                reason = AttestationValueException.Reason.OS_VERSION,
-                expectedValue = it,
-                actualValue = osVersion
-            )
-        }
+    ) {
+        catchingUnwrapped {
+            (versionOverride ?: attestationConfiguration.androidVersion)?.let {
+                val osVersionFromRecord = osVersion?.getOrNull()?.intValue?.toBigInteger()
+                if ((osVersionFromRecord == null) || osVersionFromRecord < BigInteger(it)) throw AttestationValueException(
+                    "Android version not supported: $osVersionFromRecord} (should be at least $it)",
+                    reason = AttestationValueException.Reason.OS_VERSION,
+                    expectedValue = it,
+                    actualValue = osVersion
+                )
+            }
 
-        (patchLevel ?: attestationConfiguration.patchLevel)?.let {
-            val fromRecord = osPatchLevel?.getOrNull()?.let { YearMonth(it.year.toInt(), it.month) }
-            if ((fromRecord == null) || (fromRecord < YearMonth(it.year, it.month))
-            ) throw AttestationValueException(
-                "Patch level not supported: ${fromRecord} (should be at least $it)",
-                reason = AttestationValueException.Reason.OS_VERSION,
-                expectedValue = it,
-                actualValue = osPatchLevel
-            )
-        }
-
-        (patchLevel ?: attestationConfiguration.patchLevel)?.let {
-            it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
-                val fromAttestation = osPatchLevel?.getOrNull()?.let { YearMonth(it.year.toInt(), it.month) }
-
-                val currentYearMonth =
-                    verificationDate.toLocalDateTime(TimeZone.UTC).let { YearMonth(it.year, it.month) }
-                if ((fromAttestation == null) || ((monthsBetween(
-                        currentYearMonth,
-                        fromAttestation
-                    )) > maxFuturePatchLevelMonths)
+            (patchLevel ?: attestationConfiguration.patchLevel)?.let {
+                val fromRecord = osPatchLevel?.getOrNull()?.let { YearMonth(it.year.toInt(), it.month) }
+                if ((fromRecord == null) || (fromRecord < YearMonth(it.year, it.month))
                 ) throw AttestationValueException(
-                    "Patch level is ${
-                        fromAttestation?.let {
-                            monthsBetween(
-                                it,
-                                currentYearMonth
-                            )
-                        }
-                    } months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
+                    "Patch level not supported: ${fromRecord} (should be at least $it)",
                     reason = AttestationValueException.Reason.OS_VERSION,
                     expectedValue = it,
                     actualValue = osPatchLevel
                 )
             }
-        }
-    }.getOrElse {
-        throw when (it) {
-            is AttestationValueException -> it
-            else -> AttestationValueException(
-                "Could not verify Android Version",
-                it,
-                AttestationValueException.Reason.OS_VERSION,
-                expectedValue = "Correct Android OS version",
-                actualValue = this
-            )
+
+            (patchLevel ?: attestationConfiguration.patchLevel)?.let {
+                it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
+                    val fromAttestation = osPatchLevel?.getOrNull()?.let { YearMonth(it.year.toInt(), it.month) }
+
+                    val currentYearMonth =
+                        verificationDate.toLocalDateTime(TimeZone.UTC).let { YearMonth(it.year, it.month) }
+                    if ((fromAttestation == null) || ((monthsBetween(
+                            currentYearMonth,
+                            fromAttestation
+                        )) > maxFuturePatchLevelMonths)
+                    ) throw AttestationValueException(
+                        "Patch level is ${
+                            fromAttestation?.let {
+                                monthsBetween(
+                                    it,
+                                    currentYearMonth
+                                )
+                            }
+                        } months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
+                        reason = AttestationValueException.Reason.OS_VERSION,
+                        expectedValue = it,
+                        actualValue = osPatchLevel
+                    )
+                }
+            }
+        }.getOrElse {
+            throw when (it) {
+                is AttestationValueException -> it
+                else -> AttestationValueException(
+                    "Could not verify Android Version",
+                    it,
+                    AttestationValueException.Reason.OS_VERSION,
+                    expectedValue = "Correct Android OS version",
+                    actualValue = this
+                )
+            }
         }
     }
 
@@ -163,64 +164,15 @@ sealed class SupremeAttestationEngine(
         attestationConfiguration: AndroidAttestationConfiguration,
         verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean,
     ) : SupremeAttestationEngine(attestationConfiguration, verifyChallenge) {
-        init {
-            if (attestationConfiguration.disableHardwareAttestation) throw object :
-                AndroidAttestationException("Hardware attestation is disabled!", null) {}
-            if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw object :
-                AndroidAttestationException("No hardware attestation trust anchors configured", null) {}
-        }
+        override val type by lazy { HardwareEngine() }
 
-        override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.hardwareTrustedRoots
-
-
-        @Throws(AttestationValueException::class)
-        override fun AttestationKeyDescription.verifyAndroidVersion(
-            versionOverride: Int?,
-            osPatchLevel: PatchLevel?,
-            verificationDate: Instant
-        ) = hardwareEnforced.verifyAndroidVersionFromAuthList(versionOverride, osPatchLevel, verificationDate)
-
-        @Throws(AttestationValueException::class)
-        override fun AttestationKeyDescription.verifyBootStateAndSystemImage() = hardwareEnforced.verifySystemLocked()
-
-        @Throws(AttestationValueException::class)
-        override fun AttestationKeyDescription.verifyRollbackResistance() = hardwareEnforced.verifyRollbackResistance()
-
-
-        @Throws(AttestationValueException::class)
-        override fun AttestationKeyDescription.verifySecurityLevel(appOverride: Boolean?) =verifySecurityLevelIsHardware(appOverride)
     }
 
     class Software(
         attestationConfiguration: AndroidAttestationConfiguration,
         verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
     ) : SupremeAttestationEngine(attestationConfiguration, verifyChallenge) {
-        init {
-            if (!attestationConfiguration.enableSoftwareAttestation) throw object :
-                AndroidAttestationException("Software attestation is disabled!", null) {}
-            if (attestationConfiguration.softwareTrustedRoots.isEmpty()) throw object :
-                AndroidAttestationException("No software attestation trust anchors configured", null) {}
-        }
-
-        override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
-
-        override fun AttestationKeyDescription.verifyAndroidVersion(
-            versionOverride: Int?,
-            osPatchLevel: PatchLevel?,
-            verificationDate: Instant
-        ) =
-            softwareEnforced.verifyAndroidVersionFromAuthList(versionOverride, osPatchLevel, verificationDate)
-
-        override fun AttestationKeyDescription.verifyRollbackResistance() =
-            softwareEnforced.verifyRollbackResistance()
-
-        override fun AttestationKeyDescription.verifyBootStateAndSystemImage() {
-            //impossible
-        }
-
-        @Throws(AttestationValueException::class)
-        override fun AttestationKeyDescription.verifySecurityLevel(appOverride: Boolean? /*irrelevant*/) =verifySecurityLevelIsSoftware()
-
+        override val type by lazy { SoftwareEngine() }
     }
 
 }

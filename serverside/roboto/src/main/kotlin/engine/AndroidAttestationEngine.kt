@@ -6,6 +6,7 @@ import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
+import at.asitplus.attestation.android.exceptions.ConfigurationException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
 import com.google.android.attestation.ParsedAttestationRecord
@@ -22,7 +23,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     protected val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
 ) {
     abstract val certChainValidator: CertChainValidator<Cert>
-    abstract val trustAnchors: Collection<TrustedRoot>
+    val trustAnchors: Collection<TrustedRoot> by lazy { type.trustAnchors }
 
     abstract val List<Cert>.attestationRecord: AttRecord?
 
@@ -89,12 +90,14 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             actualValue = receivedChallenge
         )
         parsedAttestationRecord.verifyAttestationTime(verificationDate)
-        parsedAttestationRecord.verifySecurityLevel(attestedApp.requireStrongBoxOverride)
-        parsedAttestationRecord.verifyBootStateAndSystemImage()
-        parsedAttestationRecord.verifyRollbackResistance()
+        type.verifySecurityLevel(parsedAttestationRecord, attestedApp.requireStrongBoxOverride)
+
+        type.verifyBootStateAndSystemImage(parsedAttestationRecord)
+        type.verifyRollbackResistance(parsedAttestationRecord)
 
 
-        parsedAttestationRecord.verifyAndroidVersion(
+        type.verifyAndroidVersion(
+            parsedAttestationRecord,
             attestedApp.androidVersionOverride,
             attestedApp.patchLevelOverride,
             verificationDate
@@ -180,25 +183,12 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         }
     }
 
-    protected abstract fun AttRecord.verifyAndroidVersion(
-        versionOverride: Int?,
-        osPatchLevel: PatchLevel?,
-        verificationDate: Instant
-    ): Unit?
-
-    @Throws(AttestationValueException::class)
-    protected abstract fun AttRecord.verifyRollbackResistance(): Unit?
-
     @Throws(AttestationValueException::class)
     protected abstract fun AuthList.verifyAndroidVersionFromAuthList(
         versionOverride: Int?,
         patchLevel: PatchLevel?,
         verificationDate: Instant
-    ): Unit?
-
-
-    @Throws(AttestationValueException::class)
-    protected abstract fun AttRecord.verifyBootStateAndSystemImage()
+    )
 
     @Throws(AttestationValueException::class)
     protected abstract fun AuthList.verifySystemLocked()
@@ -213,9 +203,6 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
                 actualValue = false
             )
     }
-
-    @Throws(AttestationValueException::class)
-    protected abstract fun AttRecord.verifySecurityLevel(appOverride: Boolean?)
 
     protected abstract val AttRecord.createdAt: Instant?
 
@@ -232,52 +219,142 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
     protected abstract val AttRecord.keymasterSecLevel: GeneralizedSecurityLevel
 
-    protected fun AttRecord.verifySecurityLevelIsHardware(appOverride: Boolean?) {
-        if (appOverride ?: attestationConfiguration.requireStrongBox) {
-            if (attestationSecLevel != GeneralizedSecurityLevel.STRONGBOX)
-                throw AttestationValueException(
-                    "Attestation security level not StrongBox",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                    actualValue = attestationSecLevel
-                )
-            if (keymasterSecLevel != GeneralizedSecurityLevel.STRONGBOX)
-                throw AttestationValueException(
-                    "Keymaster security level not StrongBox",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                    actualValue = keymasterSecLevel
-                )
-        } else {
-            if (attestationSecLevel == GeneralizedSecurityLevel.SOFTWARE)
-                throw AttestationValueException(
-                    "Attestation security level software",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                    actualValue = attestationSecLevel
-                )
-            if (keymasterSecLevel == GeneralizedSecurityLevel.SOFTWARE)
-                throw AttestationValueException(
-                    "Keymaster security level software",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                    actualValue = keymasterSecLevel
-                )
+    protected abstract val type: EngineType<AttRecord, AuthList>
+
+    sealed interface EngineType<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList> {
+        @Throws(AttestationValueException::class)
+        fun verifySecurityLevel(record: AttRecord, appOverride: Boolean?)
+        val trustAnchors: Collection<TrustedRoot>
+
+        @Throws(AttestationValueException::class)
+        fun verifyAndroidVersion(
+            record: AttRecord,
+            versionOverride: Int?,
+            osPatchLevel: PatchLevel?,
+            verificationDate: Instant
+        )
+
+        @Throws(AttestationValueException::class)
+        fun verifyRollbackResistance(record: AttRecord)
+
+        @Throws(AttestationValueException::class)
+        fun verifyBootStateAndSystemImage(record: AttRecord)
+    }
+
+
+    inner class SoftwareEngine : EngineType<AttRecord, AuthList> {
+
+        init {
+            if (!attestationConfiguration.enableSoftwareAttestation) throw ConfigurationException("Software attestation is disabled!")
+            if (attestationConfiguration.softwareTrustedRoots.isEmpty()) throw ConfigurationException("No software attestation trust anchors configured")
+        }
+
+
+        override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
+
+        @Throws(AttestationValueException::class)
+        override fun verifySecurityLevel(record: AttRecord, appOverride: Boolean? /*irrelevant for SW*/) = record.run {
+            if (attestationSecLevel != GeneralizedSecurityLevel.SOFTWARE) throw AttestationValueException(
+                "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
+                expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
+                actualValue = attestationSecLevel
+            )
+            if (keymasterSecLevel != GeneralizedSecurityLevel.SOFTWARE) throw AttestationValueException(
+                "Keymaster security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
+                expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
+                actualValue = keymasterSecLevel
+            )
+        }
+
+        @Throws(AttestationValueException::class)
+        override fun verifyAndroidVersion(
+            record: AttRecord,
+            versionOverride: Int?,
+            osPatchLevel: PatchLevel?,
+            verificationDate: Instant
+        ) {
+            record.run {
+                softwareEnforced.verifyAndroidVersionFromAuthList(versionOverride, osPatchLevel, verificationDate)
+            }
+        }
+
+        @Throws(AttestationValueException::class)
+        override fun verifyRollbackResistance(record: AttRecord) {
+            record.softwareEnforced.verifyRollbackResistance()
+        }
+
+        override fun verifyBootStateAndSystemImage(record: AttRecord) {
+            /*NOOP in Software*/
         }
     }
 
-    protected fun AttRecord.verifySecurityLevelIsSoftware() {
-        if (attestationSecLevel != GeneralizedSecurityLevel.SOFTWARE) throw AttestationValueException(
-            "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-            expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-            actualValue =attestationSecLevel
-        )
-        if (keymasterSecLevel != GeneralizedSecurityLevel.SOFTWARE) throw AttestationValueException(
-            "Keymaster security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-            expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-            actualValue = keymasterSecLevel
-        )
+    inner class HardwareEngine : EngineType<AttRecord, AuthList> {
+        init {
+            if (attestationConfiguration.disableHardwareAttestation) throw ConfigurationException("Hardware attestation is disabled!")
+            if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw ConfigurationException("No hardware attestation trust anchors configured")
+        }
+
+
+        override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.hardwareTrustedRoots
+
+        @Throws(AttestationValueException::class)
+        override fun verifyAndroidVersion(
+            record: AttRecord,
+            versionOverride: Int?,
+            osPatchLevel: PatchLevel?,
+            verificationDate: Instant
+        ) {
+            record.hardwareEnforced.verifyAndroidVersionFromAuthList(versionOverride, osPatchLevel, verificationDate)
+        }
+
+        @Throws(AttestationValueException::class)
+        override fun verifyRollbackResistance(record: AttRecord) {
+            record.hardwareEnforced.verifyRollbackResistance()
+        }
+
+        @Throws(AttestationValueException::class)
+        override fun verifyBootStateAndSystemImage(record: AttRecord) {
+            record.hardwareEnforced.verifySystemLocked()
+        }
+
+        @Throws(AttestationValueException::class)
+        override fun verifySecurityLevel(record: AttRecord, appOverride: Boolean? /*irrelevant for SW*/) = record.run {
+            if (appOverride ?: attestationConfiguration.requireStrongBox) {
+                if (attestationSecLevel != GeneralizedSecurityLevel.STRONGBOX)
+                    throw AttestationValueException(
+                        "Attestation security level not StrongBox",
+                        reason = AttestationValueException.Reason.SEC_LEVEL,
+                        expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
+                        actualValue = attestationSecLevel
+                    )
+                if (keymasterSecLevel != GeneralizedSecurityLevel.STRONGBOX)
+                    throw AttestationValueException(
+                        "Keymaster security level not StrongBox",
+                        reason = AttestationValueException.Reason.SEC_LEVEL,
+                        expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
+                        actualValue = keymasterSecLevel
+                    )
+            } else {
+                if (attestationSecLevel == GeneralizedSecurityLevel.SOFTWARE)
+                    throw AttestationValueException(
+                        "Attestation security level software",
+                        reason = AttestationValueException.Reason.SEC_LEVEL,
+                        expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
+                        actualValue = attestationSecLevel
+                    )
+                if (keymasterSecLevel == GeneralizedSecurityLevel.SOFTWARE)
+                    throw AttestationValueException(
+                        "Keymaster security level software",
+                        reason = AttestationValueException.Reason.SEC_LEVEL,
+                        expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
+                        actualValue = keymasterSecLevel
+                    )
+            }
+        }
+
+
     }
+
 }
 
 
