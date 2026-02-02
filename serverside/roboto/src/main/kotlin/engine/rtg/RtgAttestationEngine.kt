@@ -3,6 +3,8 @@ package at.asitplus.attestation.android.engine
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.android.engine.AndroidAttestationEngine
+import at.asitplus.attestation.android.engine.JvmCertChainValidator
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
@@ -13,7 +15,9 @@ import java.security.cert.X509Certificate
 import java.time.YearMonth
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.TimeZone
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -53,7 +57,7 @@ sealed class RtgAttestationEngine(
         )
 
         val difference = checkTime - createdAt.toKotlinInstant()
-        if (difference < Duration.ZERO) throw AttestationValueException(
+        if (difference < Duration.Companion.ZERO) throw AttestationValueException(
             "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
             reason = AttestationValueException.Reason.STATEMENT_TIME,
             expectedValue = checkTime,

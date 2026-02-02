@@ -13,11 +13,16 @@ this changelog also includes the original WARDEN changelog.
         * Expose known properties as getters from this list
         * Custom Parser correctly handles UserAuthType and many more
         * -> **Warden Supreme now parses more Attestation extensions correctly than Google's shiny new parser AND with better semantics and Debugging**
+        * Refactor Roboto
+            * Directly instantiate `Roboto`; it will check software and/or wardware attestation based on config
+            * Delegate actual checks to `Engines` to prepare replacing Google's parser and PKIX cert path validator
 * Fixes:
     * Relax the upstream parser to glitch out less often
         * -> **Warden Supreme now parses more Attestation extensions than WARDEN-roboto ever could.**
     * Correctly re-encode cursed X.509 certificate extensions that encode `critical=true` instead of omitting it
-* Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
+* API-Changes:
+    * Directly instantiate Roboto (see "Refactor Roboto") 
+    * Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
 * Revised and expanded documentation
 * Dependency Updates:
     * Signum 3.19.3 / Supreme 0.11.3
@@ -57,7 +62,6 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
             * Old constructor signatures have been removed
             * Also affects `AttestationVerifier`
         * Bump challenge version to `2`
-    * Revamp challenge validation API to take the full CSR from the client instead of just the nonce already extracted from it
     * Introduce canonical config format to avoid issues with config loading
         * Discourage config loading through Hoplite or Spring Boot
         * Includes YAML and JSON format
@@ -102,8 +106,6 @@ This only affected the fully integrated ("Supreme") flow (implemented in `Attest
     * Deprecate misnamed and overly complex APIs. They will be removed with 1.1
     * Fail early on invalid iOS team identifier length
     * Android-only debug statements must now also contain a version number
-    * Add `onChallengeValidated` callback to `AttestationVerifier.verifyAttestation`
-    * Make `verifyAttestation` callbacks suspending and ignore callback exceptions
 * **Dependency and Build updates**
     * Gradle 9 + Kotlin 2.3
         * Return value checker defaults to `check`
