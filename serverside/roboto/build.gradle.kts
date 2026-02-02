@@ -110,6 +110,7 @@ dependencies {
     testImplementation("ch.qos.logback:logback-access:1.2.3")
     testImplementation(ktor("client-mock"))
     testImplementation(datetime())
+    api(project(":supreme-common"))
     //for whatever reason we cannot wire supreme-common here. dependency cycle?
 }
 

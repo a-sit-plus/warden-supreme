@@ -57,7 +57,7 @@ sealed class RtgAttestationEngine(
         )
 
         val difference = checkTime - createdAt.toKotlinInstant()
-        if (difference < Duration.Companion.ZERO) throw AttestationValueException(
+        if (difference < Duration.ZERO) throw AttestationValueException(
             "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
             reason = AttestationValueException.Reason.STATEMENT_TIME,
             expectedValue = checkTime,

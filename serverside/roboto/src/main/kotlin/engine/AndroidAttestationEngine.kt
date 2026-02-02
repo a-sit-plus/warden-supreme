@@ -21,7 +21,7 @@ sealed class AndroidAttestationEngine<AttRecord, AuthList, Cert>(
     abstract val certChainValidator: CertChainValidator<Cert>
     abstract val trustAnchors: Collection<TrustedRoot>
 
-    abstract val List<Cert>.attestationRecord: AttRecord
+    abstract val List<Cert>.attestationRecord: AttRecord?
 
     abstract val AttRecord.challenge: ByteArray
 
@@ -48,7 +48,15 @@ sealed class AndroidAttestationEngine<AttRecord, AuthList, Cert>(
 
 
         //do this before we check everything else to actually identify the app we're having here
-        val parsedAttestationRecord = certificates.attestationRecord
+        val parsedAttestationRecord = catchingUnwrapped { certificates.attestationRecord?:throw IllegalArgumentException("No attestation record present") }.getOrElse {
+            throw AttestationValueException(
+                "Could not parse attestation record",
+                it,
+                reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                expectedValue = "Prasable attestation record",
+                actualValue = null
+            )
+        }
         val attestedApp = attestationConfiguration.applications.associateWith { app ->
             catchingUnwrapped { parsedAttestationRecord.verifyApplication(app) }
         }.let {

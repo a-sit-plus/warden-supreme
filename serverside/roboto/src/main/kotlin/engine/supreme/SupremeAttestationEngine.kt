@@ -4,21 +4,15 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AuthorizationList
 import at.asitplus.attestation.android.PatchLevel
+import at.asitplus.attestation.android.androidAttestationExtension
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
 import java.security.cert.X509Certificate
-import java.time.YearMonth
-import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
-import java.util.Calendar
-import java.util.Date
-import java.util.TimeZone
-import kotlin.jvm.optionals.getOrNull
+import kotlin.compareTo
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
-import kotlin.time.toKotlinInstant
 
 /**
  * Modern, better, independent KMP-first Attestation engine based on in-house clean-room
@@ -33,16 +27,16 @@ sealed class SupremeAttestationEngine(
 ) {
     override val certChainValidator = JvmCertChainValidator(attestationConfiguration)
 
-    override val List<X509Certificate>.attestationRecord: AttestationKeyDescription
-        get() = TODO("attestationextension once rebased" )
+    override val List<X509Certificate>.attestationRecord: AttestationKeyDescription?
+        get() = androidAttestationExtension
     override val AttestationKeyDescription.challenge: ByteArray
         get() = attestationChallenge
 
     override fun AttestationKeyDescription.verifyAttestationTime(verificationDate: Instant) {
         val checkTime = verificationDate + (attestationConfiguration.verificationSecondsOffset).seconds
         if (attestationConfiguration.attestationStatementValiditySeconds == null) return //no validity, no checks!
-        //TODO: getOrNull once rebased
-        val createdAt = hardwareEnforced.creationDateTime?.get()?.timestamp?: softwareEnforced.creationDateTime?.get()?.timestamp
+        //TODO: be more lenient here and accept month and day zero, but this should be configurable
+        val createdAt = hardwareEnforced.creationDateTime?.getOrNull()?.timestamp?: softwareEnforced.creationDateTime?.getOrNull()?.timestamp
         if (createdAt == null) throw AttestationValueException(
             "Attestation statement creation time missing",
             reason = AttestationValueException.Reason.STATEMENT_TIME,
@@ -51,7 +45,7 @@ sealed class SupremeAttestationEngine(
         )
 
         val difference = checkTime - createdAt
-        if (difference < Duration.Companion.ZERO) throw AttestationValueException(
+        if (difference < Duration.ZERO) throw AttestationValueException(
             "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
             reason = AttestationValueException.Reason.STATEMENT_TIME,
             expectedValue = checkTime,
@@ -138,7 +132,7 @@ sealed class SupremeAttestationEngine(
         }
 
         (patchLevel ?: attestationConfiguration.patchLevel)?.let {
-            if ((osPatchLevel().get()).isBefore(YearMonth.of(it.year, it.month))) throw AttestationValueException(
+            if ((osPatchLevel().get()).isBefore(java.time.YearMonth.of(it.year, it.month))) throw AttestationValueException(
                 "Patch level not supported: ${osPatchLevel().get()} (should be at least $it)",
                 reason = AttestationValueException.Reason.OS_VERSION,
                 expectedValue = it,
@@ -150,10 +144,10 @@ sealed class SupremeAttestationEngine(
             it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
                 val fromAttestation = osPatchLevel().get()
                 val calendar =
-                    Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC))
-                        .apply { time = Date.from(verificationDate.toJavaInstant()) }
-                val currentYearMonth = YearMonth.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1)
-                val difference = currentYearMonth.until(fromAttestation, ChronoUnit.MONTHS)
+                    java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone(java.time.ZoneOffset.UTC))
+                        .apply { time = java.util.Date.from(verificationDate.toJavaInstant()) }
+                val currentYearMonth = java.time.YearMonth.of(calendar.get(java.util.Calendar.YEAR), calendar.get(java.util.Calendar.MONTH) + 1)
+                val difference = currentYearMonth.until(fromAttestation, java.time.temporal.ChronoUnit.MONTHS)
                 if (difference > maxFuturePatchLevelMonths.toLong()) throw AttestationValueException(
                     "Patch level is $difference months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
                     reason = AttestationValueException.Reason.OS_VERSION,
