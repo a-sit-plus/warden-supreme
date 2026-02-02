@@ -6,7 +6,7 @@ this changelog also includes the original WARDEN changelog.
 
 # 1.0.0-SNAPSHOT
 * Features:
-    * Get Attestation extension from certificate chain same as Google's parser (return the attestation extension closest to the root)
+    * Get Attestation extension from certificate chain (same as Google's parser: return the attestation extension closest to the root)
     * Rework custom Attestation extension parser 
         * Now list-based to handle arbitrary properties
         * Add missing properties to custom parser
@@ -16,6 +16,7 @@ this changelog also includes the original WARDEN changelog.
         * Refactor Roboto
             * Directly instantiate `Roboto`; it will check software and/or wardware attestation based on config
             * Delegate actual checks to `Engines` to prepare replacing Google's parser and PKIX cert path validator
+            * F**irst preview of attestation checks based on own parser**
 * Fixes:
     * Relax the upstream parser to glitch out less often
         * -> **Warden Supreme now parses more Attestation extensions than WARDEN-roboto ever could.**
