@@ -1,11 +1,12 @@
 package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.*
-import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.asn1.encoding.decodeToAsn1Integer
 import at.asitplus.signum.indispensable.asn1.toBigInteger
 import com.ionspin.kotlin.bignum.integer.BigInteger
+import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
@@ -31,7 +32,6 @@ sealed class SupremeAttestationEngine(
     override val AttestationKeyDescription.challenge: ByteArray
         get() = attestationChallenge
 
-    //TODO: be more lenient here and accept month and day zero, but this should be configurable
     override val AttestationKeyDescription.createdAt: Instant?
         get() = hardwareEnforced.creationDateTime?.getOrNull()?.timestamp
             ?: softwareEnforced.creationDateTime?.getOrNull()?.timestamp
@@ -67,7 +67,8 @@ sealed class SupremeAttestationEngine(
             }
 
             (patchLevel ?: attestationConfiguration.patchLevel)?.let {
-                val fromRecord = osPatchLevel?.getOrNull()?.let { YearMonth(it.year.toInt(), it.month) }
+                val fromRecord = osPatchLevelLenient
+
                 if ((fromRecord == null) || (fromRecord < YearMonth(it.year, it.month))
                 ) throw AttestationValueException(
                     "Patch level not supported: ${fromRecord} (should be at least $it)",
@@ -79,7 +80,7 @@ sealed class SupremeAttestationEngine(
 
             (patchLevel ?: attestationConfiguration.patchLevel)?.let {
                 it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
-                    val fromAttestation = osPatchLevel?.getOrNull()?.let { YearMonth(it.year.toInt(), it.month) }
+                    val fromAttestation = osPatchLevelLenient
 
                     val currentYearMonth =
                         verificationDate.toLocalDateTime(TimeZone.UTC).let { YearMonth(it.year, it.month) }

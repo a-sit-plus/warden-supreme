@@ -1,7 +1,8 @@
 package at.asitplus.attestation
 
 
-import at.asitplus.attestation.AttestationException as AttException
+import at.asitplus.attestation.android.AttestationKeyDescription
+import at.asitplus.attestation.android.androidAttestationExtension
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import com.google.android.attestation.AttestationApplicationId
@@ -9,6 +10,7 @@ import com.google.android.attestation.ParsedAttestationRecord
 import java.security.PublicKey
 import java.security.cert.X509Certificate
 import kotlin.jvm.optionals.getOrNull
+import at.asitplus.attestation.AttestationException as AttException
 
 
 /**
@@ -50,7 +52,17 @@ sealed class AttestationResult {
 
         protected abstract val androidDetails: String
         override val details: String by lazy { "Android::$androidDetails" }
+
+        @Deprecated(
+            "Uses legacy Google parser, will be removed at some point (no ETA yet)",
+            replaceWith = ReplaceWith("attestationExtension")
+        )
         abstract val attestationRecord: ParsedAttestationRecord
+
+        /**
+         * The attestation extension present in the [attestationCertificate]
+         */
+        val attestationExtension: AttestationKeyDescription by lazy { attestationCertificate.androidAttestationExtension!! }
 
         val attestationCertificate by lazy { attestationCertificateChain.first() }
 
@@ -63,6 +75,7 @@ sealed class AttestationResult {
                     attestationCertificateChain.mapNotNull { it.parseToCertificate() }
                 )
             }
+
         }
 
         class Verified(attestationCertificateChain: List<X509Certificate>) : Android(attestationCertificateChain),

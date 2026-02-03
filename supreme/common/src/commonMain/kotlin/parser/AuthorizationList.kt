@@ -8,6 +8,7 @@ import at.asitplus.signum.indispensable.asn1.*
 import at.asitplus.signum.indispensable.asn1.encoding.*
 import at.asitplus.signum.indispensable.misc.BitLength
 import kotlinx.datetime.Month
+import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -100,7 +101,13 @@ data class AuthorizationList private constructor(
 
         override fun hashCode(): Int = delegate.hashCode()
         override fun toString(): String {
-            return "OrderPreservingSet[${delegate.joinToString(prefix = "", postfix = "", separator = ", ") { it.toString() }}]"
+            return "OrderPreservingSet[${
+                delegate.joinToString(
+                    prefix = "",
+                    postfix = "",
+                    separator = ", "
+                ) { it.toString() }
+            }]"
         }
     }
 
@@ -1570,17 +1577,18 @@ data class AuthorizationList private constructor(
          */
         constructor(type: Type) : this(type.intValue)
 
-        val authTypes: Set<Type> get() = when (intValue) {
-            Type.ANY.intValue -> setOf(Type.ANY)
-            Asn1Integer.ZERO -> emptySet()
-            else -> {
-                val raw = intValue.toBigInteger().longValue(exactRequired = false)
-                val collected = mutableSetOf<Type>()
-                if (raw and 1L > 0L) collected += Type.PASSWORD
-                if (raw and 2L > 0L) collected += Type.FINGERPRINT
-                collected
+        val authTypes: Set<Type>
+            get() = when (intValue) {
+                Type.ANY.intValue -> setOf(Type.ANY)
+                Asn1Integer.ZERO -> emptySet()
+                else -> {
+                    val raw = intValue.toBigInteger().longValue(exactRequired = false)
+                    val collected = mutableSetOf<Type>()
+                    if (raw and 1L > 0L) collected += Type.PASSWORD
+                    if (raw and 2L > 0L) collected += Type.FINGERPRINT
+                    collected
+                }
             }
-        }
 
         companion object Tag : Tagged(504uL), Asn1Decodable<Asn1Primitive, UserAuth> {
             override fun doDecode(src: Asn1Primitive) = UserAuth(src.decodeToAsn1Integer())
@@ -1898,11 +1906,12 @@ data class AuthorizationList private constructor(
 
         override val intValue = Asn1Integer(month.number.toUInt() + year.toUInt() * 100u)
 
+        fun toYearMonth() = YearMonth(year.toInt(), month)
+
         companion object Tag : Tagged(706uL), Asn1Decodable<Asn1Primitive, OsPatchLevel> {
             override fun doDecode(src: Asn1Primitive): OsPatchLevel {
-                val raw = Long.decodeFromAsn1ContentBytes(
-                    src.decodeToAsn1Integer().encodeToAsn1ContentBytes()
-                )
+                val raw = src.decodeToAsn1Integer().toBigInteger().intValue(exactRequired = true)
+
                 val year = raw / 100
                 val month = Month((raw % 100).toInt())
                 return OsPatchLevel(year.toUShort(), month)
@@ -2118,7 +2127,7 @@ data class AuthorizationList private constructor(
             if (this === other) return true
             if (other !is AttestationId) return false
 
-            if(tagged != other.tagged) return false
+            if (tagged != other.tagged) return false
             if (stringValue != other.stringValue) return false
 
             return true
@@ -2390,6 +2399,28 @@ data class AuthorizationList private constructor(
     }
 }
 
+/**
+ *  [YearMonth] representation of [AuthorizationList.osPatchLevel], but tolerating a zero-indexed month
+ */
+val AuthorizationList.osPatchLevelLenient: YearMonth?
+    get() = catchingUnwrapped {
+        when (val patchLvl = osPatchLevel) {
+            is AttestationValue.Failure<*> -> patchLvl.rawAsn1Value.let { src ->
+                val raw = src.asPrimitive().decodeToAsn1Integer().toBigInteger().intValue(exactRequired = true)
+                val year = raw / 100
+                val month = Month((raw % 100).let { if (it == 0) 1 else it })
+                YearMonth(year, month)
+
+            }
+
+            is AttestationValue.Success<AuthorizationList.OsPatchLevel> -> YearMonth(
+                patchLvl.value.year.toInt(),
+                patchLvl.value.month
+            )
+
+            else -> null
+        }
+    }.getOrNull()
 
 //TODO these could be made more efficient, but its not worth it at the moment
 infix fun Asn1Integer.or(other: AuthorizationList.UserAuth.Type) = other or this

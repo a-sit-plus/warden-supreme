@@ -1067,7 +1067,7 @@ val WardenTest by testSuite {
                         verifyAttestation(
                             attestationProof,
                             challenge
-                        ).shouldBeInstanceOf<AttestationResult.Android>().attestationRecord
+                        ).shouldBeInstanceOf<AttestationResult.Android>()
                         val dbg = collectDebugInfo(
                             attestationProof,
                             challenge,

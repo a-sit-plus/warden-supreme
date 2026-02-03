@@ -3,20 +3,20 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
-import com.google.android.attestation.ParsedAttestationRecord
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.datetime.Instant
 import java.security.interfaces.ECPublicKey
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 val FeatureDemonstration by testSuite {
 
@@ -64,11 +64,10 @@ val FeatureDemonstration by testSuite {
                 .apply {
                     shouldBeInstanceOf<AttestationResult.Android>().apply {
                         attestationCertificate.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
-                        attestationRecord.attestationChallenge()
-                            .toByteArray() shouldBe nokiaX10KeyMasterGood.challenge
-                        attestationRecord.attestationSecurityLevel() shouldBeIn listOf(
-                            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                            ParsedAttestationRecord.SecurityLevel.STRONG_BOX
+                        attestationExtension.attestationChallenge shouldBe nokiaX10KeyMasterGood.challenge
+                        attestationExtension.attestationSecurityLevel shouldBeIn listOf(
+                            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT,
+                            AttestationKeyDescription.SecurityLevel.STRONGBOX
                         )
                     }
                 }
@@ -88,11 +87,10 @@ val FeatureDemonstration by testSuite {
                         attestedPublicKey!!.encoded shouldBe nokiaX10KeyMasterGood.publicKey!!.encoded
                         details.shouldBeInstanceOf<AttestationResult.Android>().apply {
                             attestationCertificate.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
-                            attestationRecord.attestationChallenge()
-                                .toByteArray() shouldBe nokiaX10KeyMasterGood.challenge
-                            attestationRecord.attestationSecurityLevel() shouldBeIn listOf(
-                                ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                                ParsedAttestationRecord.SecurityLevel.STRONG_BOX
+                            attestationExtension.attestationChallenge shouldBe nokiaX10KeyMasterGood.challenge
+                            attestationExtension.attestationSecurityLevel shouldBeIn listOf(
+                                AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT,
+                                AttestationKeyDescription.SecurityLevel.STRONGBOX
                             )
                         }
                     }
@@ -109,11 +107,10 @@ val FeatureDemonstration by testSuite {
                         attestedPublicKey!!.encoded shouldBe nokiaX10KeyMasterGood.publicKey!!.encoded
                         details.shouldBeInstanceOf<AttestationResult.Android>().apply {
                             attestationCertificate.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
-                            attestationRecord.attestationChallenge()
-                                .toByteArray() shouldBe nokiaX10KeyMasterGood.challenge
-                            attestationRecord.attestationSecurityLevel() shouldBeIn listOf(
-                                ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                                ParsedAttestationRecord.SecurityLevel.STRONG_BOX
+                            attestationExtension.attestationChallenge shouldBe nokiaX10KeyMasterGood.challenge
+                            attestationExtension.attestationSecurityLevel shouldBeIn listOf(
+                                AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT,
+                                AttestationKeyDescription.SecurityLevel.STRONGBOX
                             )
                         }
                     }

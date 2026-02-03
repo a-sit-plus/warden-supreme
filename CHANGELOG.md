@@ -13,6 +13,7 @@ this changelog also includes the original WARDEN changelog.
         * Expose known properties as getters from this list
         * Custom Parser correctly handles UserAuthType and many more
         * -> **Warden Supreme now parses more Attestation extensions correctly than Google's shiny new parser AND with better semantics and Debugging**
+        * Add `attestationExtension` shorthand to `AttestationResult`, returning an `AttestationKeyDescription`
     * Refactor Roboto
         * `Roboto` changes from abstract base class to a concrete wired based on config (experimentalParser, HW/SW toggles)
         * Delegate actual checks to `Engines` to prepare replacing Google's parser and PKIX cert path validator  

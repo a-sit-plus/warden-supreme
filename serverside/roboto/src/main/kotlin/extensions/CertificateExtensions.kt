@@ -48,6 +48,7 @@ fun List<X509Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = c
  * This snippet incorporates [code](https://github.com/android/keyattestation/blob/main/src/main/kotlin/provider/KeyAttestationCertPath.kt#L119) from Google's CertPathValidator
  */
 fun List<X509Certificate>.isRemoteKeyProvisioned(): Boolean {
+    if (size < 2) return false
     val principal = get(size - 2).subjectX500Principal
     val rdn = parseDN(principal.getName(X500Principal.RFC1779))
     return rdn["CN"] == "Droid CA2" && rdn["O"] == "Google LLC"
