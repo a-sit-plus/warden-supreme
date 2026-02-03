@@ -97,7 +97,3 @@ sealed class SupremeAttestationEngine(
     }
 
 }
-
-
-fun monthsBetween(start: YearMonth, end: YearMonth): Int =
-    (end.year - start.year) * 12 + (end.month.number - start.month.number)

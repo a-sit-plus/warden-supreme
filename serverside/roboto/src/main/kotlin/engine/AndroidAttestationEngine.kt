@@ -15,6 +15,7 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import io.ktor.util.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.YearMonth
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import java.util.*
 import kotlin.time.Duration
@@ -462,3 +463,6 @@ enum class GeneralizedVerifiedBootState {
     UNVERIFIED,
     FAILED
 }
+
+private fun monthsBetween(start: YearMonth, end: YearMonth): Int =
+    (end.year - start.year) * 12 + (end.month.number - start.month.number)
