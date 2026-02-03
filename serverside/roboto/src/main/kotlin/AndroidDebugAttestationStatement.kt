@@ -51,7 +51,7 @@ class AndroidDebugAttestationStatement(
     fun checkerFromConfig(): Roboto = Roboto(configuration)
 
     override suspend fun replay() =
-        checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)
+        checkerFromConfig().verify(attestationStatement, verificationTime, challenge)
 
     //todo replayBlocking as extension on interface
 

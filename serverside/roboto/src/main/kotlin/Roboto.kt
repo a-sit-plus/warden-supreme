@@ -1,14 +1,18 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.KmmResult
 import at.asitplus.attestation.android.engine.AndroidAttestationEngine
 import at.asitplus.attestation.android.engine.RtgAttestationEngine
 import at.asitplus.attestation.android.engine.SupremeAttestationEngine
+import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.ConfigurationException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.attestation.wardenVersion
+import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
+import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.coroutines.runBlocking
 import java.security.cert.X509Certificate
 import java.util.*
@@ -115,12 +119,22 @@ constructor(
      */
     @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
     @JvmName("verifyAttestation")
-    fun verifyAttestationJ(
+    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("verify(certificates, verificationDate, expectedChallenge).getOrThrow().attestationExension"))
+    fun verifyAttestation(
         certificates: List<X509Certificate>,
         verificationDate: Date = Date(),
         expectedChallenge: ByteArray
-    ): AttestationExtension<*> =
-        verifyAttestationBlocking(certificates, verificationDate.toInstant().toKotlinInstant(), expectedChallenge)
+    ): ParsedAttestationRecord =
+        verifyBlocking(
+            certificates,
+            verificationDate.toInstant().toKotlinInstant(),
+            expectedChallenge
+        ).getOrThrow().parsedAttestationRecord ?: throw AttestationValueException(
+            "Could not parse attestation record",
+            reason = AttestationValueException.Reason.APP_UNEXPECTED,
+            expectedValue = "A parseabel attestation record",
+            actualValue = null
+        )
 
     /**
      * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
@@ -128,19 +142,20 @@ constructor(
      *
      * @See [AndroidAttestationConfiguration] for details on what is and is not checked.
      *
-     * @return [AttestationExtension] on success
-     * @throws AttestationValueException if a property fails to verify according to the current configuration
-     * @throws RevocationException if a certificate has been revoked
-     * @throws CertificateInvalidException if certificates fail to verify
+     *
+     * @return `KmmResult<List<X509Certificate>>`. Failures contain a subclass of [AndroidAttestationException]:
+     * * AttestationValueException if a property fails to verify according to the current configuration
+     * * RevocationException if a certificate has been revoked
+     * * CertificateInvalidException if certificates fail to verify
      *
      */
     @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
-    @JvmName("verifyAttestationSuspending")
-    suspend fun verifyAttestation(
+    suspend fun verify(
         certificates: List<X509Certificate>,
         verificationDate: Instant = Clock.System.now(),
         expectedChallenge: ByteArray
-    ): AttestationExtension<*> {
+        //todo full chain inside a result and replaceWith to chain.parsedAttestationRecord or chain.AttestationKeyExn
+    ): KmmResult<List<X509Certificate>> = catching {
         val results = engines.map {
             catchingUnwrapped {
                 it.verifyAttestation(
@@ -150,7 +165,7 @@ constructor(
                 )
             }
         }
-        return if (results.filter { it.isFailure }.size == engines.size) {
+        if (results.filter { it.isFailure }.size == engines.size) {
             //if time is off, then we need to treat is separately
             results.firstOrNull {
                 (it.exceptionOrNull() is CertificateInvalidException &&
@@ -160,7 +175,7 @@ constructor(
 
             throw results.last() //this way we are most lenient
                 .exceptionOrNull()!!
-        } else results.first { it.isSuccess }.getOrThrow()
+        } else certificates
 
     }
 }
@@ -169,11 +184,11 @@ constructor(
  * Blocking version of [Roboto.verifyAttestation]
  */
 @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
-fun Roboto.verifyAttestationBlocking(
+fun Roboto.verifyBlocking(
     certificates: List<X509Certificate>,
     verificationDate: Instant = Clock.System.now(),
     expectedChallenge: ByteArray
-): AttestationExtension<*> = runBlocking { verifyAttestation(certificates, verificationDate, expectedChallenge) }
+): KmmResult<List<X509Certificate>> = runBlocking { verify(certificates, verificationDate, expectedChallenge) }
 
 /**
  * Blocking version of [Roboto.collectDebugInfo]
@@ -183,3 +198,15 @@ fun Roboto.collectDebugInfoBlocking(
     expectedChallenge: ByteArray,
     verificationDate: Instant = Clock.System.now(),
 ) = runBlocking { collectDebugInfo(certificates, expectedChallenge, verificationDate) }
+
+/**
+ * Convenience helper to get a legacy [ParsedAttestationRecord] from a certificate chain.
+ * Returns `null` if no record is present or parsing is impossible
+ */
+@Deprecated("Will be removed soon", replaceWith = ReplaceWith("attestationExtension"))
+val List<X509Certificate>.parsedAttestationRecord: ParsedAttestationRecord?
+    get() = catching {
+        ParsedAttestationRecord.createParsedAttestationRecord(
+            this
+        )
+    }.getOrNull()

@@ -17,6 +17,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.util.*
 import org.bouncycastle.util.encoders.Base64
+import java.security.cert.X509Certificate
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -111,17 +112,17 @@ val AttestationTests by testSuite {
                         )
                     ).apply {
                         shouldThrow<CertificateInvalidException> {
-                            verifyAttestation(
+                            verify(
                                 attestationCertChain,
                                 verificationDate,
                                 challenge
-                            )
+                            ).getOrThrow()
                         }.reason shouldBe CertificateInvalidException.Reason.TRUST
                         val collectDebugInfo =
                             collectDebugInfo(attestationCertChain, challenge, verificationDate).serialize()
 
                         shouldThrow<CertificateInvalidException> {
-                            AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                            AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                         }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
                     }
@@ -142,44 +143,22 @@ val AttestationTests by testSuite {
                             experimentalParser = experimental
                         )
                     ).apply {
-                        verifyAttestation(
+                        verify(
                             attestationCertChain,
                             verificationDate,
                             challenge
-                        ).shouldBeInstanceOf<AttestationExtension<*>>().apply {
-                            when (this) {
-                                is ParsedAttestationRecord -> {
-                                    attestationSecurityLevel() shouldBe SecurityLevel.SOFTWARE
-                                    keymasterSecurityLevel() shouldBe SecurityLevel.SOFTWARE
-                                }
-
-                                is AttestationKeyDescription -> {
-                                    attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                                    keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                                }
-
-                                else -> {}
-                            }
+                        ).getOrThrow().shouldBeInstanceOf<List<X509Certificate>>().apply {
+                            androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                            androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
                         }
 
                         val collectDebugInfo =
                             collectDebugInfo(attestationCertChain, challenge, verificationDate).serialize()
 
-                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replayBlocking()
-                            .shouldBeInstanceOf<AttestationExtension<*>>().apply {
-                                when (this) {
-                                    is ParsedAttestationRecord -> {
-                                        attestationSecurityLevel() shouldBe SecurityLevel.SOFTWARE
-                                        keymasterSecurityLevel() shouldBe SecurityLevel.SOFTWARE
-                                    }
-
-                                    is AttestationKeyDescription -> {
-                                        attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                                        keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                                    }
-
-                                    else -> {}
-                                }
+                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
+                            .shouldBeInstanceOf<List<X509Certificate>>().apply {
+                                androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                                androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
                             }
 
                     }
@@ -219,18 +198,18 @@ val AttestationTests by testSuite {
                     )
                 ).apply {
                     shouldThrow<CertificateInvalidException> {
-                        verifyAttestation(
+                        verify(
                             data.attestationCertChain,
                             data.verificationDate,
                             data.challenge
-                        )
+                        ).getOrThrow()
                     }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
                     val collectDebugInfo =
                         collectDebugInfo(data.attestationCertChain, data.challenge, data.verificationDate).serialize()
 
                     shouldThrow<CertificateInvalidException> {
-                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                     }.reason shouldBe CertificateInvalidException.Reason.TRUST
                 }
             }
@@ -251,17 +230,17 @@ val AttestationTests by testSuite {
                     )
                 ).apply {
                     shouldThrow<AttestationValueException> {
-                        verifyAttestation(
+                        verify(
                             data.attestationCertChain,
                             data.verificationDate,
                             data.challenge
-                        )
+                        ).getOrThrow()
                     }.reason shouldBe AttestationValueException.Reason.SEC_LEVEL
                     val collectDebugInfo =
                         collectDebugInfo(data.attestationCertChain, data.challenge, data.verificationDate).serialize()
 
                     shouldThrow<AttestationValueException> {
-                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                     }.reason shouldBe AttestationValueException.Reason.SEC_LEVEL
                 }
             }
@@ -417,62 +396,62 @@ val AttestationTests by testSuite {
                     "OK" - {
                         "enforce locked bootloader" {
                             attestationService(experimental, unlockedBootloaderAllowed = false).apply {
-                                verifyAttestation(
+                                verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                ).shouldBeInstanceOf<AttestationExtension<*>>()
+                                ).getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
                                 collectDebugInfo(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.challenge,
                                     recordedAttestation.verificationDate
-                                ).replay().shouldBeInstanceOf<AttestationExtension<*>>()
+                                ).replay().getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
                             }
                         }
 
                         "allow unlocked bootloader" {
                             attestationService(experimental, unlockedBootloaderAllowed = true).apply {
-                                verifyAttestation(
+                                verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                ).shouldBeInstanceOf<AttestationExtension<*>>()
+                                ).getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
                                 collectDebugInfo(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.challenge,
                                     recordedAttestation.verificationDate
-                                ).replay().shouldBeInstanceOf<AttestationExtension<*>>()
+                                ).replay().getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
                             }
                         }
 
                         "no version check" {
                             attestationService(experimental, androidVersion = null).apply {
-                                verifyAttestation(
+                                verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                ).shouldBeInstanceOf<AttestationExtension<*>>()
+                                ).getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
                                 var debugInfo = collectDebugInfo(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.challenge,
                                     recordedAttestation.verificationDate
                                 )
-                                debugInfo.replay().shouldBeInstanceOf<AttestationExtension<*>>()
+                                debugInfo.replay().getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
                             }
                         }
 
                         "no patch level" {
                             attestationService(experimental, androidPatchLevel = null).apply {
-                                verifyAttestation(
+                                verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                ).shouldBeInstanceOf<AttestationExtension<*>>()
+                                ).getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
                                 collectDebugInfo(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.challenge,
                                     recordedAttestation.verificationDate
-                                ).replay().shouldBeInstanceOf<AttestationExtension<*>>()
+                                ).replay().getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
                             }
                         }
                     }
@@ -491,11 +470,11 @@ val AttestationTests by testSuite {
                             )
                         ).apply {
                             shouldThrow<CertificateInvalidException> {
-                                verifyAttestation(
+                                verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
                             val collectDebugInfo =
@@ -506,7 +485,7 @@ val AttestationTests by testSuite {
                                 ).serialize()
 
                             shouldThrow<CertificateInvalidException> {
-                                AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                                AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                             }.reason shouldBe CertificateInvalidException.Reason.TRUST
                         }
                     }
@@ -516,11 +495,11 @@ val AttestationTests by testSuite {
 
                         "borked cert chain" {
                             shouldThrow<CertificateInvalidException> {
-                                service.verifyAttestation(
+                                service.verify(
                                     listOf(recordedAttestation.attestationCertChain[0]),
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
 
@@ -532,44 +511,44 @@ val AttestationTests by testSuite {
                                 ).serialize()
 
                             shouldThrow<CertificateInvalidException> {
-                                AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                                AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                             }.reason shouldBe CertificateInvalidException.Reason.TRUST
 
                             shouldThrow<CertificateInvalidException> {
-                                service.verifyAttestation(
+                                service.verify(
                                     recordedAttestation.attestationCertChain.subList(0, 1),
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe CertificateInvalidException.Reason.TRUST
                             shouldThrow<CertificateInvalidException> {
-                                service.verifyAttestation(
+                                service.verify(
                                     recordedAttestation.attestationCertChain.subList(0, 2),
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe CertificateInvalidException.Reason.TRUST
                         }
 
                         "require StrongBox" {
                             shouldThrow<AttestationValueException> {
-                                attestationService(experimental, requireStrongBox = true).verifyAttestation(
+                                attestationService(experimental, requireStrongBox = true).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe AttestationValueException.Reason.SEC_LEVEL
                         }
 
                         "time of verification" - {
                             "too early" {
                                 shouldThrow<CertificateInvalidException> {
-                                    service.verifyAttestation(
+                                    service.verify(
                                         recordedAttestation.attestationCertChain,
 
                                         recordedAttestation.verificationDate - 30_000.days,
                                         recordedAttestation.challenge
-                                    )
+                                    ).getOrThrow()
                                 }.reason shouldBe CertificateInvalidException.Reason.TIME
 
                                 val collectDebugInfo =
@@ -580,17 +559,17 @@ val AttestationTests by testSuite {
                                     ).serialize()
 
                                 shouldThrow<CertificateInvalidException> {
-                                    AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                                    AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                                 }.reason shouldBe CertificateInvalidException.Reason.TIME
                             }
 
                             "too late" {
                                 shouldThrow<CertificateInvalidException> {
-                                    service.verifyAttestation(
+                                    service.verify(
                                         recordedAttestation.attestationCertChain,
                                         recordedAttestation.verificationDate - 30_000.days,
                                         recordedAttestation.challenge
-                                    )
+                                    ).getOrThrow()
                                 }.reason shouldBe CertificateInvalidException.Reason.TIME
                             }
                         }
@@ -600,11 +579,11 @@ val AttestationTests by testSuite {
                                 attestationService(
                                     experimental,
                                     androidPackageName = "org.wrong.package.name"
-                                ).verifyAttestation(
+                                ).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe AttestationValueException.Reason.PACKAGE_NAME
                         }
 
@@ -617,11 +596,11 @@ val AttestationTests by testSuite {
                                         /*this one's an invalid digest and must not affect the tests*/
                                         "LvfTC77F/uSecSfJDeLdxQ3gZrVLHX8+NNBp7AiUO0E=".decodeBase64ToArray()!!
                                     )
-                                ).verifyAttestation(
+                                ).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe AttestationValueException.Reason.APP_SIGNER_DIGEST
                         }
 
@@ -635,21 +614,21 @@ val AttestationTests by testSuite {
 
                         "app version" {
                             shouldThrow<AttestationValueException> {
-                                attestationService(experimental, androidAppVersion = 20).verifyAttestation(
+                                attestationService(experimental, androidAppVersion = 20).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe AttestationValueException.Reason.APP_VERSION
                         }
 
                         "OS version" {
                             shouldThrow<AttestationValueException> {
-                                attestationService(experimental, androidVersion = 200000).verifyAttestation(
+                                attestationService(experimental, androidVersion = 200000).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe AttestationValueException.Reason.OS_VERSION
                         }
 
@@ -658,21 +637,21 @@ val AttestationTests by testSuite {
                                 attestationService(
                                     experimental,
                                     androidPatchLevel = PatchLevel(2030, 1)
-                                ).verifyAttestation(
+                                ).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe AttestationValueException.Reason.OS_VERSION
                         }
 
                         "rollback resistance" {
                             shouldThrow<AttestationValueException> {
-                                attestationService(experimental, requireRollbackResistance = true).verifyAttestation(
+                                attestationService(experimental, requireRollbackResistance = true).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
-                                )
+                                ).getOrThrow()
                             }.reason shouldBe AttestationValueException.Reason.ROLLBACK_RESISTANCE
                         }
                     }

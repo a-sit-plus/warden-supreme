@@ -49,7 +49,7 @@ sealed class SupremeAttestationEngine(
     override val AuthorizationList.signerFingerprints: Set<ByteArray>?
         get() = attestationApplicationId?.getOrThrow()?.signatureDigests
 
-
+//TODO: unify
     override fun AuthorizationList.verifyAndroidVersionFromAuthList(
         versionOverride: Int?,
         patchLevel: PatchLevel?,
@@ -107,7 +107,7 @@ sealed class SupremeAttestationEngine(
             }
         }
     }
-
+//TODO: unify
     override fun AuthorizationList.verifySystemLocked() {
         if (attestationConfiguration.allowBootloaderUnlock) return
 

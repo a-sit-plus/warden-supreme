@@ -4,7 +4,6 @@ import at.asitplus.attestation.data.AttestationData
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
 import de.infix.testBalloon.framework.core.testSuite
-import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldNotBeInstanceOf
@@ -81,7 +80,7 @@ val TemporalOffsetTest by testSuite {
             val attestationService = attestationService(
                 timeSource = FixedTimeClock(pixel6KeyMint200Good.verificationDate),
                 offset = (-1).days,
-                 androidSW = true
+                androidSW = true
             )
             attestationService.verifyAttestation(
                 pixel6KeyMint200Good.attestationProof,
@@ -112,9 +111,9 @@ val TemporalOffsetTest by testSuite {
                 ios16.challenge,
             ).apply {
                 shouldBeInstanceOf<AttestationResult.Error>()
-                this.cause.shouldBeInstanceOf<AttestationException.Content>()
-                (this.cause as AttestationException.Content).cause.shouldBeInstanceOf<IosAttestationException>()
-                ((cause as AttestationException.Content).cause as IosAttestationException).reason shouldBe IosAttestationException.Reason.STATEMENT_TIME
+                cause.shouldBeInstanceOf<AttestationException.Content>()
+                cause.cause.shouldBeInstanceOf<IosAttestationException>()
+                (cause.cause as IosAttestationException).reason shouldBe IosAttestationException.Reason.STATEMENT_TIME
 
                 WardenDebugAttestationStatement.deserializeCompact(
                     attestationService.collectDebugInfo(ios16.attestationProof, ios16.challenge).serializeCompact()

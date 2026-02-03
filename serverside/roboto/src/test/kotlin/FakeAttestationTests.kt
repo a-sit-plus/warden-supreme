@@ -77,18 +77,18 @@ val FakeAttestationTests by testSuite {
                         hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(borkedAttestation.last().publicKey)),
                         experimentalParser = experimental
                     )
-                ).verifyAttestation(
+                ).verify(
                     certificates = borkedAttestation,
                     expectedChallenge = challenge
-                )
+                ).getOrThrow()
             }
 
 
             "should work when the fake cert is configured as trust anchor" {
-                checker.verifyAttestation(
+                checker.verify(
                     certificates = attestationProof,
                     expectedChallenge = challenge
-                )
+                ).getOrThrow()
             }
 
             "patch levels from the future" - {
@@ -127,11 +127,11 @@ val FakeAttestationTests by testSuite {
                             hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
                             experimentalParser = experimental
                         )
-                    ).verifyAttestation(
+                    ).verify(
                         certificates = attestationProof,
                         expectedChallenge = challenge,
                         verificationDate = verificationDate
-                    )
+                    ).getOrThrow()
                 }
 
                 "intolerant towards the future" {
@@ -161,11 +161,11 @@ val FakeAttestationTests by testSuite {
                             hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
                             experimentalParser = experimental
                         )
-                    ).verifyAttestation(
+                    ).verify(
                         certificates = attestationProof,
                         expectedChallenge = challenge,
                         verificationDate = verificationDate
-                    )
+                    ).getOrThrow()
 
                     shouldThrow<AttestationValueException> {
                         Roboto(
@@ -188,12 +188,12 @@ val FakeAttestationTests by testSuite {
                                 hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
                                 experimentalParser = experimental
                             )
-                        ).verifyAttestation(
+                        ).verify(
                             certificates = attestationProof,
                             expectedChallenge = challenge,
 
                             verificationDate = verificationDate
-                        )
+                        ).getOrThrow()
                     }
 
 
@@ -224,12 +224,12 @@ val FakeAttestationTests by testSuite {
                             hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProofSameMonth.last().publicKey)),
                             experimentalParser = experimental
                         )
-                    ).verifyAttestation(
+                    ).verify(
                         certificates = attestationProofSameMonth,
                         expectedChallenge = challenge,
 
                         verificationDate = verificationDate
-                    )
+                    ).getOrThrow()
                 }
 
                 "ignore future patch levels" {
@@ -262,12 +262,12 @@ val FakeAttestationTests by testSuite {
                             hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
                             experimentalParser = experimental
                         )
-                    ).verifyAttestation(
+                    ).verify(
                         certificates = attestationProof,
                         expectedChallenge = challenge,
 
                         verificationDate = verificationDate
-                    )
+                    ).getOrThrow()
                 }
 
             }
@@ -290,10 +290,11 @@ val FakeAttestationTests by testSuite {
                     )
                 )
 
-                shouldThrow<CertificateInvalidException> {
-                    checker.verifyAttestationJ(attestationProof, expectedChallenge = challenge)
-                }.reason shouldBe CertificateInvalidException.Reason.TRUST
-
+                "as-is" {
+                    shouldThrow<CertificateInvalidException> {
+                        checker.verify(attestationProof, expectedChallenge = challenge).getOrThrow()
+                    }.reason shouldBe CertificateInvalidException.Reason.TRUST
+                }
                 "unless overridden" {
                     val checker = Roboto(
                         AndroidAttestationConfiguration(
@@ -311,16 +312,17 @@ val FakeAttestationTests by testSuite {
                             experimentalParser = experimental
                         )
                     )
-                    checker.verifyAttestation(
+                    checker.verify(
                         certificates = attestationProof,
                         expectedChallenge = challenge
-                    )
+                    ).getOrThrow()
                 }
 
-                shouldThrow<CertificateInvalidException> {
-                    checker.verifyAttestationJ(attestationProof, expectedChallenge = challenge)
-                }.reason shouldBe CertificateInvalidException.Reason.TRUST
-
+                "as-is" {
+                    shouldThrow<CertificateInvalidException> {
+                        checker.verify(attestationProof, expectedChallenge = challenge).getOrThrow()
+                    }.reason shouldBe CertificateInvalidException.Reason.TRUST
+                }
                 "but never without trust anchors" {
                     val checker = Roboto(
                         AndroidAttestationConfiguration(
@@ -339,7 +341,7 @@ val FakeAttestationTests by testSuite {
                         )
                     )
                     shouldThrow<CertificateInvalidException> {
-                        checker.verifyAttestation(attestationProof, expectedChallenge = challenge)
+                        checker.verify(certificates = attestationProof, expectedChallenge = challenge).getOrThrow()
                     }.reason shouldBe CertificateInvalidException.Reason.TRUST
                 }
 
@@ -365,10 +367,10 @@ val FakeAttestationTests by testSuite {
                     )
                 )
                 shouldThrow<CertificateInvalidException> {
-                    trustedChecker.verifyAttestation(
+                    trustedChecker.verify(
                         certificates = attestationProof,
                         expectedChallenge = challenge
-                    )
+                    ).getOrThrow()
                 }.reason shouldBe CertificateInvalidException.Reason.TRUST
             }
 

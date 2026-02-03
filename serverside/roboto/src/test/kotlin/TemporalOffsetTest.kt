@@ -81,11 +81,11 @@ val TemporalOffsetTest by testSuite {
     withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
         "Exact Time of Validity" - {
             withData(exactStartOfValidity) {
-                attestationService(experimental).verifyAttestation(
+                attestationService(experimental).verify(
                     it.attestationCertChain,
                     it.verificationDate,
                     it.challenge
-                )
+                ).getOrThrow()
             }
         }
 
@@ -94,11 +94,11 @@ val TemporalOffsetTest by testSuite {
                 attestationService(
                     experimental,
                     attestationStatementValiditiy = 1.days + 1.seconds
-                ).verifyAttestation(
+                ).verify(
                     it.attestationCertChain,
                     it.verificationDate + 1.days,
                     it.challenge,
-                )
+                ).getOrThrow()
             }
         }
 
@@ -106,22 +106,22 @@ val TemporalOffsetTest by testSuite {
             withDataSuites(exactStartOfValidity) {
                 withData(exactStartOfValidity) {
                     shouldThrow<AttestationValueException> {
-                        attestationService(experimental).verifyAttestation(
+                        attestationService(experimental).verify(
                             it.attestationCertChain,
                             it.verificationDate - 1.seconds,
                             it.challenge,
-                        )
+                        ).getOrThrow()
                     }.message!!.shouldContain("too far in the future")
                 }
 
 
                 withData(exactStartOfValidity) {
                     shouldThrow<AttestationValueException> {
-                        attestationService(experimental).verifyAttestation(
+                        attestationService(experimental).verify(
                             it.attestationCertChain,
                             it.verificationDate + 10.minutes,
                             it.challenge,
-                        )
+                        ).getOrThrow()
                     }.message!!.shouldContain("too far in the past")
                 }
 

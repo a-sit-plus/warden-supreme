@@ -18,7 +18,10 @@ this changelog also includes the original WARDEN changelog.
         * `Roboto` changes from abstract base class to a concrete wired based on config (experimentalParser, HW/SW toggles)
         * Delegate actual checks to `Engines` to prepare replacing Google's parser and PKIX cert path validator  
           (set `experimentalParser = true` in config to try it out)
-        * Return type changes from `ParsedAttestationRecord` to `AttestationExtension<*>`
+        * Deprecate old blocking verification function that was tied to Google's old parser
+        * Introduce new suspending verification function
+            * Returns a `KmmResult<List<X509Certificate>>`
+            * Never throws
         * **First preview of attestation checks based on own parser**
 * Fixes:
     * Relax the upstream parser to glitch out less often
