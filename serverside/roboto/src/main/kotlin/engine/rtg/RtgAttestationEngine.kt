@@ -1,21 +1,15 @@
 package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.PatchLevel
-import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.catchingUnwrapped
 import com.google.android.attestation.AttestationApplicationId
 import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
 import com.google.android.attestation.RootOfTrust
+import com.ionspin.kotlin.bignum.integer.BigInteger
 import java.security.cert.X509Certificate
-import java.time.YearMonth
-import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
-import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Instant
-import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
 
 /**
@@ -53,87 +47,32 @@ sealed class RtgAttestationEngine(
     override val AuthorizationList.signerFingerprints: Set<ByteArray>?
         get() = attestationApplicationId().get().signatureDigests().map { it.toByteArray() }.toSet()
 
-    @Throws(AttestationValueException::class)
-    override fun AuthorizationList.verifyAndroidVersionFromAuthList(
-        versionOverride: Int?,
-        patchLevel: PatchLevel?,
-        verificationDate: Instant
-    ) {
-        catchingUnwrapped {
-            (versionOverride ?: attestationConfiguration.androidVersion)?.let {
-                if ((osVersion().get()) < it) throw AttestationValueException(
-                    "Android version not supported: ${osVersion().get()} (should be at least $it)",
-                    reason = AttestationValueException.Reason.OS_VERSION,
-                    expectedValue = it,
-                    actualValue = osVersion().get()
-                )
+    override val AuthorizationList.operatingSystemPatchLevel: kotlinx.datetime.YearMonth?
+        get() = catchingUnwrapped {
+            osPatchLevel().get().let {
+                kotlinx.datetime.YearMonth(it.year, it.monthValue)
             }
+        }.getOrNull()
 
-            (patchLevel ?: attestationConfiguration.patchLevel)?.let {
-                if ((osPatchLevel().get()).isBefore(YearMonth.of(it.year, it.month))) throw AttestationValueException(
-                    "Patch level not supported: ${osPatchLevel().get()} (should be at least $it)",
-                    reason = AttestationValueException.Reason.OS_VERSION,
-                    expectedValue = it,
-                    actualValue = osPatchLevel().get()
-                )
-            }
+    override val AuthorizationList.androidVersion: Result<BigInteger>?
+        get() = catchingUnwrapped { BigInteger(osVersion().get()) }
 
-            (patchLevel ?: attestationConfiguration.patchLevel)?.let {
-                it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
-                    val fromAttestation = osPatchLevel().get()
-                    val calendar =
-                        Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC))
-                            .apply { time = Date.from(verificationDate.toJavaInstant()) }
-                    val currentYearMonth = YearMonth.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1)
-                    val difference = currentYearMonth.until(fromAttestation, ChronoUnit.MONTHS)
-                    if (difference > maxFuturePatchLevelMonths.toLong()) throw AttestationValueException(
-                        "Patch level is $difference months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
-                        reason = AttestationValueException.Reason.OS_VERSION,
-                        expectedValue = it,
-                        actualValue = osPatchLevel().get()
-                    )
-                }
-            }
-        }.getOrElse {
-            throw when (it) {
-                is AttestationValueException -> it
-                else -> AttestationValueException(
-                    "Could not verify Android Version",
-                    it,
-                    AttestationValueException.Reason.OS_VERSION,
-                    expectedValue = "Correct Android OS version",
-                    actualValue = this
-                )
-            }
+
+    override val AuthorizationList.hasRootOfTrust: Boolean get() = rootOfTrust() != null
+
+    override val AuthorizationList.isDeviceLocked: Boolean
+        get() = catchingUnwrapped {
+            rootOfTrust().get().deviceLocked()
+        }.getOrElse { false }
+
+    override val AuthorizationList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
+        get() = when (rootOfTrust().get().verifiedBootState()) {
+            RootOfTrust.VerifiedBootState.VERIFIED -> GeneralizedVerifiedBootState.VERIFIED
+            RootOfTrust.VerifiedBootState.SELF_SIGNED -> GeneralizedVerifiedBootState.SELF_SIGNED
+            RootOfTrust.VerifiedBootState.UNVERIFIED -> GeneralizedVerifiedBootState.UNVERIFIED
+            RootOfTrust.VerifiedBootState.FAILED -> GeneralizedVerifiedBootState.FAILED
         }
-    }
 
-    override fun AuthorizationList.verifySystemLocked() {
-        if (attestationConfiguration.allowBootloaderUnlock) return
-
-        if (rootOfTrust() == null) throw AttestationValueException(
-            "Root of Trust not present",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = "Present Root of Trust",
-            actualValue = null
-        )
-
-        if (!rootOfTrust().get().deviceLocked()) throw AttestationValueException(
-            "Bootloader not locked",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = true,
-            actualValue = false
-        )
-
-        if ((rootOfTrust().get().verifiedBootState()
-                ?: RootOfTrust.VerifiedBootState.FAILED) != RootOfTrust.VerifiedBootState.VERIFIED
-        ) throw AttestationValueException(
-            "System image not verified",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = RootOfTrust.VerifiedBootState.VERIFIED,
-            actualValue = rootOfTrust().get().verifiedBootState()
-        )
-    }
 
     override val AuthorizationList.rollbackResistant: Boolean get() = rollbackResistance()
 

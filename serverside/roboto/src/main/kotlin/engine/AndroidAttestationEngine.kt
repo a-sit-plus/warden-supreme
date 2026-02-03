@@ -10,7 +10,12 @@ import at.asitplus.attestation.android.exceptions.ConfigurationException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
 import com.google.android.attestation.ParsedAttestationRecord
+import com.google.android.attestation.RootOfTrust
+import com.ionspin.kotlin.bignum.integer.BigInteger
 import io.ktor.util.*
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.YearMonth
+import kotlinx.datetime.toLocalDateTime
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -59,7 +64,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
                 "Could not parse attestation record",
                 it,
                 reason = AttestationValueException.Reason.APP_UNEXPECTED,
-                expectedValue = "Prasable attestation record",
+                expectedValue = "Parsable attestation record",
                 actualValue = null
             )
         }
@@ -183,15 +188,39 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         }
     }
 
-    @Throws(AttestationValueException::class)
-    protected abstract fun AuthList.verifyAndroidVersionFromAuthList(
-        versionOverride: Int?,
-        patchLevel: PatchLevel?,
-        verificationDate: Instant
-    )
+    protected abstract val AuthList.hasRootOfTrust: Boolean
+
+    protected abstract val AuthList.isDeviceLocked: Boolean
+
+    protected abstract val AuthList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
 
     @Throws(AttestationValueException::class)
-    protected abstract fun AuthList.verifySystemLocked()
+    protected fun AuthList.verifySystemLocked() {
+        if (attestationConfiguration.allowBootloaderUnlock) return
+
+        if (!hasRootOfTrust) throw AttestationValueException(
+            "Root of Trust not present",
+            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+            expectedValue = "Present Root of Trust",
+            actualValue = null
+        )
+
+        if (!isDeviceLocked) throw AttestationValueException(
+            "Bootloader not locked",
+            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+            expectedValue = true,
+            actualValue = false
+        )
+
+        if ((generalizedVerifiedBootState
+                ?: GeneralizedVerifiedBootState.FAILED) != GeneralizedVerifiedBootState.VERIFIED
+        ) throw AttestationValueException(
+            "System image not verified",
+            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+            expectedValue = RootOfTrust.VerifiedBootState.VERIFIED,
+            actualValue = generalizedVerifiedBootState
+        )
+    }
 
     @Throws(AttestationValueException::class)
     protected fun AuthList.verifyRollbackResistance() {
@@ -216,8 +245,72 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
 
     protected abstract val AuthList.rollbackResistant: Boolean
 
+    protected abstract val AuthList.androidVersion: Result<BigInteger>?
+    protected abstract val AuthList.operatingSystemPatchLevel: YearMonth?
+
     protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
     protected abstract val AttRecord.keymasterSecLevel: GeneralizedSecurityLevel
+
+    @Throws(AttestationValueException::class)
+    fun AuthList.verifyAndroidVersionFromAuthList(
+        versionOverride: Int?,
+        patchLevel: PatchLevel?,
+        verificationDate: Instant
+    ) {
+        catchingUnwrapped {
+            (versionOverride ?: attestationConfiguration.androidVersion)?.let {
+                val osVersionFromRecord = androidVersion
+                if ((osVersionFromRecord == null)
+                    || osVersionFromRecord.isFailure
+                    || (osVersionFromRecord.getOrThrow() < BigInteger(it))
+                ) throw AttestationValueException(
+                    "Android version not supported: $osVersionFromRecord (should be at least $it)",
+                    reason = AttestationValueException.Reason.OS_VERSION,
+                    expectedValue = it,
+                    actualValue = osVersionFromRecord
+                )
+            }
+
+            (patchLevel ?: attestationConfiguration.patchLevel)?.let {
+                val fromRecord = operatingSystemPatchLevel
+
+                if ((fromRecord == null) || (fromRecord < YearMonth(it.year, it.month))
+                ) throw AttestationValueException(
+                    "Patch level not supported: $fromRecord (should be at least $it)",
+                    reason = AttestationValueException.Reason.OS_VERSION,
+                    expectedValue = it,
+                    actualValue = fromRecord
+                )
+            }
+
+            (patchLevel ?: attestationConfiguration.patchLevel)?.let {
+                it.maxFuturePatchLevelMonths?.let { maxFuturePatchLevelMonths ->
+                    val fromRecord = operatingSystemPatchLevel
+                    val currentYearMonth =
+                        verificationDate.toLocalDateTime(TimeZone.UTC).let { YearMonth(it.year, it.month) }
+                    val difference = fromRecord?.let { monthsBetween(currentYearMonth, it) }
+                    if ((difference == null) || (difference > maxFuturePatchLevelMonths)
+                    ) throw AttestationValueException(
+                        "Patch level is $difference months in the future. Maximum amount time travel allowed is: $maxFuturePatchLevelMonths months",
+                        reason = AttestationValueException.Reason.OS_VERSION,
+                        expectedValue = it,
+                        actualValue = fromRecord
+                    )
+                }
+            }
+        }.getOrElse {
+            throw when (it) {
+                is AttestationValueException -> it
+                else -> AttestationValueException(
+                    "Could not verify Android Version",
+                    it,
+                    AttestationValueException.Reason.OS_VERSION,
+                    expectedValue = "Correct Android OS version",
+                    actualValue = this
+                )
+            }
+        }
+    }
 
     protected abstract val type: EngineType<AttRecord, AuthList>
 
@@ -362,4 +455,11 @@ enum class GeneralizedSecurityLevel {
     SOFTWARE,
     TEE,
     STRONGBOX
+}
+
+enum class GeneralizedVerifiedBootState {
+    VERIFIED,
+    SELF_SIGNED,
+    UNVERIFIED,
+    FAILED
 }
