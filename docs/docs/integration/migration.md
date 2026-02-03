@@ -8,7 +8,7 @@
     * Configuration loading through Hoplite/Spring Boot is no longer supported and can silently misconfigure checks. Use canonical config loading only. See [Externalising Configuration](config.md).
     * Android leaf certificate validity is ignored by default and Android attestation statement validity defaults to `null`; ensure freshness through your challenge/nonce handling. See [raw flow](raw.md).
     * Verification time offset now defaults to five minutes and is applied to certificate and attestation time checks on both platforms.
-    * When migrating to Roboto's new `verify()` be sure to deal with the result. **This function does not throw any more!!!**
+    * When migrating to Roboto's new `verify()` be sure to deal with the result. **This function does not throw!!!**
     
     **If you do not handle freshness explicitly, you can accidentally accept stale attestations.**
 
@@ -42,7 +42,7 @@ This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, w
 - Roboto exposes a `KmmResult`-based verification API:
     - use `verify(...)` (suspending) or `verifyBlocking(...)` (blocking) and optioanlly chain it with `getOrThrow()`. The legacy `verifyAttestation(...)` API (returning `ParsedAttestationRecord`) is deprecated.
     - On success the result will contain the full certificate chain, on failure, it will contain an  `AndroidAttestationException`.
-    - **Be sure to deal with the result. This function does not throw any more!!!**
+    - **Be sure to deal with the result. This function does not throw!!!**
 - The parameters `iosAttestationConfigurationJ` and `androidAttestationConfigurationJ` in `Makoto`'s Java-oriented constructor have been swapped to disambiguate it from the Kotlin constructors.
 
 ### Results and Exceptions
@@ -51,7 +51,7 @@ This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, w
 - `AttestationValueException.Reason.TIME` is renamed to `STATEMENT_TIME`.
 - Non-configured platforms return `AttestationResult.Error` with a configuration cause. See [Error Handling](errorhandling.md).
 - Roboto verification now returns the verified certificate chain (`List<X509Certificate>`) wrapped in `KmmResult`. Downstream code should parse the extension from the resulting chain via `androidAttestationExtension` (preferred).
-    - **Be sure to deal with the result. This function does not throw any more!!!**
+    - **Be sure to deal with the result. This function does not throw!!!**
 - `ParsedAttestationRecord` is considered legacy: it is still accessible via deprecated helpers (e.g. `AttestationResult.Android.attestationRecord`), but new code should use `AttestationResult.Android.attestationExtension` / `androidAttestationExtension`.
 - The `experimentalParser` flag selects which verification engine/parser is used internally; it no longer changes the public return type.
 
