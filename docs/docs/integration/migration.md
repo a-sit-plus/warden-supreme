@@ -92,6 +92,7 @@ Hence, loading configurations must only be done through one of the following fun
 * `fromJsonString()`
 * `fromYamlString()`
 * `fromJsonObject()`
+* `fromJsonFile(...)` / `fromYamlFile(...)` (JVM convenience helpers)
 
 As a consequence, any Spring Boot configurations should contain a string pointing to Warden Supreme configurations, with
 those configuration files being read and their contents being fed into `fromYamlString()`. For Hoplite you can do the same.

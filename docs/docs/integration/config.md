@@ -14,6 +14,7 @@ It includes both the platform-specific configurations and the properties related
 * `toJsonString()` and `fromJsonString()`
 * `toYamlString()` and `fromYamlString()`
 * `toJsonObject()` and `fromJsonObject()`
+* `toJsonFile(...)` / `fromJsonFile(...)` and `toYamlFile(...)` / `fromYamlFile(...)`
 
 This is required for externalising configurations, as using Spring Boot's internal config loader to construct configurations is discouraged
 due to [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
@@ -45,6 +46,17 @@ It is possible to add time sources other than the system clock and externalise t
 Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they also
 have canonical serialised representations (JSON and YAML) and expose the same (de)serialisation functions as `SupremeConfiguration`.
 All three and their companion objects implement the same interface tandem to keep the API consistent.
+
+!!! tip "Loading from a file"
+    For JVM use-cases you can load directly from disk:
+    
+    * `SupremeConfiguration.fromYamlFile("supreme.yaml")`
+    * `AndroidAttestationConfiguration.fromJsonFile("android.json")`
+    
+    and also write canonical configurations:
+    
+    * `cfg.toYamlFile("supreme.yaml")`
+    * `cfg.toJsonFile("supreme.json")`
 
 
 ## Android Configuration Files
