@@ -59,7 +59,7 @@ sealed class AttestationResult {
         /**
          * The attestation extension present in the [attestationCertificate]
          */
-        val attestationExtension: AttestationKeyDescription by lazy { attestationCertificate.androidAttestationExtension!! }
+        val androidAttestationExtension: AttestationKeyDescription by lazy { attestationCertificate.androidAttestationExtension!! }
 
         val attestationCertificate by lazy { attestationCertificateChain.first() }
 
@@ -70,7 +70,7 @@ sealed class AttestationResult {
 
             @Deprecated(
                 "Uses legacy Google parser, will be removed at some point (no ETA yet)",
-                replaceWith = ReplaceWith("attestationExtension")
+                replaceWith = ReplaceWith("androidAttestationExtension")
             )
             override val attestationRecord: ParsedAttestationRecord by lazy {
                 attestationCertificateChain.mapNotNull { it.parseToCertificate() }.parsedAttestationRecord!!
@@ -87,9 +87,9 @@ sealed class AttestationResult {
             )
             override val attestationRecord: ParsedAttestationRecord by lazy { attestationCertificateChain.parsedAttestationRecord!! }
             override val androidDetails =
-                "Verified(keyMaster security level: ${attestationExtension.keymasterSecurityLevel.name}, " +
-                        "attestation security level: ${attestationExtension.attestationSecurityLevel.name}, " +
-                        "${attestationCertificate.publicKey.algorithm} public key: ${attestationCertificate.publicKey.encoded.encodeBase64()}" + attestationExtension.softwareEnforced.attestationApplicationId
+                "Verified(keyMaster security level: ${androidAttestationExtension.keymasterSecurityLevel.name}, " +
+                        "attestation security level: ${androidAttestationExtension.attestationSecurityLevel.name}, " +
+                        "${attestationCertificate.publicKey.algorithm} public key: ${attestationCertificate.publicKey.encoded.encodeBase64()}" + androidAttestationExtension.softwareEnforced.attestationApplicationId
                     ?.let { app ->
                         ", packageInfos: ${
                             when (app) {

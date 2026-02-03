@@ -8,6 +8,7 @@
     * Configuration loading through Hoplite/Spring Boot is no longer supported and can silently misconfigure checks. Use canonical config loading only. See [Externalising Configuration](config.md).
     * Android leaf certificate validity is ignored by default and Android attestation statement validity defaults to `null`; ensure freshness through your challenge/nonce handling. See [raw flow](raw.md).
     * Verification time offset now defaults to five minutes and is applied to certificate and attestation time checks on both platforms.
+    * When migrating to Roboto's new `verify()` be sure to deal with the result. **This function does not throw any more!!!**
     
     **If you do not handle freshness explicitly, you can accidentally accept stale attestations.**
 
@@ -38,7 +39,10 @@ This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, w
 - `Roboto` is now the primary Android verifier. It can validate hardware and/or software attestations depending on configuration (`disableHardwareAttestation`, `enableSoftwareAttestation`).
     - Legacy `HardwareAttestationVerifier` / `SoftwareAttestationVerifier` remain as deprecated compatibility factories that return a `Roboto` instance.
 - Makoto can be configured for Android‑only or iOS‑only verification; attestations received from non‑configured platforms are treated as configuration errors. See [Error Handling](errorhandling.md).
-- Attestation verification functions are suspending; blocking wrappers remain under legacy `@JvmName`s. See [raw flow](raw.md).
+- Roboto exposes a `KmmResult`-based verification API:
+    - use `verify(...)` (suspending) or `verifyBlocking(...)` (blocking) and optioanlly chain it with `getOrThrow()`. The legacy `verifyAttestation(...)` API (returning `ParsedAttestationRecord`) is deprecated.
+    - On success the result will contain the full certificate chain, on failure, it will contain an  `AndroidAttestationException`.
+    - **Be sure to deal with the result. This function does not throw any more!!!**
 - The parameters `iosAttestationConfigurationJ` and `androidAttestationConfigurationJ` in `Makoto`'s Java-oriented constructor have been swapped to disambiguate it from the Kotlin constructors.
 
 ### Results and Exceptions
@@ -46,11 +50,10 @@ This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, w
 - `AttestationResult.Error` always carries a `cause`.
 - `AttestationValueException.Reason.TIME` is renamed to `STATEMENT_TIME`.
 - Non-configured platforms return `AttestationResult.Error` with a configuration cause. See [Error Handling](errorhandling.md).
-- Roboto's verification functions no longer return `ParsedAttestationRecord`, because Google has seized the development of the underlying parser and replaced it with a new one.
-    - The return type is now `AttestationExtension<*>`, which is an interface implemented by two classes:
-        - `ParsedAttestationRecord`: legacy (no-longer maintained Google parser)
-        - `AttestationKeyDescription`: new clean-room implementation of an Android attestation extension parser
-    - The return type depends on the configuration property `experimentalParser`
+- Roboto verification now returns the verified certificate chain (`List<X509Certificate>`) wrapped in `KmmResult`. Downstream code should parse the extension from the resulting chain via `androidAttestationExtension` (preferred).
+    - **Be sure to deal with the result. This function does not throw any more!!!**
+- `ParsedAttestationRecord` is considered legacy: it is still accessible via deprecated helpers (e.g. `AttestationResult.Android.attestationRecord`), but new code should use `AttestationResult.Android.attestationExtension` / `androidAttestationExtension`.
+- The `experimentalParser` flag selects which verification engine/parser is used internally; it no longer changes the public return type.
 
 ### Time Handling and Validity
 - Verification time offset defaults to five minutes and is applied to certificate and attestation time checks.
