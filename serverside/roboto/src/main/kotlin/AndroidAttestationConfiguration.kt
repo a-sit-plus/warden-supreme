@@ -421,9 +421,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
     /**
-     * Flag to try out the new experimental parser
+     * Flag to try out the new supreme parser
      */
-    val experimentalParser: Boolean = false,
+    val supremeParser: Boolean = false,
 
 ) : AttestationConfiguration {
 
@@ -451,14 +451,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -529,9 +529,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         requireRemoteKeyProvisioning: Boolean = false,
 
         /**
-         * Flag to try out the new experimental parser
+         * Flag to try out the new supreme parser
          */
-        experimentalParser: Boolean = false,
+        supremeParser: Boolean = false,
     ) : this(
         listOf(singleApp),
         androidVersion = androidVersion,
@@ -548,7 +548,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
-        experimentalParser = experimentalParser,
+        supremeParser = supremeParser,
     )
 
     /**
@@ -570,14 +570,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         requireStrongBox: Boolean = false,
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
-         * **BEWARE** that this switch is utterly useless if [NougatHybridAttestationVerifier] of [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -659,9 +659,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         requireRemoteKeyProvisioning: Boolean = false,
 
         /**
-         * Flag to try out the new experimental parser
+         * Flag to try out the new supreme parser
          */
-        experimentalParser: Boolean = false,
+        supremeParser: Boolean = false,
     ) : this(
         applications = apps,
         androidVersion = version,
@@ -678,7 +678,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
-        experimentalParser = experimentalParser,
+        supremeParser = supremeParser,
     )
 
     /**
@@ -934,7 +934,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
 
-        private var experimentalParser: Boolean = false
+        private var supremeParser: Boolean = false
 
         /**
          * specifies a minimum Android version
@@ -1060,9 +1060,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         fun requireRemoteKeyProvisioning(required: Boolean) = apply { requireRemoteKeyProvisioning = required }
         /**
-         * Flag to try out the new experimental parser
+         * Flag to try out the new supreme parser
          */
-        fun experimentalParser(experimentalParser: Boolean) = apply { this.experimentalParser = experimentalParser }
+        fun supremeParser(supremeParser: Boolean) = apply { this.supremeParser = supremeParser }
 
         fun build() = AndroidAttestationConfiguration(
             applications = applications,
@@ -1080,7 +1080,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             enableSoftwareAttestation = enableSwAttestation,
             revocation = revocation,
             requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
-            experimentalParser = experimentalParser,
+            supremeParser = supremeParser,
         )
 
     }
@@ -1102,7 +1102,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "enableSoftwareAttestation=$enableSoftwareAttestation, " +
                 "revocation=$revocation, " +
                 "osPatchLevel=$osPatchLevel, " +
-                "experimentalParser=$experimentalParser" +
+                "supremeParser=$supremeParser" +
                 ")"
     }
 
@@ -1129,7 +1129,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (revocation != other.revocation) return false
 
         if (requireRemoteKeyProvisioning != other.requireRemoteKeyProvisioning) return false
-        if(experimentalParser != other.experimentalParser) return false
+        if(supremeParser != other.supremeParser) return false
 
         return true
     }
@@ -1151,7 +1151,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + softwareTrustedRoots.hashCode()
         result = 31 * result + (revocation.hashCode() ?: 0)
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
-        result = 31 * result + experimentalParser.hashCode()
+        result = 31 * result + supremeParser.hashCode()
         return result
     }
 

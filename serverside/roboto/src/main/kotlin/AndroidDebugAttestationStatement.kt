@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.KmmResult
 import at.asitplus.attestation.DebugStatement
 import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
 import at.asitplus.attestation.wardenVersion
@@ -42,7 +43,7 @@ class AndroidDebugAttestationStatement(
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray,
     val attestationStatement: List<@Serializable(with = CertPemSerializer::class) X509Certificate>,
     val revocationLists: List<ConfigWithList>,
-) : DebugStatement<Any> {
+) : DebugStatement<KmmResult<List<X509Certificate>>> {
 
     init {
         require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
@@ -68,7 +69,7 @@ class AndroidDebugAttestationStatement(
     }
 
     //Reader<D, R : DebugStatement<R>>
-    companion object : DebugStatement.Reader<Any, AndroidDebugAttestationStatement> {
+    companion object : DebugStatement.Reader<KmmResult<List<X509Certificate>>, AndroidDebugAttestationStatement> {
 
         suspend operator fun invoke(
             verifier: Roboto,

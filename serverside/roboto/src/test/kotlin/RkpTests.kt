@@ -82,13 +82,14 @@ val pixel6KeyMint200Good = AttestationData(
 val RkpTests by testSuite {
     "RKP Ext Present" - {
         withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
-        withData(listOf(sammy14 to null, pixel6KeyMint200Good to false)) { (it, rkpOverride) ->
-           attestationService(
-                experimental,
-                androidPackageName = it.packageOverride!!,
-                rkpRequired = true,
-                rkpAppRequired = rkpOverride,
-            ).verify(it.attestationCertChain, it.verificationDate, it.challenge).getOrThrow()
+            withData(listOf(sammy14 to null, pixel6KeyMint200Good to false)) { (it, rkpOverride) ->
+                attestationService(
+                    experimental,
+                    androidPackageName = it.packageOverride!!,
+                    rkpRequired = true,
+                    rkpAppRequired = rkpOverride,
+                ).verify(it.attestationCertChain, it.verificationDate, it.challenge).getOrThrow()
+            }
         }
     }
-}}
+}

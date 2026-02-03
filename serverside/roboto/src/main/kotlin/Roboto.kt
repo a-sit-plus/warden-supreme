@@ -47,12 +47,12 @@ constructor(
 
     private val engines = mutableListOf<AndroidAttestationEngine<*, *, X509Certificate>>().apply {
         if (!attestationConfiguration.disableHardwareAttestation) add(
-            if (attestationConfiguration.experimentalParser)
+            if (attestationConfiguration.supremeParser)
                 SupremeAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
             else RtgAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
         )
         if (attestationConfiguration.enableSoftwareAttestation) add(
-            if (attestationConfiguration.experimentalParser)
+            if (attestationConfiguration.supremeParser)
                 SupremeAttestationEngine.Software(attestationConfiguration, verifyChallenge)
             else RtgAttestationEngine.Software(attestationConfiguration, verifyChallenge)
         )

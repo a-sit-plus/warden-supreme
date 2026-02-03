@@ -97,7 +97,7 @@ val AttestationTests by testSuite {
             val signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray())
 
 
-            withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
+            withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
                 "should fail with HardwareAttestationChecker" {
                     Roboto(
                         AndroidAttestationConfiguration(
@@ -108,7 +108,7 @@ val AttestationTests by testSuite {
                                 )
                             ),
                             ignoreLeafValidity = true,
-                            experimentalParser = experimental
+                            supremeParser = supreme
                         )
                     ).apply {
                         shouldThrow<CertificateInvalidException> {
@@ -140,7 +140,7 @@ val AttestationTests by testSuite {
                             enableSoftwareAttestation = true,
                             disableHardwareAttestation = true,
                             ignoreLeafValidity = true,
-                            experimentalParser = experimental
+                            supremeParser = supreme
                         )
                     ).apply {
                         verify(
@@ -168,7 +168,7 @@ val AttestationTests by testSuite {
     }
 
     "Nougat Hybrid Attestation" - {
-        withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
+        withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
             val data = AttestationData(
                 "bq Aquaris X with LineageOS",
                 "foobdar".encodeToByteArray().encodeBase64(),
@@ -194,7 +194,7 @@ val AttestationTests by testSuite {
                             )
                         ),
                         ignoreLeafValidity = true,
-                        experimentalParser = true
+                        supremeParser = true
                     )
                 ).apply {
                     shouldThrow<CertificateInvalidException> {
@@ -226,7 +226,7 @@ val AttestationTests by testSuite {
                         enableSoftwareAttestation = true,
                         disableHardwareAttestation = true,
                         ignoreLeafValidity = true,
-                        experimentalParser = true
+                        supremeParser = true
                     )
                 ).apply {
                     shouldThrow<AttestationValueException> {
@@ -392,10 +392,10 @@ val AttestationTests by testSuite {
             ).forEach { recordedAttestation ->
 
             recordedAttestation.name - {
-                withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
+                withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
                     "OK" - {
                         "enforce locked bootloader" {
-                            attestationService(experimental, unlockedBootloaderAllowed = false).apply {
+                            attestationService(supreme, unlockedBootloaderAllowed = false).apply {
                                 verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
@@ -410,7 +410,7 @@ val AttestationTests by testSuite {
                         }
 
                         "allow unlocked bootloader" {
-                            attestationService(experimental, unlockedBootloaderAllowed = true).apply {
+                            attestationService(supreme, unlockedBootloaderAllowed = true).apply {
                                 verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
@@ -425,7 +425,7 @@ val AttestationTests by testSuite {
                         }
 
                         "no version check" {
-                            attestationService(experimental, androidVersion = null).apply {
+                            attestationService(supreme, androidVersion = null).apply {
                                 verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
@@ -441,7 +441,7 @@ val AttestationTests by testSuite {
                         }
 
                         "no patch level" {
-                            attestationService(experimental, androidPatchLevel = null).apply {
+                            attestationService(supreme, androidPatchLevel = null).apply {
                                 verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
@@ -491,7 +491,7 @@ val AttestationTests by testSuite {
                     }
 
                     "Fail" - {
-                        val service = attestationService(experimental, unlockedBootloaderAllowed = false)
+                        val service = attestationService(supreme, unlockedBootloaderAllowed = false)
 
                         "borked cert chain" {
                             shouldThrow<CertificateInvalidException> {
@@ -532,7 +532,7 @@ val AttestationTests by testSuite {
 
                         "require StrongBox" {
                             shouldThrow<AttestationValueException> {
-                                attestationService(experimental, requireStrongBox = true).verify(
+                                attestationService(supreme, requireStrongBox = true).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
@@ -577,7 +577,7 @@ val AttestationTests by testSuite {
                         "package name" {
                             shouldThrow<AttestationValueException> {
                                 attestationService(
-                                    experimental,
+                                    supreme,
                                     androidPackageName = "org.wrong.package.name"
                                 ).verify(
                                     recordedAttestation.attestationCertChain,
@@ -590,7 +590,7 @@ val AttestationTests by testSuite {
                         "wrong signature digests" {
                             shouldThrow<AttestationValueException> {
                                 attestationService(
-                                    experimental,
+                                    supreme,
                                     androidAppSignatureDigest = listOf(
                                         byteArrayOf(0, 32, 55, 29, 120, 22, 0),
                                         /*this one's an invalid digest and must not affect the tests*/
@@ -606,7 +606,7 @@ val AttestationTests by testSuite {
 
                         "no signature digests, cannot instantiate" {
                             shouldThrow<AndroidAttestationException> {
-                                attestationService(experimental, androidAppSignatureDigest = listOf())
+                                attestationService(supreme, androidAppSignatureDigest = listOf())
                             }
                         }
 
@@ -614,7 +614,7 @@ val AttestationTests by testSuite {
 
                         "app version" {
                             shouldThrow<AttestationValueException> {
-                                attestationService(experimental, androidAppVersion = 20).verify(
+                                attestationService(supreme, androidAppVersion = 20).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
@@ -624,7 +624,7 @@ val AttestationTests by testSuite {
 
                         "OS version" {
                             shouldThrow<AttestationValueException> {
-                                attestationService(experimental, androidVersion = 200000).verify(
+                                attestationService(supreme, androidVersion = 200000).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
@@ -635,7 +635,7 @@ val AttestationTests by testSuite {
                         "patch level" {
                             shouldThrow<AttestationValueException> {
                                 attestationService(
-                                    experimental,
+                                    supreme,
                                     androidPatchLevel = PatchLevel(2030, 1)
                                 ).verify(
                                     recordedAttestation.attestationCertChain,
@@ -647,7 +647,7 @@ val AttestationTests by testSuite {
 
                         "rollback resistance" {
                             shouldThrow<AttestationValueException> {
-                                attestationService(experimental, requireRollbackResistance = true).verify(
+                                attestationService(supreme, requireRollbackResistance = true).verify(
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.verificationDate,
                                     recordedAttestation.challenge
@@ -670,7 +670,7 @@ val ATT_CLIENT_DIGESTS = listOf(
 )
 
 fun attestationService(
-    experimental: Boolean,
+    supreme: Boolean,
     androidPackageName: String = ATT_CLIENT_PKG_NAME,
     androidAppSignatureDigest: List<ByteArray> = ATT_CLIENT_DIGESTS,
     androidVersion: Int? = 10000,
@@ -699,7 +699,7 @@ fun attestationService(
         requireRollbackResistance = requireRollbackResistance,
         attestationStatementValiditySeconds = attestationStatementValiditiy.inWholeSeconds,
         requireRemoteKeyProvisioning = rkpRequired,
-        experimentalParser = experimental,
+        supremeParser = supreme,
 
         )
 )

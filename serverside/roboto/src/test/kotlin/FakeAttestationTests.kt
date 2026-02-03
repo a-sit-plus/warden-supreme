@@ -33,7 +33,7 @@ val FakeAttestationTests by testSuite {
             androidVersion = androidVersion,
             androidPatchLevel = patchLevel.asSingleInt,
         )
-        withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
+        withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
 
             val checker = Roboto(
                 AndroidAttestationConfiguration(
@@ -48,7 +48,7 @@ val FakeAttestationTests by testSuite {
                     allowBootloaderUnlock = false,
                     ignoreLeafValidity = false,
                     hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
-                    experimentalParser = experimental
+                    supremeParser = supreme
                 )
             )
 
@@ -75,7 +75,7 @@ val FakeAttestationTests by testSuite {
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
                         hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(borkedAttestation.last().publicKey)),
-                        experimentalParser = experimental
+                        supremeParser = supreme
                     )
                 ).verify(
                     certificates = borkedAttestation,
@@ -125,7 +125,7 @@ val FakeAttestationTests by testSuite {
                             allowBootloaderUnlock = false,
                             ignoreLeafValidity = false,
                             hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
-                            experimentalParser = experimental
+                            supremeParser = supreme
                         )
                     ).verify(
                         certificates = attestationProof,
@@ -159,7 +159,7 @@ val FakeAttestationTests by testSuite {
                             allowBootloaderUnlock = false,
                             ignoreLeafValidity = false,
                             hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
-                            experimentalParser = experimental
+                            supremeParser = supreme
                         )
                     ).verify(
                         certificates = attestationProof,
@@ -186,7 +186,7 @@ val FakeAttestationTests by testSuite {
                                 allowBootloaderUnlock = false,
                                 ignoreLeafValidity = false,
                                 hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
-                                experimentalParser = experimental
+                                supremeParser = supreme
                             )
                         ).verify(
                             certificates = attestationProof,
@@ -222,7 +222,7 @@ val FakeAttestationTests by testSuite {
                             allowBootloaderUnlock = false,
                             ignoreLeafValidity = false,
                             hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProofSameMonth.last().publicKey)),
-                            experimentalParser = experimental
+                            supremeParser = supreme
                         )
                     ).verify(
                         certificates = attestationProofSameMonth,
@@ -260,7 +260,7 @@ val FakeAttestationTests by testSuite {
                             allowBootloaderUnlock = false,
                             ignoreLeafValidity = false,
                             hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
-                            experimentalParser = experimental
+                            supremeParser = supreme
                         )
                     ).verify(
                         certificates = attestationProof,
@@ -286,7 +286,7 @@ val FakeAttestationTests by testSuite {
                         requireStrongBox = false,
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
-                        experimentalParser = experimental
+                        supremeParser = supreme
                     )
                 )
 
@@ -309,7 +309,7 @@ val FakeAttestationTests by testSuite {
                             requireStrongBox = false,
                             allowBootloaderUnlock = false,
                             ignoreLeafValidity = false,
-                            experimentalParser = experimental
+                            supremeParser = supreme
                         )
                     )
                     checker.verify(
@@ -337,7 +337,7 @@ val FakeAttestationTests by testSuite {
                             requireStrongBox = false,
                             allowBootloaderUnlock = false,
                             ignoreLeafValidity = false,
-                            experimentalParser = experimental
+                            supremeParser = supreme
                         )
                     )
                     shouldThrow<CertificateInvalidException> {
@@ -363,7 +363,7 @@ val FakeAttestationTests by testSuite {
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
                         attestationStatementValiditySeconds = 300,
-                        experimentalParser = experimental
+                        supremeParser = supreme
                     )
                 )
                 shouldThrow<CertificateInvalidException> {
