@@ -125,7 +125,7 @@ having the server verify that binding.
 Play Integrity returns opaque tokens that are **interpreted exclusively by Google** and mapped to coarse-grained verdict
 labels such as
 
-* Device and integrity tiers (locked boot-loader on OEM-certified firmware; higher tiers additionally demand recent
+* Device and integrity tiers (locked boot-loader on GMS-certified OEM firmware; higher tiers additionally demand recent
   patch levels)
 * App Integrity (whether Google recognises the exact APK that is installed)
 * Account or licensing context (ties the verdict to the signed-in Play account)
@@ -149,7 +149,7 @@ more** than trust the embedded labels and apply hard-coded gating logic.
 
 * Policy behind labels is Google-defined; you cannot redefine the criteria.
 * Custom verified-boot keys and trusted custom ROMs cannot achieve device or strong integrity, even if relocked and
-  objectively secure, because certified OEM firmware is required.
+  objectively secure, because GMS-certified OEM firmware is required.
 * Coupling to Play distribution and licensing can benefit anti-piracy, but it is not privacy-minimal and may conflict
   with sovereignty requirements.
 
@@ -177,8 +177,8 @@ Moreover, the service runs in Google’s hot path **for every request**:
 
 * You inherit Google’s latency, availability, and regional outages.
 * Daily quotas and rate limits can throttle your traffic.
-* You cannot whitelist secure custom ROMs or enterprise firmware because the verdict hard-codes “OEM certified” as the
-  one-size-fits-all requirement.
+* You cannot whitelist secure custom ROMs or enterprise firmware because the verdict hard-codes “OEM/GMS certified” as
+  the one-size-fits-all requirement.
 
 ## Comparative Privacy and Control
 
@@ -188,7 +188,7 @@ Moreover, the service runs in Google’s hot path **for every request**:
 | Who learns per-request events    | Only you                                 | Apple and you                                  | Google and you                                |
 | Return type                      | Evidence (X.509 plus attestation fields) | Evidence (Apple-signed artefacts)              | Verdict (labels or tiers)                     |
 | Policy ownership                 | You (field-level rules)                  | You (verify evidence; service is Apple-hosted) | Google (definitions behind labels)            |
-| Custom AVB roots or trusted ROMs | Allowed (you can admit your keys)        | Not applicable                                 | Not allowed (OEM-certified firmware required) |
+| Custom AVB roots or trusted ROMs | Allowed (you can admit your keys)        | Not applicable                                 | Not allowed (GMS-certified OEM firmware required) |
 | Distribution coupling            | None                                     | None (service dependency on Apple)             | Tight to Play ecosystem or licensing          |
 | Availability and quotas          | Your back-end; cacheable roots and CRLs   | Apple in the hot path                          | Google in the hot path; quotas                |
 | Data minimisation                | Maximal                                  | Moderate                                       | Least                                         |

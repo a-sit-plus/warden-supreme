@@ -32,6 +32,9 @@ Android requires no special setup procedure for attestation compared to iOS. See
 !!! tip
     Keep Figure&nbsp;1 at the ready while digging through this page, as it will be referenced throughout!
 
+## Terminology
+
+Throughout these docs, **GMS-certified** refers to Android devices that **launched** with a Google license to ship **Google Mobile Services (GMS)** (including the Play Store) and which passed Google’s device compatibility/certification process for that build. See [Device Certification Terminology](../bg/platforms.md#device-certification-terminology) for a glossary of related terms and common (mis)uses.
 
 ## Boot-Time Trust Chain
 1. **Boot ROM** (immutable in SoC) verifies the **first-stage bootloader** using SoC fuses / OEM root.
@@ -84,7 +87,7 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 3. KeyMint produces a **certificate chain** for the key:
     - **Leaf certificate** embeds the **attestation extension** (`KeyDescription`) with `RootOfTrust`,
       `AttestedApplication`, and **AuthorizationLists**.
-    - Intermediates up to a **Google Attestation Root** (for hardware attestation on certified devices).
+    - Intermediates up to a **Google Attestation Root** (for hardware-backed attestation on **GMS-certified** devices).
 4. App sends **{certChain, challenge, metadata}** to your back-end.
 
 ### Server-Side Verification Checklist

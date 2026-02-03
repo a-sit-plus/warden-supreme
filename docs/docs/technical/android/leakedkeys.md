@@ -64,7 +64,7 @@ intelligence*, not as authoritative platform guarantees.
 
 ### Encrypted vs Plaintext Keyboxes (Why Leaks Happen at All)
 
-For Android-certified devices, private keys used for attestation are required to be protected by secure hardware and not
+For **GMS-certified** devices, private keys used for attestation are required to be protected by secure hardware and not
 be extractable (see
 [Android device certification / compatibility]({{ links.android_compat_overview }})).
 
@@ -171,7 +171,7 @@ Operationally, two patterns matter for threat modelling:
     - It conflates “not RKP” with “plaintext provisioning” or “extractable private keys”. Many pre-RKP devices still use
       secure-hardware-backed attestation keys provisioned in ways that are not practically reusable off-device (e.g., wrapped
       per-device material as described above).
-    - It treats OEM or supply-chain failures as inevitable. Leakage does happen, but it is not a given for every certified
+    - It treats OEM or supply-chain failures as inevitable. Leakage does happen, but it is not a given for every **GMS-certified**
       device generation.
     - It overlooks attacker economics: stealing and operationalising key material at scale is costly, and revocation reduces
       the window of usefulness.

@@ -86,8 +86,11 @@ Communicating this information to clients has the inherent benefit that large cl
 ## Android
 
 !!! tip inline end "Fundamental Requirements"
-    Only Google Play certified devices (i.e. those bearing the official Android branding) support remote attestation.
-    Huawei devices, for example, or Chinese import devices that do not come with Google Play services out-of-the-box cannot be attested!
+    Only devices that **launched as GMS-certified (Play Protect certified)** support remote attestation rooted in Google’s attestation trust anchors.
+    Devices that did not launch with a GMS license (for example many Huawei devices, Amazon Fire OS devices, or China-market variants that ship without Google Play services) typically **cannot** be validated against the Google root of trust.
+    **Sideloading Google Play services later does not change this.**
+    
+    Whether a **GMS-certified device that was later modified** (bootloader unlock, custom ROM, rooted system, etc.) is “untrusted” is a **policy decision**: the attestation evidence exposes boot state and related signals, and your verifier decides what to accept.
 
 Even though the previous section dealt with a crucial Android-specific issue, there's (sadly) more, and
 Android bugs fall into three categories:
@@ -150,7 +153,7 @@ Per RFC 5280, an X.509 extension is defined as `SEQUENCE { extnOID, critical BOO
 In DER, values that are equal to their ASN.1 `DEFAULT` **must be omitted** from the encoding.
 Encoding `critical = false` therefore violates RFC 5280 (and, by extension, the expectation that certificate chains are DER-encoded).
 
-In a perfect world, devices producing such certificates should never have passed certification, and such attestations should never have parsed.
+In a perfect world, devices producing such certificates should never have passed GMS certification, and such attestations should never have parsed.
 In the real world, they exist in production in very large numbers, so verifiers need to be tolerant here and treat an explicitly encoded `critical = false` the same as if the field had been omitted.
 
 ### Misleading Assumptions about ECDH
@@ -167,7 +170,7 @@ is also set.
 #### Bootloader Unlock Destroying Keys
 Many devices **destroy keys** or make attestation impossible after a bootloader unlock. There is nothing to be done about this, and even relocking typically cannot restore
 cryptographic keys. Hence, this issue manifests itself **on the client device**.
-While **technically** not a violation of the Android certification requirements, it very much is bad practice at the vendor's end.
+While **technically** not a violation of Android device certification requirements, it very much is bad practice at the vendor's end.
 This is especially hard to swallow for device owners, since buying a new device is the only thing that can be done about this. Known affected devices:
 
 - Fairphone 2

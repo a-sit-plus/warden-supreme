@@ -18,6 +18,30 @@ Privacy note: Verification happens entirely on your back-end; devices do not con
 Your back-end validates the certificate chain to Google’s Hardware Attestation Root and evaluates attestation fields. You must periodically fetch Google’s revocation information on the server.
 See [Background → Privacy](./privacy.md) for detailed data flows and trade-offs.
 
+### Device Certification Terminology
+
+Android “certification” is unfortunately overloaded terminology. Throughout these docs, **GMS-certified** refers to Android devices that **launched** with a Google license to ship **Google Mobile Services (GMS)** (e.g., Google Play services and the Play Store) and passed Google’s device compatibility/certification process for that device build.
+
+Devices that did **not** launch as GMS-certified generally cannot produce an attestation certificate chain that validates against Google’s attestation trust anchors. Examples commonly include:
+
+- Many **Huawei** devices due to an embargo (and other vendor/device lines that ship without GMS)
+- **Amazon Fire OS** devices
+- Many **China-market variants** of otherwise global Android devices (shipping without Google Play services)
+
+**Installing or sideloading the Play Store / Google Play services later typically does _not_ “add certification”** and does not make such devices validate against the Google root of trust.
+In controlled ecosystems, a custom trust policy may still treat such devices as trusted (for example by using custom trust anchors), but that is a different trust model than “Google-rooted Android hardware attestation”.
+
+You will also see these terms used (inconsistently) across vendor docs and community write-ups:
+
+- **GMS-licensed**, **GMS-certified** — OEM/partner wording for “licensed to ship Google Mobile Services (GMS)”.
+- **Google Play certified** — Common shorthand for devices certified to ship with Google Play.
+- **Play Protect certified** — User-facing wording for “Google Play certified” (often exposed via the Play Store app).
+- **Google-certified**, **Android-certified**, **OEM-certified** — Informal/ambiguous shorthands; in practice they often mean “GMS-certified”, but sometimes they merely mean “ships Android” or “ships OEM firmware”.
+- **CTS-passed**, **CDD-compliant**, **Android compatible**, **GTS/VTS passed** — Compatibility and test-suite terms; often prerequisites for certification, but not reliable synonyms for a GMS license.
+- **AOSP-only**, **non-GMS**, “without Google Play services” — Devices without a GMS license (no Play Store / Play services); many such devices cannot produce a Google-rooted hardware attestation chain.
+
+This terminology is **not** the same as Google’s verdict service APIs. Do not confuse “GMS-certified” with **Google Play Integrity** (see [Google Play Integrity](./privacy.md#google-play-integrity-google-hosted-verdict-service)).
+
 !!! warning inline end
     **Never** use a custom trust anchor or Google's software root of trust in production! Doing so renders all attestation checks moot.
 
