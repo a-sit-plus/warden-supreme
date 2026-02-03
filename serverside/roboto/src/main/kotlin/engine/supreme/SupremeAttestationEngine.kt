@@ -10,7 +10,7 @@ import kotlin.time.Instant
 
 /**
  * Modern, better, independent KMP-first Attestation engine based on in-house clean-room
- * implementation of an attestation record parser
+ * implementation of an attestation record parser that outperforms Google's legacy parser and Google's next-gen parser
  */
 sealed class SupremeAttestationEngine(
     attestationConfiguration: AndroidAttestationConfiguration,
@@ -23,12 +23,30 @@ sealed class SupremeAttestationEngine(
 
     override val List<X509Certificate>.attestationRecord: AttestationKeyDescription?
         get() = androidAttestationExtension
+
+    override val AttestationKeyDescription.attestationSecLevel: GeneralizedSecurityLevel
+        get() = when (attestationSecurityLevel) {
+            AttestationKeyDescription.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+            AttestationKeyDescription.SecurityLevel.STRONGBOX -> GeneralizedSecurityLevel.STRONGBOX
+        }
+
     override val AttestationKeyDescription.challenge: ByteArray
         get() = attestationChallenge
 
     override val AttestationKeyDescription.createdAt: Instant?
         get() = hardwareEnforced.creationDateTime?.getOrNull()?.timestamp
             ?: softwareEnforced.creationDateTime?.getOrNull()?.timestamp
+
+    override val AttestationKeyDescription.keymasterSecLevel: GeneralizedSecurityLevel
+        get() = when (keymasterSecurityLevel) {
+            AttestationKeyDescription.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+            AttestationKeyDescription.SecurityLevel.STRONGBOX -> GeneralizedSecurityLevel.STRONGBOX
+        }
+
+    override val AuthorizationList.androidVersion: Result<BigInteger>?
+        get() = osVersion?.toResult()?.map { it.intValue.toBigInteger() }
 
     override val AuthorizationList.appIdForDiagnostics: AttestationValue<AuthorizationList.AttestationApplicationId>?
         get() = attestationApplicationId
@@ -39,20 +57,6 @@ sealed class SupremeAttestationEngine(
             it.packageName == packageName
         }?.map { it.version } ?: emptyList()
 
-    @get:Throws(Throwable::class)
-    override val AuthorizationList.signerFingerprints: Set<ByteArray>?
-        get() = attestationApplicationId?.getOrThrow()?.signatureDigests
-
-    override val AuthorizationList.operatingSystemPatchLevel: YearMonth? get() = osPatchLevelLenient
-    override val AuthorizationList.androidVersion: Result<BigInteger>?
-        get() = osVersion?.toResult()?.map { it.intValue.toBigInteger() }
-
-
-    override val AuthorizationList.hasRootOfTrust: Boolean get() = rootOfTrust?.getOrNull() != null
-
-    override val AuthorizationList.isDeviceLocked: Boolean
-        get() = rootOfTrust?.getOrNull()?.deviceLocked ?: false
-
     override val AuthorizationList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
         get() = when (rootOfTrust?.getOrNull()?.verifiedBootState) {
             AuthorizationList.RootOfTrust.VerifiedBootState.Verified -> GeneralizedVerifiedBootState.VERIFIED
@@ -62,23 +66,19 @@ sealed class SupremeAttestationEngine(
             null -> null
         }
 
+    override val AuthorizationList.hasRootOfTrust: Boolean get() = rootOfTrust?.getOrNull() != null
+
+    override val AuthorizationList.isDeviceLocked: Boolean
+        get() = rootOfTrust?.getOrNull()?.deviceLocked ?: false
+
+    override val AuthorizationList.operatingSystemPatchLevel: YearMonth? get() = osPatchLevelLenient
 
     override val AuthorizationList.rollbackResistant: Boolean
         get() = (rollbackResistant?.getOrNull() ?: rollbackResistance?.getOrNull()) != null
 
-    override val AttestationKeyDescription.attestationSecLevel: GeneralizedSecurityLevel
-        get() = when (attestationSecurityLevel) {
-            AttestationKeyDescription.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-            AttestationKeyDescription.SecurityLevel.STRONGBOX -> GeneralizedSecurityLevel.STRONGBOX
-        }
-
-    override val AttestationKeyDescription.keymasterSecLevel: GeneralizedSecurityLevel
-        get() = when (keymasterSecurityLevel) {
-            AttestationKeyDescription.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-            AttestationKeyDescription.SecurityLevel.STRONGBOX -> GeneralizedSecurityLevel.STRONGBOX
-        }
+    @get:Throws(Throwable::class)
+    override val AuthorizationList.signerFingerprints: Set<ByteArray>?
+        get() = attestationApplicationId?.getOrThrow()?.signatureDigests
 
 
     class Hardware(

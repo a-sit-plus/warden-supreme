@@ -30,9 +30,35 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     abstract val certChainValidator: CertChainValidator<Cert>
     val trustAnchors: Collection<TrustedRoot> by lazy { type.trustAnchors }
 
+    protected abstract val type: EngineType<AttRecord, AuthList>
+
     abstract val List<Cert>.attestationRecord: AttRecord?
 
-    abstract val AttRecord.challenge: ByteArray
+    protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
+    protected abstract val AttRecord.challenge: ByteArray
+    protected abstract val AttRecord.createdAt: Instant?
+    protected abstract val AttRecord.keymasterSecLevel: GeneralizedSecurityLevel
+
+    protected abstract val AuthList.androidVersion: Result<BigInteger>?
+
+    protected abstract val AuthList.appIdForDiagnostics: Any?
+
+    @Throws(Throwable::class)
+    protected abstract fun AuthList.findMatchingPackageVersions(packageName: String): List<UInt>
+
+    protected abstract val AuthList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
+
+    protected abstract val AuthList.hasRootOfTrust: Boolean
+
+    protected abstract val AuthList.isDeviceLocked: Boolean
+
+    protected abstract val AuthList.operatingSystemPatchLevel: YearMonth?
+
+    protected abstract val AuthList.rollbackResistant: Boolean
+
+    @get:Throws(Throwable::class)
+    protected abstract val AuthList.signerFingerprints: Set<ByteArray>?
+
 
     /**
      * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
@@ -111,33 +137,6 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     }
 
 
-    protected fun AttRecord.verifyAttestationTime(verificationDate: Instant) {
-        val checkTime = verificationDate + (attestationConfiguration.verificationSecondsOffset).seconds
-        if (attestationConfiguration.attestationStatementValiditySeconds == null) return //no validity, no checks!
-        val creationTime = createdAt ?: throw AttestationValueException(
-            "Attestation statement creation time missing",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = null
-        )
-
-        val difference = checkTime - creationTime
-        if (difference < Duration.ZERO) throw AttestationValueException(
-            "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = createdAt
-        )
-
-        if (difference > attestationConfiguration.attestationStatementValiditySeconds.seconds) throw AttestationValueException(
-            "Attestation statement creation time too far in the past: $createdAt, check time: $checkTime, attestation statement validity in seconds: ${attestationConfiguration.attestationStatementValiditySeconds}",
-            reason = AttestationValueException.Reason.STATEMENT_TIME,
-            expectedValue = checkTime,
-            actualValue = createdAt
-        )
-
-    }
-
     @Throws(AttestationValueException::class)
     protected fun AttRecord.verifyApplication(application: AndroidAttestationConfiguration.AppData) {
         val appId = softwareEnforced.appIdForDiagnostics
@@ -188,68 +187,31 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         }
     }
 
-    protected abstract val AuthList.hasRootOfTrust: Boolean
-
-    protected abstract val AuthList.isDeviceLocked: Boolean
-
-    protected abstract val AuthList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
-
-    @Throws(AttestationValueException::class)
-    protected fun AuthList.verifySystemLocked() {
-        if (attestationConfiguration.allowBootloaderUnlock) return
-
-        if (!hasRootOfTrust) throw AttestationValueException(
-            "Root of Trust not present",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = "Present Root of Trust",
+    protected fun AttRecord.verifyAttestationTime(verificationDate: Instant) {
+        val checkTime = verificationDate + (attestationConfiguration.verificationSecondsOffset).seconds
+        if (attestationConfiguration.attestationStatementValiditySeconds == null) return //no validity, no checks!
+        val creationTime = createdAt ?: throw AttestationValueException(
+            "Attestation statement creation time missing",
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
+            expectedValue = checkTime,
             actualValue = null
         )
 
-        if (!isDeviceLocked) throw AttestationValueException(
-            "Bootloader not locked",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = true,
-            actualValue = false
+        val difference = checkTime - creationTime
+        if (difference < Duration.ZERO) throw AttestationValueException(
+            "Attestation statement creation time too far in the future: $createdAt, check time: $checkTime",
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
+            expectedValue = checkTime,
+            actualValue = createdAt
         )
 
-        if ((generalizedVerifiedBootState
-                ?: GeneralizedVerifiedBootState.FAILED) != GeneralizedVerifiedBootState.VERIFIED
-        ) throw AttestationValueException(
-            "System image not verified",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = RootOfTrust.VerifiedBootState.VERIFIED,
-            actualValue = generalizedVerifiedBootState
+        if (difference > attestationConfiguration.attestationStatementValiditySeconds.seconds) throw AttestationValueException(
+            "Attestation statement creation time too far in the past: $createdAt, check time: $checkTime, attestation statement validity in seconds: ${attestationConfiguration.attestationStatementValiditySeconds}",
+            reason = AttestationValueException.Reason.STATEMENT_TIME,
+            expectedValue = checkTime,
+            actualValue = createdAt
         )
     }
-
-    @Throws(AttestationValueException::class)
-    protected fun AuthList.verifyRollbackResistance() {
-        if (attestationConfiguration.requireRollbackResistance)
-            if (!rollbackResistant) throw AttestationValueException(
-                "No rollback resistance",
-                reason = AttestationValueException.Reason.ROLLBACK_RESISTANCE,
-                expectedValue = true,
-                actualValue = false
-            )
-    }
-
-    protected abstract val AttRecord.createdAt: Instant?
-
-    protected abstract val AuthList.appIdForDiagnostics: Any?
-
-    @Throws(Throwable::class)
-    protected abstract fun AuthList.findMatchingPackageVersions(packageName: String): List<UInt>
-
-    @get:Throws(Throwable::class)
-    protected abstract val AuthList.signerFingerprints: Set<ByteArray>?
-
-    protected abstract val AuthList.rollbackResistant: Boolean
-
-    protected abstract val AuthList.androidVersion: Result<BigInteger>?
-    protected abstract val AuthList.operatingSystemPatchLevel: YearMonth?
-
-    protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
-    protected abstract val AttRecord.keymasterSecLevel: GeneralizedSecurityLevel
 
     @Throws(AttestationValueException::class)
     fun AuthList.verifyAndroidVersionFromAuthList(
@@ -312,7 +274,44 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         }
     }
 
-    protected abstract val type: EngineType<AttRecord, AuthList>
+    @Throws(AttestationValueException::class)
+    protected fun AuthList.verifyRollbackResistance() {
+        if (attestationConfiguration.requireRollbackResistance)
+            if (!rollbackResistant) throw AttestationValueException(
+                "No rollback resistance",
+                reason = AttestationValueException.Reason.ROLLBACK_RESISTANCE,
+                expectedValue = true,
+                actualValue = false
+            )
+    }
+
+    @Throws(AttestationValueException::class)
+    protected fun AuthList.verifySystemLocked() {
+        if (attestationConfiguration.allowBootloaderUnlock) return
+
+        if (!hasRootOfTrust) throw AttestationValueException(
+            "Root of Trust not present",
+            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+            expectedValue = "Present Root of Trust",
+            actualValue = null
+        )
+
+        if (!isDeviceLocked) throw AttestationValueException(
+            "Bootloader not locked",
+            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+            expectedValue = true,
+            actualValue = false
+        )
+
+        if ((generalizedVerifiedBootState
+                ?: GeneralizedVerifiedBootState.FAILED) != GeneralizedVerifiedBootState.VERIFIED
+        ) throw AttestationValueException(
+            "System image not verified",
+            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+            expectedValue = RootOfTrust.VerifiedBootState.VERIFIED,
+            actualValue = generalizedVerifiedBootState
+        )
+    }
 
     sealed interface EngineType<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList> {
         @Throws(AttestationValueException::class)

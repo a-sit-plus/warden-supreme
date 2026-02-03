@@ -28,12 +28,30 @@ sealed class RtgAttestationEngine(
 
     override val List<X509Certificate>.attestationRecord: ParsedAttestationRecord
         get() = ParsedAttestationRecord.createParsedAttestationRecord(this)
+
+    override val ParsedAttestationRecord.attestationSecLevel: GeneralizedSecurityLevel
+        get() = when (attestationSecurityLevel()) {
+            ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+            ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
+        }
+
     override val ParsedAttestationRecord.challenge: ByteArray
         get() = this.attestationChallenge().toByteArray()
 
     override val ParsedAttestationRecord.createdAt: Instant?
         get() = (teeEnforced().creationDateTime().getOrNull() ?: softwareEnforced().creationDateTime()
             .getOrNull())?.toKotlinInstant()
+
+    override val ParsedAttestationRecord.keymasterSecLevel: GeneralizedSecurityLevel
+        get() = when (keymasterSecurityLevel()) {
+            ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+            ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
+        }
+
+    override val AuthorizationList.androidVersion: Result<BigInteger>?
+        get() = catchingUnwrapped { BigInteger(osVersion().get()) }
 
     override val AuthorizationList.appIdForDiagnostics: AttestationApplicationId?
         get() = catchingUnwrapped { attestationApplicationId().get() }.getOrNull()
@@ -43,28 +61,6 @@ sealed class RtgAttestationEngine(
         attestationApplicationId().get().packageInfos().filter { it.packageName() == packageName }
             .map { it.version().toUInt() }
 
-    @get:Throws(Throwable::class)
-    override val AuthorizationList.signerFingerprints: Set<ByteArray>?
-        get() = attestationApplicationId().get().signatureDigests().map { it.toByteArray() }.toSet()
-
-    override val AuthorizationList.operatingSystemPatchLevel: kotlinx.datetime.YearMonth?
-        get() = catchingUnwrapped {
-            osPatchLevel().get().let {
-                kotlinx.datetime.YearMonth(it.year, it.monthValue)
-            }
-        }.getOrNull()
-
-    override val AuthorizationList.androidVersion: Result<BigInteger>?
-        get() = catchingUnwrapped { BigInteger(osVersion().get()) }
-
-
-    override val AuthorizationList.hasRootOfTrust: Boolean get() = rootOfTrust() != null
-
-    override val AuthorizationList.isDeviceLocked: Boolean
-        get() = catchingUnwrapped {
-            rootOfTrust().get().deviceLocked()
-        }.getOrElse { false }
-
     override val AuthorizationList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
         get() = when (rootOfTrust().get().verifiedBootState()) {
             RootOfTrust.VerifiedBootState.VERIFIED -> GeneralizedVerifiedBootState.VERIFIED
@@ -73,22 +69,25 @@ sealed class RtgAttestationEngine(
             RootOfTrust.VerifiedBootState.FAILED -> GeneralizedVerifiedBootState.FAILED
         }
 
+    override val AuthorizationList.hasRootOfTrust: Boolean get() = rootOfTrust() != null
+
+    override val AuthorizationList.isDeviceLocked: Boolean
+        get() = catchingUnwrapped {
+            rootOfTrust().get().deviceLocked()
+        }.getOrElse { false }
+
+    override val AuthorizationList.operatingSystemPatchLevel: kotlinx.datetime.YearMonth?
+        get() = catchingUnwrapped {
+            osPatchLevel().get().let {
+                kotlinx.datetime.YearMonth(it.year, it.monthValue)
+            }
+        }.getOrNull()
 
     override val AuthorizationList.rollbackResistant: Boolean get() = rollbackResistance()
 
-    override val ParsedAttestationRecord.attestationSecLevel: GeneralizedSecurityLevel
-        get() = when (attestationSecurityLevel()) {
-            ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-            ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
-        }
-
-    override val ParsedAttestationRecord.keymasterSecLevel: GeneralizedSecurityLevel
-        get() = when (keymasterSecurityLevel()) {
-            ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-            ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
-        }
+    @get:Throws(Throwable::class)
+    override val AuthorizationList.signerFingerprints: Set<ByteArray>?
+        get() = attestationApplicationId().get().signatureDigests().map { it.toByteArray() }.toSet()
 
 
     class Hardware(
