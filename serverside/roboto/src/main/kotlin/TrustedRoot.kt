@@ -9,6 +9,8 @@ import io.ktor.util.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -117,7 +119,7 @@ sealed interface TrustedRoot {
 }
 
 object TrustedRootSerializer : KSerializer<TrustedRoot> {
-    override val descriptor: SerialDescriptor = SerialDescriptor("TrustAnchor", String.serializer().descriptor)
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("TrustAnchor", PrimitiveKind.STRING)
 
     override fun serialize(
         encoder: Encoder,
