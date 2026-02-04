@@ -45,7 +45,12 @@ This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, w
     - **Be sure to deal with the result. This function does not throw!!!**
 - The parameters `iosAttestationConfigurationJ` and `androidAttestationConfigurationJ` in `Makoto`'s Java-oriented constructor have been swapped to disambiguate it from the Kotlin constructors.
 
+
 ### Results and Exceptions
+
+!!! tip "Try the custom parser"
+    To enable the custom Android attestation extension parser, set `supremeParser = true` in your configuration and run your usual `Roboto`/`Makoto` verification flow.
+
 - `AttestationResult` gains a `Verified` marker; NOOP results are distinct.
 - `AttestationResult.Error` always carries a `cause`.
 - `AttestationValueException.Reason.TIME` is renamed to `STATEMENT_TIME`.
@@ -53,7 +58,7 @@ This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, w
 - Roboto verification now returns the verified certificate chain (`List<X509Certificate>`) wrapped in `KmmResult`. Downstream code should parse the extension from the resulting chain via `androidAttestationExtension` (preferred).
     - **Be sure to deal with the result. This function does not throw!!!**
 - `ParsedAttestationRecord` is considered legacy: it is still accessible via deprecated helpers (e.g. `AttestationResult.Android.attestationRecord`), but new code should use `AttestationResult.Android.attestationExtension` / `androidAttestationExtension`.
-- The `experimentalParser` flag selects which verification engine/parser is used internally; it no longer changes the public return type.
+- The `supremeParser` flag selects which verification engine/parser is used internally; it no longer changes the public return type.
 
 ### Time Handling and Validity
 - Verification time offset defaults to five minutes and is applied to certificate and attestation time checks.
