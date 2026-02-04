@@ -7,6 +7,11 @@ Warden Supreme is structured into four groups:
 3. `/utils` contains unpublished utility helpers aimed at aiding analysis of attestation errors. These are meant to be used inside an IDE with an attached debugger.
 4. `/dependencies` contains external dependencies that are not published to Maven Central or anywhere else and are thus compiled into group&nbsp;2 or used for testing.
 
+!!! tip "Quick navigation"
+    - For the recommended end-to-end flow (mobile client + verifier + unified wire format), start at the [Integration Guide](supreme.md).
+    - For using the server-side libraries directly (without integrated clients), see [Usage without Integrated Clients](raw.md).
+    - For WARDEN / WARDEN-roboto migration notes, see [Migration](migration.md).
+
 ## /supreme
 
 | Name                                                                                                                                                                                                                                                                                                                    | Info                                                                                                                                      |
@@ -18,6 +23,10 @@ Warden Supreme is structured into four groups:
 ## /serverside
 
 The modules located here can be used on their own, in case the Supreme integrated attestation suite is not desired.
+
+If you come from the legacy projects:
+**WARDEN → _Warden makoto_** (`at.asitplus.warden:makoto`, entry point `Makoto`) and
+**WARDEN-roboto → _Warden roboto_** (`at.asitplus.warden:roboto`, entry point `Roboto`).
 
 | <img alt="Warden roboto" src="../../assets/images/roboto.png" width="249" style="height:auto;">                                                  | <picture>  <source media="(prefers-color-scheme: dark)" srcset="../../assets/images/makoto-w.png">  <source media="(prefers-color-scheme: light)" srcset="../../assets/images/makoto-b.png">  <img alt="Warden makoto" src="../../assets/images/makoto-w.png" width="232" height="36" style="height:auto;"> </picture>      | 
 |--------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
