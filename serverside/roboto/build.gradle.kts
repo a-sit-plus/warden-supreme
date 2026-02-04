@@ -96,7 +96,6 @@ dependencies {
 
 
     //dependencies for new attestation lib
-    implementation(libs.androidx.annotations)
     implementation(libs.coroutines.guava)
     implementation(libs.cbor)
     implementation(libs.gson)
