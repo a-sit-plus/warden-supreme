@@ -2,16 +2,6 @@
 
 **The most obvious change coming from WARDEN / WARDEN-roboto is dropped support for Nougat hybrid attestation on Android. It is simply not relevant any more.**
 
-!!! tip "TL;DR: What do I use now?"
-    - **If you used WARDEN-roboto:** use **Warden roboto** (`at.asitplus.warden:roboto`) and the `Roboto` entry point.
-    - **If you used WARDEN:** use **Warden makoto** (`at.asitplus.warden:makoto`) and the `Makoto` entry point.
-    - **If you want the recommended end-to-end flow (client + verifier + unified wire format):** start with the [Integration Guide](supreme.md) (and its [data model](datamodel.md)).
-
-    Cross-references:
-    [Project Structure](structure.md) (where the modules live),
-    [Usage without Integrated Clients](raw.md) (Makoto/Roboto directly),
-    and [Externalising Configuration](config.md) (canonical config loading).
-
 !!! danger "Read This First: Footguns"
     The biggest upgrade hazards are about configuration loading and time checks:
     
@@ -26,6 +16,17 @@ Warden Supreme enforces unified flows and a unified data model. Migration primar
 - Adopt the unified request/response envelopes and binding semantics described in the Integration Guide.
 - Use the consolidated back‑end configuration (trust anchors, identities, policies).
 - Retain functionality via the integrated modules (_Warden makoto_ / _Warden roboto_); legacy artefacts exist under new names — see [Project Structure](structure.md).
+
+
+!!! tip "TL;DR: What do I use now?"
+    - **If you used WARDEN-roboto:** use **Warden roboto** (`at.asitplus.warden:roboto`) and the `Roboto` entry point.
+    - **If you used WARDEN:** use **Warden makoto** (`at.asitplus.warden:makoto`) and the `Makoto` entry point.
+    - **If you want the recommended end-to-end flow (client + verifier + unified wire format):** start with the [Integration Guide](supreme.md) (and its [data model](datamodel.md)).
+    
+    Cross-references:
+    [Project Structure](structure.md) (where the modules live),
+    [Usage without Integrated Clients](raw.md) (Makoto/Roboto directly),
+    and [Externalising Configuration](config.md) (canonical config loading).
 
 ## Changes (Makoto + Roboto APIs)
 This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, without adopting the integrated model.
