@@ -14,7 +14,7 @@
 !!! tip inline end
     Both [WARDEN](https://github.com/a-sit-plus/warden) and [WARDEN-roboto](https://github.com/a-sit-plus/warden-roboto)
     live on as modules inside Warden Supreme. These projects are now integrated into Warden Supreme and continue to be
-    maintained and published to Maven Central. See [Project Structure](structure.md).
+    maintained and published to Maven Central. See [Project Structure](structure.md) and [Migration](migration.md).
 
 Warden Supreme aims to make remote attestation across Android and iOS as smooth and consistent as possible via
 Kotlin Multiplatform. At the same time, it is clear that not every iOS app will be written in Kotlin, and not every Android application
@@ -22,7 +22,7 @@ will want to pull in Signum as a dependency.
 
 In addition, legacy deployments that cannot yet transition to the new integrated Warden Supreme attestation flows are
 still operational and will remain so. Until a migration is possible (see [migration notes](migration.md)), this page serves
-as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (previously WARDEN‑roboto).
+as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (previously WARDEN-roboto).
 
 !!! tip "Hybrid Integration"
     It is possible to use Warden Supreme's verifier with custom clients by adhering to the [same flows](supreme.md#high-level-attestation-flow) and [data model](datamodel.md).
