@@ -54,8 +54,6 @@ class AndroidDebugAttestationStatement(
     override suspend fun replay() =
         checkerFromConfig().verify(attestationStatement, verificationTime, challenge)
 
-    //todo replayBlocking as extension on interface
-
     override fun serialize() = jsonDebug.encodeToString(this)
 
     override fun serializeCompact() =

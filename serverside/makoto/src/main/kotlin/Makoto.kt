@@ -1,6 +1,7 @@
 package at.asitplus.attestation
 
-import at.asitplus.attestation.android.*
+import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.Roboto
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
@@ -206,44 +207,21 @@ class Makoto
 
     private val androidAttestationVerifier: Roboto? = androidAttestationConfiguration?.let { cfg ->
         val androidOffset = catchingUnwrapped {
-            Math.addExact(
-                verificationTimeOffset.inWholeSeconds,
-                cfg.verificationSecondsOffset
-            )
-        }.getOrElse {
-            throw AttestationException.Configuration(
-                Platform.ANDROID,
-                "Offset too large!",
-                cause = it
-            )
-        }
+            Math.addExact(verificationTimeOffset.inWholeSeconds, cfg.verificationSecondsOffset)
+        }.getOrElse { throw AttestationException.Configuration(Platform.ANDROID, "Offset too large!", cause = it) }
 
         val correctlyOffsetAndroidConfig =
             androidAttestationConfiguration.copy(verificationSecondsOffset = androidOffset)
 
-        catchingUnwrapped {  Roboto(correctlyOffsetAndroidConfig){ expected, actual -> expected contentEquals actual }}.getOrElse {
-            throw AttestationException.Configuration(
-                Platform.ANDROID,
-                it.message,
-                cause = it
-            )
+        catchingUnwrapped { Roboto(correctlyOffsetAndroidConfig) { expected, actual -> expected contentEquals actual } }.getOrElse {
+            throw AttestationException.Configuration(Platform.ANDROID, it.message, cause = it)
         }
 
     }
 
     private val iosSetup = catchingUnwrapped {
-        iosAttestationConfiguration?.let {
-            IosSetup(
-                it,
-                clock,
-                verificationTimeOffset
-            )
-        }
-    }.getOrElse {
-        throw AttestationException.Configuration(
-            Platform.IOS, it.message, it
-        )
-    }
+        iosAttestationConfiguration?.let { IosSetup(it, clock, verificationTimeOffset) }
+    }.getOrElse { throw AttestationException.Configuration(Platform.IOS, it.message, it) }
 
     /**
      * The shortest attestation validity duration over Android and iOS configuration.
@@ -570,7 +548,7 @@ class Makoto
             )
 
         //throws exception on fail, so if we get past it -> all green
-        androidAttestationVerifier.verify(certificates, clock.now(),expectedChallenge).getOrThrow()
+        androidAttestationVerifier.verify(certificates, clock.now(), expectedChallenge).getOrThrow()
 
         AttestationResult.Android.Verified(certificates)
     }.getOrElse {

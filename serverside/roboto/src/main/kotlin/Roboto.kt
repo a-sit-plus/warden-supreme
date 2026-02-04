@@ -83,6 +83,23 @@ constructor(
     ) = collectDebugInfoBlocking(certificates, expectedChallenge, verificationDate.toInstant().toKotlinInstant())
 
     /**
+     * **Java-Friendly method**
+     *
+     * Packs
+     * * the current configuration
+     * * the passed attestation proof
+     * * the passed date
+     *
+     * into a serializable data structure for easy debugging
+     */
+    @JvmName("collectDebugInfo")
+    fun collectDebugInfoJ(
+        certificates: List<X509Certificate>,
+        expectedChallenge: ByteArray,
+        verificationDate: java.time.Instant = java.time.Instant.now(),
+    ) = collectDebugInfoBlocking(certificates, expectedChallenge, verificationDate.toKotlinInstant())
+
+    /**
      * Packs
      * * the current configuration
      * * the passed attestation proof

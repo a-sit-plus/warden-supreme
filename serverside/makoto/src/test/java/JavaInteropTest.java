@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 
@@ -135,6 +136,10 @@ public class JavaInteropTest {
         Roboto checker = new Roboto(config);
         try {
             checker.verifyAttestation(certificateChain, new Date(), challenge);
+
+            //chose either
+            checker.collectDebugInfo(new LinkedList<X509Certificate>(), new byte[0], Instant.now());
+            checker.collectDebugInfo(new LinkedList<X509Certificate>(), new byte[0], new Date());
             //all good
         } catch (AttestationValueException | CertificateInvalidException | RevocationException e) {
             //untrusted device/app

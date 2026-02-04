@@ -117,7 +117,6 @@ dependencies {
     testImplementation(ktor("client-mock"))
     testImplementation(datetime())
     api(project(":supreme-common"))
-    //for whatever reason we cannot wire supreme-common here. dependency cycle?
 }
 
 
