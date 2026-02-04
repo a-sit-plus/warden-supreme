@@ -117,6 +117,7 @@ dependencies {
     testImplementation(ktor("client-mock"))
     testImplementation(datetime())
     api(project(":supreme-common"))
+    api("org.jetbrains.kotlin:kotlin-stdlib:${kotlin.coreLibrariesVersion}")
 }
 
 
