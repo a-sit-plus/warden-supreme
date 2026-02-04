@@ -11,13 +11,10 @@ import at.asitplus.testballoon.withDataSuites
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.string.shouldContain
-import java.util.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
-import kotlin.time.toJavaInstant
-import kotlin.time.toKotlinInstant
 
 val TemporalOffsetTest by testSuite {
 
@@ -81,54 +78,56 @@ val TemporalOffsetTest by testSuite {
         )
     )
 
-
-    "Exact Time of Validity" - {
-        withData(exactStartOfValidity) {
-            attestationService().verifyAttestation(
-                it.attestationCertChain,
-                it.verificationDate,
-                it.challenge
-            )
-        }
-    }
-
-    "Exact Time of Validity + 1D" - {
-        withData(exactStartOfValidity) {
-            attestationService(
-                attestationStatementValiditiy = 1.days + 1.seconds
-            ).verifyAttestation(
-                it.attestationCertChain,
-                Date.from((it.verificationDate.toInstant().toKotlinInstant() + 1.days).toJavaInstant()),
-                it.challenge,
-            )
-        }
-    }
-
-    "Exact Time of Validity - 1D" - {
-        withDataSuites(exactStartOfValidity) {
+    withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
+        "Exact Time of Validity" - {
             withData(exactStartOfValidity) {
-                shouldThrow<AttestationValueException> {
-                    attestationService().verifyAttestation(
-                        it.attestationCertChain,
-                        Date.from((it.verificationDate.toInstant().toKotlinInstant() - 1.seconds).toJavaInstant()),
-                        it.challenge,
-                    )
-                }.message!!.shouldContain("too far in the future")
+                attestationService(experimental).verify(
+                    it.attestationCertChain,
+                    it.verificationDate,
+                    it.challenge
+                ).getOrThrow()
+            }
+        }
+
+        "Exact Time of Validity + 1D" - {
+            withData(exactStartOfValidity) {
+                attestationService(
+                    experimental,
+                    attestationStatementValiditiy = 1.days + 1.seconds
+                ).verify(
+                    it.attestationCertChain,
+                    it.verificationDate + 1.days,
+                    it.challenge,
+                ).getOrThrow()
+            }
+        }
+
+        "Exact Time of Validity - 1D" - {
+            withDataSuites(exactStartOfValidity) {
+                withData(exactStartOfValidity) {
+                    shouldThrow<AttestationValueException> {
+                        attestationService(experimental).verify(
+                            it.attestationCertChain,
+                            it.verificationDate - 1.seconds,
+                            it.challenge,
+                        ).getOrThrow()
+                    }.message!!.shouldContain("too far in the future")
+                }
+
+
+                withData(exactStartOfValidity) {
+                    shouldThrow<AttestationValueException> {
+                        attestationService(experimental).verify(
+                            it.attestationCertChain,
+                            it.verificationDate + 10.minutes,
+                            it.challenge,
+                        ).getOrThrow()
+                    }.message!!.shouldContain("too far in the past")
+                }
+
             }
 
-
-            withData(exactStartOfValidity) {
-                shouldThrow<AttestationValueException> {
-                    attestationService().verifyAttestation(
-                        it.attestationCertChain,
-                        Date.from((it.verificationDate.toInstant().toKotlinInstant() + 10.minutes).toJavaInstant()),
-                        it.challenge,
-                    )
-                }.message!!.shouldContain("too far in the past")
-            }
-
         }
-
     }
+
 }
-

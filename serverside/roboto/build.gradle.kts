@@ -55,6 +55,12 @@ sourceSets.main {
                 it.delete()
             }
         }
+        //not because we patched functionally, but to have it extend and interface
+        File("${project.rootDir}/dependencies/android-key-attestation/src/main/java/com/google/android/attestation/ParsedAttestationRecord.java").let {
+            if (it.exists()) {
+                it.delete()
+            }
+        }
     }
 }
 
@@ -110,7 +116,7 @@ dependencies {
     testImplementation("ch.qos.logback:logback-access:1.2.3")
     testImplementation(ktor("client-mock"))
     testImplementation(datetime())
-    //for whatever reason we cannot wire supreme-common here. dependency cycle?
+    api(project(":supreme-common"))
 }
 
 

@@ -265,17 +265,19 @@ val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
     ).toJcaPublicKey().getOrThrow()
 
 )
-
-
 private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("EC")
         .generatePublic(
-            X509EncodedKeySpec(Base64.getDecoder().decode(SoftwareAttestationVerifier.GOOGLE_SOFTWARE_EC_ROOT))
+            X509EncodedKeySpec(Base64.getDecoder().decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+                    "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="))
         ),
     KeyFactory.getInstance("RSA")
         .generatePublic(
             X509EncodedKeySpec(
-                Base64.getDecoder().decode(SoftwareAttestationVerifier.GOOGLE_SOFTWARE_RSA_ROOT)
+                Base64.getDecoder().decode(    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+                        "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+                        "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+                        "+Vfkl5YLCazOkjWFmwIDAQAB")
             )
         )
 )
@@ -416,8 +418,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * @see AndroidRevocationList.HttpLoader.Configuration
      * @see AndroidRevocationList.FileLoader.Configuration
      */
-    val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
+    val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
+    /**
+     * Flag to try out the new supreme parser
+     */
+    val supremeParser: Boolean = false,
 
 ) : AttestationConfiguration {
 
@@ -521,6 +527,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * for attestation checks to pass
          */
         requireRemoteKeyProvisioning: Boolean = false,
+
+        /**
+         * Flag to try out the new supreme parser
+         */
+        supremeParser: Boolean = false,
     ) : this(
         listOf(singleApp),
         androidVersion = androidVersion,
@@ -537,6 +548,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+        supremeParser = supremeParser,
     )
 
     /**
@@ -645,6 +657,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * for attestation checks to pass
          */
         requireRemoteKeyProvisioning: Boolean = false,
+
+        /**
+         * Flag to try out the new supreme parser
+         */
+        supremeParser: Boolean = false,
     ) : this(
         applications = apps,
         androidVersion = version,
@@ -661,6 +678,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+        supremeParser = supremeParser,
     )
 
     /**
@@ -704,7 +722,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter.
          */
-        internal val patchLevelOverride: PatchLevel? = null,
+        val patchLevelOverride: PatchLevel? = null,
 
 
         /**
@@ -916,6 +934,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
 
+        private var supremeParser: Boolean = false
+
         /**
          * specifies a minimum Android version
          * @see AndroidAttestationConfiguration.androidVersion
@@ -1039,6 +1059,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * @see at.asitplus.attestation.android.AndroidAttestationConfiguration.requireRemoteKeyProvisioning
          */
         fun requireRemoteKeyProvisioning(required: Boolean) = apply { requireRemoteKeyProvisioning = required }
+        /**
+         * Flag to try out the new supreme parser
+         */
+        fun supremeParser(supremeParser: Boolean) = apply { this.supremeParser = supremeParser }
 
         fun build() = AndroidAttestationConfiguration(
             applications = applications,
@@ -1056,6 +1080,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             enableSoftwareAttestation = enableSwAttestation,
             revocation = revocation,
             requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+            supremeParser = supremeParser,
         )
 
     }
@@ -1076,7 +1101,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "disableHardwareAttestation=$disableHardwareAttestation, " +
                 "enableSoftwareAttestation=$enableSoftwareAttestation, " +
                 "revocation=$revocation, " +
-                "osPatchLevel=$osPatchLevel" +
+                "osPatchLevel=$osPatchLevel, " +
+                "supremeParser=$supremeParser" +
                 ")"
     }
 
@@ -1103,6 +1129,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (revocation != other.revocation) return false
 
         if (requireRemoteKeyProvisioning != other.requireRemoteKeyProvisioning) return false
+        if(supremeParser != other.supremeParser) return false
 
         return true
     }
@@ -1124,6 +1151,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + softwareTrustedRoots.hashCode()
         result = 31 * result + (revocation.hashCode() ?: 0)
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
+        result = 31 * result + supremeParser.hashCode()
         return result
     }
 
@@ -1133,7 +1161,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonString(): String = jsonDebug.encodeToString(this)
 
     /**
-     * Serialises this config into its canonical form (YAML). Can be loaded using [fromYamlString] afterwards.
+     * Serialises this config into its canonical form (YAML). Can be loaded using [fromJsonString] afterwards.
      */
     override fun toYamlString(): String = yaml.encodeToString(this)
 
@@ -1157,7 +1185,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             jsonDebug.decodeFromString<AndroidAttestationConfiguration>(jsonRepresentation)
 
         /**
-         * Loads the config from its canonical form (YAML), as produced by [toYamlString].
+         * Loads the config from its canonical form (JSON), as produced by [toJsonString].
          */
         override fun fromYamlString(yamlRepresentation: String): AndroidAttestationConfiguration =
             yaml.decodeFromString(yamlRepresentation)

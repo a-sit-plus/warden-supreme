@@ -1,9 +1,7 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.HardwareAttestationVerifier
 import at.asitplus.attestation.android.Roboto
-import at.asitplus.attestation.android.SoftwareAttestationVerifier
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
@@ -207,48 +205,23 @@ class Makoto
     private val log = LoggerFactory.getLogger(this.javaClass)
 
 
-    private val androidAttestationVerifiers: List<Roboto>? = androidAttestationConfiguration?.let { cfg ->
-        val verifiers = mutableListOf<Roboto>()
+    private val androidAttestationVerifier: Roboto? = androidAttestationConfiguration?.let { cfg ->
         val androidOffset = catchingUnwrapped {
-            Math.addExact(
-                verificationTimeOffset.inWholeSeconds,
-                cfg.verificationSecondsOffset
-            )
-        }.getOrElse {
-            throw AttestationException.Configuration(
-                Platform.ANDROID,
-                "Offset too large!",
-                cause = it
-            )
-        }
+            Math.addExact(verificationTimeOffset.inWholeSeconds, cfg.verificationSecondsOffset)
+        }.getOrElse { throw AttestationException.Configuration(Platform.ANDROID, "Offset too large!", cause = it) }
 
         val correctlyOffsetAndroidConfig =
             androidAttestationConfiguration.copy(verificationSecondsOffset = androidOffset)
 
-        if (!correctlyOffsetAndroidConfig.disableHardwareAttestation) verifiers.add(
-            HardwareAttestationVerifier(
-                correctlyOffsetAndroidConfig
-            ) { expected, actual -> expected contentEquals actual })
-        if (correctlyOffsetAndroidConfig.enableSoftwareAttestation) verifiers.add(
-            SoftwareAttestationVerifier(
-                correctlyOffsetAndroidConfig
-            ) { expected, actual -> expected contentEquals actual })
-        verifiers
+        catchingUnwrapped { Roboto(correctlyOffsetAndroidConfig) { expected, actual -> expected contentEquals actual } }.getOrElse {
+            throw AttestationException.Configuration(Platform.ANDROID, it.message, cause = it)
+        }
+
     }
 
     private val iosSetup = catchingUnwrapped {
-        iosAttestationConfiguration?.let {
-            IosSetup(
-                it,
-                clock,
-                verificationTimeOffset
-            )
-        }
-    }.getOrElse {
-        throw AttestationException.Configuration(
-            Platform.IOS, it.message, it
-        )
-    }
+        iosAttestationConfiguration?.let { IosSetup(it, clock, verificationTimeOffset) }
+    }.getOrElse { throw AttestationException.Configuration(Platform.IOS, it.message, it) }
 
     /**
      * The shortest attestation validity duration over Android and iOS configuration.
@@ -546,7 +519,7 @@ class Makoto
         attestationCerts: List<ByteArray>,
         expectedChallenge: ByteArray
     ): AttestationResult = catchingUnwrapped {
-        if (androidAttestationVerifiers == null) throw AttestationException.Configuration(
+        if (androidAttestationVerifier == null) throw AttestationException.Configuration(
             Platform.ANDROID,
             message = "Android Attestation is not configured",
             IllegalArgumentException()
@@ -574,27 +547,8 @@ class Makoto
                 )
             )
 
-        //throws exception on fail
-        val results = androidAttestationVerifiers.map {
-            catchingUnwrapped {
-                it.verifyAttestation(
-                    certificates,
-                    (clock.now()).toJavaDate(),
-                    expectedChallenge
-                )
-            }
-        }
-        if (results.filter { it.isFailure }.size == androidAttestationVerifiers.size) {
-            //if time is off, then we need to treat is separately
-            results.firstOrNull {
-                (it.exceptionOrNull() is CertificateInvalidException &&
-                        (it.exceptionOrNull() as CertificateInvalidException).reason == CertificateInvalidException.Reason.TIME)
-                        || (it.exceptionOrNull() is RevocationException)
-            }?.exceptionOrNull()?.let { throw it }
-
-            throw results.last() //this way we are most lenient
-                .exceptionOrNull()!!
-        }
+        //throws exception on fail, so if we get past it -> all green
+        androidAttestationVerifier.verify(certificates, clock.now(), expectedChallenge).getOrThrow()
 
         AttestationResult.Android.Verified(certificates)
     }.getOrElse {

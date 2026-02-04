@@ -1,7 +1,6 @@
 package at.asitplus.attestation.android.exceptions
 
 import at.asitplus.attestation.android.AndroidRevocationList
-import at.asitplus.attestation.android.SoftwareAttestationVerifier
 import at.asitplus.attestation.android.contentEqualsIfArray
 import at.asitplus.signum.indispensable.contentEqualsIfArray
 import java.security.cert.X509Certificate
@@ -21,6 +20,12 @@ abstract class AndroidAttestationException(message: String?, cause: Throwable?) 
         return javaClass.hashCode()
     }
 }
+
+/**
+ * Thrown if neither hardware nor software attestation is enabled or configuration objects
+ * are passed into incompatible verifiers.
+ */
+class ConfigurationException(message:String): AndroidAttestationException(message, null)
 
 
 /**

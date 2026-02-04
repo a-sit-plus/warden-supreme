@@ -15,6 +15,7 @@
 
 package com.google.android.attestation;
 
+import at.asitplus.attestation.android.AttestationExtension;
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.*;
@@ -47,7 +48,7 @@ import static java.util.Arrays.stream;
  */
 @AutoValue
 @Immutable
-public abstract class AuthorizationList {
+public abstract class AuthorizationList implements AttestationExtension.AuthList {
   /** Specifies the types of user authenticators that may be used to authorize this key. */
   public enum UserAuthType {
     USER_AUTH_TYPE_NONE,

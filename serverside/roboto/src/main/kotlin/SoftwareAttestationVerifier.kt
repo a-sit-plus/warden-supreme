@@ -1,61 +1,33 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
-import at.asitplus.attestation.android.exceptions.AttestationValueException
-import com.google.android.attestation.ParsedAttestationRecord
-import java.util.*
 
-class SoftwareAttestationVerifier @JvmOverloads constructor(
-    attestationConfiguration: AndroidAttestationConfiguration,
-    verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
-) : Roboto(attestationConfiguration, verifyChallenge) {
-    init {
+@Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("Roboto"))
+object SoftwareAttestationVerifier {
+    @Deprecated("To be removed in 1.1")
+    const val GOOGLE_SOFTWARE_EC_ROOT =
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+                "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
+
+    @Deprecated("To be removed in 1.1")
+    const val GOOGLE_SOFTWARE_RSA_ROOT =
+        "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+                "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+                "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+                "+Vfkl5YLCazOkjWFmwIDAQAB"
+
+    @JvmOverloads
+    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("Roboto"))
+    operator fun invoke(
+        attestationConfiguration: AndroidAttestationConfiguration,
+        verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean = { expected, actual -> expected contentEquals actual }
+    ): Roboto {
         if (!attestationConfiguration.enableSoftwareAttestation) throw object :
             AndroidAttestationException("Software attestation is disabled!", null) {}
         if (attestationConfiguration.softwareTrustedRoots.isEmpty()) throw object :
             AndroidAttestationException("No software attestation trust anchors configured", null) {}
+
+        return Roboto(attestationConfiguration, verifyChallenge)
     }
-
-    companion object Companion {
-        const val GOOGLE_SOFTWARE_EC_ROOT =
-            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
-                    "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
-        const val GOOGLE_SOFTWARE_RSA_ROOT =
-            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
-                    "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
-                    "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
-                    "+Vfkl5YLCazOkjWFmwIDAQAB"
-    }
-
-    @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifySecurityLevel(override: Boolean?/*ignored*/) {
-        if (attestationSecurityLevel() != ParsedAttestationRecord.SecurityLevel.SOFTWARE) throw AttestationValueException(
-            "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-            expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-            actualValue = attestationSecurityLevel()
-        )
-        if (keymasterSecurityLevel() != ParsedAttestationRecord.SecurityLevel.SOFTWARE) throw AttestationValueException(
-            "Keymaster security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-            expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-            actualValue = keymasterSecurityLevel()
-        )
-    }
-
-    override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
-
-    @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyAndroidVersion(
-        versionOverride: Int?,
-        osPatchLevel: PatchLevel?,
-        verificationDate: Date
-    ) =
-        softwareEnforced().verifyAndroidVersion(versionOverride, osPatchLevel, verificationDate)
-
-    @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyBootStateAndSystemImage() {
-        //impossible
-    }
-
-    @Throws(AttestationValueException::class)
-    override fun ParsedAttestationRecord.verifyRollbackResistance() = softwareEnforced().verifyRollbackResistance()
 }
+

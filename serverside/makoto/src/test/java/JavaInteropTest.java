@@ -1,16 +1,14 @@
 import at.asitplus.attestation.AttestationService;
-import at.asitplus.attestation.Makoto;
 import at.asitplus.attestation.IosAttestationConfiguration;
 import at.asitplus.attestation.KeyAttestation;
-import at.asitplus.attestation.android.Roboto;
+import at.asitplus.attestation.Makoto;
 import at.asitplus.attestation.android.AndroidAttestationConfiguration;
-import at.asitplus.attestation.android.HardwareAttestationVerifier;
 import at.asitplus.attestation.android.PatchLevel;
+import at.asitplus.attestation.android.Roboto;
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException;
 import at.asitplus.attestation.android.exceptions.AttestationValueException;
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException;
 import at.asitplus.attestation.android.exceptions.RevocationException;
-import com.google.android.attestation.ParsedAttestationRecord;
 import org.junit.jupiter.api.Assertions;
 
 import java.security.KeyPairGenerator;
@@ -18,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 
@@ -134,9 +133,13 @@ public class JavaInteropTest {
                 .verificationSecondsOffset(-500) //we to account for time drift
                 .build();
 
-        Roboto checker = new HardwareAttestationVerifier(config);
+        Roboto checker = new Roboto(config);
         try {
-            ParsedAttestationRecord attestationRecord = checker.verifyAttestation(certificateChain, new Date(), challenge);
+            checker.verifyAttestation(certificateChain, new Date(), challenge);
+
+            //chose either
+            checker.collectDebugInfo(new LinkedList<X509Certificate>(), new byte[0], Instant.now());
+            checker.collectDebugInfo(new LinkedList<X509Certificate>(), new byte[0], new Date());
             //all good
         } catch (AttestationValueException | CertificateInvalidException | RevocationException e) {
             //untrusted device/app

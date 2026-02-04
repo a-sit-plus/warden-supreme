@@ -104,7 +104,7 @@ fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromYamlFi
  */
 fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromJsonFile(file: File): A =
     FileReader(file).buffered().use { fileReader ->
-        fromJsonFile(fileReader.readText())
+        fromJsonString(fileReader.readText())
 
     }
 

@@ -5,6 +5,7 @@ import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
+import at.asitplus.testballoon.withData
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -12,6 +13,7 @@ import java.time.YearMonth
 import java.time.ZoneOffset
 import java.util.*
 import kotlin.random.Random
+import kotlin.time.toKotlinInstant
 
 val FakeAttestationTests by testSuite {
 
@@ -31,34 +33,9 @@ val FakeAttestationTests by testSuite {
             androidVersion = androidVersion,
             androidPatchLevel = patchLevel.asSingleInt,
         )
+        withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
 
-        val checker = HardwareAttestationVerifier(
-            AndroidAttestationConfiguration(
-                AndroidAttestationConfiguration.AppData(
-                    packageName = packageName,
-                    signerFingerprints = listOf(signatureDigest),
-                    appVersion = appVersion
-                ),
-                androidVersion = androidVersion,
-                patchLevel = patchLevel,
-                requireStrongBox = false,
-                allowBootloaderUnlock = false,
-                ignoreLeafValidity = false,
-                hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
-            )
-        )
-
-        "Bug 77" {
-            val borkedAttestation = AttestationCreator.createAttestation(
-                challenge = challenge,
-                packageName = packageName,
-                signatureDigest = signatureDigest,
-                appVersion = appVersion,
-                androidVersion = androidVersion,
-                vendorPatchLevel = 0,
-            )
-
-            HardwareAttestationVerifier(
+            val checker = Roboto(
                 AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         packageName = packageName,
@@ -70,45 +47,22 @@ val FakeAttestationTests by testSuite {
                     requireStrongBox = false,
                     allowBootloaderUnlock = false,
                     ignoreLeafValidity = false,
-                    hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(borkedAttestation.last().publicKey))
+                    hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
+                    supremeParser = supreme
                 )
-            ).verifyAttestation(
-                certificates = borkedAttestation,
-                expectedChallenge = challenge
-            )
-        }
-
-
-        "should work when the fake cert is configured as trust anchor" {
-            checker.verifyAttestation(
-                certificates = attestationProof,
-                expectedChallenge = challenge
-            )
-        }
-
-        "patch levels from the future" - {
-
-            val yearMonth = YearMonth.of(patchLevel.year, patchLevel.month)
-            val verificationDate = Date(
-                yearMonth
-                    .atDay(1)
-                    .atStartOfDay(ZoneOffset.UTC)
-                    .toInstant().toEpochMilli()
             )
 
-            "within default tolerance" {
-
-                val attestationProof = AttestationCreator.createAttestation(
+            "Bug 77" {
+                val borkedAttestation = AttestationCreator.createAttestation(
                     challenge = challenge,
                     packageName = packageName,
                     signatureDigest = signatureDigest,
                     appVersion = appVersion,
                     androidVersion = androidVersion,
-                    androidPatchLevel = patchLevel.asSingleInt,
-                    creationTime = verificationDate,
+                    vendorPatchLevel = 0,
                 )
 
-                HardwareAttestationVerifier(
+                Roboto(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -120,49 +74,141 @@ val FakeAttestationTests by testSuite {
                         requireStrongBox = false,
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
-                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
+                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(borkedAttestation.last().publicKey)),
+                        supremeParser = supreme
                     )
-                ).verifyAttestation(
-                    certificates = attestationProof,
-                    expectedChallenge = challenge,
-                    verificationDate = verificationDate
-                )
+                ).verify(
+                    certificates = borkedAttestation,
+                    expectedChallenge = challenge
+                ).getOrThrow()
             }
 
-            "intolerant towards the future" {
 
-                val attestationProof = AttestationCreator.createAttestation(
-                    challenge = challenge,
-                    packageName = packageName,
-                    signatureDigest = signatureDigest,
-                    appVersion = appVersion,
-                    androidVersion = androidVersion,
-                    androidPatchLevel = patchLevel.asSingleInt + 1, // advance one month
-                    creationTime = verificationDate,
-                )
-
-                HardwareAttestationVerifier(
-                    AndroidAttestationConfiguration(
-                        AndroidAttestationConfiguration.AppData(
-                            packageName = packageName,
-                            signerFingerprints = listOf(signatureDigest),
-                            appVersion = appVersion
-                        ),
-                        androidVersion = androidVersion,
-                        patchLevel = patchLevel, // HERE we use the default patch level that allows 1 month into the future
-                        requireStrongBox = false,
-                        allowBootloaderUnlock = false,
-                        ignoreLeafValidity = false,
-                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
-                    )
-                ).verifyAttestation(
+            "should work when the fake cert is configured as trust anchor" {
+                checker.verify(
                     certificates = attestationProof,
-                    expectedChallenge = challenge,
-                    verificationDate = verificationDate
-                )
+                    expectedChallenge = challenge
+                ).getOrThrow()
+            }
 
-                shouldThrow<AttestationValueException> {
-                    HardwareAttestationVerifier(
+            "patch levels from the future" - {
+
+                val yearMonth = YearMonth.of(patchLevel.year, patchLevel.month)
+                val verificationDate = yearMonth
+                    .atDay(1)
+                    .atStartOfDay(ZoneOffset.UTC)
+                    .toInstant().toKotlinInstant()
+
+
+                "within default tolerance" {
+
+                    val attestationProof = AttestationCreator.createAttestation(
+                        challenge = challenge,
+                        packageName = packageName,
+                        signatureDigest = signatureDigest,
+                        appVersion = appVersion,
+                        androidVersion = androidVersion,
+                        androidPatchLevel = patchLevel.asSingleInt,
+                        creationTime = Date(verificationDate.toEpochMilliseconds()),
+                    )
+
+                    Roboto(
+                        AndroidAttestationConfiguration(
+                            AndroidAttestationConfiguration.AppData(
+                                packageName = packageName,
+                                signerFingerprints = listOf(signatureDigest),
+                                appVersion = appVersion
+                            ),
+                            androidVersion = androidVersion,
+                            patchLevel = patchLevel,
+                            requireStrongBox = false,
+                            allowBootloaderUnlock = false,
+                            ignoreLeafValidity = false,
+                            hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
+                            supremeParser = supreme
+                        )
+                    ).verify(
+                        certificates = attestationProof,
+                        expectedChallenge = challenge,
+                        verificationDate = verificationDate
+                    ).getOrThrow()
+                }
+
+                "intolerant towards the future" {
+
+                    val attestationProof = AttestationCreator.createAttestation(
+                        challenge = challenge,
+                        packageName = packageName,
+                        signatureDigest = signatureDigest,
+                        appVersion = appVersion,
+                        androidVersion = androidVersion,
+                        androidPatchLevel = patchLevel.asSingleInt + 1, // advance one month
+                        creationTime = Date(verificationDate.toEpochMilliseconds()),
+                    )
+
+                    Roboto(
+                        AndroidAttestationConfiguration(
+                            AndroidAttestationConfiguration.AppData(
+                                packageName = packageName,
+                                signerFingerprints = listOf(signatureDigest),
+                                appVersion = appVersion
+                            ),
+                            androidVersion = androidVersion,
+                            patchLevel = patchLevel, // HERE we use the default patch level that allows 1 month into the future
+                            requireStrongBox = false,
+                            allowBootloaderUnlock = false,
+                            ignoreLeafValidity = false,
+                            hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
+                            supremeParser = supreme
+                        )
+                    ).verify(
+                        certificates = attestationProof,
+                        expectedChallenge = challenge,
+                        verificationDate = verificationDate
+                    ).getOrThrow()
+
+                    shouldThrow<AttestationValueException> {
+                        Roboto(
+                            AndroidAttestationConfiguration(
+                                AndroidAttestationConfiguration.AppData(
+                                    packageName = packageName,
+                                    signerFingerprints = listOf(signatureDigest),
+                                    appVersion = appVersion
+                                ),
+                                androidVersion = androidVersion,
+                                //here we don't allow patch levels from the future
+                                patchLevel = PatchLevel(
+                                    patchLevel.year,
+                                    patchLevel.month,
+                                    maxFuturePatchLevelMonths = 0
+                                ),
+                                requireStrongBox = false,
+                                allowBootloaderUnlock = false,
+                                ignoreLeafValidity = false,
+                                hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
+                                supremeParser = supreme
+                            )
+                        ).verify(
+                            certificates = attestationProof,
+                            expectedChallenge = challenge,
+
+                            verificationDate = verificationDate
+                        ).getOrThrow()
+                    }
+
+
+                    //now we verify for the same month without tolerance. this should work
+                    val attestationProofSameMonth = AttestationCreator.createAttestation(
+                        challenge = challenge,
+                        packageName = packageName,
+                        signatureDigest = signatureDigest,
+                        appVersion = appVersion,
+                        androidVersion = androidVersion,
+                        androidPatchLevel = patchLevel.asSingleInt,
+                        creationTime = Date(verificationDate.toEpochMilliseconds()),
+                    )
+
+                    Roboto(
                         AndroidAttestationConfiguration(
                             AndroidAttestationConfiguration.AppData(
                                 packageName = packageName,
@@ -175,30 +221,60 @@ val FakeAttestationTests by testSuite {
                             requireStrongBox = false,
                             allowBootloaderUnlock = false,
                             ignoreLeafValidity = false,
-                            hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
+                            hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProofSameMonth.last().publicKey)),
+                            supremeParser = supreme
                         )
-                    ).verifyAttestation(
+                    ).verify(
+                        certificates = attestationProofSameMonth,
+                        expectedChallenge = challenge,
+
+                        verificationDate = verificationDate
+                    ).getOrThrow()
+                }
+
+                "ignore future patch levels" {
+                    val attestationProof = AttestationCreator.createAttestation(
+                        challenge = challenge,
+                        packageName = packageName,
+                        signatureDigest = signatureDigest,
+                        appVersion = appVersion,
+                        androidVersion = androidVersion,
+                        androidPatchLevel = patchLevel.asSingleInt + 300,
+                        creationTime = Date(verificationDate.toEpochMilliseconds()),
+                    )
+
+                    Roboto(
+                        AndroidAttestationConfiguration(
+                            AndroidAttestationConfiguration.AppData(
+                                packageName = packageName,
+                                signerFingerprints = listOf(signatureDigest),
+                                appVersion = appVersion
+                            ),
+                            androidVersion = androidVersion,
+                            patchLevel = PatchLevel(
+                                patchLevel.year,
+                                patchLevel.month,
+                                maxFuturePatchLevelMonths = null
+                            ),
+                            requireStrongBox = false,
+                            allowBootloaderUnlock = false,
+                            ignoreLeafValidity = false,
+                            hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey)),
+                            supremeParser = supreme
+                        )
+                    ).verify(
                         certificates = attestationProof,
                         expectedChallenge = challenge,
 
                         verificationDate = verificationDate
-                    )
+                    ).getOrThrow()
                 }
 
+            }
 
+            "but not with a real cert from a real device" - {
 
-                //now we verify for the same month without tolerance. this should work
-                val attestationProofSameMonth = AttestationCreator.createAttestation(
-                    challenge = challenge,
-                    packageName = packageName,
-                    signatureDigest = signatureDigest,
-                    appVersion = appVersion,
-                    androidVersion = androidVersion,
-                    androidPatchLevel = patchLevel.asSingleInt,
-                    creationTime = verificationDate,
-                )
-
-                HardwareAttestationVerifier(
+                val checker = Roboto(
                     AndroidAttestationConfiguration(
                         AndroidAttestationConfiguration.AppData(
                             packageName = packageName,
@@ -206,153 +282,99 @@ val FakeAttestationTests by testSuite {
                             appVersion = appVersion
                         ),
                         androidVersion = androidVersion,
-                        //here we don't allow patch levels from the future
-                        patchLevel = PatchLevel(patchLevel.year, patchLevel.month, maxFuturePatchLevelMonths = 0),
+                        patchLevel = patchLevel,
                         requireStrongBox = false,
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
-                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProofSameMonth.last().publicKey))
+                        supremeParser = supreme
                     )
-                ).verifyAttestation(
-                    certificates = attestationProofSameMonth,
-                    expectedChallenge = challenge,
-
-                    verificationDate = verificationDate
                 )
+
+                "as-is" {
+                    shouldThrow<CertificateInvalidException> {
+                        checker.verify(attestationProof, expectedChallenge = challenge).getOrThrow()
+                    }.reason shouldBe CertificateInvalidException.Reason.TRUST
+                }
+                "unless overridden" {
+                    val checker = Roboto(
+                        AndroidAttestationConfiguration(
+                            AndroidAttestationConfiguration.AppData(
+                                packageName = packageName,
+                                signerFingerprints = listOf(signatureDigest),
+                                appVersion = appVersion,
+                                trustedRootOverrides = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
+                            ),
+                            androidVersion = androidVersion,
+                            patchLevel = patchLevel,
+                            requireStrongBox = false,
+                            allowBootloaderUnlock = false,
+                            ignoreLeafValidity = false,
+                            supremeParser = supreme
+                        )
+                    )
+                    checker.verify(
+                        certificates = attestationProof,
+                        expectedChallenge = challenge
+                    ).getOrThrow()
+                }
+
+                "as-is" {
+                    shouldThrow<CertificateInvalidException> {
+                        checker.verify(attestationProof, expectedChallenge = challenge).getOrThrow()
+                    }.reason shouldBe CertificateInvalidException.Reason.TRUST
+                }
+                "but never without trust anchors" {
+                    val checker = Roboto(
+                        AndroidAttestationConfiguration(
+                            AndroidAttestationConfiguration.AppData(
+                                packageName = packageName,
+                                signerFingerprints = listOf(signatureDigest),
+                                appVersion = appVersion,
+                                trustedRootOverrides = setOf()
+                            ),
+                            androidVersion = androidVersion,
+                            patchLevel = patchLevel,
+                            requireStrongBox = false,
+                            allowBootloaderUnlock = false,
+                            ignoreLeafValidity = false,
+                            supremeParser = supreme
+                        )
+                    )
+                    shouldThrow<CertificateInvalidException> {
+                        checker.verify(certificates = attestationProof, expectedChallenge = challenge).getOrThrow()
+                    }.reason shouldBe CertificateInvalidException.Reason.TRUST
+                }
+
             }
 
-            "ignore future patch levels" {
-                val attestationProof = AttestationCreator.createAttestation(
-                    challenge = challenge,
-                    packageName = packageName,
-                    signatureDigest = signatureDigest,
-                    appVersion = appVersion,
-                    androidVersion = androidVersion,
-                    androidPatchLevel = patchLevel.asSingleInt + 300,
-                    creationTime = verificationDate,
-                )
-
-                HardwareAttestationVerifier(
+            "and the fake attestation must not verify against the google root key" {
+                val trustedChecker = Roboto(
                     AndroidAttestationConfiguration(
-                        AndroidAttestationConfiguration.AppData(
-                            packageName = packageName,
-                            signerFingerprints = listOf(signatureDigest),
-                            appVersion = appVersion
-                        ),
-                        androidVersion = androidVersion,
-                        patchLevel = PatchLevel(patchLevel.year, patchLevel.month, maxFuturePatchLevelMonths = null),
-                        requireStrongBox = false,
-                        allowBootloaderUnlock = false,
-                        ignoreLeafValidity = false,
-                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
-                    )
-                ).verifyAttestation(
-                    certificates = attestationProof,
-                    expectedChallenge = challenge,
-
-                    verificationDate = verificationDate
-                )
-            }
-
-        }
-
-        "but not with a real cert from a real device" - {
-
-            val checker = HardwareAttestationVerifier(
-                AndroidAttestationConfiguration(
-                    AndroidAttestationConfiguration.AppData(
-                        packageName = packageName,
-                        signerFingerprints = listOf(signatureDigest),
-                        appVersion = appVersion
-                    ),
-                    androidVersion = androidVersion,
-                    patchLevel = patchLevel,
-                    requireStrongBox = false,
-                    allowBootloaderUnlock = false,
-                    ignoreLeafValidity = false,
-                )
-            )
-
-            shouldThrow<CertificateInvalidException> {
-                checker.verifyAttestationBlocking(attestationProof, expectedChallenge = challenge)
-            }.reason shouldBe CertificateInvalidException.Reason.TRUST
-
-            "unless overridden" {
-                val checker = HardwareAttestationVerifier(
-                    AndroidAttestationConfiguration(
-                        AndroidAttestationConfiguration.AppData(
-                            packageName = packageName,
-                            signerFingerprints = listOf(signatureDigest),
-                            appVersion = appVersion,
-                            trustedRootOverrides = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
+                        applications = listOf(
+                            AndroidAttestationConfiguration.AppData(
+                                packageName = packageName,
+                                signerFingerprints = listOf(signatureDigest),
+                                appVersion = appVersion,
+                            )
                         ),
                         androidVersion = androidVersion,
                         patchLevel = patchLevel,
                         requireStrongBox = false,
                         allowBootloaderUnlock = false,
                         ignoreLeafValidity = false,
-                    )
-                )
-                checker.verifyAttestation(
-                    certificates = attestationProof,
-                    expectedChallenge = challenge
-                )
-            }
-
-            shouldThrow<CertificateInvalidException> {
-                checker.verifyAttestationBlocking(attestationProof, expectedChallenge = challenge)
-            }.reason shouldBe CertificateInvalidException.Reason.TRUST
-
-            "but never without trust anchors" {
-                val checker = HardwareAttestationVerifier(
-                    AndroidAttestationConfiguration(
-                        AndroidAttestationConfiguration.AppData(
-                            packageName = packageName,
-                            signerFingerprints = listOf(signatureDigest),
-                            appVersion = appVersion,
-                            trustedRootOverrides = setOf()
-                        ),
-                        androidVersion = androidVersion,
-                        patchLevel = patchLevel,
-                        requireStrongBox = false,
-                        allowBootloaderUnlock = false,
-                        ignoreLeafValidity = false,
+                        attestationStatementValiditySeconds = 300,
+                        supremeParser = supreme
                     )
                 )
                 shouldThrow<CertificateInvalidException> {
-                    checker.verifyAttestation(attestationProof, expectedChallenge = challenge)
+                    trustedChecker.verify(
+                        certificates = attestationProof,
+                        expectedChallenge = challenge
+                    ).getOrThrow()
                 }.reason shouldBe CertificateInvalidException.Reason.TRUST
             }
 
+
         }
-
-        "and the fake attestation must not verify against the google root key" {
-            val trustedChecker = HardwareAttestationVerifier(
-                AndroidAttestationConfiguration(
-                    applications = listOf(
-                        AndroidAttestationConfiguration.AppData(
-                            packageName = packageName,
-                            signerFingerprints = listOf(signatureDigest),
-                            appVersion = appVersion,
-                        )
-                    ),
-                    androidVersion = androidVersion,
-                    patchLevel = patchLevel,
-                    requireStrongBox = false,
-                    allowBootloaderUnlock = false,
-                    ignoreLeafValidity = false,
-                    attestationStatementValiditySeconds = 300,
-                )
-            )
-            shouldThrow<CertificateInvalidException> {
-                trustedChecker.verifyAttestation(
-                    certificates = attestationProof,
-                    expectedChallenge = challenge
-                )
-            }.reason shouldBe CertificateInvalidException.Reason.TRUST
-        }
-
-
     }
-
 }

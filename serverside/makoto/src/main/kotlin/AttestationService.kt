@@ -8,14 +8,9 @@ import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.toJcaPublicKey
-import ch.veehait.devicecheck.appattest.assertion.Assertion
-import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
-import com.google.android.attestation.AttestationApplicationId
-import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.coroutines.runBlocking
 import java.security.PublicKey
 import java.security.cert.X509Certificate
-import kotlin.jvm.optionals.getOrNull
 import kotlin.time.ExperimentalTime
 import at.asitplus.attestation.AttestationException as AttException
 
@@ -128,9 +123,13 @@ abstract class AttestationService {
             when (val secondTry =
                 catchingUnwrapped { verifyAttestation(attestationProof, expectedChallenge, it) }
                     .getOrElse {
-                        if (it is AttException)
-                            AttestationResult.Error(it.message ?: it.javaClass.simpleName, it)
-                        else AttestationResult.Error(it.message ?: it.javaClass.simpleName, AttException.Content.Unknown(it.message, it))
+                        val message = it.message ?: it.javaClass.simpleName
+                        if (it is AttException) {
+                            AttestationResult.Error(message, it)
+                        } else AttestationResult.Error(
+                            message,
+                            AttException.Content.Unknown(message, it)
+                        )
                     }.also {
                         if (i == transcended.lastIndex) return KeyAttestation(null, it)
                     }) {
@@ -312,8 +311,16 @@ object NoopAttestationService : AttestationService() {
                 AttestationResult.Android.NOOP(attestationProof.certificateChain.map { it.encodeToDer() })
             )
 
-            else -> KeyAttestation(null, AttestationResult.Error("Unsupported attestation proof type", cause= AttException.Content.Unknown(message = null,
-                IllegalArgumentException())))
+            else -> KeyAttestation(
+                attestedPublicKey = null,
+                details = AttestationResult.Error(
+                    explanation = "Unsupported attestation proof type",
+                    cause = AttException.Content.Unknown(
+                        message = null,
+                        cause = IllegalArgumentException()
+                    )
+                )
+            )
         }
 
     @DisabledAttestation

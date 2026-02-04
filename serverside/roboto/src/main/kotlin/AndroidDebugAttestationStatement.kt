@@ -1,16 +1,16 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.KmmResult
 import at.asitplus.attestation.DebugStatement
 import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
-import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import java.security.cert.X509Certificate
-import java.util.*
+import kotlin.time.Instant
 
 internal val jsonDebug by lazy {
     Json {
@@ -38,26 +38,21 @@ data class ConfigWithList(val config: Configuration<*>, val list: AndroidRevocat
 @Serializable
 class AndroidDebugAttestationStatement(
     override val version: String,
-    val kind: Type,
     val configuration: AndroidAttestationConfiguration,
-    @Serializable(with = DateTimeSerializer::class) val verificationTime: Date,
+    val verificationTime: Instant,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray,
     val attestationStatement: List<@Serializable(with = CertPemSerializer::class) X509Certificate>,
     val revocationLists: List<ConfigWithList>,
-) : DebugStatement<ParsedAttestationRecord> {
+) : DebugStatement<KmmResult<List<X509Certificate>>> {
 
     init {
         require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
     }
 
-    fun checkerFromConfig(): Roboto =
-        when (kind) {
-            Type.HARDWARE -> HardwareAttestationVerifier(configuration)
-            Type.SOFTWARE -> SoftwareAttestationVerifier(configuration)
-        }
+    fun checkerFromConfig(): Roboto = Roboto(configuration)
 
     override suspend fun replay() =
-        checkerFromConfig().verifyAttestation(attestationStatement, verificationTime, challenge)
+        checkerFromConfig().verify(attestationStatement, verificationTime, challenge)
 
     override fun serialize() = jsonDebug.encodeToString(this)
 
@@ -72,26 +67,21 @@ class AndroidDebugAttestationStatement(
     }
 
     //Reader<D, R : DebugStatement<R>>
-    companion object : DebugStatement.Reader<ParsedAttestationRecord, AndroidDebugAttestationStatement> {
+    companion object : DebugStatement.Reader<KmmResult<List<X509Certificate>>, AndroidDebugAttestationStatement> {
 
         suspend operator fun invoke(
             verifier: Roboto,
             configuration: AndroidAttestationConfiguration,
-            verificationTime: Date,
+            verificationTime: Instant,
             challenge: ByteArray,
             attestationStatement: List<X509Certificate>
         ) = AndroidDebugAttestationStatement(
             wardenVersion,
-            when (verifier) {
-                is HardwareAttestationVerifier -> Type.HARDWARE
-                is SoftwareAttestationVerifier -> Type.SOFTWARE
-                else -> throw IllegalArgumentException("Unknown checker type")
-            },
             configuration,
             verificationTime,
             challenge,
             attestationStatement,
-            verifier.revocationListFromLastCall()
+            verifier.revocationListsFromLastCall()
         )
 
         override fun deserialize(string: String): AndroidDebugAttestationStatement =

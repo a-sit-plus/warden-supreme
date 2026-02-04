@@ -24,7 +24,7 @@ val singlePlatform by testSuite {
                         )
                     ),
                     clock = FixedTimeClock(
-                        recordedAttestation.verificationDate.toInstant().toKotlinInstant(),
+                        recordedAttestation.verificationDate,
                     )
                 ).apply {
                     "with iOS" {
@@ -97,7 +97,7 @@ val singlePlatform by testSuite {
                         )
                     ),
                     clock = FixedTimeClock(
-                        recordedAttestation.verificationDate.toInstant().toKotlinInstant(),
+                        recordedAttestation.verificationDate,
                     )
                 ).apply {
                     "with Android" {

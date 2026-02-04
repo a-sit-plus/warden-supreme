@@ -1,14 +1,13 @@
 package at.asitplus.attestation
 
 
-import at.asitplus.attestation.AttestationException as AttException
+import at.asitplus.attestation.android.*
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
-import com.google.android.attestation.AttestationApplicationId
 import com.google.android.attestation.ParsedAttestationRecord
 import java.security.PublicKey
 import java.security.cert.X509Certificate
-import kotlin.jvm.optionals.getOrNull
+import at.asitplus.attestation.AttestationException as AttException
 
 
 /**
@@ -50,7 +49,17 @@ sealed class AttestationResult {
 
         protected abstract val androidDetails: String
         override val details: String by lazy { "Android::$androidDetails" }
+
+        @Deprecated(
+            "Uses legacy Google parser, will be removed at some point (no ETA yet)",
+            replaceWith = ReplaceWith("androidAttestationExtension")
+        )
         abstract val attestationRecord: ParsedAttestationRecord
+
+        /**
+         * The attestation extension present in the [attestationCertificate]
+         */
+        val androidAttestationExtension: AttestationKeyDescription by lazy { attestationCertificate.androidAttestationExtension!! }
 
         val attestationCertificate by lazy { attestationCertificateChain.first() }
 
@@ -58,34 +67,49 @@ sealed class AttestationResult {
         class NOOP internal constructor(attestationCertificateChain: List<ByteArray>) :
             Android(attestationCertificateChain.mapNotNull { it.parseToCertificate() }), AttestationResult.NOOP {
             override val androidDetails = "NOOP"
+
+            @Deprecated(
+                "Uses legacy Google parser, will be removed at some point (no ETA yet)",
+                replaceWith = ReplaceWith("androidAttestationExtension")
+            )
             override val attestationRecord: ParsedAttestationRecord by lazy {
-                ParsedAttestationRecord.createParsedAttestationRecord(
-                    attestationCertificateChain.mapNotNull { it.parseToCertificate() }
-                )
+                attestationCertificateChain.mapNotNull { it.parseToCertificate() }.parsedAttestationRecord!!
             }
+
         }
 
         class Verified(attestationCertificateChain: List<X509Certificate>) : Android(attestationCertificateChain),
             AttestationResult.Verified {
 
-            override val attestationRecord: ParsedAttestationRecord =
-                ParsedAttestationRecord.createParsedAttestationRecord(
-                    attestationCertificateChain
-                )
+            @Deprecated(
+                "Uses legacy Google parser, will be removed at some point (no ETA yet)",
+                replaceWith = ReplaceWith("androidAttestationExtension")
+            )
+            override val attestationRecord: ParsedAttestationRecord by lazy { attestationCertificateChain.parsedAttestationRecord!! }
             override val androidDetails =
-                "Verified(keyMaster security level: ${attestationRecord.keymasterSecurityLevel().name}, " +
-                        "attestation security level: ${attestationRecord.attestationSecurityLevel().name}, " +
-                        "${attestationRecord.attestedKey().algorithm} public key: ${attestationRecord.attestedKey().encoded.encodeBase64()}" + attestationRecord.softwareEnforced()
-                    .attestationApplicationId()
-                    .getOrNull()
-                    ?.let { app ->
-                        ", packageInfos: ${
-                            app.packageInfos().joinToString(
-                                prefix = "[",
-                                postfix = "]"
-                            ) { info: AttestationApplicationId.AttestationPackageInfo -> "${info.packageName()}:${info.version()}" }
-                        }"
-                    }
+                buildString {
+                    append("Verified(keyMaster security level: ")
+                    append(androidAttestationExtension.keymasterSecurityLevel.name)
+                    append(", attestation security level: ")
+                    append(androidAttestationExtension.attestationSecurityLevel.name)
+                    append(", ")
+                    append(attestationCertificate.publicKey.algorithm)
+                    append(" public key: ")
+                    append(attestationCertificate.publicKey.encoded.encodeBase64())
+                    append(
+                        androidAttestationExtension.softwareEnforced.attestationApplicationId?.let { app ->
+                            ", packageInfos: ${
+                                when (app) {
+                                    is AttestationValue.Failure<*> -> app
+                                    is AttestationValue.Success<AuthorizationList.AttestationApplicationId> ->
+                                        //@formatter:off
+                                        app.value.packageInfos.joinToString(prefix = "[", postfix = "]") { "${it.packageName}:${it.version}" }
+                                        //@formatter:on
+                                }
+                            }"
+                        }
+                    )
+                }
         }
 
         override fun equals(other: Any?): Boolean {

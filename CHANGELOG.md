@@ -6,20 +6,39 @@ this changelog also includes the original WARDEN changelog.
 
 # 1.0.0-SNAPSHOT
 * Features:
-    * Get Attestation extension from certificate chain same as Google's parser (return the attestation extension closest to the root)
+    * Get Attestation extension from certificate chain (same as Google's parser: return the attestation extension closest to the root)
     * Rework custom Attestation extension parser 
         * Now list-based to handle arbitrary properties
         * Add missing properties to custom parser
         * Expose known properties as getters from this list
         * Custom Parser correctly handles UserAuthType and many more
         * -> **Warden Supreme now parses more Attestation extensions correctly than Google's shiny new parser AND with better semantics and Debugging**
+        * Add `attestationExtension` shorthand to `AttestationResult`, returning an `AttestationKeyDescription`
+    * Refactor Roboto
+        * `Roboto` changes from abstract base class to a concrete wired based on config (experimentalParser, HW/SW toggles)
+        * Delegate actual checks to `Engines` to prepare replacing Google's parser and PKIX cert path validator  
+          (set `experimentalParser = true` in config to try it out)
+        * Deprecate old blocking verification function that was tied to Google's old parser
+        * Introduce new suspending verification function
+            * Returns a `KmmResult<List<X509Certificate>>`
+            * Never throws
+        * **First preview of attestation checks based on own parser**
 * Fixes:
     * Relax the upstream parser to glitch out less often
         * -> **Warden Supreme now parses more Attestation extensions than WARDEN-roboto ever could.**
     * Correctly re-encode cursed X.509 certificate extensions that encode `critical=true` instead of omitting it
     * Artefacts don't need `google()` maven repo any more
     * No mire init crash in Java projects using Warden Supreme
-* Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
+* API-Changes:
+    * Roboto refactor 
+        * Directly instantiate Roboto (see "Refactor Roboto")
+        * Roboto's functions now expect Kotlin `Instant` instead of Java `Date`
+        * Blocking functions have been made extensions instead of members
+        * Java-compatible signature remain
+        * `HardwareAttestationVerifier` / `SoftwareAttestationVerifier` are no longer classes
+            * Now they are deprecated factory objects returning a `Roboto` instance
+    * Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
+    * Weed out half-baked `AttestationValue` functions and add mappings from/to (Kmm)Result
 * Revised and expanded documentation
 * Dependency Updates:
     * Signum 3.19.3 / Supreme 0.11.3

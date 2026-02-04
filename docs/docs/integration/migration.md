@@ -1,4 +1,4 @@
-# Migration from WARDEN / WARDEN-roboto
+# Migration from WARDEN / WARDEN‑roboto
 
 **The most obvious change coming from WARDEN / WARDEN-roboto is dropped support for Nougat hybrid attestation on Android. It is simply not relevant any more.**
 
@@ -8,6 +8,7 @@
     * Configuration loading through Hoplite/Spring Boot is no longer supported and can silently misconfigure checks. Use canonical config loading only. See [Externalising Configuration](config.md).
     * Android leaf certificate validity is ignored by default and Android attestation statement validity defaults to `null`; ensure freshness through your challenge/nonce handling. See [raw flow](raw.md).
     * Verification time offset now defaults to five minutes and is applied to certificate and attestation time checks on both platforms.
+    * When migrating to Roboto's new `verify()` be sure to deal with the result. **This function does not throw!!!**
     
     **If you do not handle freshness explicitly, you can accidentally accept stale attestations.**
 
@@ -32,23 +33,34 @@ Warden Supreme enforces unified flows and a unified data model. Migration primar
 This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, without adopting the integrated model.
 
 ### Names, Entry Points, and Flow
-- Legacy entry point types: `Warden` → `Makoto` and `AndroidAttestationChecker` → `Roboto`.
-- Android verifier types renamed to `HardwareAttestationVerifier`, and `SoftwareAttestationVerifier`.
+- Renames:
+    - `Warden` → `Makoto`
+    - `AndroidAttestationChecker` → `Roboto`.
+- `Roboto` is now the primary Android verifier. It can validate hardware and/or software attestations depending on configuration (`disableHardwareAttestation`, `enableSoftwareAttestation`).
+    - Legacy `HardwareAttestationVerifier` / `SoftwareAttestationVerifier` remain as deprecated compatibility factories that return a `Roboto` instance.
 - Makoto can be configured for Android‑only or iOS‑only verification; attestations received from non‑configured platforms are treated as configuration errors. See [Error Handling](errorhandling.md).
-- Attestation verification functions are suspending; blocking wrappers remain under legacy `@JvmName`s. See [raw flow](raw.md).
-- The parameters `androidAttestationConfigurationJ` and `iosAttestationConfigurationJ` in `Makoto`'s Java-oriented constructor have been swapped to disambiguate it from the Kotlin constructors.
+- Roboto exposes a `KmmResult`-based verification API:
+    - use `verify(...)` (suspending) or `verifyBlocking(...)` (blocking) and optioanlly chain it with `getOrThrow()`. The legacy `verifyAttestation(...)` API (returning `ParsedAttestationRecord`) is deprecated.
+    - On success the result will contain the full certificate chain, on failure, it will contain an  `AndroidAttestationException`.
+    - **Be sure to deal with the result. This function does not throw!!!**
+- The parameters `iosAttestationConfigurationJ` and `androidAttestationConfigurationJ` in `Makoto`'s Java-oriented constructor have been swapped to disambiguate it from the Kotlin constructors.
 
 ### Results and Exceptions
 - `AttestationResult` gains a `Verified` marker; NOOP results are distinct.
 - `AttestationResult.Error` always carries a `cause`.
 - `AttestationValueException.Reason.TIME` is renamed to `STATEMENT_TIME`.
 - Non-configured platforms return `AttestationResult.Error` with a configuration cause. See [Error Handling](errorhandling.md).
+- Roboto verification now returns the verified certificate chain (`List<X509Certificate>`) wrapped in `KmmResult`. Downstream code should parse the extension from the resulting chain via `androidAttestationExtension` (preferred).
+    - **Be sure to deal with the result. This function does not throw!!!**
+- `ParsedAttestationRecord` is considered legacy: it is still accessible via deprecated helpers (e.g. `AttestationResult.Android.attestationRecord`), but new code should use `AttestationResult.Android.attestationExtension` / `androidAttestationExtension`.
+- The `experimentalParser` flag selects which verification engine/parser is used internally; it no longer changes the public return type.
 
 ### Time Handling and Validity
 - Verification time offset defaults to five minutes and is applied to certificate and attestation time checks.
 - iOS attestation validity now uses the same `attestationStatementValiditySeconds` model as Android and rejects future‑dated statements.
 - iOS verification time offset is no longer auto‑compensated, but the new defaults take this into account; increase `attestationStatementValiditySeconds` if you relied on the old behavior.
 - Android leaf certificate validity is ignored by default; Android's `attestationStatementValiditySeconds` defaults to `null` (no statement time check). If configured, Android attestation creation time is verified.
+- Roboto’s Kotlin APIs use `kotlin.time.Instant` as the verification time; Java-friendly overloads accept `java.util.Date` and Java's `Instant`.
 - Patch level checks reject patch levels too far in the future (default leeway: one month).
 
 ### Revocation, Trust Anchors, and RKP
@@ -80,6 +92,7 @@ Hence, loading configurations must only be done through one of the following fun
 * `fromJsonString()`
 * `fromYamlString()`
 * `fromJsonObject()`
+* `fromJsonFile(...)` / `fromYamlFile(...)` (JVM convenience helpers)
 
 As a consequence, any Spring Boot configurations should contain a string pointing to Warden Supreme configurations, with
 those configuration files being read and their contents being fed into `fromYamlString()`. For Hoplite you can do the same.
