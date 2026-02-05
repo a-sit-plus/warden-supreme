@@ -96,9 +96,7 @@ dependencies {
     api(libs.guava)
     implementation(libs.autovalue.annotations)
     annotationProcessor(libs.autovalue.value)
-    api(libs.signum) {
-        exclude("org.bouncycastle", "bcpkix-jdk18on")
-    }
+    api(libs.signum)
 
 
     //dependencies for new attestation lib
@@ -117,6 +115,7 @@ dependencies {
     testImplementation(ktor("client-mock"))
     testImplementation(datetime())
     api(project(":supreme-common"))
+    //to expose clock to Java
     api("org.jetbrains.kotlin:kotlin-stdlib:${kotlin.coreLibrariesVersion}")
 }
 
