@@ -18,7 +18,6 @@ coroutines = "1.10.2"
 hoplite = "2.9.0"
 kotlinx-serialization = "1.9.0"
 spring-boot = "4.0.0"
-junit-platform = "1.12.0"
 
 #keep it nice and lenient
 semver = "1.2.0"
@@ -48,7 +47,6 @@ spring-boot = { group = "org.springframework.boot", name = "spring-boot", versio
 spring-boot-autoconfigure = { group = "org.springframework.boot", name = "spring-boot-autoconfigure", version.ref = "spring-boot" }
 spring-boot-starter = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring-boot" }
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring-boot" }
-junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
 
 yamltk = {module = "net.mamoe.yamlkt:yamlkt", version.ref = "yamlkt"}
 signum = { group = "at.asitplus.signum", name = "indispensable", version.ref = "signum" }

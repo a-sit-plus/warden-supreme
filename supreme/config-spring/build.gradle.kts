@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.dokka")
     id("maven-publish")
     id("signing")
+    id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
 }
 
@@ -15,17 +16,12 @@ version = artifactVersion
 
 dependencies {
     api(project(":supreme-common"))
-    implementation(libs.spring.boot)
+    compileOnly(libs.spring.boot)
 
     testImplementation(project(":supreme-verifier"))
     testImplementation(libs.spring.boot.autoconfigure)
     testImplementation(libs.spring.boot.starter)
     testImplementation(libs.spring.boot.starter.test)
-    testRuntimeOnly(libs.junit.platform.launcher)
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 val javadocJar = setupDokka(

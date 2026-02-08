@@ -45,12 +45,7 @@ fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromSpring
 private fun mapToJsonElement(value: Any?): JsonElement = when (value) {
     null -> JsonNull
     is JsonElement -> value
-    is Map<*, *> -> buildJsonObject {
-        value.forEach { (key, entry) ->
-            require(key is String) { "Only string keys are supported when converting config maps to JSON" }
-            put(key, mapToJsonElement(entry))
-        }
-    }
+    is Map<*, *> -> mapToJsonElement(value)
     is Iterable<*> -> buildJsonArray {
         value.forEach { add(mapToJsonElement(it)) }
     }
@@ -59,7 +54,30 @@ private fun mapToJsonElement(value: Any?): JsonElement = when (value) {
     }
     is Boolean -> JsonPrimitive(value)
     is Number -> JsonPrimitive(value)
-    is String -> JsonPrimitive(value)
+    is String -> if (value.isBlank()) JsonNull else JsonPrimitive(value)
     is Enum<*> -> JsonPrimitive(value.name)
     else -> JsonPrimitive(value.toString())
+}
+
+private fun mapToJsonElement(value: Map<*, *>): JsonElement {
+    val indexed = value.keys.mapNotNull { key ->
+        (key as? String)?.toIntOrNull()?.let { key to it }
+    }
+    if (indexed.size == value.size) {
+        val indices = indexed.map { it.second }.sorted()
+        if (indices.firstOrNull() == 0 && indices.lastOrNull() == indices.size - 1) {
+            val entries = indexed.associate { it.second to it.first }
+            return buildJsonArray {
+                indices.forEach { idx ->
+                    add(mapToJsonElement(value[entries[idx]]))
+                }
+            }
+        }
+    }
+    return buildJsonObject {
+        value.forEach { (key, entry) ->
+            require(key is String) { "Only string keys are supported when converting config maps to JSON" }
+            put(key, mapToJsonElement(entry))
+        }
+    }
 }

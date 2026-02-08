@@ -4,7 +4,11 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.fromSpringEnvironment
 import at.asitplus.attestation.supreme.SupremeConfiguration
-import org.junit.jupiter.api.Test
+import at.asitplus.testballoon.minus
+import at.asitplus.testballoon.withData
+import de.infix.testBalloon.framework.core.TestCompartment
+import de.infix.testBalloon.framework.core.testSuite
+import io.kotest.matchers.shouldBe
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
@@ -13,13 +17,13 @@ import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.io.FileSystemResource
+import java.io.FileReader
 
 @SpringBootApplication
 private open class ConfigSpringExampleApp
 
-class SpringBootConfigLoadingTest {
-    @Test
-    fun loadExampleConfigsFromYaml() {
+val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Sequential }) {
+    "Load example configs from YAML" - {
         val examples = listOf(
             "../../docs/docs/examples/android.yaml" to { env: ConfigurableEnvironment ->
                 AndroidAttestationConfiguration.fromSpringEnvironment(env, "")
@@ -32,9 +36,10 @@ class SpringBootConfigLoadingTest {
             }
         )
 
-        examples.forEach { (path, loadConfig) ->
+        withData(examples) { (path, loadConfig) ->
             val context = runWithYaml(path)
-            loadConfig(context.environment)
+            val cfg = loadConfig(context.environment)
+            cfg.toYamlString() shouldBe FileReader(path).use { it.readText() }
             context.close()
         }
     }
