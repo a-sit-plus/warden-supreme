@@ -29,17 +29,55 @@ Each configuration type exposes:
 
 
 These well-defined serialisation paths are required for externalising configurations, because external logic, such as Spring Boot's internal config loader,
-tends to have [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
+tends to have [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json)
+when using direct binding.
 In addition, approaches based on reflection that do not invoke the configuration classes' primary constructors may bypass sanity-checks.
 
 ??? tip "Loading with Hoplite (JVM)"
     Add the `at.asitplus.warden:config-hoplite` dependency to access `hopliteDecoder()`. This way you can directly load any `AttestationConfiguration` by
     registering the provided decoder and letting Hoplite load from your preferred sources (files, env, etc.).  
-    The `hopliteDecoder()` function ensures that all config loading happens throuhg well-defined serialisation paths.
+    The `hopliteDecoder()` function ensures that all config loading happens through well-defined serialisation paths.
     
     ```kotlin
     --8<-- "Readme-Config-Hoplite.kt:15:25"
     ```
+
+??? tip "Spring Boot Loading (Experimental)"
+    Spring Boot loading is available through the **experimental** `at.asitplus.warden:config-spring` module. It binds a
+    Spring `Environment` (or a property prefix inside it) into a nested map and then calls `fromJsonObject()` so all
+    validation and defaulting still go through the canonical configuration path.  
+    **[Issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json)
+    should not occur**, but no guarantees. (Which is why this module will remain experimental for now.)
+    
+    The module pulls Spring boot as a `compileOnly` dependency avoid version conflicts. You bring your own Spring Boot
+    dependency (3.x or 4.x) in the application.
+
+    Example with a nested prefix:
+
+    ```yaml
+    app:
+      security:
+        warden:
+          supreme:
+            android: 
+              applications:
+                - packageName: at.asitplus.attestation_client
+                  signerFingerprints:
+                    - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+            ios:
+              applications: 
+                - teamIdentifier: 9CYHJNG644
+                  bundleIdentifier: 'at.asitplus.attestation-client'
+                  sandbox: false
+    ```
+     
+    Load it with:
+    
+    ```kotlin
+    val config = SupremeConfiguration.fromSpringEnvironment(env, "app.security.warden.supreme")
+    ```
+    
+    That’s the intended way to load a config that lives inside a larger Spring Boot config.
 
 ## Supreme (Fully Integrated) Configuration
 To externalise configuration for fully integrated attestation flows conveniently, use the umbrella `SupremeConfiguration`.

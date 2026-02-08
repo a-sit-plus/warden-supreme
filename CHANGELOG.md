@@ -10,7 +10,7 @@ this changelog also includes the original WARDEN changelog.
 * Features
     * Move `AttestationConfiguration` helpers into `supreme-common`.
     * Add `config-hoplite` module that provides `hopliteDecoder()` for all `AttestationConfiguration` readers.
-    * Add `config-spring` module that binds Spring Boot config to the canonical `fromJsonObject()` path.
+    * Add **experimental** `config-spring` module that binds Spring Boot config loading to the canonical serialization path.
     * YAML polymorphic configs now use a flat `type` shape (matching JSON) while still accepting legacy `type`/`value` YAML on decode.
 * Tests
     * Extend configuration round-trip tests to include Hoplite loading and legacy YAML fixtures.

@@ -20,8 +20,6 @@ val loader = ConfigLoaderBuilder.default()
     .build()
 
 val config: SupremeConfiguration = loader.loadConfigOrThrow()
-config.android
-config.ios
 
 
 
