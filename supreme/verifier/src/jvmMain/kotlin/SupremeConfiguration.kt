@@ -6,7 +6,6 @@ import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifierStringSerializer
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -200,7 +199,10 @@ private constructor(
                     encoder.encodeString("system")
                     return
                 }
-                encoder.encodeSerializableValue(PolymorphicSerializer(Clock::class), value)
+                encoder.encodeSerializableValue(
+                    YamlFlatteningPolymorphicSerializer(Clock::class),
+                    value
+                )
             }
 
             override fun deserialize(decoder: Decoder): Clock {
@@ -209,7 +211,7 @@ private constructor(
                     if (scalar.equals("system", ignoreCase = true)) return System
                     throw SerializationException("Unknown clock value: $scalar")
                 }
-                return decoder.decodeSerializableValue(PolymorphicSerializer(Clock::class))
+                return decoder.decodeSerializableValue(YamlFlatteningPolymorphicSerializer(Clock::class))
             }
         }
 

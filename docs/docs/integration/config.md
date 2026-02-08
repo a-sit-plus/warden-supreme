@@ -28,14 +28,14 @@ Each configuration type exposes:
     * `fromJsonFile(...)` / `fromYamlFile(...)`
 
 
-These well-defined serialization paths are required for externalising configurations, because external logic, such as Spring Boot's internal config loader,
+These well-defined serialisation paths are required for externalising configurations, because external logic, such as Spring Boot's internal config loader,
 tends to have [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
 In addition, approaches based on reflection that do not invoke the configuration classes' primary constructors may bypass sanity-checks.
 
 ??? tip "Loading with Hoplite (JVM)"
     Add the `at.asitplus.warden:config-hoplite` dependency to access `hopliteDecoder()`. This way you can directly load any `AttestationConfiguration` by
     registering the provided decoder and letting Hoplite load from your preferred sources (files, env, etc.).  
-    The `hopliteDecoder()` function ensures that all config loading happens throuhg well-defined serialization paths.
+    The `hopliteDecoder()` function ensures that all config loading happens throuhg well-defined serialisation paths.
     
     ```kotlin
     --8<-- "Readme-Config-Hoplite.kt:15:25"
@@ -84,7 +84,7 @@ It is possible to add time sources other than the system clock and externalise t
     * `cfg.toJsonFile("supreme.json")`
 
 
-## Android Configuration Files
+## Android Configuration
 
 ??? example "YAML for a Sample App"
     The below example shows every configuration property in YAML form.
@@ -135,7 +135,7 @@ for the externalisable configuration. The latter must be marked as `@Serializabl
 `AndroidRevocationList.loaderRegistry` **before the first configuration reading or writing happens**.
 
 
-## iOS Configuration Files
+## iOS Configuration
 
 
 ??? example "YAML with Defaults for a Sample App"
