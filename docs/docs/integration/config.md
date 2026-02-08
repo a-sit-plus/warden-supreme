@@ -19,6 +19,18 @@ It includes both the platform-specific configurations and the properties related
 This is required for externalising configurations, as using Spring Boot's internal config loader to construct configurations is discouraged
 due to [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
 
+## Loading with Hoplite (JVM)
+If you already use Hoplite for configuration, you can load any `AttestationConfiguration` by registering the provided decoder
+and then letting Hoplite load from your preferred sources (files, env, etc.).
+
+```kotlin
+--8<-- "Readme-Config-Hoplite.kt:15:25"
+```
+
+!!! note "Changed YAML Format post 1.0.0-RC3"
+    YAML polymorphic configs now use the same flat `type` shape as JSON. Legacy YAML with a `type`/`value` wrapper
+    is still accepted when decoding, but not when loading through hoplite. The legacy format will be retired with release 1.1.
+
 
 ??? example "YAML with Defaults for a Sample Android and iOS App"
     The below example shows every configuration property in YAML form.
@@ -96,13 +108,12 @@ revocation checks. The only difference is in the configuration, as shown in the 
     
     ```yaml
     - type: http
-      value: 
-        url: 'https://superstrict.revocation.example.org/json'
-        fallbackRevocationListValiditySeconds: 60
-        preferHeaderBasedExpiry: false
-        proxyConfig: 
-          type: HTTP
-          url: 'https://localhost:2345'
+      url: 'https://superstrict.revocation.example.org/json'
+      fallbackRevocationListValiditySeconds: 60
+      preferHeaderBasedExpiry: false
+      proxyConfig: 
+        type: HTTP
+        url: 'https://localhost:2345'
     ```
 
 It is possible to create entirely new loaders and even externalise their configuration by implementing an
