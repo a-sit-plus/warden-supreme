@@ -5,7 +5,7 @@
 !!! danger "Read This First: Footguns"
     The biggest upgrade hazards are about configuration loading and time checks:
     
-    * Configuration loading should go through canonical config decoding. If you use Hoplite, register the provided `hopliteDecoder()` and load via Hoplite; avoid Spring Boot's direct binding. See [Externalising Configuration](config.md).
+    * Configuration loading should go through canonical config decoding. If you use Hoplite, add the `config-hoplite` module and register the provided `hopliteDecoder()`; avoid Spring Boot's direct binding. See [Externalising Configuration](config.md).
     * Android leaf certificate validity is ignored by default and Android attestation statement validity defaults to `null`; ensure freshness through your challenge/nonce handling. See [raw flow](raw.md).
     * Verification time offset now defaults to five minutes and is applied to certificate and attestation time checks on both platforms.
     * When migrating to Roboto's new `verify()` be sure to deal with the result. **This function does not throw!!!**
@@ -92,7 +92,7 @@ Previously, Spring Boot and Hoplite could be used to load configurations directl
 However, the introduced flexibility of Warden Supreme with respect to Android revocation checks, in particular, means that
 verifying and sanity-checking externalised configuration is only possible through code paths that are part of Warden
 Supreme.
-Hence, loading configurations must only be done through one of the following functions (or via Hoplite with the provided decoder):
+Hence, loading configurations must only be done through one of the following functions (or via Hoplite with the decoder from `config-hoplite`):
 
 * `fromJsonString()`
 * `fromYamlString()`
@@ -101,7 +101,8 @@ Hence, loading configurations must only be done through one of the following fun
 
 As a consequence, any Spring Boot configurations should contain a string pointing to Warden Supreme configurations, with
 those configuration files being read and their contents being fed into `fromYamlString()`. For Hoplite, register
-`hopliteDecoder()` and load from your chosen sources, which will delegate into `fromJsonObject()`.
+`hopliteDecoder()` (from the `config-hoplite` module) and load from your chosen sources, which will delegate into
+`fromJsonObject()`.
 
 
 

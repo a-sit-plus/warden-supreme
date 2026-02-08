@@ -8,7 +8,8 @@ this changelog also includes the original WARDEN changelog.
 * Fixes
     * Expose Kotlin-Stdlib as API dependency to make integration with Java projects smoother
 * Features
-    * Add Hoplite decoder support for all `AttestationConfiguration` readers via `hopliteDecoder()`.
+    * Move `AttestationConfiguration` helpers into `supreme-common`.
+    * Add `config-hoplite` module that provides `hopliteDecoder()` for all `AttestationConfiguration` readers.
     * YAML polymorphic configs now use a flat `type` shape (matching JSON) while still accepting legacy `type`/`value` YAML on decode.
 * Tests
     * Extend configuration round-trip tests to include Hoplite loading and legacy YAML fixtures.

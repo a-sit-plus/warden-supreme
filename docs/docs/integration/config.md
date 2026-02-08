@@ -2,35 +2,52 @@
 Warden Supreme configuration consists of two parts:
 
 1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split into
-   * `AndroidAttestationConfiguration` for Android specifics
-   * `IosAttestationConfiguration` for iOS specifics
+    * `AndroidAttestationConfiguration` for Android specifics
+    * `IosAttestationConfiguration` for iOS specifics
 2. Configuration related to fully integrated attestation, such as OIDs used inside attestation proofs (CSRs) and key constraints, as explained in [Attestation Verifier Setup](supreme.md#attestation-verifier-setup).
 
+## Unified, Canonical Configuration Formats
 
-To externalise such configuration conveniently, use the umbrella `SupremeConfiguration`.
-It includes both the platform-specific configurations and the properties related to fully integrated attestation.  
-`SupremeConfiguration` has canonical serialised representations (JSON and YAML) and comes with the following (de)serialisation functions:
+All externalised configuration classes implement `AttestationConfiguration`. This provides a
+single, canonical way to serialise and load configurations across Android, iOS, and integrated setups.
 
-* `toJsonString()` and `fromJsonString()`
-* `toYamlString()` and `fromYamlString()`
-* `toJsonObject()` and `fromJsonObject()`
-* `toJsonFile(...)` / `fromJsonFile(...)` and `toYamlFile(...)` / `fromYamlFile(...)`
+!!! note inline end "Changed YAML Format"
+    Until 1.0.0-RC3, YAML polymorphic configs used a `type`/`value` wrapper. Newer versions use the same flat `type` shape as JSON. Legacy YAML with a `type`/`value` wrapper
+    still works for `fromYaml`-based loading, but will be retired with release 1.1.
 
-This is required for externalising configurations, as using Spring Boot's internal config loader to construct configurations is discouraged
-due to [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
+Each configuration type exposes:
 
-## Loading with Hoplite (JVM)
-If you already use Hoplite for configuration, you can load any `AttestationConfiguration` by registering the provided decoder
-and then letting Hoplite load from your preferred sources (files, env, etc.).
+* **Serialisation (instance methods):**
+    * `toJsonString()`, `toYamlString()`
+    * `toJsonElement()`
+* **Deserialisation (companion object as `Reader`):**
+    * `fromJsonString()`, `fromYamlString()`
+    * `fromJsonObject()`
+* **JVM file helpers (extension functions):**
+    * `toJsonFile(...)` / `toYamlFile(...)`
+    * `fromJsonFile(...)` / `fromYamlFile(...)`
 
-```kotlin
---8<-- "Readme-Config-Hoplite.kt:15:25"
-```
 
-!!! note "Changed YAML Format post 1.0.0-RC3"
-    YAML polymorphic configs now use the same flat `type` shape as JSON. Legacy YAML with a `type`/`value` wrapper
-    is still accepted when decoding, but not when loading through hoplite. The legacy format will be retired with release 1.1.
+These well-defined serialization paths are required for externalising configurations, because external logic, such as Spring Boot's internal config loader,
+tends to have [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json).
+In addition, approaches based on reflection that do not invoke the configuration classes' primary constructors may bypass sanity-checks.
 
+??? tip "Loading with Hoplite (JVM)"
+    Add the `at.asitplus.warden:config-hoplite` dependency to access `hopliteDecoder()`. This way you can directly load any `AttestationConfiguration` by
+    registering the provided decoder and letting Hoplite load from your preferred sources (files, env, etc.).  
+    The `hopliteDecoder()` function ensures that all config loading happens throuhg well-defined serialization paths.
+    
+    ```kotlin
+    --8<-- "Readme-Config-Hoplite.kt:15:25"
+    ```
+
+## Supreme (Fully Integrated) Configuration
+To externalise configuration for fully integrated attestation flows conveniently, use the umbrella `SupremeConfiguration`.
+It includes both the platform-specific configurations and the properties related to fully integrated attestation itself.
+
+Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for
+fully integrated attestation, which is why they also have canonical serialised representations (JSON and YAML) and
+expose the same (de)serialisation functions as `SupremeConfiguration`.
 
 ??? example "YAML with Defaults for a Sample Android and iOS App"
     The below example shows every configuration property in YAML form.
@@ -54,10 +71,6 @@ and then letting Hoplite load from your preferred sources (files, env, etc.).
 
 It is possible to add time sources other than the system clock and externalise their configurations as well by implementing
 `SupremeConfiguration.Clock` and registering the classes for serialisation using `SupremeConfiguration.Clock.registry`.
-
-Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for fully integrated attestation, which is why they also
-have canonical serialised representations (JSON and YAML) and expose the same (de)serialisation functions as `SupremeConfiguration`.
-All three and their companion objects implement the same interface tandem to keep the API consistent.
 
 !!! tip "Loading from a file"
     For JVM use-cases you can load directly from disk:

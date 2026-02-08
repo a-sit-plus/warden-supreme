@@ -1,11 +1,12 @@
 # Project Structure
 
-Warden Supreme is structured into four groups:
+Warden Supreme is structured into five groups:
 
 1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2.
 2. `/serverside` contains the server-side foundations with all the low-level logic to verify attestations.
 3. `/utils` contains unpublished utility helpers aimed at aiding analysis of attestation errors. These are meant to be used inside an IDE with an attached debugger.
 4. `/dependencies` contains external dependencies that are not published to Maven Central or anywhere else and are thus compiled into group&nbsp;2 or used for testing.
+5. `/config-hoplite` contains Hoplite integration helpers for configuration loading.
 
 !!! tip "Quick navigation"
     - For the recommended end-to-end flow (mobile client + verifier + unified wire format), start at the [Integration Guide](supreme.md).
@@ -19,6 +20,13 @@ Warden Supreme is structured into four groups:
 | <picture>  <source media="(prefers-color-scheme: dark)" srcset="../../assets/images/verifier-w.png">  <source media="(prefers-color-scheme: light)" srcset="../../assets/images/verifier-b.png">  <img alt="Supreme verifier" src="../../assets/images/verifier-b.png" width="283"  style="height:auto;"> </picture> | Supreme verifier to be integrated into back-end services that want to remotely establish trust in mobile clients through key and app attestation. |
 | <picture>  <source media="(prefers-color-scheme: dark)" srcset="../../assets/images/client-w.png">  <source media="(prefers-color-scheme: light)" srcset="../../assets/images/client-b.png">  <img alt="Supreme client" src="../../assets/images/client-b.png" width="254" style="height:auto;"> </picture>     | Supreme client to be integrated into mobile apps that need to prove their integrity and trustworthiness to back-end services.                |
 | <picture>  <source media="(prefers-color-scheme: dark)" srcset="../../assets/images/common-w.png">  <source media="(prefers-color-scheme: light)" srcset="../../assets/images/common-b.png">  <img alt="Supreme common" src="../../assets/images/common-b.png" width="262" style="height:auto;"> </picture>         | Commons containing shared client and verifier logic, data classes, etc.                                                                     |
+
+### `/supreme/config-hoplite`
+
+Lightweight JVM helper module that adds Hoplite decoders for `AttestationConfiguration`.
+See also [Externalising Configuration](config.md).
+
+**Maven:** `at.asitplus.warden:config-hoplite`
 
 ## /serverside
 
