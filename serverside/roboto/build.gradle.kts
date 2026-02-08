@@ -106,6 +106,7 @@ dependencies {
     implementation(libs.errorprone.annotations)
     implementation(libs.protobuf.javalite)
     api(libs.protobuf.kotlinlite)
+    implementation(libs.hoplite.core)
 
     testImplementation(libs.slf4j.reload4j)
     testImplementation("io.netty:netty-all:4.1.94.Final")

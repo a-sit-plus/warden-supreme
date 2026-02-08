@@ -15,6 +15,7 @@ schemakenerator = "2.5.0"
 yamlkt = "0.13.0"
 androidx = "1.9.1"
 coroutines = "1.10.2"
+hoplite = "2.9.0"
 
 #keep it nice and lenient
 semver = "1.2.0"
@@ -36,6 +37,9 @@ protobuf-javalite = { group = "com.google.protobuf", name = "protobuf-javalite",
 errorprone-annotations = { group = "com.google.errorprone", name = "error_prone_annotations", version.ref = "errorprone" }
 protobuf-kotlinlite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }
 coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version.ref = "coroutines"}
+hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "hoplite" }
+hoplite-yaml = { group = "com.sksamuel.hoplite", name = "hoplite-yaml", version.ref = "hoplite" }
+hoplite-json = { group = "com.sksamuel.hoplite", name = "hoplite-json", version.ref = "hoplite" }
 
 yamltk = {module = "net.mamoe.yamlkt:yamlkt", version.ref = "yamlkt"}
 signum = { group = "at.asitplus.signum", name = "indispensable", version.ref = "signum" }

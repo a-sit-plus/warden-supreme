@@ -37,6 +37,12 @@ kotlin {
             api(project(":supreme-common"))
             implementation(libs.yamltk)
         }
+
+        jvmTest.dependencies {
+            implementation(libs.hoplite.core)
+            implementation(libs.hoplite.yaml)
+            implementation(libs.hoplite.json)
+        }
     }
 }
 
