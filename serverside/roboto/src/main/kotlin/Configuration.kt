@@ -175,23 +175,8 @@ private class AttestationConfigurationHopliteDecoder<A : AttestationConfiguratio
 private fun hopliteNodeToJsonElement(node: Node): JsonElement = when (node) {
     is MapNode -> buildJsonObject {
         val denormalized = node.denormalize() as MapNode
-        val typeNode = denormalized.map["type"]
-        val valueNode = denormalized.map["value"]
-        if (typeNode != null && valueNode is MapNode) {
-            put("type", hopliteNodeToJsonElement(typeNode))
-            val valueDenormalized = valueNode.denormalize() as MapNode
-            valueDenormalized.map.forEach { (key, entry) ->
-                put(key, hopliteNodeToJsonElement(entry))
-            }
-            denormalized.map
-                .filterKeys { it != "type" && it != "value" }
-                .forEach { (key, entry) ->
-                    put(key, hopliteNodeToJsonElement(entry))
-                }
-        } else {
-            denormalized.map.forEach { (key, entry) ->
-                put(key, hopliteNodeToJsonElement(entry))
-            }
+        denormalized.map.forEach { (key, entry) ->
+            put(key, hopliteNodeToJsonElement(entry))
         }
     }
     is ArrayNode -> buildJsonArray {

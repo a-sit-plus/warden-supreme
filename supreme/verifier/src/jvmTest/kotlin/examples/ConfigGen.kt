@@ -23,6 +23,10 @@ import java.io.FileWriter
 @OptIn(ExperimentalHoplite::class)
 val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.Sequential }) {
 
+    fun readResource(path: String): String =
+        requireNotNull(object {}.javaClass.classLoader.getResourceAsStream(path)) {
+            "Missing test resource: $path"
+        }.bufferedReader().use { it.readText() }
 
     val pathname = "../../docs/docs/examples".also { File(it).mkdirs() }
 
@@ -102,6 +106,15 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
                     }
                     loaded shouldBe config
                 }
+            }
+            "YAML (legacy)" {
+                val legacyYaml = readResource("examples/legacy/$name.yaml")
+                val loaded = when (name) {
+                    "android" -> AndroidAttestationConfiguration.fromYamlString(legacyYaml)
+                    "ios" -> IosAttestationConfiguration.fromYamlString(legacyYaml)
+                    else -> throw RuntimeException("Unknown config type: $name")
+                }
+                loaded shouldBe config
             }
             "YAML (Hoplite)" {
                 val loader = ConfigLoaderBuilder.default()
@@ -185,6 +198,11 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
                 val loaded = SupremeConfiguration.fromYamlString(reader.readText())
                 loaded shouldBe config
             }
+        }
+        "YAML (legacy)" {
+            val legacyYaml = readResource("examples/legacy/supreme.yaml")
+            val loaded = SupremeConfiguration.fromYamlString(legacyYaml)
+            loaded shouldBe config
         }
         "YAML (Hoplite)" {
             val loader = ConfigLoaderBuilder.default()
