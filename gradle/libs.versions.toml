@@ -16,6 +16,9 @@ yamlkt = "0.13.0"
 androidx = "1.9.1"
 coroutines = "1.10.2"
 hoplite = "2.9.0"
+kotlinx-serialization = "1.9.0"
+spring-boot = "4.0.0"
+junit-platform = "1.12.0"
 
 #keep it nice and lenient
 semver = "1.2.0"
@@ -40,6 +43,12 @@ coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines
 hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "hoplite" }
 hoplite-yaml = { group = "com.sksamuel.hoplite", name = "hoplite-yaml", version.ref = "hoplite" }
 hoplite-json = { group = "com.sksamuel.hoplite", name = "hoplite-json", version.ref = "hoplite" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+spring-boot = { group = "org.springframework.boot", name = "spring-boot", version.ref = "spring-boot" }
+spring-boot-autoconfigure = { group = "org.springframework.boot", name = "spring-boot-autoconfigure", version.ref = "spring-boot" }
+spring-boot-starter = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring-boot" }
+spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring-boot" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
 
 yamltk = {module = "net.mamoe.yamlkt:yamlkt", version.ref = "yamlkt"}
 signum = { group = "at.asitplus.signum", name = "indispensable", version.ref = "signum" }

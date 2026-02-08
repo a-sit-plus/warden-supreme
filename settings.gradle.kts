@@ -29,3 +29,5 @@ project(":supreme-client").projectDir = file("supreme/client")
 
 include("config-hoplite")
 project(":config-hoplite").projectDir = file("supreme/config-hoplite")
+include("config-spring")
+project(":config-spring").projectDir = file("supreme/config-spring")
