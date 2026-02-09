@@ -2,6 +2,10 @@ import at.asitplus.gradle.bouncycastle
 import at.asitplus.gradle.datetime
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
+import java.nio.file.Files
+import kotlin.io.path.extension
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 
 val artifactVersion: String by extra
 val groupId: String by extra
@@ -61,6 +65,20 @@ sourceSets.main {
                 it.delete()
             }
         }
+
+        listOf("import androidx.annotation.RequiresApi", "@RequiresApi(24)").forEach { target ->
+            Files.walk(File("${project.rootDir}/dependencies/keyattestation/src/main/kotlin/").toPath()).use { paths ->
+                paths
+                    .filter { Files.isRegularFile(it) && it.extension == "kt" }
+                    .forEach { path ->
+                        val original = path.readText()
+                        val updated = original.replace(target, "")
+                        if (updated != original) {
+                            path.writeText(updated)
+                        }
+                    }
+            }
+        }
     }
 }
 
@@ -115,6 +133,7 @@ dependencies {
     api(project(":supreme-common"))
     //to expose clock to Java
     api("org.jetbrains.kotlin:kotlin-stdlib:${kotlin.coreLibrariesVersion}")
+
 }
 
 
@@ -182,8 +201,7 @@ publishing {
                 signing {
                     isRequired = false
                 }
-            }else
-                logger.lifecycle("  > Signing locally published maven artefacts!")
+            } else logger.lifecycle("  > Signing locally published maven artefacts!")
         }
     }
 }

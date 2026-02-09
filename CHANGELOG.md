@@ -14,6 +14,8 @@ this changelog also includes the original WARDEN changelog.
     * YAML polymorphic configs now use a flat `type` shape (matching JSON) while still accepting legacy `type`/`value` YAML on decode.
 * Tests
     * Extend configuration round-trip tests to include Hoplite loading and legacy YAML fixtures.
+* Dependency Updates
+    * Update upstream attestation library to 9066c0a003225e776b93ba5906d46c45904173de
 
 # 1.0.0-RC3
 * Features:
