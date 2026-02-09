@@ -7,6 +7,8 @@ this changelog also includes the original WARDEN changelog.
 # 1.0.0-SNAPSHOT
 * Fixes
     * Expose Kotlin-Stdlib as API dependency to make integration with Java projects smoother
+* Dependency Updates
+    * Update upstream attestation library to 9066c0a003225e776b93ba5906d46c45904173de
 
 # 1.0.0-RC3
 * Features:
