@@ -16,7 +16,6 @@ yamlkt = "0.13.0"
 androidx = "1.9.1"
 coroutines = "1.10.2"
 hoplite = "2.9.0"
-kotlinx-serialization = "1.9.0"
 spring-boot = "4.0.0"
 
 #keep it nice and lenient
@@ -42,7 +41,6 @@ coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines
 hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "hoplite" }
 hoplite-yaml = { group = "com.sksamuel.hoplite", name = "hoplite-yaml", version.ref = "hoplite" }
 hoplite-json = { group = "com.sksamuel.hoplite", name = "hoplite-json", version.ref = "hoplite" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 spring-boot = { group = "org.springframework.boot", name = "spring-boot", version.ref = "spring-boot" }
 spring-boot-autoconfigure = { group = "org.springframework.boot", name = "spring-boot-autoconfigure", version.ref = "spring-boot" }
 spring-boot-starter = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring-boot" }
