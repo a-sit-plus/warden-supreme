@@ -29,7 +29,7 @@ See also [Externalising Configuration](config.md).
 
 ### /supreme/config-spring
 
-**Experimantal** lightweight JVM helper module that binds Spring Boot configuration into a map and feeds it through the canonical
+**Experimental** lightweight JVM helper module that binds Spring Boot configuration into a map and feeds it through the canonical
 `fromJsonObject()` path.
 See also [Externalising Configuration](config.md).
 

@@ -49,7 +49,7 @@ In addition, approaches based on reflection that do not invoke the configuration
     **[Issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json)
     should not occur**, but no guarantees. (Which is why this module will remain experimental for now.)
     
-    The module pulls Spring boot as a `compileOnly` dependency avoid version conflicts. You bring your own Spring Boot
+    The module pulls Spring boot as a `compileOnly` dependency to avoid version conflicts. You bring your own Spring Boot
     dependency (3.x or 4.x) in the application.
 
     Example with a nested prefix:
