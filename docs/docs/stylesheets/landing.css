@@ -207,8 +207,6 @@ body.ws-landing-page.ws-header-scrolled .md-header {
 .ws-art {
   position: relative;
   width: min(300px, 80vw);
-  height: 300px;
-  vertical-align: middle;
 }
 
 .ws-art__glow {

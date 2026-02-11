@@ -102,10 +102,13 @@ hide:
         <div class="ws-hero__grid">
             <div class="ws-hero__content">
                 <p>
-                Need your service to remotely verify device and app integrity?<br>
-                Play Protect reduces risk, but it doesn’t provide proof.
-                Attestation does&nbsp;– and Warden Supreme makes it effortless, including iOS&nbsp;assurances beyond App&nbsp;Attest
-                using a single, unified API across the whole stack.
+                Need your backend to remotely verify device and app integrity?<br>
+                Services like Play Protect reduce risk, but don’t provide proof.
+                </p>
+                <p>
+                Attestation does&hairsp;&mdash;&hairsp;and Warden Supreme makes it effortless,
+                covering Android and delivering iOS assurance beyond App Attest through a single,
+                unified API across your stack.
                 </p>
 
                 <div class="ws-cta-row">
@@ -169,7 +172,7 @@ hide:
         <div class="md-grid">
             <h2>Explore the Docs</h2>
             <div class="ws-cards ws-cards--docs">
-                {{ doc_card('book-open-page-variant', 'Background', 'Attestation primer, threat models, platform
+                {{ doc_card('book-open-page-variant', 'Background', 'Why attestation? Primer, threat models, platform
                 specifics, and privacy.', 'Start here', 'bg/primer/') }}
                 {{ doc_card('cogs', 'Technical Deep Dive', 'Android attestation, iOS App Attest, and platform quirks.',
                 'Android', 'technical/android/', 'iOS', 'technical/ios/') }}
