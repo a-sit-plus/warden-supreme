@@ -107,7 +107,7 @@ hide:
             <p>
               Warden Supreme verifies app and device integrity using platform attestation,
               then hides the complexity behind a single, unified API.
-              Define a policy, plug in the verifier, issue attested keys and certificates – that's it! </p>
+              Define a policy, plug in the verifier, certify hardware‑backed keys – done. </p>
 
             <div class="ws-cta-row">
               <a class="md-button md-button--primary ws-cta" href="integration/supreme/">Get started</a>

@@ -29,6 +29,10 @@
     radial-gradient(1.3px 1.3px at 69% 14%, rgba(255, 255, 255, 0.14) 0, transparent 3px),
     radial-gradient(1px 1px at 81% 66%, rgba(255, 255, 255, 0.11) 0, transparent 2px),
     radial-gradient(1.7px 1.7px at 47% 33%, rgba(255, 255, 255, 0.16) 0, transparent 3px),
+    radial-gradient(0.8px 0.8px at 6% 76%, rgba(255, 255, 255, 0.1) 0, transparent 2px),
+    radial-gradient(0.9px 0.9px at 58% 8%, rgba(255, 255, 255, 0.1) 0, transparent 2px),
+    radial-gradient(0.8px 0.8px at 86% 48%, rgba(255, 255, 255, 0.09) 0, transparent 2px),
+    radial-gradient(0.9px 0.9px at 33% 92%, rgba(255, 255, 255, 0.1) 0, transparent 2px),
     linear-gradient(
       180deg,
       var(--md-primary-fg-color) 0%,
@@ -52,6 +56,10 @@
     722.5px 692.5px,
     1002.5px 972.5px,
     627.5px 657.5px,
+    811.5px 841.5px,
+    933.5px 909.5px,
+    889.5px 961.5px,
+    1021.5px 1003.5px,
     auto;
   background-position:
     17.5px 32.5px,
@@ -70,6 +78,10 @@
     412.5px 447.5px,
     261.5px 621.5px,
     598.5px 149.5px,
+    171.5px 681.5px,
+    381.5px 71.5px,
+    721.5px 339.5px,
+    267.5px 771.5px,
     0 0;
 }
 
