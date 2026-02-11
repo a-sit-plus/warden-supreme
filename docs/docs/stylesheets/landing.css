@@ -1,16 +1,5 @@
 /* landing.css */
 
-/* Warden Supreme landing page */
-.ws-landing {
-  padding-bottom: 2.5rem;
-  max-width: none;
-}
-
-.ws-landing .md-grid {
-  padding-left: 0;
-  padding-right: 0;
-}
-
 .md-main {
   background:
     radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.35) 0, transparent 2px),
@@ -90,31 +79,12 @@ body label[for="__palette"],
   display: none;
 }
 
-.ws-hero {
-  position: relative;
-  overflow: hidden;
-  padding: 3rem 0 2.5rem;
-  background: transparent;
-}
-
 body.ws-landing-page .md-header {
   box-shadow: none;
 }
 
 body.ws-landing-page.ws-header-scrolled .md-header {
   box-shadow: var(--md-shadow-z2);
-}
-
-
-.ws-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-          radial-gradient(1200px 500px at 10% 0%, rgba(0, 193, 255, 0.12), transparent 60%),
-          radial-gradient(900px 500px at 90% 10%, rgba(0, 91, 121, 0.25), transparent 60%),
-          linear-gradient(180deg, rgba(0, 42, 56, 0.35), transparent 60%);
-  pointer-events: none;
 }
 
 .ws-hero__panel {
@@ -135,12 +105,6 @@ body.ws-landing-page.ws-header-scrolled .md-header {
   padding: 1.5rem 1.75rem 1.75rem;
   border-radius: 18px;
   background: rgba(7, 18, 24, 0.4);
-}
-
-.ws-hero__content h1 {
-  font-size: clamp(1.8rem, 2.6vw, 2.7rem);
-  margin-top: 0.7rem;
-  margin-bottom: 0.8rem;
 }
 
 .ws-hero__content p {
@@ -229,18 +193,6 @@ body.ws-landing-page.ws-header-scrolled .md-header {
   margin: 0 auto;
 }
 
-.ws-art__device {
-  position: absolute;
-  right: 8%;
-  top: 10%;
-  width: 56%;
-  height: 80%;
-  border-radius: 26px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: linear-gradient(160deg, rgba(30, 36, 42, 0.9), rgba(13, 17, 23, 0.7));
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
-}
-
 .ws-art__card {
   position: absolute;
   left: 0;
@@ -273,17 +225,6 @@ body.ws-landing-page.ws-header-scrolled .md-header {
   left: 8%;
 }
 
-.ws-cred {
-  padding: 1rem 0 0.4rem;
-}
-
-.ws-cred__grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  font-size: 0.8rem;
-}
-
 .ws-cred__item {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -306,10 +247,6 @@ body.ws-landing-page.ws-header-scrolled .md-header {
 }
 
 .ws-cards--features {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.ws-cards--teams {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -384,31 +321,11 @@ body.ws-landing-page.ws-header-scrolled .md-header {
     margin: 0;
 }
 
-.ws-steps__cta {
-  margin-top: 1.2rem;
-}
-
 .ws-link {
   display: inline-flex;
   margin-right: 0.8rem;
   font-weight: 600;
   font-size: 0.8rem;
-}
-
-.ws-callout {
-  margin-top: 2rem;
-  padding: 1.5rem 0 0.5rem;
-}
-
-.ws-callout__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.5fr);
-  gap: 1.5rem;
-  align-items: center;
-  padding: 1.5rem;
-  border-radius: 20px;
-  background: linear-gradient(120deg, rgba(0, 42, 56, 0.6), rgba(0, 193, 255, 0.12));
-  border: 1px solid rgba(0, 193, 255, 0.25);
 }
 
 .ws-funding {
@@ -444,17 +361,6 @@ body.ws-landing-page.ws-header-scrolled .md-header {
     padding: 0.35rem;
   }
 
-  .ws-callout__grid {
-    grid-template-columns: 1fr;
-    text-align: left;
-  }
-}
-
-[data-md-color-scheme="asp"] .ws-hero::before {
-  background:
-          radial-gradient(1200px 500px at 10% 0%, rgba(0, 158, 209, 0.18), transparent 60%),
-          radial-gradient(900px 500px at 90% 10%, rgba(0, 91, 121, 0.2), transparent 60%),
-          linear-gradient(180deg, rgba(0, 91, 121, 0.15), transparent 60%);
 }
 
 [data-md-color-scheme="asp"] .ws-badge {
@@ -475,9 +381,7 @@ body.ws-landing-page.ws-header-scrolled .md-header {
 }
 
 @media screen and (max-width: 900px) {
-  .ws-cred__grid,
   .ws-cards--features,
-  .ws-cards--teams,
   .ws-cards--docs,
   .ws-steps__grid {
     grid-template-columns: 1fr;
