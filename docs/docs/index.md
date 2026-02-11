@@ -90,7 +90,7 @@ hide:
 <h1><img  src="assets/images/supreme-horz.png" alt="Warden Supreme"></h1>
 <div class="md-grid">
       <div class="ws-hero__panel">
- <h2>Mobile Client Attestation for Android and iOS – Unified, Production-Ready.</h2>
+ <h2>End-to-End Integrated Attestation for Android and iOS – Unified, Production-Ready.</h2>
 <div class="ws-badges">
               {{ badge('android', 'Android') }}
               {{ badge('apple', 'iOS') }}
@@ -101,12 +101,9 @@ hide:
 
         <div class="ws-hero__grid">
           <div class="ws-hero__content">
-         
-           
-
             <p>
-              Warden Supreme verifies app and device integrity using platform attestation,
-              then hides the complexity behind a single, unified API.
+              Let your sevice verify app and device integrity using platform attestation.
+              Warden Supreme hides all complexity behind a single, unified API across your stack.<br>
               Define a policy, plug in the verifier, certify hardware‑backed keys. </p>
 
             <div class="ws-cta-row">
@@ -150,7 +147,8 @@ hide:
       <div class="ws-steps__grid">
         {{ step_card('1', 'Define Policy', 'Specify what "trusted" means in your environment. Your policy, your rules.') }}
         {{ step_card('2', 'Plug in Verifier', 'Add two HTTPS endpoints to your service and connect the verifier.') }}
-        {{ step_card('3', 'Issue Certificates', 'Create hardware‑backed keys and certify them based on your policy.') }}
+        {{ step_card('3', 'Integrate into Apps', 'Five lines of code is all it takes.') }}
+        {{ step_card('4', 'Issue Certificates', 'Create hardware‑backed keys and certify them based on your policy.') }}
       </div>
     </div>
   </section>
