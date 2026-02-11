@@ -128,5 +128,5 @@ This project has received funding from the European Union’s Horizon 2020 resea
 programme under grant agreement No 959072.
 </p>
 <p align="center">
-<img src="assets/images/eu.svg" alt="EU flag">
+<img src="../assets/images/eu.svg" alt="EU flag">
 </p>
