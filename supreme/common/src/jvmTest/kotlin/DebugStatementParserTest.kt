@@ -233,7 +233,6 @@ val DebugStatementParserTest by testSuite {
                     //needs toString, because types inside result differ on error
                     withClue("Supreme success: ${supreme.isSuccess}, Legacy success: ${legacy.isSuccess}") {
                         supreme.toString() shouldBe legacy.toString()
-                        if(supreme.isSuccess) {println("SUCCESS")}
                     }
                 }
             }
