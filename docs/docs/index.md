@@ -95,7 +95,7 @@ hide:
               {{ badge('android', 'Android') }}
               {{ badge('apple', 'iOS') }}
               {{ badge('file-certificate', 'Policy-driven') }}
-              {{ badge('check-decagram', 'Production-proven') }}
+              {{ badge('shield-star', 'Battle-tested') }}
               {{ badge('code-tags', 'Open-Source') }}
             </div>
 
@@ -135,7 +135,7 @@ hide:
       <h2>Why Warden Supreme?</h2>
       <div class="ws-cards ws-cards--features">
         {{ feature_card('security', 'Unified Verification', 'One verifier for Android Key Attestation and Apple App Attest.') }}
-        {{ feature_card('layers', 'Unified API Surface', 'Single server API and a shared client API across Android and iOS.') }}
+        {{ feature_card('layers', 'One Consistent API', 'Shared APIs across server, Android and iOS clients.') }}
         {{ feature_card('file-certificate', 'Policy-Driven Checks', 'Define and evolve verification policies without client rewrites.') }}
         {{ feature_card('speedometer', 'Get Going, Fast', 'Client integration in five lines of code – no cheap tricks, no sleight of hand.') }}
         {{ feature_card('check-decagram', 'Production-Proven', 'Built on the battle-tested WARDEN stack, now consolidated and refined.') }}
