@@ -19,7 +19,7 @@ to deliver a streamlined attestation format and developer experience.
 **It condenses the creation of an attestable, hardware-backed key to a single line of client code.**
 
 !!! tip inline end "Familiar with attestation?"
-**[Jump to the integration guide!](integration/supreme.md)**
+    **[Jump to the integration guide!](integration/supreme.md)**
 
 This documentation goes beyond Warden Supreme specifics.
 It is intended as a living document that will be continuously expanded.
@@ -119,8 +119,8 @@ from concepts to hands‑on integration:
 
 
 !!! info "Help Wanted"
-This living document aims to be an authoritative resource on attestation.
-If something is incorrect or missing, please [file an issue](https://github.com/a-sit-plus/warden-supreme/issues/new).
+    This living documentation hub aims to be an authoritative resource on attestation.
+    If something is incorrect or missing, please [file an issue](https://github.com/a-sit-plus/warden-supreme/issues/new).
 
 ---
 <p align="center">
