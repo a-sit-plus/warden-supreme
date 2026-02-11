@@ -148,7 +148,7 @@ hide:
     <div class="md-grid">
       <h2>How It Works</h2>
       <div class="ws-steps__grid">
-        {{ step_card('1', 'Define Policy', 'Specify what "trusted" means in your environment.') }}
+        {{ step_card('1', 'Define Policy', 'Specify what "trusted" means in your environment. Your policy, your rules, your data.') }}
         {{ step_card('2', 'Plug in Verifier', 'Add two HTTPS endpoints to your service and connect the verifier.') }}
         {{ step_card('3', 'Issue Certificates', 'Create hardware‑backed keys and certify them based on your policy.') }}
       </div>
