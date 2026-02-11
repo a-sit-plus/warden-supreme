@@ -87,7 +87,7 @@ hide:
 </div>
 {%- endmacro %}
 
-<h1><img  src="assets/images/supreme-horz.png" alt="Warden Supreme"></h1>
+<h1><img src="assets/images/supreme-horz.png" alt="Warden Supreme"></h1>
 <div class="md-grid">
       <div class="ws-hero__panel">
  <h2>End-to-End Integrated Attestation for Android and iOS – Unified, Production-Ready.</h2>
@@ -102,9 +102,8 @@ hide:
         <div class="ws-hero__grid">
           <div class="ws-hero__content">
             <p>
-              Let your sevice verify app and device integrity using platform attestation.
+              Let your service verify app and device integrity using platform attestation.
               Warden Supreme hides all complexity behind a single, unified API across your stack.<br>
-              Define a policy, plug in the verifier, certify hardware‑backed keys. </p>
 
             <div class="ws-cta-row">
               <a class="md-button md-button--primary ws-cta" href="integration/supreme/">Get started</a>
@@ -134,7 +133,7 @@ hide:
         {{ feature_card('security', 'Unified Verification', 'One verifier for Android Key Attestation and Apple App Attest.') }}
         {{ feature_card('layers', 'One Consistent API', 'Shared APIs across server, Android and iOS clients.') }}
         {{ feature_card('file-certificate', 'Policy-Driven Checks', 'Define and evolve verification policies without client rewrites.') }}
-        {{ feature_card('speedometer', 'Get Going, Fast', 'Client integration in five lines of code – no cheap tricks, no sleight of hand.') }}
+        {{ feature_card('speedometer', 'Get Going, Fast', 'App integration in two lines of code – no cheap tricks, no sleight of hand.') }}
         {{ feature_card('check-decagram', 'Production-Proven', 'Built on the battle-tested WARDEN stack, now consolidated and refined.') }}
         {{ feature_card('shield-alert', 'Risk-Based', 'Grounded in threat modelling and platform characteristics – privacy-first.') }}
       </div>
@@ -147,7 +146,7 @@ hide:
       <div class="ws-steps__grid">
         {{ step_card('1', 'Define Policy', 'Specify what "trusted" means in your environment. Your policy, your rules.') }}
         {{ step_card('2', 'Plug in Verifier', 'Add two HTTPS endpoints to your service and connect the verifier.') }}
-        {{ step_card('3', 'Integrate into Apps', 'Five lines of code is all it takes.') }}
+        {{ step_card('3', 'Integrate into Apps', 'Two lines of code is all it takes to get our mobile clients attested.') }}
         {{ step_card('4', 'Issue Certificates', 'Create hardware‑backed keys and certify them based on your policy.') }}
       </div>
     </div>

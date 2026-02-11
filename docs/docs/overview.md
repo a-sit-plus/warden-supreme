@@ -10,7 +10,7 @@ ensuring only authentic, untampered apps can access your service in three simple
 
 1. 📜 Define a policy on the back-end
 2. 🔌 Plug the Warden Supreme verifier into two HTTPS endpoints
-3. ✨ Create attested keys **and** have a certificate issued in five lines of code
+3. ✨ Create attested keys **and** have a certificate issued in two lines of code
 
 This project consolidates
 [WARDEN](https://github.com/a-sit-plus/warden) and [WARDEN‑roboto](https://github.com/a-sit-plus/warden-roboto),

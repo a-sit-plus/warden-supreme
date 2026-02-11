@@ -30,7 +30,7 @@ extra_css:
 repo_url: https://github.com/a-sit-plus/warden-supreme
 repo_name: a-sit-plus/warden-supreme
 
-copyright: Copyright &copy; 2025-2026 A-SIT Plus GmbH
+copyright: Copyright &copy; 2025-2026 A-SIT Plus GmbH &bull; <a href="https://plus.a-sit.at/imprint.html" target="_blank">Imprint</a>
 
 plugins:
   - social
