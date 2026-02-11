@@ -20,11 +20,14 @@ project(":roboto").projectDir = file("serverside/roboto")
 project(":roboto-diag").projectDir = file("utils/roboto-diag")
 project(":makoto-diag").projectDir = file("utils/makoto-diag")
 
-
-
 include("supreme-verifier")
 include("supreme-common")
 include("supreme-client")
 project(":supreme-verifier").projectDir = file("supreme/verifier")
 project(":supreme-common").projectDir = file("supreme/common")
 project(":supreme-client").projectDir = file("supreme/client")
+
+include("config-hoplite")
+project(":config-hoplite").projectDir = file("supreme/config-hoplite")
+include("config-spring")
+project(":config-spring").projectDir = file("supreme/config-spring")

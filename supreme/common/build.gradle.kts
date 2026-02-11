@@ -59,6 +59,11 @@ kotlin {
             api(libs.signum)
         }
 
+        jvmMain.dependencies {
+            api(libs.yamltk)
+            api(serialization("json"))
+        }
+
         jvmTest.dependencies {
             implementation(libs.schemakenerator.core)
             implementation(libs.schemakenerator.serialization)

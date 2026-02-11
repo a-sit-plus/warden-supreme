@@ -1,6 +1,7 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.SerializerRegistry
+import at.asitplus.attestation.YamlFlatteningPolymorphicSerializer
 import at.asitplus.attestation.android.AndroidRevocationList.HttpLoader.Configuration.ProxyConfig.Type
 import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
 import io.ktor.client.*
@@ -17,6 +18,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -225,6 +227,8 @@ data class AndroidRevocationList(
     interface Loader {
         val fallbackRevocationListValiditySeconds: Long
 
+        @OptIn(ExperimentalSerializationApi::class)
+        @Serializable(with = ConfigurationSerializer::class)
         interface Configuration<L : Loader> {
             fun createLoader(): L
             val fallbackRevocationListValiditySeconds: Long
@@ -256,6 +260,11 @@ data class AndroidRevocationList(
          */
         @Throws(Throwable::class)
         fun loadBlocking(now: Instant): AndroidRevocationList = runBlocking { load(now) }
+
+        companion object {
+            object ConfigurationSerializer :
+                YamlFlatteningPolymorphicSerializer<Configuration<*>>(Configuration::class)
+        }
     }
 
     abstract class CachingLoader : Loader {

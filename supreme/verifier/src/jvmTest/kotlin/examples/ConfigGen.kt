@@ -4,10 +4,14 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.parseHex
+import at.asitplus.attestation.hopliteDecoder
 import at.asitplus.attestation.supreme.SupremeConfiguration
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
+import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.ExperimentalHoplite
+import com.sksamuel.hoplite.addFileSource
 import de.infix.testBalloon.framework.core.TestCompartment
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
@@ -16,8 +20,13 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 
+@OptIn(ExperimentalHoplite::class)
 val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.Sequential }) {
 
+    fun readResource(path: String): String =
+        requireNotNull(object {}.javaClass.classLoader.getResourceAsStream(path)) {
+            "Missing test resource: $path"
+        }.bufferedReader().use { it.readText() }
 
     val pathname = "../../docs/docs/examples".also { File(it).mkdirs() }
 
@@ -68,6 +77,26 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
                     loaded shouldBe config
                 }
             }
+            "JSON (Hoplite)" {
+                val loader = ConfigLoaderBuilder.default()
+                    .withExplicitSealedTypes()
+                    .addFileSource(File("$pathname/$name.json"))
+                    .addDecoder(
+                        when (name) {
+                            "android" -> AndroidAttestationConfiguration.hopliteDecoder()
+                            "ios" -> IosAttestationConfiguration.hopliteDecoder()
+                            else -> throw RuntimeException("Unknown config type: $name")
+                        }
+                    )
+                    .build()
+
+                val loaded = when (name) {
+                    "android" -> loader.loadConfigOrThrow<AndroidAttestationConfiguration>()
+                    "ios" -> loader.loadConfigOrThrow<IosAttestationConfiguration>()
+                    else -> throw RuntimeException("Unknown config type: $name")
+                }
+                loaded shouldBe config
+            }
             "YAML" {
                 FileReader("$pathname/$name.yaml").use { reader ->
                     val loaded = when (name) {
@@ -77,6 +106,35 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
                     }
                     loaded shouldBe config
                 }
+            }
+            "YAML (legacy)" {
+                val legacyYaml = readResource("examples/legacy/$name.yaml")
+                val loaded = when (name) {
+                    "android" -> AndroidAttestationConfiguration.fromYamlString(legacyYaml)
+                    "ios" -> IosAttestationConfiguration.fromYamlString(legacyYaml)
+                    else -> throw RuntimeException("Unknown config type: $name")
+                }
+                loaded shouldBe config
+            }
+            "YAML (Hoplite)" {
+                val loader = ConfigLoaderBuilder.default()
+                    .withExplicitSealedTypes()
+                    .addFileSource(File("$pathname/$name.yaml"))
+                    .addDecoder(
+                        when (name) {
+                            "android" -> AndroidAttestationConfiguration.hopliteDecoder()
+                            "ios" -> IosAttestationConfiguration.hopliteDecoder()
+                            else -> throw RuntimeException("Unknown config type: $name")
+                        }
+                    )
+                    .build()
+
+                val loaded = when (name) {
+                    "android" -> loader.loadConfigOrThrow<AndroidAttestationConfiguration>()
+                    "ios" -> loader.loadConfigOrThrow<IosAttestationConfiguration>()
+                    else -> throw RuntimeException("Unknown config type: $name")
+                }
+                loaded shouldBe config
             }
         }
     }
@@ -126,11 +184,34 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
                 loaded shouldBe config
             }
         }
+        "JSON (Hoplite)" {
+            val loader = ConfigLoaderBuilder.default()
+                .withExplicitSealedTypes()
+                .addFileSource(File("$pathname/supreme.json"))
+                .addDecoder(SupremeConfiguration.hopliteDecoder())
+                .build()
+            val loaded = loader.loadConfigOrThrow<SupremeConfiguration>()
+            loaded shouldBe config
+        }
         "YAML" {
             FileReader("$pathname/supreme.yaml").use { reader ->
                 val loaded = SupremeConfiguration.fromYamlString(reader.readText())
                 loaded shouldBe config
             }
+        }
+        "YAML (legacy)" {
+            val legacyYaml = readResource("examples/legacy/supreme.yaml")
+            val loaded = SupremeConfiguration.fromYamlString(legacyYaml)
+            loaded shouldBe config
+        }
+        "YAML (Hoplite)" {
+            val loader = ConfigLoaderBuilder.default()
+                .withExplicitSealedTypes()
+                .addFileSource(File("$pathname/supreme.yaml"))
+                .addDecoder(SupremeConfiguration.hopliteDecoder())
+                .build()
+            val loaded = loader.loadConfigOrThrow<SupremeConfiguration>()
+            loaded shouldBe config
         }
     }
 

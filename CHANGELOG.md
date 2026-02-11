@@ -4,6 +4,17 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
+# 1.0.0-SNAPSHOT
+* Fixes
+    * Expose Kotlin-Stdlib as API dependency to make integration with Java projects smoother
+* Features
+    * Move `AttestationConfiguration` helpers into `supreme-common`.
+    * Add `config-hoplite` module that provides `hopliteDecoder()` for all `AttestationConfiguration` readers.
+    * Add **experimental** `config-spring` module that binds Spring Boot config loading to the canonical serialization path.
+    * YAML polymorphic configs now use a flat `type` shape (matching JSON) while still accepting legacy `type`/`value` YAML on decode.
+* Tests
+    * Extend configuration round-trip tests to include Hoplite loading and legacy YAML fixtures.
+
 # 1.0.0-RC3
 * Features:
     * Get Attestation extension from certificate chain (same as Google's parser: return the attestation extension closest to the root)

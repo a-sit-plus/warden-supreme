@@ -20,6 +20,21 @@ Warden Supreme is structured into four groups:
 | <picture>  <source media="(prefers-color-scheme: dark)" srcset="../../assets/images/client-w.png">  <source media="(prefers-color-scheme: light)" srcset="../../assets/images/client-b.png">  <img alt="Supreme client" src="../../assets/images/client-b.png" width="254" style="height:auto;"> </picture>     | Supreme client to be integrated into mobile apps that need to prove their integrity and trustworthiness to back-end services.                |
 | <picture>  <source media="(prefers-color-scheme: dark)" srcset="../../assets/images/common-w.png">  <source media="(prefers-color-scheme: light)" srcset="../../assets/images/common-b.png">  <img alt="Supreme common" src="../../assets/images/common-b.png" width="262" style="height:auto;"> </picture>         | Commons containing shared client and verifier logic, data classes, etc.                                                                     |
 
+### /supreme/config-hoplite
+
+Lightweight JVM helper module that adds Hoplite decoders for `AttestationConfiguration`.
+See also [Externalising Configuration](config.md).
+
+**Maven:** `at.asitplus.warden:config-hoplite`
+
+### /supreme/config-spring
+
+**Experimental** lightweight JVM helper module that binds Spring Boot configuration into a map and feeds it through the canonical
+`fromJsonObject()` path.
+See also [Externalising Configuration](config.md).
+
+**Maven:** `at.asitplus.warden:config-spring`
+
 ## /serverside
 
 The modules located here can be used on their own, in case the Supreme integrated attestation suite is not desired.

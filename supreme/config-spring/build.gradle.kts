@@ -1,9 +1,7 @@
-import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
+    kotlin("jvm")
     id("org.jetbrains.dokka")
     id("maven-publish")
     id("signing")
@@ -16,35 +14,14 @@ val groupId: String by extra
 group = groupId
 version = artifactVersion
 
+dependencies {
+    api(project(":supreme-common"))
+    compileOnly(libs.spring.boot)
 
-kotlin {
-    jvm()
-
-    sourceSets {
-        all {
-            languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
-        }
-
-        commonTest.dependencies {
-            implementation(ktor("server-netty"))
-            implementation(ktor("serialization-kotlinx-json"))
-            implementation(ktor("server-content-negotiation"))
-            implementation(libs.supreme)
-        }
-
-        jvmMain.dependencies {
-            api(project(":makoto"))
-            api(project(":supreme-common"))
-            implementation(libs.yamltk)
-        }
-
-        jvmTest.dependencies {
-            implementation(project(":config-hoplite"))
-            implementation(libs.hoplite.core)
-            implementation(libs.hoplite.yaml)
-            implementation(libs.hoplite.json)
-        }
-    }
+    testImplementation(project(":supreme-verifier"))
+    testImplementation(libs.spring.boot.autoconfigure)
+    testImplementation(libs.spring.boot.starter)
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 val javadocJar = setupDokka(
@@ -56,8 +33,8 @@ publishing {
         withType<MavenPublication> {
             if (this.name != "relocation") artifact(javadocJar)
             pom {
-                name.set("Warden Supreme Verifier")
-                description.set("Server-Side attestation verifier; part of the WARDEN Supreme integrated key attestation suite")
+                name.set("Warden Config Spring")
+                description.set("Spring Boot integration helpers for Warden Supreme configuration")
                 url.set("https://github.com/a-sit-plus/warden-supreme")
                 licenses {
                     license {
@@ -68,7 +45,7 @@ publishing {
                 developers {
                     developer {
                         id.set("JesusMcCloud")
-                        name.set("Bernd Prünster")
+                        name.set("Bernd Pruenster")
                         email.set("bernd.pruenster@a-sit.at")
                     }
                     developer {
@@ -97,7 +74,7 @@ publishing {
                 signing {
                     isRequired = false
                 }
-            }else
+            } else
                 logger.lifecycle("  > Signing locally published maven artefacts!")
         }
     }
