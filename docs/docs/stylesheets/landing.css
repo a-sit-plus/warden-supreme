@@ -1,6 +1,15 @@
 /* landing.css */
 
 .md-main {
+  position: relative;
+  --tw1: 0.18;
+  --tw2: 0.16;
+  --tw3: 0.2;
+  --tw4: 0.17;
+  --tw5: 0.19;
+  --tw6: 0.16;
+  --tw7: 0.18;
+  --tw8: 0.17;
   background:
     radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.35) 0, transparent 2px),
     radial-gradient(1.5px 1.5px at 78% 22%, rgba(255, 255, 255, 0.25) 0, transparent 3px),
@@ -22,6 +31,14 @@
     radial-gradient(0.9px 0.9px at 58% 8%, rgba(255, 255, 255, 0.1) 0, transparent 2px),
     radial-gradient(0.8px 0.8px at 86% 48%, rgba(255, 255, 255, 0.09) 0, transparent 2px),
     radial-gradient(0.9px 0.9px at 33% 92%, rgba(255, 255, 255, 0.1) 0, transparent 2px),
+    radial-gradient(1.8px 1.8px at 8% 24%, rgb(255 255 255 / var(--tw1)) 0, transparent 4px),
+    radial-gradient(2px 2px at 86% 18%, rgb(255 255 255 / var(--tw2)) 0, transparent 4px),
+    radial-gradient(1.9px 1.9px at 68% 82%, rgb(255 255 255 / var(--tw3)) 0, transparent 4px),
+    radial-gradient(2.1px 2.1px at 32% 64%, rgb(255 255 255 / var(--tw4)) 0, transparent 5px),
+    radial-gradient(1.7px 1.7px at 52% 36%, rgb(255 255 255 / var(--tw5)) 0, transparent 4px),
+    radial-gradient(2.2px 2.2px at 14% 78%, rgb(255 255 255 / var(--tw6)) 0, transparent 5px),
+    radial-gradient(1.9px 1.9px at 92% 62%, rgb(255 255 255 / var(--tw7)) 0, transparent 4px),
+    radial-gradient(2px 2px at 44% 12%, rgb(255 255 255 / var(--tw8)) 0, transparent 4px),
     linear-gradient(
       180deg,
       var(--md-primary-fg-color) 0%,
@@ -49,6 +66,14 @@
     933.5px 909.5px,
     889.5px 961.5px,
     1021.5px 1003.5px,
+    1200px 1200px,
+    1400px 1400px,
+    1300px 1300px,
+    1500px 1500px,
+    1350px 1350px,
+    1450px 1450px,
+    1550px 1550px,
+    1250px 1250px,
     auto;
   background-position:
     17.5px 32.5px,
@@ -71,7 +96,199 @@
     381.5px 71.5px,
     721.5px 339.5px,
     267.5px 771.5px,
+    140px 180px,
+    820px 140px,
+    560px 720px,
+    320px 520px,
+    520px 360px,
+    180px 680px,
+    880px 560px,
+    420px 140px,
     0 0;
+  animation:
+    ws-twinkle-1 13.7s linear infinite,
+    ws-twinkle-2 21.9s linear infinite,
+    ws-twinkle-3 33.4s linear infinite,
+    ws-twinkle-4 47.6s linear infinite,
+    ws-twinkle-5 58.3s linear infinite,
+    ws-twinkle-6 26.8s linear infinite,
+    ws-twinkle-7 39.2s linear infinite,
+    ws-twinkle-8 17.5s linear infinite;
+  animation-delay:
+    -3.1s,
+    -9.4s,
+    -14.8s,
+    -21.6s,
+    -27.2s,
+    -6.7s,
+    -18.9s,
+    -4.3s;
+}
+
+@property --tw1 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.18;
+}
+
+@property --tw2 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.16;
+}
+
+@property --tw3 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.2;
+}
+
+@property --tw4 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.17;
+}
+
+@property --tw5 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.19;
+}
+
+@property --tw6 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.16;
+}
+
+@property --tw7 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.18;
+}
+
+@property --tw8 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.17;
+}
+
+@keyframes ws-twinkle-1 {
+  0%,
+  16%,
+  100% {
+    --tw1: 0.18;
+  }
+  18% {
+    --tw1: 0.82;
+  }
+  20% {
+    --tw1: 0.2;
+  }
+}
+
+@keyframes ws-twinkle-2 {
+  0%,
+  60%,
+  100% {
+    --tw2: 0.16;
+  }
+  62% {
+    --tw2: 0.78;
+  }
+  64% {
+    --tw2: 0.18;
+  }
+}
+
+@keyframes ws-twinkle-3 {
+  0%,
+  36%,
+  100% {
+    --tw3: 0.2;
+  }
+  38% {
+    --tw3: 0.85;
+  }
+  40% {
+    --tw3: 0.22;
+  }
+}
+
+@keyframes ws-twinkle-4 {
+  0%,
+  10%,
+  100% {
+    --tw4: 0.17;
+  }
+  12% {
+    --tw4: 0.8;
+  }
+  14% {
+    --tw4: 0.19;
+  }
+}
+
+@keyframes ws-twinkle-5 {
+  0%,
+  71%,
+  100% {
+    --tw5: 0.19;
+  }
+  73% {
+    --tw5: 0.86;
+  }
+  75% {
+    --tw5: 0.21;
+  }
+}
+
+@keyframes ws-twinkle-6 {
+  0%,
+  49%,
+  100% {
+    --tw6: 0.16;
+  }
+  51% {
+    --tw6: 0.8;
+  }
+  53% {
+    --tw6: 0.18;
+  }
+}
+
+@keyframes ws-twinkle-7 {
+  0%,
+  84%,
+  100% {
+    --tw7: 0.18;
+  }
+  86% {
+    --tw7: 0.82;
+  }
+  88% {
+    --tw7: 0.2;
+  }
+}
+
+@keyframes ws-twinkle-8 {
+  0%,
+  27%,
+  100% {
+    --tw8: 0.17;
+  }
+  29% {
+    --tw8: 0.8;
+  }
+  31% {
+    --tw8: 0.19;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-main {
+    animation: none;
+  }
 }
 
 body label[for="__palette"],
