@@ -210,6 +210,18 @@ ul.emoji-list li .bullet {
     flex-wrap: wrap;
 }
 
+/* Disable theme toggle (site-wide) */
+label[for="__palette"],
+#__palette {
+    display: none !important;
+}
+
+/* Header spacing for sponsor + search */
+.md-header__inner iframe[title*="Sponsor"] {
+    margin-right: 2.2rem;
+    scale: 120%;
+}
+
 
 .gh-sponsor-like {
     display: inline-flex;
