@@ -14,11 +14,11 @@ Warden Supreme is structured into four groups:
 
 ## /supreme
 
-| Name                                                                                                                           | Info                                                                                                                                              |
-|--------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| <picture>   <img alt="Supreme verifier" src="../../assets/images/verifier-w.png" width="283"  style="height:auto;"> </picture> | Supreme verifier to be integrated into back-end services that want to remotely establish trust in mobile clients through key and app attestation. |
-| <picture>  <img alt="Supreme client" src="../../assets/images/client-w.png" width="254" style="height:auto;"> </picture>       | Supreme client to be integrated into mobile apps that need to prove their integrity and trustworthiness to back-end services.                     |
-| <picture>  <img alt="Supreme common" src="../../assets/images/common-w.png" width="262" style="height:auto;"> </picture>       | Commons containing shared client and verifier logic, data classes, etc.                                                                           |
+| Name                                                                                                                          | Info                                                                                                                                              |
+|-------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| <picture>  <img alt="Supreme verifier" src="../../assets/images/verifier-w.png" width="283"  style="height:auto;"> </picture> | Supreme verifier to be integrated into back-end services that want to remotely establish trust in mobile clients through key and app attestation. |
+| <picture>  <img alt="Supreme client" src="../../assets/images/client-w.png" width="254" style="height:auto;"> </picture>      | Supreme client to be integrated into mobile apps that need to prove their integrity and trustworthiness to back-end services.                     |
+| <picture>  <img alt="Supreme common" src="../../assets/images/common-w.png" width="262" style="height:auto;"> </picture>      | Commons containing shared client and verifier logic, data classes, etc.                                                                           |
 
 ### /supreme/config-hoplite
 
