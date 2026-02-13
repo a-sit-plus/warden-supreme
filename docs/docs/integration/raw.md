@@ -29,10 +29,10 @@ as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (pr
 
 ## When to use _makoto_ vs. _roboto_
 
-| <img alt="Warden roboto" src="../../assets/images/roboto.png" width="249" style="height:auto;"> | <picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/images/makoto-w.png"><source media="(prefers-color-scheme: light)" srcset="../../assets/images/makoto-b.png"><img alt="Warden makoto" src="../../assets/images/makoto-w.png" width="232" height="36" style="height:auto;"></picture> |
-|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Android-only server-side key and app attestation library.                                       | Unified server-side Android and iOS attestation library.                                                                                                                                                                                                                                                        |
-| Maven coordinates: `at.asitplus.warden:roboto`                                                  | Maven coordinates: `at.asitplus.warden:makoto`                                                                                                                                                                                                                                                                  |
+| <img alt="Warden roboto" src="../../assets/images/roboto.png" width="249" style="height:auto;"> | <picture><img alt="Warden makoto" src="../../assets/images/makoto-w.png" width="232" height="36" style="height:auto;"></picture> |
+|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| Android-only server-side key and app attestation library.                                       | Unified server-side Android and iOS attestation library.                                                                         |
+| Maven coordinates: `at.asitplus.warden:roboto`                                                  | Maven coordinates: `at.asitplus.warden:makoto`                                                                                   |
 
 - Choose Warden makoto if you need both Android and iOS support or want a single, streamlined back-end interface.
 - Choose Warden roboto if you truly only need Android and want minimal dependencies.

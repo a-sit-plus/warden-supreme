@@ -58,19 +58,9 @@ An attestation flow works as follows, in accordance with Figure&nbsp;1:
 
 <figure>
 <picture>
-    <!-- Dark-mode asset -->
-    <source
-        media="(prefers-color-scheme: dark)"
-        srcset="../../assets/images/flow-dark.png" />
 
-    <!-- Light-mode asset -->
-    <source
-        media="(prefers-color-scheme: light)"
-        srcset="../../assets/images/flow.png" />
-
-    <!-- Fallback (srcset for browsers that don’t support `prefers-color-scheme`) -->
     <img
-        src="../../assets/images/flow.png"
+        src="../../assets/images/flow-dark.png"
         alt="Warden Supreme attestation flow"
         style="width:100%;height:auto;" />
 
