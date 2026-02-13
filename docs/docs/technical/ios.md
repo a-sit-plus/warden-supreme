@@ -55,19 +55,8 @@ From a high-level point of view, both flows involve the same entities, as shown 
 
 <figure>
 <picture>
-    <!-- Dark-mode asset -->
-    <source
-        media="(prefers-color-scheme: dark)"
-        srcset="https://docs-assets.developer.apple.com/published/4af6b5e0a27bb7176fa92a73104de5e3/establishing_your_app_s_integrity-1~dark%402x.png" />
-
-    <!-- Light-mode asset -->
-    <source
-        media="(prefers-color-scheme: light)"
-        srcset="https://docs-assets.developer.apple.com/published/2b7a2d8c173ccb7e4e7f4c52f5a21925/establishing_your_app_s_integrity-1%402x.png" />
-
-    <!-- Fallback (srcset for browsers that don’t support `prefers-color-scheme`) -->
     <img
-        src="https://docs-assets.developer.apple.com/published/2b7a2d8c173ccb7e4e7f4c52f5a21925/establishing_your_app_s_integrity-1%402x.png"
+        src="https://docs-assets.developer.apple.com/published/4af6b5e0a27bb7176fa92a73104de5e3/establishing_your_app_s_integrity-1~dark%402x.png"
         alt="Apple App Attest Flows"
         style="width:100%;height:auto;" />
 

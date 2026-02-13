@@ -8,19 +8,8 @@ Android requires no special setup procedure for attestation compared to iOS. See
 
 <figure>
 <picture>
-    <!-- Dark-mode asset -->
-    <source
-        media="(prefers-color-scheme: dark)"
-        srcset="../../assets/images/android-dark.png"/>
-
-    <!-- Light-mode asset -->
-    <source
-        media="(prefers-color-scheme: light)"
-        srcset="../../assets/images/android.png"/>
-
-    <!-- Fallback (srcset for browsers that don’t support `prefers-color-scheme`) -->
     <img
-        src="../../assets/images/android.png"
+        src="../../assets/images/android-dark.png"
         alt="High-level structure of an Android key attestation result"
         style="width:100%;height:auto;" />
 
