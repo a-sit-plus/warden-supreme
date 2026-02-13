@@ -19,29 +19,7 @@ theme:
     repo: fontawesome/brands/github
 
   palette:
-    # Palette toggle for automatic mode
-    - media: "(prefers-color-scheme)"
-      toggle:
-        icon: material/brightness-auto
-        name: Switch to light mode
-      font:
-        text: Roboto
-
-    # Palette toggle for light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: asp
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-      font:
-        text: Roboto
-
-    # Palette toggle for dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: asp-dark
-      toggle:
-        icon: material/brightness-4
-        name: Switch to system preference
+    - scheme: asp-dark
       font:
         text: Roboto
 
@@ -52,7 +30,7 @@ extra_css:
 repo_url: https://github.com/a-sit-plus/warden-supreme
 repo_name: a-sit-plus/warden-supreme
 
-copyright: Copyright &copy; 2025-2026 A-SIT Plus GmbH
+copyright: Copyright &copy; 2025-2026 A-SIT Plus GmbH &bull; <a href="https://plus.a-sit.at/imprint.html" target="_blank">Imprint</a>
 
 plugins:
   - social
@@ -148,7 +126,7 @@ markdown_extensions:
 
 nav:
     - Docs Hub:
-        - Overview: index.md
+        - Overview: overview.md
         - Background:
             - Remote Attestation Primer: bg/primer.md
             - Platform Specifics: bg/platforms.md
