@@ -20,6 +20,9 @@ Warden Supreme aims to make remote attestation across Android and iOS as smooth 
 Kotlin Multiplatform. At the same time, it is clear that not every iOS app will be written in Kotlin, and not every Android application
 will want to pull in Signum as a dependency.
 
+If you are evaluating whether to use Warden Supreme at all for a single platform, see
+[Why Warden Supreme?](../why-supreme.md).
+
 In addition, legacy deployments that cannot yet transition to the new integrated Warden Supreme attestation flows are
 still operational and will remain so. Until a migration is possible (see [migration notes](migration.md)), this page serves
 as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (previously WARDEN-roboto).

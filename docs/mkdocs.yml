@@ -127,6 +127,7 @@ markdown_extensions:
 nav:
     - Docs Hub:
         - Overview: overview.md
+        - Why Warden Supreme: why-supreme.md
         - Background:
             - Remote Attestation Primer: bg/primer.md
             - Platform Specifics: bg/platforms.md

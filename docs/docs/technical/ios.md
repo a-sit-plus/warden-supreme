@@ -69,6 +69,7 @@ Warden Supreme relies on attestation, but also generates a separate public/priva
 feeds the public key’s hash into `clientDataHash` to bind that usable key to the Apple-signed attestation.
 Since App Attest does not provide native key attestation for arbitrary keys, this binding is used to emulate key attestation
 (see [Emulating Key Attestation](#emulating-key-attestation)).
+If you are deciding between direct App Attest tooling and Warden Supreme, see [Why Warden Supreme?](../why-supreme.md).
 
 Warden Supreme does not natively support assertions in the fully integrated flow (for reasons explained [below](#assertion-wrap-up))
 and relies on attestation and emulated key attestation to replicate Android's behaviour for a consistent UX across both platforms.
