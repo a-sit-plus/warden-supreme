@@ -110,10 +110,14 @@ hide:
                 covering Android and delivering iOS assurance beyond App Attest through a single,
                 unified API across your stack.
                 </p>
+                <p>
+                Android-only or iOS-only today? You still benefit from sane defaults,
+                quirk workarounds, and externalised policy configuration.
+                </p>
 
                 <div class="ws-cta-row">
-                    <a class="md-button md-button--primary ws-cta" href="integration/supreme/">Get started</a>
-                    <a class="md-button ws-cta" href="overview/">Read the Docs</a>
+                    <a class="md-button md-button--primary ws-cta" href="why-supreme/">Learn more</a>
+                    <a class="md-button ws-cta" href="integration/supreme/">Start integrating</a>
                     <a class="md-button ws-cta" href="services/">Services</a>
                 </div>
 
@@ -172,12 +176,12 @@ hide:
         <div class="md-grid">
             <h2>Explore the Docs</h2>
             <div class="ws-cards ws-cards--docs">
-                {{ doc_card('book-open-page-variant', 'Background', 'Why attestation? Primer, threat models, platform
-                specifics, and privacy.', 'Start here', 'bg/primer/') }}
+                {{ doc_card('book-open-page-variant', 'Background', 'Why attestation? Primer, threat models, and platform
+                specifics.', 'Start here', 'bg/primer/') }}
                 {{ doc_card('cogs', 'Technical Deep Dive', 'Android attestation, iOS App Attest, and platform quirks.',
                 'Android', 'technical/android/', 'iOS', 'technical/ios/') }}
                 {{ doc_card('rocket-launch', 'Integration', 'End-to-end implementation guide, config, and data model.',
-                'Get started', 'integration/supreme/') }}
+                'Start integrating', 'integration/supreme/') }}
                 {{ doc_card('book-alphabet', 'Glossary', 'Terminology and definitions across all things attestation.',
                 'Browse glossary', 'glossary/') }}
             </div>

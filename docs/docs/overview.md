@@ -19,10 +19,12 @@ to deliver a streamlined attestation format and developer experience.
 **It condenses the creation of an attestable, hardware-backed key to a single line of client code.**
 
 !!! tip inline end "Familiar with attestation?"
-    **[Jump to the integration guide!](integration/supreme.md)**
+    **[Jump to the integration guide!](integration/supreme.md)**  
+    **Need a platform choice guide?**  
+    &rarr;&nbsp;See [Why Warden Supreme](why-supreme.md).  
 
 This documentation goes beyond Warden Supreme specifics.
-It is intended as a living document that will be continuously expanded.
+It is a living documentation hub covering all things attestation, and it is continuously expanded.
 It already provides a structured overview of remote attestation,
 from concepts to hands‑on integration:
 
@@ -108,6 +110,7 @@ from concepts to hands‑on integration:
       </li>
     </ul>
     &rarr; See the <a href="integration/supreme">Integration Guide</a>.
+    <br>&rarr; If you are Android-only or iOS-only, see <a href="why-supreme">Why Warden Supreme?</a>.
   </li>
   <li>
     <span class="bullet">📖</span>
