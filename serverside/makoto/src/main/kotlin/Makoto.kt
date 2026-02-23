@@ -273,7 +273,7 @@ class Makoto
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             expectedChallenge: ByteArray,
-            counter: Long
+            validCounters: LongRange
         ): Result<Assertion> = catchingUnwrapped {
             findMatchingConfiguration(validatedAttestation).let { attest ->
                 catchingUnwrapped {
@@ -288,25 +288,35 @@ class Makoto
                         assertion,
                         expectedChallenge,
                         validatedAttestation.receipt.payload.attestationCertificate.value.publicKey as ECPublicKey,
-                        counter,
+                        validCounters.first,
                         expectedChallenge
-                    )
+                    ).also { assertion ->
+                        if (assertion.authenticatorData.signCount - 1 > validCounters.last) "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}".let { msg ->
+                            throw AttestationException.Content.iOS(
+                                msg,
+                                cause = IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
+
+                            )
+                        }
+                    }
+                }.getOrElse {
+                    throw when (it) {
+                        is AssertionException -> AttestationException.Content.iOS(it)
+                        is AttestationException -> throw it
+                        else -> AttestationException.Content.iOS(
+                            it.message,
+                            IosAttestationException(reason = IosAttestationException.Reason.APP_UNEXPECTED)
+                        )
+                    }
                 }
-            }.getOrElse {
-                throw if (it is AssertionException) AttestationException.Content.iOS(it)
-                else AttestationException.Content.iOS(
-                    it.message,
-                    IosAttestationException(reason = IosAttestationException.Reason.APP_UNEXPECTED)
-                )
             }
         }
-
 
         override fun verifyAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             referenceClientData: ByteArray,
-            counter: Long,
+            validCounters: LongRange,
             expectedChallenge: ByteArray,
             validator: AssertionChallengeValidator,
         ): Result<Assertion> = catchingUnwrapped {
@@ -316,7 +326,7 @@ class Makoto
                         assertion,
                         referenceClientData,
                         validatedAttestation.receipt.payload.attestationCertificate.value.publicKey as ECPublicKey,
-                        counter,
+                        validCounters.first.toLong(),
                         expectedChallenge
                     )
                 }.getOrElse {
@@ -779,7 +789,7 @@ class Makoto
                 val assertion = ios.verifyAssertion(
                     validatedAttestation = result.second,
                     assertion = assertionData.assertion,
-                    counter = counter,
+                    validCounters = counter..Long.MAX_VALUE,
                     referenceClientData = assertionData.clientData,
                     expectedChallenge = expectedChallenge,
                     validator = object : AssertionChallengeValidator {
@@ -799,7 +809,11 @@ class Makoto
                         )
                     )
                 }
-                else AttestationResult.IOS.Verified(result.second, parsedVersion, assertionData.clientData to assertion)
+                else AttestationResult.IOS.Verified(
+                    result.second,
+                    parsedVersion,
+                    assertionData.clientData to assertion
+                )
             }.getOrElse {
                 AttestationResult.Error(
                     it.message ?: "iOS Assertion validation error due to ${it::class.simpleName}",
@@ -969,7 +983,7 @@ class Makoto
         val version: String = wardenVersion
 
 
-        private val appAttestReader = ObjectMapper(CBORFactory())
+        internal val appAttestReader = ObjectMapper(CBORFactory())
             .registerKotlinModule()
             .readerFor(AttestationObject::class.java)
     }

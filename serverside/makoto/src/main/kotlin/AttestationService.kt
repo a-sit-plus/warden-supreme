@@ -3,6 +3,7 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.AttestationException
+import at.asitplus.attestation.Makoto.Companion.appAttestReader
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
@@ -11,9 +12,14 @@ import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
+import ch.veehait.devicecheck.appattest.common.AuthenticatorData
+import ch.veehait.devicecheck.appattest.common.AuthenticatorDataFlag
 import kotlinx.coroutines.runBlocking
 import java.security.PublicKey
 import java.security.cert.X509Certificate
+import java.security.interfaces.ECPublicKey
+import kotlin.experimental.and
+import kotlin.experimental.xor
 import kotlin.time.ExperimentalTime
 import at.asitplus.attestation.AttestationException as AttException
 
@@ -246,15 +252,20 @@ abstract class AttestationService {
          * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
          * calling this function
          *
+         * **A Note on Counters:**<br>
+         * AppAttest only checks whether the signature counter **BEFORE SIGNING AN ASSERTION** is _higher_ than a provided value. That is, a value of `0` will always work.
+         * Warden Supreme also allows checking for a maximum, hence [validCounters]. If you don't care for it, just pass [Long.MAX_VALUE] as upper bound (inclusive).<br>
+         * **Also note that the upper bound will also be calculated on the value _BEFORE_ creating the assertion!**
+         *
          * @param validatedAttestation the previously validated attestation
          * @param expectedChallenge the expected client data to be contained in [assertion]
-         * @param counter the highest expected value of the signature counter prior to creating the assertion.
+         * @param validCounters The range of valid counters
          */
         fun verifyAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             expectedChallenge: ByteArray,
-            counter: Long
+            validCounters: LongRange
         ): Result<Assertion>
 
         /**
@@ -264,15 +275,21 @@ abstract class AttestationService {
          * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
          * calling this function
          *
+         * **A Note on Counters:**<br>
+         * AppAttest only checks whether the signature counter is _higher_ than a provided value. That is, a value of `0` will always work.
+         * Warden Supreme also allows checking for a maximum, hence [validCounters]. If you don't care for it, just pass [Long.MAX_VALUE] as upper bound (inclusive).<br>
+         * **Also note that the upper bound will also be calculated on the value _BEFORE_ creating the assertion!**
+         *
+         *
          * @param validatedAttestation the previously validated attestation
-         * @param counter the highest expected value of the signature counter prior to creating the assertion.
+         * @param validCounters The range of valid counters
          * @param validator a fresh [AssertionChallengeValidator] that checks for challenge, clientData, etc.
          */
         fun verifyAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             referenceClientData: ByteArray,
-            counter: Long,
+            validCounters: LongRange,
             expectedChallenge: ByteArray,
             validator: AssertionChallengeValidator,
         ): Result<Assertion>
@@ -404,10 +421,18 @@ object NoopAttestationService : AttestationService() {
                 validatedAttestation: ValidatedAttestation,
                 assertion: ByteArray,
                 expectedChallenge: ByteArray,
-                counter: Long
-            ): Result<Assertion> {
-                TODO()
-            }
+                validCounters: LongRange,
+            ): Result<Assertion> = verifyAssertion(
+                validatedAttestation, assertion, expectedChallenge, validCounters, expectedChallenge,
+                object : AssertionChallengeValidator {
+                    override fun validate(
+                        assertionObj: Assertion,
+                        clientData: ByteArray,
+                        attestationPublicKey: ECPublicKey,
+                        challenge: ByteArray
+                    ) = true
+                })
+
 
             //Will always throw
             @DisabledAttestation
@@ -415,11 +440,21 @@ object NoopAttestationService : AttestationService() {
                 validatedAttestation: ValidatedAttestation,
                 assertion: ByteArray,
                 referenceClientData: ByteArray,
-                counter: Long,
+                validCounters: LongRange,
                 expectedChallenge: ByteArray,
                 validator: AssertionChallengeValidator,
             ): Result<Assertion> {
-                TODO("Not yet implemented")
+                val envelope = appAttestReader.readValue<AssertionEnvelope>(assertion)
+                val authenticatorDataBlob = envelope.authenticatorData.copyOf()
+                authenticatorDataBlob[AuthenticatorData.FLAGS_INDEX] =
+                    authenticatorDataBlob[AuthenticatorData.FLAGS_INDEX]
+                        .and(AuthenticatorDataFlag.ED.bitmask.xor(1))
+                        .and(AuthenticatorDataFlag.AT.bitmask.xor(1))
+
+                return catchingUnwrapped {
+                    Assertion(envelope.signature, AuthenticatorData.parse(authenticatorDataBlob))
+                }
+
             }
 
         }

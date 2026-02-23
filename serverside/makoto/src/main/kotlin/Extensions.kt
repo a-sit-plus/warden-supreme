@@ -19,6 +19,7 @@ import java.security.cert.X509Certificate
 import java.time.Instant
 import java.time.ZoneId
 import java.util.*
+import javax.annotation.processing.Generated
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaInstant
@@ -44,6 +45,33 @@ data class AttestationObject(
         val receipt: ByteArray
     )
 }
+
+internal data class AssertionEnvelope(
+    val signature: ByteArray,
+    val authenticatorData: ByteArray,
+) {
+    @Generated
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as AssertionEnvelope
+
+        if (!signature.contentEquals(other.signature)) return false
+        if (!authenticatorData.contentEquals(other.authenticatorData)) return false
+
+        return true
+    }
+
+    @Generated
+    override fun hashCode(): Int {
+        var result = signature.contentHashCode()
+        result = 31 * result + authenticatorData.contentHashCode()
+        return result
+    }
+}
+
+//END COPIED
 
 internal fun PublicKey.transcodeToAllFormats() = toCryptoPublicKey().getOrThrow().let {
     when (it) {
