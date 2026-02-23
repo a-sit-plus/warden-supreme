@@ -274,43 +274,21 @@ class Makoto
             assertion: ByteArray,
             expectedChallenge: ByteArray,
             validCounters: LongRange
-        ): Result<Assertion> = catchingUnwrapped {
-            findMatchingConfiguration(validatedAttestation).let { attest ->
-                catchingUnwrapped {
-                    attest.createAssertionValidator(object : AssertionChallengeValidator {
-                        override fun validate(
-                            assertionObj: Assertion,
-                            clientData: ByteArray,
-                            attestationPublicKey: ECPublicKey,
-                            challenge: ByteArray,
-                        ) = clientData.contentEquals(challenge)
-                    }).validate(
-                        assertion,
-                        expectedChallenge,
-                        validatedAttestation.receipt.payload.attestationCertificate.value.publicKey as ECPublicKey,
-                        validCounters.first,
-                        expectedChallenge
-                    ).also { assertion ->
-                        if (assertion.authenticatorData.signCount - 1 > validCounters.last) "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}".let { msg ->
-                            throw AttestationException.Content.iOS(
-                                msg,
-                                cause = IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
-
-                            )
-                        }
-                    }
-                }.getOrElse {
-                    throw when (it) {
-                        is AssertionException -> AttestationException.Content.iOS(it)
-                        is AttestationException -> throw it
-                        else -> AttestationException.Content.iOS(
-                            it.message,
-                            IosAttestationException(reason = IosAttestationException.Reason.APP_UNEXPECTED)
-                        )
-                    }
-                }
+        ): Result<Assertion> = verifyAssertion(
+            validatedAttestation,
+            assertion,
+            expectedChallenge,
+            validCounters,
+            expectedChallenge,
+            object : AssertionChallengeValidator {
+                override fun validate(
+                    assertionObj: Assertion,
+                    clientData: ByteArray,
+                    attestationPublicKey: ECPublicKey,
+                    challenge: ByteArray,
+                ) = clientData.contentEquals(challenge)
             }
-        }
+        )
 
         override fun verifyAssertion(
             validatedAttestation: ValidatedAttestation,
@@ -326,15 +304,25 @@ class Makoto
                         assertion,
                         referenceClientData,
                         validatedAttestation.receipt.payload.attestationCertificate.value.publicKey as ECPublicKey,
-                        validCounters.first.toLong(),
+                        validCounters.first,
                         expectedChallenge
-                    )
+                    ).also { assertion ->
+                        if (assertion.authenticatorData.signCount - 1 > validCounters.last) "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}".let { msg ->
+                            throw AttestationException.Content.iOS(
+                                msg,
+                                cause = IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
+                            )
+                        }
+                    }
                 }.getOrElse {
-                    throw if (it is AssertionException) AttestationException.Content.iOS(it)
-                    else AttestationException.Content.iOS(
-                        it.message,
-                        IosAttestationException(reason = IosAttestationException.Reason.APP_UNEXPECTED)
-                    )
+                    throw when (it) {
+                        is AssertionException -> AttestationException.Content.iOS(it)
+                        is AttestationException -> throw it
+                        else -> AttestationException.Content.iOS(
+                            it.message,
+                            IosAttestationException(reason = IosAttestationException.Reason.APP_UNEXPECTED)
+                        )
+                    }
                 }
             }
         }
