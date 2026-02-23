@@ -9,6 +9,8 @@ this changelog also includes the original WARDEN changelog.
     * Proper iOS assertion validation (thanks @andreybogdanov-sprind!)
 * Fixes
     * Expose Kotlin-Stdlib as API dependency to make integration with Java projects smoother
+* API Changes:
+    * rename `AttestationService.ios.verifyAssertion` -> `AttestationService.ios.verifyCombined` and deprecate the old function 
 * Dependency Updates
     * Update upstream attestation library to 9066c0a003225e776b93ba5906d46c45904173de
 

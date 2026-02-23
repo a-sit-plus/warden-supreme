@@ -216,8 +216,8 @@ abstract class AttestationService {
         /**
          * Verifies an App Attestation in conjunction with an assertion for some client data.
          *
-         * First, it verifies the app attestation, afterwards it verifies the assertion, checks whether at most [counter] many signatures
-         * have been performed using the key bound to the attestation before signing the assertion, and verifies whether the client data
+         * First, it verifies the app attestation, afterwards it verifies the assertion, checks whether at most the assertion was the first thing that was signed
+         * after attesting the key (i.e. signature counter = `0` before signing the assertion), and verifies whether the client data
          * referenced within the assertion matches [referenceClientData]
          *
          * @param attestationObject the AppAttest attestation object to verify
