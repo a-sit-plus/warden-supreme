@@ -150,11 +150,11 @@ val FeatureDemonstration by testSuite {
             "iOS-Specific" - {
                 "Assertion implicitly created immediately" {
                     //verifies that computing `clientData` was the first asserted operation performed after attesting the app
-                    service.ios.verifyAssertion(
-                        attestationObject = ios16.attestationProof[0],
-                        assertionFromDevice = ios16.attestationProof[1],
-                        referenceClientData = ios16.publicKey!!.encoded,
-                        challenge = ios16.challenge
+                    service.ios.verifyCombined(
+                        ios16.attestationProof[0],
+                        ios16.attestationProof[1],
+                        ios16.publicKey!!.encoded,
+                        ios16.challenge
                     ).apply {
                         shouldBeInstanceOf<AttestationResult.IOS>().apply {
                             clientData shouldBe ios16.publicKey!!.encoded //now we know that the app produced `clientData` as we intended
@@ -165,12 +165,11 @@ val FeatureDemonstration by testSuite {
 
                 "Assertion explicitly created immediately" {
                     //verifies that computing `clientData` was the first asserted operation performed after attesting the app
-                    service.ios.verifyAssertion(
-                        attestationObject = ios16.attestationProof[0],
-                        assertionFromDevice = ios16.attestationProof[1],
-                        referenceClientData = ios16.publicKey!!.encoded,
-                        challenge = ios16.challenge,
-                        counter = 0L //explicitly specify counter
+                    service.ios.verifyCombined(
+                        ios16.attestationProof[0],
+                        ios16.attestationProof[1],
+                        ios16.publicKey!!.encoded,
+                        ios16.challenge //explicitly specify counter
                     ).apply {
                         shouldBeInstanceOf<AttestationResult.IOS>().apply {
                             clientData shouldBe ios16.publicKey!!.encoded //now we know that the app produced `clientData` as we intended
@@ -237,12 +236,11 @@ val FeatureDemonstration by testSuite {
                 ),
                 clock = FixedTimeClock(Instant.parse("2023-04-13T14:03:00Z")), //optional
                 verificationTimeOffset = Duration.ZERO //optional
-            ).ios.verifyAssertion(
+            ).ios.verifyCombined(
                 attestationObject = ios16.attestationProof[0],
                 assertionFromDevice = ios16.attestationProof[1],
                 referenceClientData = ios16.publicKey!!.encoded,
-                challenge = ios16.challenge,
-                counter = 0L //explicitly specify counter
+                challenge = ios16.challenge //explicitly specify counter
             ).shouldBeInstanceOf<AttestationResult.Error>()
         }
     }

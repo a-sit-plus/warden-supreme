@@ -4,6 +4,7 @@ package at.asitplus.attestation
 
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
+import ch.veehait.devicecheck.appattest.assertion.AssertionException
 import java.security.PublicKey
 import java.security.cert.CertPathValidatorException
 import kotlin.time.Clock
@@ -81,7 +82,60 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
             Content(Platform.ANDROID, message, cause)
 
         class iOS(message: String? = null, override val cause: IosAttestationException) :
-            Content(Platform.IOS, message, cause)
+            Content(Platform.IOS, message, cause) {
+
+            companion object {
+                operator fun invoke(cause: AssertionException): iOS = when (cause) {
+                    is AssertionException.InvalidAuthenticatorData -> {
+                        if (cause.message == "Assertion counter is not greater than the counter saved counter") {
+                            iOS(
+                                cause.message,
+                                cause = IosAttestationException(
+                                    cause.message,
+                                    cause,
+                                    reason = IosAttestationException.Reason.SIG_CTR
+                                )
+                            )
+                        } else if (cause.message == "App ID hash does not match RP ID hash") {
+                            iOS(
+                                cause.message,
+                                cause = IosAttestationException(
+                                    cause.message,
+                                    cause,
+                                    reason = IosAttestationException.Reason.IDENTIFIER
+                                )
+                            )
+                        } else
+                            iOS(
+                                cause.message,
+                                cause = IosAttestationException(
+                                    cause.message,
+                                    cause,
+                                    reason = IosAttestationException.Reason.APP_UNEXPECTED
+                                )
+                            )
+                    }
+
+                    is AssertionException.InvalidChallenge -> iOS(
+                        cause.message,
+                        cause = IosAttestationException(
+                            cause.message,
+                            cause,
+                            reason = IosAttestationException.Reason.CHALLENGE
+                        )
+                    )
+
+                    is AssertionException.InvalidSignature -> iOS(
+                        cause.message,
+                        cause = IosAttestationException(
+                            cause.message,
+                            cause,
+                            reason = IosAttestationException.Reason.APP_UNEXPECTED
+                        )
+                    )
+                }
+            }
+        }
 
         class Unknown(message: String? = null, cause: Throwable) : Content(Platform.UNKNOWN, message, cause)
 

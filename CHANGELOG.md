@@ -5,6 +5,8 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # 1.0.0-SNAPSHOT
+* Features:
+    * Proper iOS assertion validation (thanks @andreybogdanov-sprind!)
 * Fixes
     * Expose Kotlin-Stdlib as API dependency to make integration with Java projects smoother
 * Dependency Updates

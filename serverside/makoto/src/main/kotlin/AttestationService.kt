@@ -8,6 +8,9 @@ import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.signum.indispensable.toJcaPublicKey
+import ch.veehait.devicecheck.appattest.assertion.Assertion
+import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
+import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import kotlinx.coroutines.runBlocking
 import java.security.PublicKey
 import java.security.cert.X509Certificate
@@ -208,21 +211,71 @@ abstract class AttestationService {
          * Verifies an App Attestation in conjunction with an assertion for some client data.
          *
          * First, it verifies the app attestation, afterwards it verifies the assertion, checks whether at most [counter] many signatures
-         * have been performed using the key bound to the attestation before signing the assertion and verifies whether the client data
+         * have been performed using the key bound to the attestation before signing the assertion, and verifies whether the client data
          * referenced within the assertion matches [referenceClientData]
          *
          * @param attestationObject the AppAttest attestation object to verify
          * @param assertionFromDevice the assertion data created on the device.
          * @param referenceClientData the expected client data to be contained in [assertionFromDevice]
-         * @param counter the highest expected value of the signature counter prior to creating the assertion.
          */
+        fun verifyCombined(
+            attestationObject: ByteArray,
+            assertionFromDevice: ByteArray,
+            referenceClientData: ByteArray,
+            challenge: ByteArray,
+        ): AttestationResult
+
+        @Deprecated(
+            "Misnomer, counter is ignored",
+            level = DeprecationLevel.ERROR,
+            replaceWith = ReplaceWith("verifyCombined(attestationObject, assertionFromDevice, referenceClientData, challenge)")
+        )
         fun verifyAssertion(
             attestationObject: ByteArray,
             assertionFromDevice: ByteArray,
             referenceClientData: ByteArray,
             challenge: ByteArray,
             counter: Long = 0
-        ): AttestationResult
+        ) = verifyCombined(attestationObject, assertionFromDevice, referenceClientData, challenge)
+
+        /**
+         * Verifies a fresh assertion, tied to a previously store attestation.
+         * This function assumes that `clientDataHash` is the SHA-256 digest of [expectedChallenge].
+         *
+         * **The attestation is not verified again!**
+         * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
+         * calling this function
+         *
+         * @param validatedAttestation the previously validated attestation
+         * @param expectedChallenge the expected client data to be contained in [assertion]
+         * @param counter the highest expected value of the signature counter prior to creating the assertion.
+         */
+        fun verifyAssertion(
+            validatedAttestation: ValidatedAttestation,
+            assertion: ByteArray,
+            expectedChallenge: ByteArray,
+            counter: Long
+        ): Result<Assertion>
+
+        /**
+         * Verifies a fresh assertion, tied to a previously store attestation.
+         *
+         * **The attestation is not verified again!**
+         * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
+         * calling this function
+         *
+         * @param validatedAttestation the previously validated attestation
+         * @param counter the highest expected value of the signature counter prior to creating the assertion.
+         * @param validator a fresh [AssertionChallengeValidator] that checks for challenge, clientData, etc.
+         */
+        fun verifyAssertion(
+            validatedAttestation: ValidatedAttestation,
+            assertion: ByteArray,
+            referenceClientData: ByteArray,
+            counter: Long,
+            expectedChallenge: ByteArray,
+            validator: AssertionChallengeValidator,
+        ): Result<Assertion>
     }
 
     /**
@@ -261,7 +314,7 @@ abstract class AttestationService {
 value class AssertionData private constructor(private val pair: Pair<ByteArray, ByteArray>) {
 
     /**
-     * Pairs an Apple AppAttest  assertion with the referenced clientData value
+     * Pairs an Apple AppAttest assertion with the referenced clientData value
      */
     constructor(assertion: ByteArray, clientData: ByteArray) : this(assertion to clientData)
 
@@ -332,18 +385,41 @@ object NoopAttestationService : AttestationService() {
                 runBlocking { verifyAttestation(listOf(attestationObject), challenge, clientData = null) }
 
             @DisabledAttestation
-            override fun verifyAssertion(
+            override fun verifyCombined(
                 attestationObject: ByteArray,
                 assertionFromDevice: ByteArray,
                 referenceClientData: ByteArray,
                 challenge: ByteArray,
-                counter: Long
             ) = runBlocking {
                 verifyAttestation(
                     listOf(attestationObject, assertionFromDevice),
                     challenge,
                     referenceClientData
                 )
+            }
+
+            //Will always throw
+            @DisabledAttestation
+            override fun verifyAssertion(
+                validatedAttestation: ValidatedAttestation,
+                assertion: ByteArray,
+                expectedChallenge: ByteArray,
+                counter: Long
+            ): Result<Assertion> {
+                TODO()
+            }
+
+            //Will always throw
+            @DisabledAttestation
+            override fun verifyAssertion(
+                validatedAttestation: ValidatedAttestation,
+                assertion: ByteArray,
+                referenceClientData: ByteArray,
+                counter: Long,
+                expectedChallenge: ByteArray,
+                validator: AssertionChallengeValidator,
+            ): Result<Assertion> {
+                TODO("Not yet implemented")
             }
 
         }
