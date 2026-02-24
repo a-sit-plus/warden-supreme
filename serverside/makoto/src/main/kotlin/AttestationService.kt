@@ -245,7 +245,7 @@ abstract class AttestationService {
         ) = verifyCombined(attestationObject, assertionFromDevice, referenceClientData, challenge)
 
         /**
-         * Verifies a fresh assertion, tied to a previously store attestation.
+         * Verifies a fresh assertion, tied to a previously stored attestation.
          * This function assumes that `clientDataHash` is the SHA-256 digest of [expectedChallenge].
          *
          * **The attestation is not verified again!**
@@ -269,7 +269,7 @@ abstract class AttestationService {
         ): Result<Assertion>
 
         /**
-         * Verifies a fresh assertion, tied to a previously store attestation.
+         * Verifies a fresh assertion, tied to a previously stored attestation.
          *
          * **The attestation is not verified again!**
          * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
