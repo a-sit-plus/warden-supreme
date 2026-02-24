@@ -2,15 +2,20 @@
 
 package at.asitplus.attestation
 
-import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.toCryptoPublicKey
-import at.asitplus.signum.indispensable.toJcaPublicKey
+import at.asitplus.signum.indispensable.*
+import at.asitplus.signum.indispensable.asn1.encodeToPEM
+import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
+import ch.veehait.devicecheck.appattest.receipt.Receipt
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.*
+import org.bouncycastle.asn1.ASN1InputStream
+import org.bouncycastle.asn1.cms.ContentInfo
+import org.bouncycastle.cms.CMSSignedData
 import org.bouncycastle.util.encoders.Base64
 import java.security.KeyFactory
 import java.security.PublicKey
@@ -69,6 +74,30 @@ internal data class AssertionEnvelope(
         result = 31 * result + authenticatorData.contentHashCode()
         return result
     }
+}
+
+fun Receipt.serialize(): ByteArray = p7
+fun ByteArray.toReceipt() = Receipt(Receipt.Payload.parse(readAsSignedData()), this)
+
+fun ValidatedAttestation.toJson(): JsonObject = buildJsonObject {
+    put("cert", certificate.toKmpCertificate().getOrThrow().encodeToPEM().getOrThrow())
+    put("receipt", receipt.serialize().encodeBase64())
+    iOSVersion?.let { put("iOSVersion", it.toString()) }
+}
+
+fun JsonObject.toValidatedAttestation() = ValidatedAttestation(
+    at.asitplus.signum.indispensable.pki.X509Certificate.decodeFromPem(get("cert")!!.jsonPrimitive.content).getOrThrow()
+        .toJcaCertificateBlocking().getOrThrow(),
+    get("receipt")!!.jsonPrimitive.content.decodeBase64ToArray().toReceipt(),
+    getOrDefault(
+        "iOSVersion",
+        JsonNull
+    ).jsonPrimitive.contentOrNull
+)
+
+
+internal fun ByteArray.readAsSignedData(): CMSSignedData = ASN1InputStream(this).use {
+    it.readObject().let(ContentInfo::getInstance).let(::CMSSignedData)
 }
 
 //END COPIED

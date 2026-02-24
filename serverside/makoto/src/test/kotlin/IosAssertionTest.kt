@@ -114,6 +114,8 @@ val iosAssertionTests by testSuite {
         val iosResult = makoto.ios.verifyAppAttestation(it.attestation, it.challenge)
         "Attestation" {
             iosResult.shouldBeInstanceOf<AttestationResult.IOS.Verified>()
+            val serialized = iosResult.attestation.toJson()
+            serialized.toValidatedAttestation().toJson() shouldBe serialized
         }
         "Assertion" - {
             withData(it.assertions) { assertion ->
@@ -127,12 +129,18 @@ val iosAssertionTests by testSuite {
                 withClue(asserted.exceptionOrNull()?.message ?: "") {
                     asserted.isSuccess shouldBe assertion.ok
                 }
+                withClue("serializing + deserializing") {
+                    val asserted = makoto.ios.verifyAssertion(
+                        iosResult.attestation.toJson().toValidatedAttestation(),
+                        assertion.assertion,
+                        it.challenge,
+                        assertion.counterRange
+                    )
+                    asserted.isSuccess shouldBe assertion.ok
+                }
             }
-
         }
     }
-
-
 }
 
 
