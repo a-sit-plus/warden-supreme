@@ -87,26 +87,31 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
             companion object {
                 operator fun invoke(cause: AssertionException): iOS = when (cause) {
                     is AssertionException.InvalidAuthenticatorData -> {
-                        if (cause.message == "Assertion counter is not greater than the counter saved counter") {
-                            iOS(
-                                cause.message,
-                                cause = IosAttestationException(
+                        when (cause.message) {
+                            "Assertion counter is not greater than the counter saved counter" -> {
+                                iOS(
                                     cause.message,
-                                    cause,
-                                    reason = IosAttestationException.Reason.SIG_CTR
+                                    cause = IosAttestationException(
+                                        cause.message,
+                                        cause,
+                                        reason = IosAttestationException.Reason.SIG_CTR
+                                    )
                                 )
-                            )
-                        } else if (cause.message == "App ID hash does not match RP ID hash") {
-                            iOS(
-                                cause.message,
-                                cause = IosAttestationException(
+                            }
+
+                            "App ID hash does not match RP ID hash" -> {
+                                iOS(
                                     cause.message,
-                                    cause,
-                                    reason = IosAttestationException.Reason.IDENTIFIER
+                                    cause = IosAttestationException(
+                                        cause.message,
+                                        cause,
+                                        reason = IosAttestationException.Reason.IDENTIFIER
+                                    )
                                 )
-                            )
-                        } else
-                            iOS(
+                            }
+
+                            else
+                                -> iOS(
                                 cause.message,
                                 cause = IosAttestationException(
                                     cause.message,
@@ -114,6 +119,7 @@ sealed class AttestationException(val platform: Platform, message: String? = nul
                                     reason = IosAttestationException.Reason.APP_UNEXPECTED
                                 )
                             )
+                        }
                     }
 
                     is AssertionException.InvalidChallenge -> iOS(
