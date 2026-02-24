@@ -7,6 +7,7 @@ this changelog also includes the original WARDEN changelog.
 # 1.0.0-SNAPSHOT
 * Features:
     * Proper iOS assertion validation (thanks @andreybogdanov-sprind!)
+    * Serializers and ASN.1 codec for `ValidatedAttestation`
 * Fixes
     * Expose Kotlin-Stdlib as API dependency to make integration with Java projects smoother
 * API Changes:

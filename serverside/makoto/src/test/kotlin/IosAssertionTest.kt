@@ -6,6 +6,7 @@ import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.serialization.json.Json
 import kotlin.time.Instant
 
 val iosAssertionTests by testSuite {
@@ -114,8 +115,22 @@ val iosAssertionTests by testSuite {
         val iosResult = makoto.ios.verifyAppAttestation(it.attestation, it.challenge)
         "Attestation" {
             iosResult.shouldBeInstanceOf<AttestationResult.IOS.Verified>()
-            val serialized = iosResult.attestation.toJson()
-            serialized.toValidatedAttestation().toJson() shouldBe serialized
+            val json = Json { }
+            val serialized = json.encodeToString(iosResult.attestation.canonicalize())
+            val serialized2 = json.encodeToString(ValidatedAttestationSerializer, iosResult.attestation)
+            serialized2 shouldBe serialized
+            println(serialized)
+            json.encodeToString(
+                json.decodeFromString<CanonicalIosAttestation>(serialized)
+            ) shouldBe serialized
+
+            json.encodeToString(
+                ValidatedAttestationSerializer,
+                json.decodeFromString(ValidatedAttestationSerializer, serialized)
+            ) shouldBe serialized
+
+            val derEncoded = iosResult.attestation.canonicalize().encodeToDer()
+            CanonicalIosAttestation.decodeFromDer(derEncoded).encodeToDer() shouldBe derEncoded
         }
         "Assertion" - {
             withData(it.assertions) { assertion ->
@@ -131,7 +146,8 @@ val iosAssertionTests by testSuite {
                 }
                 withClue("serializing + deserializing") {
                     val asserted = makoto.ios.verifyAssertion(
-                        iosResult.attestation.toJson().toValidatedAttestation(),
+                        CanonicalIosAttestation.decodeFromDer(iosResult.attestation.canonicalize().encodeToDer())
+                            .toValidatedAttestation(),
                         assertion.assertion,
                         it.challenge,
                         assertion.counterRange
