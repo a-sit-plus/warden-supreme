@@ -3,7 +3,7 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.AttestationException
-import at.asitplus.attestation.Makoto.Companion.appAttestReader
+import at.asitplus.attestation.Makoto.Companion.assertionReader
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
@@ -444,15 +444,9 @@ object NoopAttestationService : AttestationService() {
                 expectedChallenge: ByteArray,
                 validator: AssertionChallengeValidator,
             ): Result<Assertion> {
-                val envelope = appAttestReader.readValue<AssertionEnvelope>(assertion)
-                val authenticatorDataBlob = envelope.authenticatorData.copyOf()
-                authenticatorDataBlob[AuthenticatorData.FLAGS_INDEX] =
-                    authenticatorDataBlob[AuthenticatorData.FLAGS_INDEX]
-                        .and(AuthenticatorDataFlag.ED.bitmask.xor(1))
-                        .and(AuthenticatorDataFlag.AT.bitmask.xor(1))
-
+                val envelope = assertionReader.readValue<AssertionEnvelope>(assertion)
                 return catchingUnwrapped {
-                    Assertion(envelope.signature, AuthenticatorData.parse(authenticatorDataBlob))
+                    Assertion(envelope.signature, envelope.authenticatorDataParsed())
                 }
 
             }

@@ -18,6 +18,7 @@ import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import ch.veehait.devicecheck.appattest.common.App
 import ch.veehait.devicecheck.appattest.common.AppleAppAttestEnvironment
+import ch.veehait.devicecheck.appattest.common.AuthenticatorData
 import ch.veehait.devicecheck.appattest.receipt.ReceiptException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory
@@ -974,6 +975,10 @@ class Makoto
         internal val appAttestReader = ObjectMapper(CBORFactory())
             .registerKotlinModule()
             .readerFor(AttestationObject::class.java)
+
+        internal val assertionReader = ObjectMapper(CBORFactory())
+            .registerKotlinModule()
+            .readerFor(AssertionEnvelope::class.java)
     }
 
     private class IosSetup(

@@ -13,6 +13,8 @@ import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1OctetStringPri
 import at.asitplus.signum.indispensable.io.ByteArrayBase64Serializer
 import at.asitplus.signum.indispensable.io.X509CertificateBase64Serializer
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
+import ch.veehait.devicecheck.appattest.common.AuthenticatorData
+import ch.veehait.devicecheck.appattest.common.AuthenticatorDataFlag
 import ch.veehait.devicecheck.appattest.receipt.Receipt
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -35,6 +37,8 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.*
 import javax.annotation.processing.Generated
+import kotlin.experimental.and
+import kotlin.experimental.xor
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaInstant
@@ -78,6 +82,15 @@ internal data class AssertionEnvelope(
         return true
     }
 
+    fun authenticatorDataParsed(): AuthenticatorData {
+        val authenticatorDataBlob= authenticatorData.copyOf()
+        authenticatorDataBlob[AuthenticatorData.FLAGS_INDEX] =
+            authenticatorDataBlob[AuthenticatorData.FLAGS_INDEX]
+                .and(AuthenticatorDataFlag.ED.bitmask.xor(1))
+                .and(AuthenticatorDataFlag.AT.bitmask.xor(1))
+        return AuthenticatorData.parse(authenticatorDataBlob)
+
+    }
     @Generated
     override fun hashCode(): Int {
         var result = signature.contentHashCode()
