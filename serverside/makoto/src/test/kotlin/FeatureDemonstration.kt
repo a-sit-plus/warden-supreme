@@ -169,7 +169,7 @@ val FeatureDemonstration by testSuite {
                         ios16.attestationProof[0],
                         ios16.attestationProof[1],
                         ios16.publicKey!!.encoded,
-                        ios16.challenge //explicitly specify counter
+                        ios16.challenge
                     ).apply {
                         shouldBeInstanceOf<AttestationResult.IOS>().apply {
                             clientData shouldBe ios16.publicKey!!.encoded //now we know that the app produced `clientData` as we intended
@@ -240,7 +240,7 @@ val FeatureDemonstration by testSuite {
                 attestationObject = ios16.attestationProof[0],
                 assertionFromDevice = ios16.attestationProof[1],
                 referenceClientData = ios16.publicKey!!.encoded,
-                challenge = ios16.challenge //explicitly specify counter
+                challenge = ios16.challenge
             ).shouldBeInstanceOf<AttestationResult.Error>()
         }
     }
