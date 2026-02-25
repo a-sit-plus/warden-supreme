@@ -5,15 +5,15 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # 1.0.0-SNAPSHOT
-* Fixes
+* Features
     * Proper iOS assertion validation (thanks @andreybogdanov-sprind!)
     * Serializers and ASN.1 codec for `ValidatedAttestation`
-    * Expose Kotlin-Stdlib as API dependency to make integration with Java projects smoother
-* Features
     * Move `AttestationConfiguration` helpers into `supreme-common`.
     * Add `config-hoplite` module that provides `hopliteDecoder()` for all `AttestationConfiguration` readers.
     * Add **experimental** `config-spring` module that binds Spring Boot config loading to the canonical serialization path.
     * YAML polymorphic configs now use a flat `type` shape (matching JSON) while still accepting legacy `type`/`value` YAML on decode.
+* Fixes
+    * Expose Kotlin-Stdlib as API dependency to make integration with Java projects smoother 
 * Tests
     * Extend configuration round-trip tests to include Hoplite loading and legacy YAML fixtures.
 * API Changes:
