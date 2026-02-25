@@ -4,7 +4,7 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-# 1.0.0-SNAPSHOT
+# 1.0.0-RC4
 * Features:
     * Proper iOS assertion validation (thanks @andreybogdanov-sprind!)
     * Serializers and ASN.1 codec for `ValidatedAttestation`
