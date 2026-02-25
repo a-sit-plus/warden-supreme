@@ -308,10 +308,11 @@ class Makoto
                         validCounters.first,
                         expectedChallenge
                     ).also { assertion ->
-                        if (assertion.authenticatorData.signCount - 1 > validCounters.last) "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}".let { msg ->
+                        if (assertion.authenticatorData.signCount - 1 > validCounters.last) {
+                            val msg = "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
                             throw AttestationException.Content.iOS(
                                 msg,
-                                cause = IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
+                                IosAttestationException(msg, IosAttestationException.Reason.SIG_CTR)
                             )
                         }
                     }

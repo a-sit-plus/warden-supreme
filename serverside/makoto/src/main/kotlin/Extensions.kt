@@ -213,15 +213,13 @@ object ValidatedAttestationSerializer : KSerializer<ValidatedAttestation> {
             decoder.decodeElementIndex(X509CertificateBase64Serializer.descriptor),
             X509CertificateBase64Serializer
         )
-        val receipt =
-            decoder.decodeSerializableElement(
-                ByteArrayBase64Serializer.descriptor, decoder.decodeElementIndex(
-                    ByteArrayBase64Serializer.descriptor
-                ), ByteArrayBase64Serializer
-            )
-                .let {
-                    Receipt(Receipt.Payload.parse((it.readAsSignedData())), it)
-                }
+        val receipt = decoder.decodeSerializableElement(
+            ByteArrayBase64Serializer.descriptor,
+            decoder.decodeElementIndex(ByteArrayBase64Serializer.descriptor),
+            ByteArrayBase64Serializer
+        ).let {
+            Receipt(Receipt.Payload.parse((it.readAsSignedData())), it)
+        }
         val iosVersion = decoder.decodeElementIndex(String.serializer().descriptor)
             .let { if (it == -1) null else decoder.decodeStringElement(String.serializer().descriptor, it) }
         decoder.endStructure(descriptor)
