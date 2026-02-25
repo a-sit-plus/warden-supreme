@@ -13,10 +13,12 @@ import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.AppleAppAttest
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
+import ch.veehait.devicecheck.appattest.assertion.AssertionException
 import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import ch.veehait.devicecheck.appattest.common.App
 import ch.veehait.devicecheck.appattest.common.AppleAppAttestEnvironment
+import ch.veehait.devicecheck.appattest.common.AuthenticatorData
 import ch.veehait.devicecheck.appattest.receipt.ReceiptException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory
@@ -246,18 +248,87 @@ class Makoto
         override fun verifyAppAttestation(attestationObject: ByteArray, challenge: ByteArray) =
             verifyAttestationApple(attestationObject, challenge, assertionData = null, counter = 0L)
 
-        override fun verifyAssertion(
+        override fun verifyCombined(
             attestationObject: ByteArray,
             assertionFromDevice: ByteArray,
             referenceClientData: ByteArray,
             challenge: ByteArray,
-            counter: Long
         ) = verifyAttestationApple(
             attestationObject,
             challenge,
             assertionData = AssertionData(assertionFromDevice, referenceClientData),
-            counter
+            0
         )
+
+
+        private fun findMatchingConfiguration(validatedAttestation: ValidatedAttestation) =
+            iosSetup?.attestationValidators?.toList()
+                ?.find { (attest, _) -> attest.app.appIdentifier == validatedAttestation.receipt.payload.appId.value }?.first
+                ?: throw AttestationException.Configuration(
+                    Platform.IOS, "No matching app for ${validatedAttestation.receipt.payload.appId.value} found",
+                    cause = NullPointerException()
+                )
+
+
+        override fun verifyAssertion(
+            validatedAttestation: ValidatedAttestation,
+            assertion: ByteArray,
+            expectedChallenge: ByteArray,
+            validCounters: LongRange
+        ): Result<Assertion> = verifyAssertion(
+            validatedAttestation,
+            assertion,
+            expectedChallenge,
+            validCounters,
+            expectedChallenge,
+            object : AssertionChallengeValidator {
+                override fun validate(
+                    assertionObj: Assertion,
+                    clientData: ByteArray,
+                    attestationPublicKey: ECPublicKey,
+                    challenge: ByteArray,
+                ) = clientData.contentEquals(challenge)
+            }
+        )
+
+        override fun verifyAssertion(
+            validatedAttestation: ValidatedAttestation,
+            assertion: ByteArray,
+            referenceClientData: ByteArray,
+            validCounters: LongRange,
+            expectedChallenge: ByteArray,
+            validator: AssertionChallengeValidator,
+        ): Result<Assertion> = catchingUnwrapped {
+            findMatchingConfiguration(validatedAttestation).let { attest ->
+                catchingUnwrapped {
+                    attest.createAssertionValidator(validator).validate(
+                        assertion,
+                        referenceClientData,
+                        validatedAttestation.receipt.payload.attestationCertificate.value.publicKey as ECPublicKey,
+                        validCounters.first,
+                        expectedChallenge
+                    ).also { assertion ->
+                        if (assertion.authenticatorData.signCount - 1 > validCounters.last) {
+                            val msg = "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
+                            throw AttestationException.Content.iOS(
+                                msg,
+                                IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
+                            )
+                        }
+                    }
+                }.getOrElse {
+                    throw when (it) {
+                        is AssertionException -> AttestationException.Content.iOS(it)
+                        is AttestationException -> throw it
+                        else -> AttestationException.Content.iOS(
+                            it.message,
+                            IosAttestationException(reason = IosAttestationException.Reason.APP_UNEXPECTED)
+                        )
+                    }
+                }
+            }
+        }
+
     }
 
     override val android = object : Android {
@@ -704,21 +775,21 @@ class Makoto
         }
 
         return assertionData?.let { assertionData ->
-            runCatching {
-                val assertion = result.first.createAssertionValidator(object : AssertionChallengeValidator {
-                    override fun validate(
-                        assertionObj: Assertion,
-                        clientData: ByteArray,
-                        attestationPublicKey: ECPublicKey,
-                        challenge: ByteArray,
-                    ) = challenge contentEquals expectedChallenge
-                }).validate(
-                    assertionData.assertion,
-                    assertionData.clientData,
-                    result.second.certificate.publicKey as ECPublicKey,
-                    counter,
-                    expectedChallenge
-                )
+            catchingUnwrapped {
+                val assertion = ios.verifyAssertion(
+                    validatedAttestation = result.second,
+                    assertion = assertionData.assertion,
+                    validCounters = counter..Long.MAX_VALUE,
+                    referenceClientData = assertionData.clientData,
+                    expectedChallenge = expectedChallenge,
+                    validator = object : AssertionChallengeValidator {
+                        override fun validate(
+                            assertionObj: Assertion,
+                            clientData: ByteArray,
+                            attestationPublicKey: ECPublicKey,
+                            challenge: ByteArray,
+                        ) = challenge contentEquals expectedChallenge
+                    }).getOrThrow()
                 return if (assertion.authenticatorData.signCount != 1L) "iOS Assertion counter is ${assertion.authenticatorData.signCount}, but should be 1".let { msg ->
                     AttestationResult.Error(
                         msg,
@@ -728,7 +799,11 @@ class Makoto
                         )
                     )
                 }
-                else AttestationResult.IOS.Verified(result.second, parsedVersion, assertionData.clientData to assertion)
+                else AttestationResult.IOS.Verified(
+                    result.second,
+                    parsedVersion,
+                    assertionData.clientData to assertion
+                )
             }.getOrElse {
                 AttestationResult.Error(
                     it.message ?: "iOS Assertion validation error due to ${it::class.simpleName}",
@@ -898,9 +973,13 @@ class Makoto
         val version: String = wardenVersion
 
 
-        private val appAttestReader = ObjectMapper(CBORFactory())
+        internal val appAttestReader = ObjectMapper(CBORFactory())
             .registerKotlinModule()
             .readerFor(AttestationObject::class.java)
+
+        internal val assertionReader = ObjectMapper(CBORFactory())
+            .registerKotlinModule()
+            .readerFor(AssertionEnvelope::class.java)
     }
 
     private class IosSetup(
