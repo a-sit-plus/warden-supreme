@@ -312,7 +312,7 @@ class Makoto
                             val msg = "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
                             throw AttestationException.Content.iOS(
                                 msg,
-                                IosAttestationException(msg, IosAttestationException.Reason.SIG_CTR)
+                                IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
                             )
                         }
                     }

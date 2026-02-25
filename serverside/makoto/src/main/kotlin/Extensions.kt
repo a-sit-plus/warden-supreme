@@ -83,7 +83,7 @@ internal data class AssertionEnvelope(
     }
 
     fun authenticatorDataParsed(): AuthenticatorData {
-        val authenticatorDataBlob= authenticatorData.copyOf()
+        val authenticatorDataBlob = authenticatorData.copyOf()
         authenticatorDataBlob[AuthenticatorData.FLAGS_INDEX] =
             authenticatorDataBlob[AuthenticatorData.FLAGS_INDEX]
                 .and(AuthenticatorDataFlag.ED.bitmask.xor(1))
@@ -91,6 +91,7 @@ internal data class AssertionEnvelope(
         return AuthenticatorData.parse(authenticatorDataBlob)
 
     }
+
     @Generated
     override fun hashCode(): Int {
         var result = signature.contentHashCode()
@@ -217,9 +218,8 @@ object ValidatedAttestationSerializer : KSerializer<ValidatedAttestation> {
             ByteArrayBase64Serializer.descriptor,
             decoder.decodeElementIndex(ByteArrayBase64Serializer.descriptor),
             ByteArrayBase64Serializer
-        ).let {
-            Receipt(Receipt.Payload.parse((it.readAsSignedData())), it)
-        }
+        ).let { Receipt(Receipt.Payload.parse((it.readAsSignedData())), it) }
+
         val iosVersion = decoder.decodeElementIndex(String.serializer().descriptor)
             .let { if (it == -1) null else decoder.decodeStringElement(String.serializer().descriptor, it) }
         decoder.endStructure(descriptor)
