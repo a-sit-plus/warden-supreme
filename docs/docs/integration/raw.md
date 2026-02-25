@@ -106,6 +106,7 @@ Warden makoto is the modernised variant of legacy WARDEN, sharing the same API:
 
 
 Recommended endpoints:
+
 - GET `/attestation/challenge`
     - Issue per-request challenges with short TTL.
 - POST `/attestation/register`
@@ -114,7 +115,41 @@ Recommended endpoints:
 - POST `/attestation/assert` (if iOS assertion is required)
     - iOS only: submit assertion bound to a fresh challenge; enforce monotonic counters and receipt if used.
 
+### iOS Assertion Flow with Stored `ValidatedAttestation`
+
+If you run a custom iOS client flow (no integrated Supreme client), the recommended server-side sequence is:
+
+1. `POST /attestation/register`:
+    - Verify App Attest once via `Makoto.ios.verifyAppAttestation(attestationObject, challenge)`.
+    - Persist the returned `ValidatedAttestation` (`AttestationResult.IOS.Verified.attestation`) together with your
+      key/user binding and current counter state.
+2. `POST /attestation/assert`:
+    - Load the previously stored `ValidatedAttestation`.
+    - Verify a fresh assertion against a fresh challenge via `Makoto.ios.verifyAssertion(...)`.
+    - On success, update your stored counter state.
+
+`verifyAssertion(...)` does **not** re-verify attestation freshness. Challenge freshness and replay protection remain
+your responsibility.
+Counter semantics are based on the value **before** creating the assertion:
+- `validCounters.first`: strict lower bound (`counterBefore > first`)
+- `validCounters.last`: inclusive upper bound (`counterBefore <= last`)
+
+!!! example "Reference implementation (JSON + ASN.1/DER persistence and assertion validation)"
+    ```kotlin
+    --8<-- "Readme-Raw-ios-assertion.kt:35:60"
+    ```
+
+    1. Registers the incoming App Attest payload and verifies it against the registration challenge.
+    2. Narrows the result to `AttestationResult.IOS.Verified` to access the returned `ValidatedAttestation`.  
+       You want proper error handling in your actual production code!
+    3. Serializes `ValidatedAttestation` to JSON using `ValidatedAttestationSerializer` for persistence.
+    4. Verifies a fresh assertion using the deserialized, previously recorded attestation.
+    5. Counter bounds are checked against the value **before** creating the assertion.  
+       This example asserts a single valid counter value.
+    6. Shows the canonical ASN.1/DER persistence alternative via `canonicalize().encodeToDer()`.
+
 General tips and requirements:
+
 - Require challenge freshness and correct nonce/challenge echo in the platform-specific mechanism.
 - Replay: Reject reused challenges; on iOS, also enforce increasing counters per key.
 - Stage alignment: Configure sandbox vs. production AAGUID correctly on iOS.
