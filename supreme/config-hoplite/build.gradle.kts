@@ -6,6 +6,7 @@ plugins {
     id("maven-publish")
     id("signing")
     id("at.asitplus.gradle.conventions")
+    alias(libs.plugins.sbombastic)
 }
 
 val artifactVersion: String by extra

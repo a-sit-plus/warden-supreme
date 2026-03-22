@@ -8,6 +8,7 @@ plugins {
     kotlin("plugin.serialization") version kotlinVer apply false
     alias(libs.plugins.asp)
     alias(libs.plugins.agp) apply (false)
+    alias(libs.plugins.sbombastic)
 }
 
 val artifactVersion: String by extra

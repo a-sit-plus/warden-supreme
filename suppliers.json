@@ -1,0 +1,22 @@
+[
+  {
+    "type": "mvn",
+    "groups": ["org.jetbrains.*"],
+    "supplier": {
+      "name": "JetBrains s.r.o",
+      "urls": ["https://www.jetbrains.com"],
+      "contactName": "JetBrains",
+      "email": "compliance@jetbrains.com"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": ["at.asitplus", "at.asitplus.*"],
+    "supplier": {
+      "name": "A-SIT Plus GmbH",
+      "urls": ["https://plus.a-sit.at", "https://github.com/a-sit-plus"],
+      "contactName": "A-SIT Plus Opensource",
+      "email": "opensource@a-sit.at"
+    }
+  }
+]

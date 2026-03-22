@@ -25,6 +25,7 @@ slf4j = "1.7.36"
 testballoon = "0.8.2-K2.3.0"
 testballoonAddons = "0.7.1"
 asp = "20260114"
+sbombastic ="0.0.1"
 
 
 [libraries]
@@ -62,3 +63,4 @@ schemakenerator-jsonschema = { group = "io.github.smiley4", name = "schema-kener
 [plugins]
 asp = { id = "at.asitplus.gradle.conventions", version.ref = "asp" }
 agp = { id = "com.android.kotlin.multiplatform.library", version.ref= "agp"}
+sbombastic = { id = "at.asitplus.gradle.sbombastic", version.ref= "sbombastic"}
