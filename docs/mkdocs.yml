@@ -152,6 +152,15 @@ nav:
         - Usage without Integrated Clients: integration/raw.md
         - Migration from WARDEN: integration/migration.md
         - Changelog: CHANGELOG.md
+    - SBOM:
+        - Overview: sbom.md
+        - Warden makoto: sbom/modules/makoto.md
+        - Warden roboto: sbom/modules/roboto.md
+        - Supreme Common: sbom/modules/supreme-common.md
+        - Supreme Client: sbom/modules/supreme-client.md
+        - Supreme Verifier: sbom/modules/supreme-verifier.md
+        - Config Hoplite: sbom/modules/config-hoplite.md
+        - Config Spring: sbom/modules/config-spring.md
     - Glossary: glossary.md
     - API Docs: dokka/index.html
     - 💎 Services: services.md

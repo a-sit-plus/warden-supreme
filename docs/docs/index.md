@@ -116,8 +116,9 @@ hide:
                 </p>
 
                 <div class="ws-cta-row">
-                    <a class="md-button md-button--primary ws-cta" href="why-supreme/">Learn more</a>
-                    <a class="md-button ws-cta" href="integration/supreme/">Start integrating</a>
+                    <a class="md-button md-button--primary ws-cta" href="overview/">Learn more</a>
+                    <a class="md-button ws-cta" href="integration/supreme/">Integration</a>
+                    <a class="md-button ws-cta" href="sbom/">SBOM</a>
                     <a class="md-button ws-cta" href="services/">Services</a>
                 </div>
 
@@ -154,6 +155,7 @@ hide:
                 – privacy-first.') }}
             </div>
         </div>
+<a class="md-button md-button--primary ws-cta" href="why-warden/">Learn more</a>
     </section>
 
     <section class="ws-section ws-steps">
