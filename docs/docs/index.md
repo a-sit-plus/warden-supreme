@@ -164,9 +164,9 @@ hide:
                 {{ feature_card('speedometer', 'Get Going, Fast', 'App integration in two lines of code – no cheap
                 tricks, no sleight of hand.</p><p>Back-End Integration using two HTTPS endpoints.') }}
                 {{ feature_card('shield-alert', 'Risk-Based', 'Grounded in threat modelling and platform characteristics
-                – privacy-first.</p><p>Want to support custom ROMs? Warden Supreme has your back!') }}
-                {{ cta_card('book-open-page-variant', 'Need the Full Picture?', 'See why Warden Supreme still makes
-                sense for Android-only and iOS-only setups too.', 'Learn more', 'why-supreme/') }}
+                – privacy-first.</p><p>No Google Play Certification? No Problem! Warden Supreme supports custom ROMs.') }}
+                {{ cta_card('book-open-page-variant', 'Need the Full Picture?', 'See why Warden Supreme also makes
+                sense for Android-only and iOS-only setups.', 'Learn more', 'why-supreme/') }}
             </div>
         </div>
     </section>

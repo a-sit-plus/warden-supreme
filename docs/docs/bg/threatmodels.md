@@ -24,7 +24,9 @@ use your service.
 To keep such devices and apps out, require strong, cryptographic platform guarantees:
 
 - Android  
-    - Accept only attestation records with `verifiedBootState: VERIFIED` and a locked bootloader.  
+    - Accept only a locked bootloader and trusted verified boot state.
+        - For mainstream deployments, this usually means `verifiedBootState: VERIFIED`.
+        - For hardened custom-ROM deployments, this can also mean locked-bootloader `SELF_SIGNED` with an explicitly trusted verified boot key hash.
     - Enforce a minimum OS security patch level to exclude known, widely exploited vulnerabilities.  
     - Verify the app identity: compare package name and signing‑certificate digest(s) against your allowlist.
 
@@ -35,6 +37,16 @@ To keep such devices and apps out, require strong, cryptographic platform guaran
 Since software‑only Android attestation can be forged on rooted devices, the policy decision is simple:  
 **Accept hardware‑backed attestation only; reject software attestation.** This preserves access for honest users while
 filtering out cheap, commoditised attacks.
+
+!!! tip "No Google Play Certification? No Problem!"
+    Need to support secure custom ROMs without weakening your attestation policy? Warden Supreme can treat
+    trusted `SELF_SIGNED` verified boot keys just like OEM-verified Android while still requiring a locked
+    bootloader and current patches.
+    You can accept OEM Android, hardened custom ROMs such as GrapheneOS, or only those hardened custom ROMs for
+    high-security deployments.
+    GrapheneOS publishes its [verified boot key hashes](https://grapheneos.org/install/web#verified-boot-key-hash).
+    See [High-Assurance Android Policies](why-supreme.md#high-assurance-android-policies), [Threat Models and Risks](bg/threatmodels.md), and
+    [Externalising Configuration](integration/config.md).
 
 !!! example "Example Repackaging Attacks"
     Attestation thwarts common repackaging patterns such as:
@@ -154,10 +166,22 @@ However, you can raise the cost and reduce exposure—primarily on Android, wher
 
 These controls will exclude older or lower‑end devices. The policy trade‑off is explicit: choose assurance over coverage when stakes are high!
 
+For Android specifically, this is also where verified-boot policy becomes strategically interesting:
+
+- Broad, consumer-facing deployments often accept OEM-verified Android with current patches.
+- Mixed deployments can accept OEM Android plus explicitly trusted hardened custom ROMs.
+- High-security deployments can choose to admit only explicitly trusted hardened custom ROMs with locked bootloaders,
+  recent patches, and additional requirements such as StrongBox or rollback resistance.
+
+This is not a theoretical distinction. It is a practical way to support privacy- and hardening-focused device fleets
+without weakening the integrity model. See [Why Warden Supreme](../why-supreme.md) for the product view and
+[Externalising Configuration](../integration/config.md) for the actual policy shape.
+
 !!! example "Choosing a Policy That Matches Your Risk"
     - Low to moderate risk:
         - Hardware attestation
-        - Locked bootloader + verified boot (possibly allowing known-good custom ROM verified boot keys)
+        - Locked bootloader + trusted verified boot policy
+        - OEM-only, OEM plus trusted custom ROM keys, or trusted custom ROM keys only
         - Reject older patch‑levels
     - Strong Sybil Resistance
         - Require remote key provisioning
@@ -168,3 +192,4 @@ These controls will exclude older or lower‑end devices. The policy trade‑off
         - Rollback resistance
         - Require latest patch levels + app version
         - Require latest and greatest OS version
+        - Optionally restrict Android to explicitly trusted hardened custom ROM verified boot keys only

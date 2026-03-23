@@ -28,11 +28,15 @@ It is a living documentation hub covering all things attestation, and it is cont
 It already provides a structured overview of remote attestation,
 from concepts to hands‑on integration:
 
-!!! tip "Custom Android boot policies"
-    Need to support secure custom ROMs without weakening your attestation policy? Warden Supreme supports this by
-    configuring trusted custom-ROM verified boot keys while still requiring a locked bootloader and verified boot.
-    GrapheneOS is one concrete example and publishes its
-    [verified boot key hashes](https://grapheneos.org/install/web#verified-boot-key-hash).
+!!! tip "No Google Play Certification? No Problem!"
+    Need to support secure custom ROMs without weakening your attestation policy? Warden Supreme can treat
+    trusted `SELF_SIGNED` verified boot keys just like OEM-verified Android while still requiring a locked
+    bootloader and current patches.
+    You can accept OEM Android, hardened custom ROMs such as GrapheneOS, or only those hardened custom ROMs for
+    high-security deployments.
+    GrapheneOS publishes its [verified boot key hashes](https://grapheneos.org/install/web#verified-boot-key-hash).
+    See [High-Assurance Android Policies](why-supreme.md#high-assurance-android-policies), [Threat Models and Risks](bg/threatmodels.md), and
+    [Externalising Configuration](integration/config.md).
 
 <ul class="emoji-list">
   <li>
@@ -47,6 +51,7 @@ from concepts to hands‑on integration:
         <span class="bullet">⚠️</span>
         Threat models, risks, and why attestation beats heuristics (e.g., simple root checks).
         <br>&rarr; See <a href="../bg/threatmodels/">Threat Models and Risks</a>.
+        <br>&rarr; Includes guidance for OEM-only vs. hardened custom-ROM Android policies.
       </li>
       <li>
         <span class="bullet">🛡️</span>
@@ -113,6 +118,11 @@ from concepts to hands‑on integration:
       <li>
         <span class="bullet">✅</span>
         Use a unified client API across iOS and Android
+      </li>
+      <li>
+        <span class="bullet">✅</span>
+        Accept OEM Android, hardened custom ROMs, or only explicitly trusted custom ROMs with the same
+        hardware-backed verifier
       </li>
     </ul>
     &rarr; See the <a href="../integration/supreme/">Integration Guide</a>.
