@@ -5,6 +5,9 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # NEXT
+* Support custom verified boot keys
+    * Allows treating self-signed just like a locked bootloader if desired
+    * Makes it possible to disallow even OEM ROMS and allow only GrapheneOS, for example 
 
 # 1.0.0-RC5
 * Features
