@@ -25,7 +25,7 @@ slf4j = "1.7.36"
 testballoon = "0.8.2-K2.3.0"
 testballoonAddons = "0.7.1"
 asp = "20260114"
-sbombastic ="0.0.1"
+sbombastic ="0.0.2"
 
 
 [libraries]
