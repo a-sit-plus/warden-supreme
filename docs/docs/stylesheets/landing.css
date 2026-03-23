@@ -479,6 +479,20 @@ body.ws-landing-page.ws-header-scrolled .md-header {
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
 }
 
+.ws-card--cta {
+  background: linear-gradient(180deg, rgba(0, 74, 102, 0.18), rgba(13, 17, 23, 0.78));
+  border-color: rgba(0, 193, 255, 0.28);
+}
+
+.ws-card--cta p {
+  margin-bottom: 1rem;
+}
+
+.ws-card__cta {
+  margin: 0;
+  align-self: flex-start;
+}
+
 .ws-card__icon {
     width: 2.4rem;
     height: 2.4rem;
@@ -609,3 +623,4 @@ body.ws-landing-page.ws-header-scrolled .md-header {
 .md-typeset h2 {
   margin-top: 0;
 }
+
