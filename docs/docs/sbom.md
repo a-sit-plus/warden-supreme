@@ -1,6 +1,6 @@
 # Software Bill of Materials
 
-Warden Supreme publishes CycloneDX SBOMs for every Maven publication of every published module.
+Starting after 1.0.0-RC5, Warden Supreme publishes CycloneDX SBOMs for every Maven publication of every published module.
 
 Each SBOM describes one published Maven artifact, not just one Gradle project. For Kotlin Multiplatform modules that
 means there is usually one SBOM for the root `kotlinMultiplatform` publication and one SBOM for each concrete target
