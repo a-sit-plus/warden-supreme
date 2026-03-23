@@ -19,6 +19,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - name: Install sbombastic to Maven Local
+        run: |
+          git clone --depth 1 https://github.com/a-sit-plus/sbombastic /tmp/sbombastic
+          cd /tmp/sbombastic
+          ./gradlew publishToMavenLocal
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: 16.2.0
@@ -34,7 +39,7 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
       - name: Install deps
         run: brew install cairo freetype libffi libjpeg libpng zlib
-      - name: Build Dokka HTML
+      - name: Build Site
         run: |
           export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib
           ./gradlew mkDocsSite
