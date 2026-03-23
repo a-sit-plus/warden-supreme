@@ -46,6 +46,17 @@ hide:
 </div>
 {%- endmacro %}
 
+{% macro cta_card(icon_name, title, body, link_label, href) -%}
+<div class="ws-card ws-card--cta">
+    <div class="ws-card__header">
+        <div class="ws-card__icon">{{ icon(icon_name, title) }}</div>
+        <h3>{{ title }}</h3>
+    </div>
+    <p>{{ body }}</p>
+    <a class="md-button md-button--primary ws-cta ws-card__cta" href="{{ href }}">{{ link_label }}</a>
+</div>
+{%- endmacro %}
+
 {% macro mini_card(icon_name, body) -%}
 <div class="ws-cred__item">
     {{ icon(icon_name) }}
@@ -116,14 +127,18 @@ hide:
                 </p>
 
                 <div class="ws-cta-row">
-                    <a class="md-button md-button--primary ws-cta" href="why-supreme/">Learn more</a>
+                    <a class="md-button md-button--primary ws-cta" href="overview/">Learn more</a>
                     <a class="md-button ws-cta" href="integration/supreme/">Start integrating</a>
                     <a class="md-button ws-cta" href="services/">Services</a>
                 </div>
 
                 <div class="ws-proof">
-                    {{ icon('chart-line', 'Proof') }}
+                    {{ icon('chart-line', 'Stats') }}
                     <p>Millions of devices attested in production – and counting.</p>
+                </div>
+                <div class="ws-proof">
+                    {{ icon('package-variant-closed', 'Supply chain') }}
+                    <p><a href="sbom/">Signed supply-chain metadata for every release.</a></p>
                 </div>
             </div>
 
@@ -147,11 +162,11 @@ hide:
                 {{ feature_card('file-certificate', 'Policy-Driven Checks', 'Define and evolve verification policies
                 without client rewrites.') }}
                 {{ feature_card('speedometer', 'Get Going, Fast', 'App integration in two lines of code – no cheap
-                tricks, no sleight of hand.') }}
-                {{ feature_card('check-decagram', 'Production-Proven', 'Built on the battle-tested WARDEN stack, now
-                consolidated and refined.') }}
+                tricks, no sleight of hand.</p><p>Back-End Integration using two HTTPS endpoints.') }}
                 {{ feature_card('shield-alert', 'Risk-Based', 'Grounded in threat modelling and platform characteristics
-                – privacy-first.') }}
+                – privacy-first.</p><p>Want to support custom ROMs? Warden Supreme has your back!') }}
+                {{ cta_card('book-open-page-variant', 'Need the Full Picture?', 'See why Warden Supreme still makes
+                sense for Android-only and iOS-only setups too.', 'Learn more', 'why-supreme/') }}
             </div>
         </div>
     </section>

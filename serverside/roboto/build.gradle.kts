@@ -20,7 +20,30 @@ plugins {
     id("signing")
     id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
+    alias(libs.plugins.sbombastic)
 }
+
+
+sbombastic {
+    manualDependency("android-key-attestation") {
+        version.set("5c108835e7b5a44fafa3cc934f45eed01a850cfa")
+        vcsUrls.set(listOf("https://github.com/google/android-key-attestation"))
+        supplierName.set("Google LLC")
+        supplierUrls.set(listOf("https://source.android.com"))
+        supplierContactName.set("Google")
+        supplierEmail.set("security@google.com")
+    }
+    manualDependency("keyattestation") {
+        version.set("9066c0a003225e776b93ba5906d46c45904173de")
+        vcsUrls.set(listOf("https://github.com/android/keyattestation"))
+        supplierName.set("Google LLC")
+        supplierUrls.set(listOf("https://source.android.com"))
+        supplierContactName.set("Google")
+        supplierEmail.set("security@google.com")
+    }
+}
+
+
 val generatedSrcDir = "${project.layout.projectDirectory.dir("src")}/generated/kotlin"
 sourceSets.main {
     kotlin.srcDir(generatedSrcDir)

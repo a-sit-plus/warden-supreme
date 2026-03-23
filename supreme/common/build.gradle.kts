@@ -11,6 +11,7 @@ plugins {
     id("signing")
     id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
+    alias(libs.plugins.sbombastic)
 }
 
 val artifactVersion: String by extra

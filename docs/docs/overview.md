@@ -35,17 +35,17 @@ from concepts to hands‑on integration:
       <li>
         <span class="bullet">🧠</span>
         What is Remote Attestation? A security mechanism where a device proves its integrity to a remote server by producing a signed statement about its hardware, OS state, and app identity.
-        <br>&rarr; See <a href="bg/primer">Remote Attestation Primer</a>.
+        <br>&rarr; See <a href="../bg/primer/">Remote Attestation Primer</a>.
       </li>
       <li>
         <span class="bullet">⚠️</span>
         Threat models, risks, and why attestation beats heuristics (e.g., simple root checks).
-        <br>&rarr; See <a href="bg/threatmodels">Threat Models and Risks</a>.
+        <br>&rarr; See <a href="../bg/threatmodels/">Threat Models and Risks</a>.
       </li>
       <li>
         <span class="bullet">🛡️</span>
         "Pure" Attestation vs. proprietary services (Google Play Integrity, Apple App Attest), privacy, data protection, and digital sovereignty.
-        <br>&rarr; See <a href="bg/privacy">Privacy and Data Protection</a>.
+        <br>&rarr; See <a href="../bg/privacy/">Privacy and Data Protection</a>.
       </li>
     </ul>
   </li>
@@ -55,23 +55,23 @@ from concepts to hands‑on integration:
       <li>
         <span class="bullet">🤖</span>
         Android key attestation: proving hardware-backed keys and embedding app identity in the attestation record.
-        <br>&rarr; See <a href="technical/android">Technical Deep Dive: Android</a>.
+        <br>&rarr; See <a href="../technical/android/">Technical Deep Dive: Android</a>.
       </li>
       <li>
         <span class="bullet">🍎</span>
         iOS App Attest: verifying app integrity and emulating key attestation semantics.
-        <br>&rarr; See <a href="technical/ios">Technical Deep Dive: iOS</a>.
+        <br>&rarr; See <a href="../technical/ios/">Technical Deep Dive: iOS</a>.
       </li>
       <li>
         <span class="bullet">🚧</span>
         Pitfalls, quirks, and workarounds that require careful evaluation.
-        <br>&rarr; See <a href="technical/quirks">Technical Deep Dive: Quirks and Hints</a>.
+        <br>&rarr; See <a href="../technical/quirks/">Technical Deep Dive: Quirks and Hints</a>.
       </li>
     </ul>
   </li>
   <li>
     <span class="bullet">
-      <img src="{{ '../assets/images/icon.svg'}}" alt="Warden Supreme" class="inline-icon">
+      <img src="../assets/images/icon.svg" alt="Warden Supreme" class="inline-icon">
     </span>
     <strong>Integrating Warden Supreme</strong>
     <p>
@@ -109,14 +109,14 @@ from concepts to hands‑on integration:
         Use a unified client API across iOS and Android
       </li>
     </ul>
-    &rarr; See the <a href="integration/supreme">Integration Guide</a>.
-    <br>&rarr; If you are Android-only or iOS-only, see <a href="why-supreme">Why Warden Supreme?</a>.
+    &rarr; See the <a href="../integration/supreme/">Integration Guide</a>.
+    <br>&rarr; If you are Android-only or iOS-only, see <a href="../why-supreme/">Why Warden Supreme?</a>.
   </li>
   <li>
     <span class="bullet">📖</span>
     <strong>Glossary</strong><br>
     A comprehensive glossary covering terminology across the attestation domain.<br>
-    &rarr; See the <a href="glossary">Glossary</a>.
+    &rarr; See the <a href="../glossary/">Glossary</a>.
   </li>
 </ul>
 

@@ -1,0 +1,284 @@
+[
+  {
+    "type": "mvn",
+    "groups": [
+      "io.ktor", "org.jetbrains.*", "org.jetbrains"
+    ],
+    "supplier": {
+      "name": "JetBrains s.r.o",
+      "urls": [
+        "https://www.jetbrains.com"
+      ],
+      "contactName": "JetBrains",
+      "email": "compliance@jetbrains.com"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": ["at.asitplus", "at.asitplus.*"],
+    "supplier": {
+      "name": "A-SIT Plus GmbH",
+      "urls": [
+        "https://plus.a-sit.at",
+        "https://github.com/a-sit-plus"
+      ],
+      "contactName": "A-SIT Plus Opensource",
+      "email": "opensource@a-sit.at"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": ["io.github.aakira", "io.github.aakira.*"],
+    "supplier": {
+      "name": "Akira Aratani",
+      "urls": [
+        "https://aakira.app/"
+      ],
+      "contactName": "Akira Aratani",
+      "email": "contact@aakira.app"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "com.fasterxml.*"
+    ],
+    "supplier": {
+      "name": "FasterXML, LLC",
+      "urls": [
+        "https://fasterxml.com/"
+      ],
+      "contactName": "FasterXML",
+      "email": "info@fasterxml.com"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "androidx.*"
+    ],
+    "supplier": {
+      "name": "Google LLC",
+      "urls": [
+        "https://developer.android.com/jetpack/androidx",
+        "https://android.googlesource.com/platform/frameworks/support"
+      ]
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "com.google.auto.value"
+    ],
+    "supplier": {
+      "name": "Google LLC",
+      "urls": [
+        "https://opensource.google/"
+      ]
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "com.google.code.gson"
+    ],
+    "supplier": {
+      "name": "Google LLC",
+      "urls": [
+        "https://google.github.io/gson/"
+      ]
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "com.google.errorprone"
+    ],
+    "supplier": {
+      "name": "Google LLC",
+      "urls": [
+        "https://opensource.google/"
+      ]
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "com.google.guava"
+    ],
+    "supplier": {
+      "name": "Google LLC",
+      "urls": [
+        "https://guava.dev/",
+        "https://opensource.google/"
+      ]
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "com.google.j2objc"
+    ],
+    "supplier": {
+      "name": "Google LLC",
+      "urls": [
+        "https://developers.google.com/j2objc",
+        "https://opensource.google/"
+      ]
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "com.google.protobuf"
+    ],
+    "supplier": {
+      "name": "Google LLC",
+      "urls": [
+        "https://protobuf.dev/",
+        "https://opensource.google/"
+      ]
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "org.jspecify"
+    ],
+    "supplier": {
+      "name": "The JSpecify Authors",
+      "urls": [
+        "https://jspecify.dev/"
+      ],
+      "contactName": "JSpecify Dev ML",
+      "email": "jspecify-dev@googlegroups.com"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "org.bouncycastle"
+    ],
+    "supplier": {
+      "name": "Legion of the Bouncy Castle Inc.",
+      "urls": [
+        "https://www.bouncycastle.org/"
+      ],
+      "contactName": "Bouncy Castle",
+      "email": "feedback-crypto@bouncycastle.org"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "io.matthewnelson.encoding"
+    ],
+    "supplier": {
+      "name": "Matthew Nelson",
+      "urls": [
+        "https://matthewnelson.io/",
+        "https://github.com/05nelsonm/encoding"
+      ],
+      "contactName": "Matthew Nelson",
+      "email": "developer@matthewnelson.io"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "net.mamoe.yamlkt"
+    ],
+    "supplier": {
+      "name": "Him188",
+      "urls": [
+        "https://github.com/Him188/yamlkt"
+      ]
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "net.swiftzer.semver"
+    ],
+    "supplier": {
+      "name": "Swiftzer",
+      "urls": [
+        "https://github.com/swiftzer/semver"
+      ],
+      "contactName": "Eric Li",
+      "email": "eric@swiftzer.net"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "org.kotlincrypto", "org.kotlincrypto.random"
+    ],
+    "supplier": {
+      "name": "KotlinCrypto / Matthew Nelson",
+      "urls": [
+        "https://github.com/KotlinCrypto"
+      ],
+      "contactName": "KotlinCrypto",
+      "email": "contact@kotlincrypto.org"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "com.ionspin.kotlin"
+    ],
+    "supplier": {
+      "name": "IonSpin UG (haftungsbeschränkt)",
+      "urls": [
+        "https://www.ionspin.com/",
+        "https://github.com/ionspin/kotlin-multiplatform-bignum"
+      ],
+      "contactName": "Uglješa Jovanović",
+      "email": "info@ionspin.com"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "ch.veehait.devicecheck"
+    ],
+    "supplier": {
+      "name": "veehaitch",
+      "urls": [
+        "https://github.com/veehaitch/devicecheck-appattest"
+      ],
+      "contactName": "Vincent Haupert",
+      "email": "mail@vincent-haupert.de"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "co.nstant.in"
+    ],
+    "supplier": {
+      "name": "Constantin Rack",
+      "urls": [
+        "https://github.com/c-rack/cbor-java"
+      ],
+      "contactName": "Constantin Rack",
+      "email": "info@drrack.com"
+    }
+  },
+  {
+    "type": "mvn",
+    "groups": [
+      "org.slf4j"
+    ],
+    "supplier": {
+      "name": "QOS.ch Sàrl",
+      "urls": [
+        "https://www.slf4j.org/",
+        "https://qos.ch/"
+      ],
+      "email": "sales@qos.ch",
+      "contactName": "QOS.ch"
+    }
+  }
+]

@@ -378,6 +378,15 @@ body.ws-landing-page.ws-header-scrolled .md-header {
   gap: 0.4rem;
   font-size: 0.8rem;
   opacity: 0.9;
+  margin-top: 0.9rem;
+}
+
+.ws-proof + .ws-proof {
+  margin-top: 0.25rem;
+}
+
+.ws-proof p {
+  margin: 0;
 }
 
 .ws-hero__art {
@@ -477,6 +486,20 @@ body.ws-landing-page.ws-header-scrolled .md-header {
   background: rgba(13, 17, 23, 0.7);
   border: 1px solid rgba(0, 193, 255, 0.16);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+}
+
+.ws-card--cta {
+  background: linear-gradient(180deg, rgba(0, 74, 102, 0.18), rgba(13, 17, 23, 0.78));
+  border-color: rgba(0, 193, 255, 0.28);
+}
+
+.ws-card--cta p {
+  margin-bottom: 1rem;
+}
+
+.ws-card__cta {
+  margin: 0;
+  align-self: flex-start;
 }
 
 .ws-card__icon {

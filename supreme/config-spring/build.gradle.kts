@@ -7,6 +7,7 @@ plugins {
     id("signing")
     id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
+    alias(libs.plugins.sbombastic)
 }
 
 val artifactVersion: String by extra
@@ -30,8 +31,40 @@ val javadocJar = setupDokka(
 
 publishing {
     publications {
+        register("mavenJava", MavenPublication::class) {
+            from(components["java"])
+            artifact(javadocJar)
+            pom {
+                name.set("Warden Config Spring")
+                description.set("Spring Boot integration helpers for Warden Supreme configuration")
+                url.set("https://github.com/a-sit-plus/warden-supreme")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("JesusMcCloud")
+                        name.set("Bernd Pruenster")
+                        email.set("bernd.pruenster@a-sit.at")
+                    }
+                    developer {
+                        id.set("nodh")
+                        name.set("Christian Kollmann")
+                        email.set("christian.kollmann@a-sit.at")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git@github.com:a-sit-plus/warden-supreme.git")
+                    developerConnection.set("scm:git:git@github.com:a-sit-plus/warden-supreme.git")
+                    url.set("https://github.com/a-sit-plus/warden-supreme")
+                }
+            }
+        }
         withType<MavenPublication> {
-            if (this.name != "relocation") artifact(javadocJar)
+            if (this.name != "relocation" && this.name != "mavenJava") artifact(javadocJar)
             pom {
                 name.set("Warden Config Spring")
                 description.set("Spring Boot integration helpers for Warden Supreme configuration")
