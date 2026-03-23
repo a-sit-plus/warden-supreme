@@ -14,11 +14,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Install sbombastic to Maven Local
-        run: |
-          git clone --depth 1 https://github.com/a-sit-plus/sbombastic /tmp/sbombastic
-          cd /tmp/sbombastic
-          ./gradlew publishToMavenLocal
       - name: Build artefacts + Run Tests
         run: TESTBALLOON_EXCLUDE_PATTERNS=at.asitplus.attestation.supreme.TestEnv* ./gradlew allTests assemble
       - name: Test Report

@@ -21,11 +21,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Install sbombastic to Maven Local
-        run: |
-          git clone --depth 1 https://github.com/a-sit-plus/sbombastic /tmp/sbombastic
-          cd /tmp/sbombastic
-          ./gradlew publishToMavenLocal
       - name: Build jar
         run: ./gradlew :makoto:test :roboto:test assemble
       - name: Test Report

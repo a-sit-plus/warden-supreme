@@ -37,11 +37,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Install sbombastic to Maven Local
-        run: |
-          git clone --depth 1 https://github.com/a-sit-plus/sbombastic /tmp/sbombastic
-          cd /tmp/sbombastic
-          ./gradlew publishToMavenLocal
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: 16.2.0
@@ -101,11 +96,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Install sbombastic to Maven Local
-        run: |
-          git clone --depth 1 https://github.com/a-sit-plus/sbombastic /tmp/sbombastic
-          cd /tmp/sbombastic
-          ./gradlew publishToMavenLocal
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
