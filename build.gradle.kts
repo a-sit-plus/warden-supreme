@@ -182,11 +182,7 @@ tasks.register<Copy>("mkDocsPrepare") {
 tasks.register<Exec>("mkDocsBuild") {
     dependsOn(tasks.named("mkDocsPrepare"))
     workingDir("${rootDir}/docs")
-    commandLine(
-        "/bin/zsh",
-        "-lc",
-        "source ~/pyenv/mkdocs-material/bin/activate && mkdocs build --clean --strict",
-    )
+    commandLine("mkdocs", "build", "--clean", "--strict")
 }
 
 tasks.register<Copy>("mkDocsSite") {
