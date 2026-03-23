@@ -128,14 +128,17 @@ hide:
 
                 <div class="ws-cta-row">
                     <a class="md-button md-button--primary ws-cta" href="overview/">Learn more</a>
-                    <a class="md-button ws-cta" href="integration/supreme/">Integration</a>
-                    <a class="md-button ws-cta" href="sbom/">SBOM</a>
+                    <a class="md-button ws-cta" href="integration/supreme/">Start integrating</a>
                     <a class="md-button ws-cta" href="services/">Services</a>
                 </div>
 
                 <div class="ws-proof">
-                    {{ icon('chart-line', 'Proof') }}
+                    {{ icon('chart-line', 'Stats') }}
                     <p>Millions of devices attested in production – and counting.</p>
+                </div>
+                <div class="ws-proof">
+                    {{ icon('package-variant-closed', 'Supply chain') }}
+                    <p><a href="sbom/">Signed supply-chain metadata for every release.</a></p>
                 </div>
             </div>
 

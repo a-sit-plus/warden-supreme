@@ -131,7 +131,7 @@ nav:
         - Background:
             - Remote Attestation Primer: bg/primer.md
             - Platform Specifics: bg/platforms.md
-            - Thread Models and Risks: bg/threatmodels.md
+            - Threat Models and Risks: bg/threatmodels.md
             - Privacy and Data Protection: bg/privacy.md
         - Technical Deep Dive:
             - Android:

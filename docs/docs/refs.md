@@ -28,7 +28,7 @@
 - <a id="ref-ios-build-numbers"></a>Apple Version and Build Number Primer: [Website]({{ links.ios_build_numbers }})
 
 ## Libraries and Tooling
-- <a id="ref-signum"></a>Signum — Kotlin Multiplatform Crypto/PKI Toolkit: [Website]({{ links.signum_home }}) • [Proivder Docs]({{ links.signum_supreme }}) • [Attestation Docs]({{ links.signum_attestation_docs }})
+- <a id="ref-signum"></a>Signum — Kotlin Multiplatform Crypto/PKI Toolkit: [Website]({{ links.signum_home }}) • [Provider Docs]({{ links.signum_supreme }}) • [Attestation Docs]({{ links.signum_attestation_docs }})
 - <a id="ref-ktor"></a>Ktor — HTTP Client/Server Framework: [Website]({{ links.ktor }})
 - <a id="ref-spring"></a>Spring — JVM Framework: [Website]({{ links.spring }})
 - <a id="ref-kotlin"></a>Kotlin — Programming Language: [Website]({{ links.kotlin }})
