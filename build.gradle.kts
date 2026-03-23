@@ -1,5 +1,6 @@
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.plugins.signing.Sign
 
 plugins {
     val kotlinVer = System.getenv("KOTLIN_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotlin.get()
@@ -51,6 +52,8 @@ val publishedProjects = listOf(
     project(":config-spring"),
 )
 
+val signLocalRepoArtefacts = System.getenv("SIGN_LOCAL_REPO_ARTEFACTS")?.ifBlank { "false" } == "true"
+
 val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
     group = "documentation"
     description = "Exports CycloneDX SBOMs for all published Maven publications into the docs tree."
@@ -64,6 +67,11 @@ val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
     dependsOn(sortedProjects.map { project ->
         project.tasks.matching { task -> task.name == "cyclonedxPublishedBom" }
     })
+    if (signLocalRepoArtefacts) {
+        dependsOn(sortedProjects.map { project ->
+            project.tasks.withType(Sign::class.java)
+        })
+    }
     inputs.file(sbomTemplateFile)
     inputs.file(sbomRendererFile)
 
