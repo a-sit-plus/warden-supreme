@@ -66,6 +66,9 @@ sealed class SupremeAttestationEngine(
             null -> null
         }
 
+    override val AuthorizationList.verifiedBootKeyDigest: ByteArray?
+        get() = rootOfTrust?.getOrNull()?.verifiedBootKeyDigest
+
     override val AuthorizationList.hasRootOfTrust: Boolean get() = rootOfTrust?.getOrNull() != null
 
     override val AuthorizationList.isDeviceLocked: Boolean

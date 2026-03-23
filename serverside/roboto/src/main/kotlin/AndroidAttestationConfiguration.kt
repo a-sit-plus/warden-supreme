@@ -11,8 +11,14 @@ import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
 import io.ktor.util.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import net.mamoe.yamlkt.Yaml
@@ -268,16 +274,22 @@ val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
 private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("EC")
         .generatePublic(
-            X509EncodedKeySpec(Base64.getDecoder().decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
-                    "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="))
+            X509EncodedKeySpec(
+                Base64.getDecoder().decode(
+                    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+                            "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
+                )
+            )
         ),
     KeyFactory.getInstance("RSA")
         .generatePublic(
             X509EncodedKeySpec(
-                Base64.getDecoder().decode(    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
-                        "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
-                        "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
-                        "+Vfkl5YLCazOkjWFmwIDAQAB")
+                Base64.getDecoder().decode(
+                    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+                            "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+                            "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+                            "+Vfkl5YLCazOkjWFmwIDAQAB"
+                )
             )
         )
 )
@@ -421,11 +433,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
     /**
+     * Set to allow custom `SELF_SIGNED` verified boot keys, omit to allow only `VERIFIED` with vendor-specified verified boot keys.
+     * Note that this property contains the hashes of verified boot keys as encoded into the attestation extension.
+     */
+    val customVerifiedBootKeyDigests: Set<@Serializable(with = ByteArrayHexStringSerializer::class) ByteArray>? = null,
+
+    /**
      * Flag to try out the new supreme parser
      */
     val supremeParser: Boolean = false,
 
-) : AttestationConfiguration {
+    ) : AttestationConfiguration {
 
     /**
      * Convenience constructor to attest a single app
@@ -529,6 +547,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         requireRemoteKeyProvisioning: Boolean = false,
 
         /**
+         * Set to allow custom `SELF_SIGNED` verified boot keys, omit to allow only `VERIFIED` with vendor-specified verified boot keys.
+         * Note that this property contains the hashes of verified boot keys as encoded into the attestation extension.
+         */
+        customVerifiedBootKeyDigests: Set<@Serializable(with = ByteArrayHexStringSerializer::class) ByteArray>? = null,
+
+        /**
          * Flag to try out the new supreme parser
          */
         supremeParser: Boolean = false,
@@ -548,6 +572,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+        customVerifiedBootKeyDigests = customVerifiedBootKeyDigests,
         supremeParser = supremeParser,
     )
 
@@ -659,6 +684,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         requireRemoteKeyProvisioning: Boolean = false,
 
         /**
+         * Set to allow custom `SELF_SIGNED` verified boot keys, omit to allow only `VERIFIED` with vendor-specified verified boot keys.
+         * Note that this property contains the hashes of verified boot keys as encoded into the attestation extension.
+         */
+        customVerifiedBootKeyDigests: Set<@Serializable(with = ByteArrayHexStringSerializer::class) ByteArray>? = null,
+
+        /**
          * Flag to try out the new supreme parser
          */
         supremeParser: Boolean = false,
@@ -678,6 +709,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+        customVerifiedBootKeyDigests = customVerifiedBootKeyDigests,
         supremeParser = supremeParser,
     )
 
@@ -741,6 +773,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         val requireStrongBoxOverride: Boolean? = null,
 
+        /**
+         * Set to allow custom `SELF_SIGNED` verified boot keys, omit to allow only `VERIFIED` with vendor-specified verified boot keys.
+         * Note that this property contains the hashes of verified boot keys as encoded into the attestation extension.
+         */
+        val customVerifiedBootKeyDigests: Set<@Serializable(with = ByteArrayHexStringSerializer::class) ByteArray>? = null,
+
         ) {
 
         init {
@@ -785,6 +823,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             private var requireStrongBoxOverride: Boolean? = null
 
             /**
+             * Set to allow custom `SELF_SIGNED` verified boot keys, omit to allow only `VERIFIED` with vendor-specified verified boot keys.
+             * Note that this property contains the hashes of verified boot keys as encoded into the attestation extension.
+             */
+            private var customVerifiedBootKeyDigests: Set<@Serializable(with = ByteArrayHexStringSerializer::class) ByteArray>? =
+                null
+
+            /**
              * @see AppData.appVersion
              */
             fun appVersion(version: Int) = apply { appVersion = version }
@@ -823,6 +868,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
              */
             fun requireStrongBoxOverride(required: Boolean) = apply { requireStrongBoxOverride = required }
 
+            /**
+             * Set to allow custom `SELF_SIGNED` verified boot keys, omit to allow only `VERIFIED` with vendor-specified verified boot keys.
+             * Note that this property contains the hashes of verified boot keys as encoded into the attestation extension.
+             */
+            fun customVerifiedBootKeyDigests(digests: Set<ByteArray>) = apply { customVerifiedBootKeyDigests = digests }
+
             fun build() =
                 AppData(
                     packageName,
@@ -833,6 +884,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                     requireRemoteKeyProvisioningOverride,
                     trustedRootOverrides,
                     requireStrongBoxOverride,
+                    customVerifiedBootKeyDigests,
                 )
         }
 
@@ -855,14 +907,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             if (androidVersionOverride != other.androidVersionOverride) return false
             if (osPatchLevel != other.osPatchLevel) return false
             if (packageName != other.packageName) return false
-
-            if (signerFingerprints.size != other.signerFingerprints.size) return false
-            signerFingerprints.forEachIndexed { index, byteArray ->
-                if (!other.signerFingerprints[index].contentEquals(
-                        byteArray
-                    )
-                ) return false
-            }
+            if (!(signerFingerprints contentEqualsIfArray other.signerFingerprints)) return false
 
             if (patchLevelOverride != other.patchLevelOverride) return false
 
@@ -871,6 +916,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             if (trustedRootOverrides != other.trustedRootOverrides) return false
 
             if (requireStrongBoxOverride != other.requireStrongBoxOverride) return false
+            if (!(customVerifiedBootKeyDigests contentEqualsIfArray other.customVerifiedBootKeyDigests)) return false
 
             return true
         }
@@ -880,11 +926,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + (androidVersionOverride ?: 0)
             result = 31 * result + (osPatchLevel ?: 0)
             result = 31 * result + packageName.hashCode()
-            result = 31 * result + signerFingerprints.hashCode()
+            result = 31 * result + signerFingerprints.contentHashCodeIfArray()
             result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
             result = 31 * result + (trustedRootOverrides?.hashCode() ?: 0)
             result = 31 * result + (requireRemoteKeyProvisioningOverride?.hashCode() ?: 0)
             result = 31 * result + (requireStrongBoxOverride?.hashCode() ?: 0)
+            result = 31 * result + (customVerifiedBootKeyDigests?.contentHashCodeIfArray() ?: 0)
             return result
         }
 
@@ -933,7 +980,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var revocation: List<AndroidRevocationList.Loader.Configuration<*>> =
             listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
-
+        private var customVerifiedBootKeyDigests: Set<@Serializable(with = ByteArrayHexStringSerializer::class) ByteArray>? =
+            null
         private var supremeParser: Boolean = false
 
         /**
@@ -1059,6 +1107,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * @see at.asitplus.attestation.android.AndroidAttestationConfiguration.requireRemoteKeyProvisioning
          */
         fun requireRemoteKeyProvisioning(required: Boolean) = apply { requireRemoteKeyProvisioning = required }
+
+        /**
+         * Set to allow custom `SELF_SIGNED` verified boot keys, omit to allow only `VERIFIED` with vendor-specified verified boot keys.
+         * Note that this property contains the hashes of verified boot keys as encoded into the attestation extension.
+         */
+        fun customVerifiedBootKeyDigests(digests: Set<ByteArray>) = apply { customVerifiedBootKeyDigests = digests }
+
         /**
          * Flag to try out the new supreme parser
          */
@@ -1080,6 +1135,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             enableSoftwareAttestation = enableSwAttestation,
             revocation = revocation,
             requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+            customVerifiedBootKeyDigests = customVerifiedBootKeyDigests,
             supremeParser = supremeParser,
         )
 
@@ -1129,7 +1185,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (revocation != other.revocation) return false
 
         if (requireRemoteKeyProvisioning != other.requireRemoteKeyProvisioning) return false
-        if(supremeParser != other.supremeParser) return false
+        if (!(customVerifiedBootKeyDigests contentEqualsIfArray other.customVerifiedBootKeyDigests)) return false
+        if (supremeParser != other.supremeParser) return false
 
         return true
     }
@@ -1149,8 +1206,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + (patchLevel?.hashCode() ?: 0)
         result = 31 * result + hardwareTrustedRoots.hashCode()
         result = 31 * result + softwareTrustedRoots.hashCode()
-        result = 31 * result + (revocation.hashCode() ?: 0)
+        result = 31 * result + revocation.hashCode()
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
+        result = 31 * result + (customVerifiedBootKeyDigests?.contentHashCodeIfArray() ?: 0)
         result = 31 * result + supremeParser.hashCode()
         return result
     }
@@ -1203,3 +1261,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
  * Leniently (ignore case, and whitespace) parse hex to bytes
  */
 fun String.parseHex(): ByteArray = this.filterNot { it.isWhitespace() }.lowercase().hexToByteArray(HexFormat.Default)
+
+object ByteArrayHexStringSerializer : KSerializer<ByteArray> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("ByteArrayHexStringSerializer", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ByteArray) {
+        encoder.encodeString(value.toHexString())
+    }
+
+    override fun deserialize(decoder: Decoder): ByteArray {
+        return decoder.decodeString().replace(":", "").parseHex()
+    }
+
+}

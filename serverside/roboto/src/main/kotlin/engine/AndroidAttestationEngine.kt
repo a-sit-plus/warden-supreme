@@ -10,7 +10,6 @@ import at.asitplus.attestation.android.exceptions.ConfigurationException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
 import com.google.android.attestation.ParsedAttestationRecord
-import com.google.android.attestation.RootOfTrust
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import io.ktor.util.*
 import kotlinx.datetime.TimeZone
@@ -48,6 +47,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     protected abstract fun AuthList.findMatchingPackageVersions(packageName: String): List<UInt>
 
     protected abstract val AuthList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
+    protected abstract val AuthList.verifiedBootKeyDigest: ByteArray?
 
     protected abstract val AuthList.hasRootOfTrust: Boolean
 
@@ -304,14 +304,27 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             actualValue = false
         )
 
+        val expectedState =
+            if (attestationConfiguration.customVerifiedBootKeyDigests != null) GeneralizedVerifiedBootState.SELF_SIGNED else GeneralizedVerifiedBootState.VERIFIED
         if ((generalizedVerifiedBootState
-                ?: GeneralizedVerifiedBootState.FAILED) != GeneralizedVerifiedBootState.VERIFIED
+                ?: GeneralizedVerifiedBootState.FAILED) != expectedState
         ) throw AttestationValueException(
             "System image not verified",
             reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = RootOfTrust.VerifiedBootState.VERIFIED,
+            expectedValue = expectedState,
             actualValue = generalizedVerifiedBootState
         )
+
+        attestationConfiguration.customVerifiedBootKeyDigests?.let { bootKeyDigests ->
+            if ((verifiedBootKeyDigest == null) || !bootKeyDigests.any { it.contentEquals(verifiedBootKeyDigest!!) }) {
+                throw AttestationValueException(
+                    "SELF_SIGNED system image not verified",
+                    reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+                    expectedValue = bootKeyDigests.joinToString("\n"){it.toHexString()},
+                    actualValue = verifiedBootKeyDigest?.toHexString()
+                )
+            }
+        }
     }
 
     sealed interface EngineType<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList> {
