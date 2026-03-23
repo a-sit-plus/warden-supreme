@@ -87,6 +87,10 @@ jobs:
       KOTLIN_VERSION_ENV: ${{ inputs.kotlin-version }}
       KOTEST_VERSION_ENV: ${{ inputs.kotest-version }}
       KSP_VERSION_ENV: ${{ inputs.ksp-version }}
+      SIGN_LOCAL_REPO_ARTEFACTS: 'true'
+      ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.PUBLISH_SIGNING_KEYID }}
+      ORG_GRADLE_PROJECT_signingKey: ${{ secrets.PUBLISH_SIGNING_KEY }}
+      ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PUBLISH_SIGNING_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
