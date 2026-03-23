@@ -73,7 +73,7 @@ jobs:
           [[ -d "$ART_DIR" ]] || { echo "| _No artifacts found_ |  |  |" >> "$GITHUB_STEP_SUMMARY"; exit 0; }
 
           # Collect artifacts (jar / klib / aar / pom) and append table rows
-          find "$ART_DIR" -type f \( -name "*.jar" -o -name "*.klib" -o -name "*.aar" -o -name "*.pom" \) \
+          find "$ART_DIR" -type f \( -name "*.jar" -o -name "*.klib" -o -name "*.aar" -o -name "*.pom" -o -name "*.json" -o -name "*.xml" -o -name "*.asc" \) \
             | sort \
             | while read -r file; do
                 rel="${file#${ART_DIR}/}"        # => module/version/filename
