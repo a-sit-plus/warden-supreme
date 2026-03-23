@@ -167,6 +167,14 @@ Supported attestation types:
 - TrustedEnvironment (TEE): widely available; enforced verified boot.
 - Software/Nougat-hybrid: acceptable only for testing or very narrow cases; avoid for production OS/app attestation.
 
+!!! tip "Pinned custom Android boot keys"
+    When integrating `Warden roboto` directly, `verifiedBootKeys` is the knob for Android boot policy. The default
+    `[OEM]` accepts vendor-managed `VERIFIED` boot. Add hex digests to also allow known-good `SELF_SIGNED` keys, or
+    omit `OEM` to accept only those custom keys. Keep `allowBootloaderUnlock = false` when doing this, otherwise
+    bootloader-lock, verified boot state, and verified boot key checks are skipped entirely. GrapheneOS is a good
+    real-world example because it publishes its
+    [verified boot key hashes](https://grapheneos.org/install/web#verified-boot-key-hash).
+
 Client duties (Android):
 
 !!! warning inline end

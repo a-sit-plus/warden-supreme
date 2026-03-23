@@ -36,8 +36,10 @@ object AttestationCreator {
         appVersion: Int = 1,
         androidVersion: Int = 11,
         androidPatchLevel: Int = 202108,
-        vendorPatchLevel: Int?=null,
+        vendorPatchLevel: Int? = null,
         verifiedBootKey: ByteArray = Random.nextBytes(32),
+        deviceLocked: Boolean = true,
+        verifiedBootState: BootState = BootState.VERIFIED,
         verifiedBootHash: ByteArray = Random.nextBytes(32),
         creationTime: Date = Date(),
     ): List<X509Certificate> = create(
@@ -60,8 +62,8 @@ object AttestationCreator {
                 keySize = 256,
                 rootOfTrust = RootOfTrust(
                     verifiedBootKey = verifiedBootKey,
-                    deviceLocked = true,
-                    verifiedBootState = BootState.VERIFIED,
+                    deviceLocked = deviceLocked,
+                    verifiedBootState = verifiedBootState,
                     verifiedBootHash = verifiedBootHash,
                 ),
                 androidVersion = androidVersion,

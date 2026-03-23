@@ -4,6 +4,7 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AttestationExtension
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.ConfigurationException
@@ -124,7 +125,10 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         parsedAttestationRecord.verifyAttestationTime(verificationDate)
         type.verifySecurityLevel(parsedAttestationRecord, attestedApp.requireStrongBoxOverride)
 
-        type.verifyBootStateAndSystemImage(parsedAttestationRecord)
+        type.verifyBootStateAndSystemImage(
+            parsedAttestationRecord,
+            attestedApp.verifiedBootKeys ?: attestationConfiguration.verifiedBootKeys
+        )
         type.verifyRollbackResistance(parsedAttestationRecord)
 
 
@@ -287,7 +291,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     }
 
     @Throws(AttestationValueException::class)
-    protected fun AuthList.verifySystemLocked() {
+    protected fun AuthList.verifySystemLocked(verifiedBootKeys: Set<VerifiedBootKey>) {
         if (attestationConfiguration.allowBootloaderUnlock) return
 
         if (!hasRootOfTrust) throw AttestationValueException(
@@ -304,26 +308,37 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             actualValue = false
         )
 
-        val expectedState =
-            if (attestationConfiguration.customVerifiedBootKeyDigests != null) GeneralizedVerifiedBootState.SELF_SIGNED else GeneralizedVerifiedBootState.VERIFIED
-        if ((generalizedVerifiedBootState
-                ?: GeneralizedVerifiedBootState.FAILED) != expectedState
-        ) throw AttestationValueException(
-            "System image not verified",
-            reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-            expectedValue = expectedState,
-            actualValue = generalizedVerifiedBootState
-        )
+        val allowOem = verifiedBootKeys.any { it == VerifiedBootKey.OEM }
+        val customDigests = verifiedBootKeys.mapNotNull { (it as? VerifiedBootKey.Digest)?.value }
+        val actualState = generalizedVerifiedBootState ?: GeneralizedVerifiedBootState.FAILED
 
-        attestationConfiguration.customVerifiedBootKeyDigests?.let { bootKeyDigests ->
-            if ((verifiedBootKeyDigest == null) || !bootKeyDigests.any { it.contentEquals(verifiedBootKeyDigest!!) }) {
-                throw AttestationValueException(
-                    "SELF_SIGNED system image not verified",
+        when (actualState) {
+            GeneralizedVerifiedBootState.VERIFIED -> {
+                if (!allowOem) throw AttestationValueException(
+                    "OEM-verified system image not permitted",
                     reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-                    expectedValue = bootKeyDigests.joinToString("\n"){it.toHexString()},
-                    actualValue = verifiedBootKeyDigest?.toHexString()
+                    expectedValue = verifiedBootKeys,
+                    actualValue = actualState
                 )
             }
+
+            GeneralizedVerifiedBootState.SELF_SIGNED -> {
+                if ((verifiedBootKeyDigest == null) || customDigests.none { it.contentEquals(verifiedBootKeyDigest!!) }) {
+                    throw AttestationValueException(
+                        "SELF_SIGNED system image not verified",
+                        reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+                        expectedValue = verifiedBootKeys,
+                        actualValue = verifiedBootKeyDigest?.toHexString()
+                    )
+                }
+            }
+
+            else -> throw AttestationValueException(
+                "System image not verified",
+                reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+                expectedValue = verifiedBootKeys,
+                actualValue = actualState
+            )
         }
     }
 
@@ -344,7 +359,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         fun verifyRollbackResistance(record: AttRecord)
 
         @Throws(AttestationValueException::class)
-        fun verifyBootStateAndSystemImage(record: AttRecord)
+        fun verifyBootStateAndSystemImage(record: AttRecord, verifiedBootKeys: Set<VerifiedBootKey>)
     }
 
 
@@ -389,7 +404,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             record.softwareEnforced.verifyRollbackResistance()
         }
 
-        override fun verifyBootStateAndSystemImage(record: AttRecord) {
+        override fun verifyBootStateAndSystemImage(record: AttRecord, verifiedBootKeys: Set<VerifiedBootKey>) {
             /*NOOP in Software*/
         }
     }
@@ -419,8 +434,8 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         }
 
         @Throws(AttestationValueException::class)
-        override fun verifyBootStateAndSystemImage(record: AttRecord) {
-            record.hardwareEnforced.verifySystemLocked()
+        override fun verifyBootStateAndSystemImage(record: AttRecord, verifiedBootKeys: Set<VerifiedBootKey>) {
+            record.hardwareEnforced.verifySystemLocked(verifiedBootKeys)
         }
 
         @Throws(AttestationValueException::class)

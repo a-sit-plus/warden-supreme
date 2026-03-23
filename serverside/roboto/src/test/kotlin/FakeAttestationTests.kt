@@ -3,6 +3,7 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationCreator
+import at.asitplus.attestation.data.BootState
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
@@ -89,6 +90,97 @@ val FakeAttestationTests by testSuite {
                     certificates = attestationProof,
                     expectedChallenge = challenge
                 ).getOrThrow()
+            }
+
+            "verified boot key policies" - {
+                val oemBootKey = Random.nextBytes(32)
+                val customBootKey = Random.nextBytes(32)
+                val verifiedAttestation = AttestationCreator.createAttestation(
+                    challenge = challenge,
+                    packageName = packageName,
+                    signatureDigest = signatureDigest,
+                    appVersion = appVersion,
+                    androidVersion = androidVersion,
+                    androidPatchLevel = patchLevel.asSingleInt,
+                    verifiedBootKey = oemBootKey,
+                    verifiedBootState = BootState.VERIFIED,
+                )
+                val selfSignedAttestation = AttestationCreator.createAttestation(
+                    challenge = challenge,
+                    packageName = packageName,
+                    signatureDigest = signatureDigest,
+                    appVersion = appVersion,
+                    androidVersion = androidVersion,
+                    androidPatchLevel = patchLevel.asSingleInt,
+                    verifiedBootKey = customBootKey,
+                    verifiedBootState = BootState.SELF_SIGNED,
+                )
+
+                fun checkerFor(
+                    certificates: List<java.security.cert.X509Certificate>,
+                    keys: Set<VerifiedBootKey>,
+                    appKeys: Set<VerifiedBootKey>? = null
+                ) = Roboto(
+                    AndroidAttestationConfiguration(
+                        AndroidAttestationConfiguration.AppData(
+                            packageName = packageName,
+                            signerFingerprints = listOf(signatureDigest),
+                            appVersion = appVersion,
+                            verifiedBootKeys = appKeys
+                        ),
+                        androidVersion = androidVersion,
+                        patchLevel = patchLevel,
+                        allowBootloaderUnlock = false,
+                        ignoreLeafValidity = false,
+                        hardwareTrustedRoots = setOf(TrustedRoot.PublicKey(certificates.last().publicKey)),
+                        verifiedBootKeys = keys,
+                        supremeParser = supreme
+                    )
+                )
+
+                "OEM-only accepts VERIFIED" {
+                    checkerFor(
+                        verifiedAttestation,
+                        linkedSetOf(VerifiedBootKey.OEM)
+                    ).verify(certificates = verifiedAttestation, expectedChallenge = challenge).getOrThrow()
+                }
+
+                "OEM-only rejects SELF_SIGNED" {
+                    shouldThrow<AttestationValueException> {
+                        checkerFor(
+                            selfSignedAttestation,
+                            linkedSetOf(VerifiedBootKey.OEM)
+                        ).verify(certificates = selfSignedAttestation, expectedChallenge = challenge).getOrThrow()
+                    }
+                }
+
+                "custom-only accepts matching SELF_SIGNED and rejects VERIFIED" {
+                    checkerFor(
+                        selfSignedAttestation,
+                        linkedSetOf(VerifiedBootKey.Digest(customBootKey))
+                    ).verify(certificates = selfSignedAttestation, expectedChallenge = challenge).getOrThrow()
+
+                    shouldThrow<AttestationValueException> {
+                        checkerFor(
+                            verifiedAttestation,
+                            linkedSetOf(VerifiedBootKey.Digest(customBootKey))
+                        ).verify(certificates = verifiedAttestation, expectedChallenge = challenge).getOrThrow()
+                    }
+                }
+
+                "OEM plus custom accepts both" {
+                    val policy = linkedSetOf(VerifiedBootKey.OEM, VerifiedBootKey.Digest(customBootKey))
+                    checkerFor(verifiedAttestation, policy).verify(certificates = verifiedAttestation, expectedChallenge = challenge).getOrThrow()
+                    checkerFor(selfSignedAttestation, policy).verify(certificates = selfSignedAttestation, expectedChallenge = challenge).getOrThrow()
+                }
+
+                "app-specific verified boot keys override global policy" {
+                    checkerFor(
+                        selfSignedAttestation,
+                        linkedSetOf(VerifiedBootKey.OEM),
+                        linkedSetOf(VerifiedBootKey.Digest(customBootKey))
+                    ).verify(certificates = selfSignedAttestation, expectedChallenge = challenge).getOrThrow()
+                }
             }
 
             "patch levels from the future" - {

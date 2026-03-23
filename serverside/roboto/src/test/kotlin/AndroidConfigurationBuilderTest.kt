@@ -4,6 +4,7 @@ import at.asitplus.attestation.android.GOOGLE_RKP_EC_ROOT
 import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.shouldBe
@@ -81,23 +82,23 @@ val AndroidConfigurationBuilderTests by testSuite {
         val digestA2 = byteArrayOf(1, 2, 3)
         val digestB1 = byteArrayOf(4, 5, 6)
         val digestB2 = byteArrayOf(4, 5, 6)
-        val bootDigest1 = byteArrayOf(9, 9, 9)
-        val bootDigest2 = byteArrayOf(9, 9, 9)
+        val bootDigest1 = VerifiedBootKey.Digest(byteArrayOf(9, 9, 9))
+        val bootDigest2 = VerifiedBootKey.Digest(byteArrayOf(9, 9, 9))
 
         val first = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
             signerFingerprints = listOf(digestA1, digestB1),
-            customVerifiedBootKeyDigests = linkedSetOf(bootDigest1)
+            verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, bootDigest1)
         )
         val sameContent = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
             signerFingerprints = listOf(digestA2, digestB2),
-            customVerifiedBootKeyDigests = linkedSetOf(bootDigest2)
+            verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, bootDigest2)
         )
         val reordered = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
             signerFingerprints = listOf(digestB2.copyOf(), digestA2.copyOf()),
-            customVerifiedBootKeyDigests = linkedSetOf(bootDigest2.copyOf())
+            verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, VerifiedBootKey.Digest(byteArrayOf(9, 9, 9)))
         )
 
         (first == sameContent) shouldBe true
@@ -115,7 +116,11 @@ val AndroidConfigurationBuilderTests by testSuite {
             hardwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
             softwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
             revocation = emptyList(),
-            customVerifiedBootKeyDigests = linkedSetOf(byteArrayOf(1), byteArrayOf(2))
+            verifiedBootKeys = linkedSetOf(
+                VerifiedBootKey.OEM,
+                VerifiedBootKey.Digest(byteArrayOf(1)),
+                VerifiedBootKey.Digest(byteArrayOf(2))
+            )
         )
         val configB = AndroidAttestationConfiguration(
             applications = listOf(
@@ -127,7 +132,11 @@ val AndroidConfigurationBuilderTests by testSuite {
             hardwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
             softwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
             revocation = emptyList(),
-            customVerifiedBootKeyDigests = linkedSetOf(byteArrayOf(2), byteArrayOf(1))
+            verifiedBootKeys = linkedSetOf(
+                VerifiedBootKey.Digest(byteArrayOf(2)),
+                VerifiedBootKey.OEM,
+                VerifiedBootKey.Digest(byteArrayOf(1))
+            )
         )
 
         (configA == configB) shouldBe true

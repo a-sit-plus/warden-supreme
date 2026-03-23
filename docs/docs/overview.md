@@ -28,6 +28,12 @@ It is a living documentation hub covering all things attestation, and it is cont
 It already provides a structured overview of remote attestation,
 from concepts to hands‑on integration:
 
+!!! tip "Custom Android boot policies"
+    Need to support secure custom ROMs without weakening your attestation policy? Warden Supreme supports this by
+    configuring trusted custom-ROM verified boot keys while still requiring a locked bootloader and verified boot.
+    GrapheneOS is one concrete example and publishes its
+    [verified boot key hashes](https://grapheneos.org/install/web#verified-boot-key-hash).
+
 <ul class="emoji-list">
   <li>
     <span class="bullet">📚 </span><strong>Background</strong>

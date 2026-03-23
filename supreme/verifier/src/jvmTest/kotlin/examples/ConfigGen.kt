@@ -3,6 +3,7 @@ package examples.docs
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
+import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.attestation.hopliteDecoder
 import at.asitplus.attestation.supreme.SupremeConfiguration
@@ -35,6 +36,12 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
         AndroidAttestationConfiguration.AppData(
             packageName = "at.asitplus.attestation_client",
             signerFingerprints = listOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex())
+        ),
+        verifiedBootKeys = linkedSetOf(
+            VerifiedBootKey.OEM,
+            VerifiedBootKey.Digest(
+                "00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff".parseHex()
+            )
         ),
         revocation = listOf(
             AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("https://localhost:2345"),
@@ -145,6 +152,9 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
               - packageName: at.asitplus.attestation_client
                 signerFingerprints: 
                   - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+            verifiedBootKeys:
+              - OEM
+              - '00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff'
             revocation: 
               - type: google
                 value: 

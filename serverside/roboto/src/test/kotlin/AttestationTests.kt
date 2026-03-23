@@ -424,6 +424,37 @@ val AttestationTests by testSuite {
                             }
                         }
 
+                        "verified boot keys: OEM plus placeholder custom key still allows OEM VERIFIED attestation" {
+                            attestationService(
+                                supreme,
+                                verifiedBootKeys = linkedSetOf(
+                                    VerifiedBootKey.OEM,
+                                    VerifiedBootKey.Digest("00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".hexToByteArray())
+                                )
+                            ).apply {
+                                verify(
+                                    recordedAttestation.attestationCertChain,
+                                    recordedAttestation.verificationDate,
+                                    recordedAttestation.challenge
+                                ).getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
+                            }
+                        }
+
+                        "verified boot keys: placeholder custom key without OEM rejects OEM VERIFIED attestation" {
+                            shouldThrow<AttestationValueException> {
+                                attestationService(
+                                    supreme,
+                                    verifiedBootKeys = linkedSetOf(
+                                        VerifiedBootKey.Digest("00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".hexToByteArray())
+                                    )
+                                ).verify(
+                                    recordedAttestation.attestationCertChain,
+                                    recordedAttestation.verificationDate,
+                                    recordedAttestation.challenge
+                                ).getOrThrow()
+                            }.reason shouldBe AttestationValueException.Reason.SYSTEM_INTEGRITY
+                        }
+
                         "no version check" {
                             attestationService(supreme, androidVersion = null).apply {
                                 verify(
@@ -673,6 +704,7 @@ fun attestationService(
     supreme: Boolean,
     androidPackageName: String = ATT_CLIENT_PKG_NAME,
     androidAppSignatureDigest: List<ByteArray> = ATT_CLIENT_DIGESTS,
+    verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM),
     androidVersion: Int? = 10000,
     androidAppVersion: Int? = 1,
     androidPatchLevel: PatchLevel? = PatchLevel(2021, 8),
@@ -699,6 +731,7 @@ fun attestationService(
         requireRollbackResistance = requireRollbackResistance,
         attestationStatementValiditySeconds = attestationStatementValiditiy.inWholeSeconds,
         requireRemoteKeyProvisioning = rkpRequired,
+        verifiedBootKeys = verifiedBootKeys,
         supremeParser = supreme,
 
         )
@@ -706,4 +739,3 @@ fun attestationService(
 
 
 fun String.decodeBase64ToArray() = Base64.decode(this)
-

@@ -34,15 +34,21 @@ val makoto = Makoto(
         ),
      /*(9)!*/androidVersion = 130000, patchLevel = PatchLevel(2023, 12), requireStrongBox = false,
         allowBootloaderUnlock = false, //DEFAULT
-     /*(10)!*/requireRollbackResistance = false, //DEFAULT
-     /*(11)!*/ignoreLeafValidity = false, // defaults to true
+     /*(10)!*/verifiedBootKeys = linkedSetOf(
+            VerifiedBootKey.OEM,
+            VerifiedBootKey.Digest(
+                "00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff".parseHex()
+            )
+        ),
+     /*(11)!*/requireRollbackResistance = false, //DEFAULT
+     /*(12)!*/ignoreLeafValidity = false, // defaults to true
         hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS, //DEFAULT
         softwareTrustedRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12, //DEFAULT
         verificationSecondsOffset = 0, //DEFAULT
-     /*(12)!*/disableHardwareAttestation = false,
+     /*(13)!*/disableHardwareAttestation = false,
         enableSoftwareAttestation = false, //DEFAULT
-     /*(13)!*/attestationStatementValiditySeconds = null, // DEFAULT; no validity time checks!
-     /*(14)!*/revocation = listOf(
+     /*(14)!*/attestationStatementValiditySeconds = null, // DEFAULT; no validity time checks!
+     /*(15)!*/revocation = listOf(
             AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("https://192.168.178.74:8000")
         ),
         requireRemoteKeyProvisioning = false //DEFAULT
@@ -50,19 +56,19 @@ val makoto = Makoto(
     ),
     iosAttestationConfiguration = IosAttestationConfiguration(
         applications = listOf(
-         /*(15)!*/IosAttestationConfiguration.AppData(
+         /*(16)!*/IosAttestationConfiguration.AppData(
                 teamIdentifier = "9CYHJNG644",
                 bundleIdentifier = "at.asitplus.attestation-client",
-             /*(16)!*/iosVersionOverride = OsVersions("16.0", "20A10"),
-             /*(17)!*/sandbox = true, //defaults to false
-             /*(18)!*/trustedRootOverrides = myCustomRoots
+             /*(17)!*/iosVersionOverride = OsVersions("16.0", "20A10"),
+             /*(18)!*/sandbox = true, //defaults to false
+             /*(19)!*/trustedRootOverrides = myCustomRoots
             )
         ),
                 /* Same as 17.0 ↘↘ */
-     /*(19)!*/iosVersion = OsVersions("17", "21A36"), //defaults to null (= no version check)
-     /*(20)!*/attestationStatementValiditySeconds = 600, //DEFAULT
-     /*(21)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS //DEFAULT
+     /*(20)!*/iosVersion = OsVersions("17", "21A36"), //defaults to null (= no version check)
+     /*(21)!*/attestationStatementValiditySeconds = 600, //DEFAULT
+     /*(22)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS //DEFAULT
     ),
     clock = Clock.System, //DEFAULT
- /*(22)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults shown
+ /*(23)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults shown
 )

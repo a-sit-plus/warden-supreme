@@ -26,6 +26,9 @@ android:
   patchLevel: null
   requireStrongBox: false
   allowBootloaderUnlock: false
+  verifiedBootKeys:
+    - OEM
+    - '00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff'
   requireRollbackResistance: false
   ignoreLeafValidity: true
   verificationSecondsOffset: 0
