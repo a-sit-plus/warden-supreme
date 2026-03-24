@@ -17,11 +17,11 @@ val makoto = Makoto(
         applications = listOf(
          /*(1)!*/AndroidAttestationConfiguration.AppData(
                 packageName = "at.asitplus.attestation_client",
-                signerFingerprints = listOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()),
+                signerFingerprints = setOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()),
             ),
          /*(2)!*/AndroidAttestationConfiguration.AppData(
              /*(3)!*/packageName = "at.asitplus.attestation_client-hardened",
-                signerFingerprints = listOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()),
+                signerFingerprints = setOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()),
                 appVersion = 2,
              /*(4)!*/androidVersionOverride = 160000,
                 patchLevelOverride = PatchLevel(year = 2025, month = 9,

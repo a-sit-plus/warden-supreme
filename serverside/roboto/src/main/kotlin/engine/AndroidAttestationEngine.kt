@@ -1,10 +1,6 @@
 package at.asitplus.attestation.android.engine
 
-import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.AttestationExtension
-import at.asitplus.attestation.android.PatchLevel
-import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.attestation.android.VerifiedBootKey
+import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.ConfigurationException
@@ -291,7 +287,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     }
 
     @Throws(AttestationValueException::class)
-    protected fun AuthList.verifySystemLocked(verifiedBootKeys: Set<VerifiedBootKey>) {
+    protected fun AuthList.verifySystemLocked(fromConfiguration: Set<VerifiedBootKey>) {
         if (attestationConfiguration.allowBootloaderUnlock) return
 
         if (!hasRootOfTrust) throw AttestationValueException(
@@ -308,35 +304,31 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             actualValue = false
         )
 
-        val allowOem = verifiedBootKeys.any { it == VerifiedBootKey.OEM }
-        val customDigests = verifiedBootKeys.mapNotNull { (it as? VerifiedBootKey.Digest)?.value }
+        val allowOem = fromConfiguration.any { it == VerifiedBootKey.OEM }
+        val customDigests = fromConfiguration.mapNotNull { (it as? VerifiedBootKey.Digest)?.value }
         val actualState = generalizedVerifiedBootState ?: GeneralizedVerifiedBootState.FAILED
 
         when (actualState) {
-            GeneralizedVerifiedBootState.VERIFIED -> {
-                if (!allowOem) throw AttestationValueException(
-                    "OEM-verified system image not permitted",
-                    reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-                    expectedValue = verifiedBootKeys,
-                    actualValue = actualState
-                )
-            }
+            GeneralizedVerifiedBootState.VERIFIED -> if (!allowOem) throw AttestationValueException(
+                "OEM-verified system image not permitted",
+                reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+                expectedValue = fromConfiguration,
+                actualValue = actualState
+            )
 
-            GeneralizedVerifiedBootState.SELF_SIGNED -> {
-                if ((verifiedBootKeyDigest == null) || customDigests.none { it.contentEquals(verifiedBootKeyDigest!!) }) {
-                    throw AttestationValueException(
-                        "SELF_SIGNED system image not verified",
-                        reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-                        expectedValue = verifiedBootKeys,
-                        actualValue = verifiedBootKeyDigest?.toHexString()
-                    )
-                }
-            }
+            GeneralizedVerifiedBootState.SELF_SIGNED -> if ((verifiedBootKeyDigest == null)
+                || customDigests.none { it.contentEquals(verifiedBootKeyDigest!!) }
+            ) throw AttestationValueException(
+                "SELF_SIGNED system image not verified",
+                reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
+                expectedValue = fromConfiguration,
+                actualValue = verifiedBootKeyDigest?.toHexString()
+            )
 
             else -> throw AttestationValueException(
                 "System image not verified",
                 reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
-                expectedValue = verifiedBootKeys,
+                expectedValue = fromConfiguration,
                 actualValue = actualState
             )
         }

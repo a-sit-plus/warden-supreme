@@ -339,7 +339,7 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
 data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
-     * List of applications which can be attested
+     * List of applications which can be attested. Intentionally a list to prioritise.
      */
     val applications: List<AppData>,
 
@@ -431,6 +431,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+     * Intentionally a list to prioritise.
      * @see AndroidRevocationList.HttpLoader.Configuration
      * @see AndroidRevocationList.FileLoader.Configuration
      */
@@ -547,6 +548,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * Intentionally a list to prioritise.
          * @see AndroidRevocationList.HttpLoader.Configuration
          * @see AndroidRevocationList.FileLoader.Configuration
          */
@@ -750,7 +752,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        val signerFingerprints: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
+        val signerFingerprints: Set<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
 
         /**
          * optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -813,7 +815,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        class Builder(private val packageName: String, private val signatureDigests: List<ByteArray>) {
+        class Builder(private val packageName: String, private val signatureDigests: Collection<ByteArray>) {
 
             /**
              * Builder for more java-friendliness
@@ -890,7 +892,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             fun build() =
                 AppData(
                     packageName,
-                    signatureDigests,
+                    signatureDigests.toSet(),
                     appVersion,
                     androidVersionOverride,
                     patchLevelOverride,
@@ -955,9 +957,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             throw object : AndroidAttestationException("No trust anchors configured", null) {}
 
         if (applications.isEmpty()) throw object : AndroidAttestationException("No apps configured", null) {}
-        if (verifiedBootKeys.isEmpty()) throw object : AndroidAttestationException("No verified boot key policy configured", null) {}
+        if (verifiedBootKeys.isEmpty()) throw object :
+            AndroidAttestationException("No verified boot key policy configured", null) {}
         if (applications.any { it.verifiedBootKeys?.isEmpty() == true })
-            throw object : AndroidAttestationException("App-specific verified boot key policy must not be empty", null) {}
+            throw object :
+                AndroidAttestationException("App-specific verified boot key policy must not be empty", null) {}
         if (disableHardwareAttestation && !enableSoftwareAttestation)
             throw object : AndroidAttestationException(
                 "Neither hardware, nor software attestation enabled", null
@@ -1113,6 +1117,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * Intentionally a list to prioritise.
          * @see AndroidRevocationList.HttpLoader.Configuration
          * @see AndroidRevocationList.FileLoader.Configuration
          */
@@ -1275,14 +1280,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 }
 
 /**
- * Leniently (ignore case, and whitespace) parse hex to bytes
+ * Leniently (ignore case, and whitespace andd `:`) parse hex to bytes
  */
-fun String.parseHex(): ByteArray = this.filterNot { it.isWhitespace() }.lowercase().hexToByteArray(HexFormat.Default)
+fun String.parseHex(): ByteArray =
+    this.filterNot { it.isWhitespace() }.replace(":", "").lowercase().hexToByteArray(HexFormat.Default)
 
 @Serializable(with = VerifiedBootKeySerializer::class)
 sealed interface VerifiedBootKey {
     @Serializable
-    data object OEM : VerifiedBootKey
+    data object OEM : VerifiedBootKey {
+        override fun toString(): String = "OEM"
+    }
 
     @Serializable
     class Digest(@Serializable(with = ByteArrayHexStringSerializer::class) val value: ByteArray) : VerifiedBootKey {
@@ -1292,6 +1300,14 @@ sealed interface VerifiedBootKey {
 
         override fun toString(): String = value.toHexString()
     }
+
+    companion object {
+        fun fromString(str: String): VerifiedBootKey {
+            val value = str.trim()
+            return if (value.equals("OEM", ignoreCase = true)) VerifiedBootKey.OEM
+            else VerifiedBootKey.Digest(value.parseHex())
+        }
+    }
 }
 
 object VerifiedBootKeySerializer : KSerializer<VerifiedBootKey> {
@@ -1299,19 +1315,11 @@ object VerifiedBootKeySerializer : KSerializer<VerifiedBootKey> {
         PrimitiveSerialDescriptor("VerifiedBootKeySerializer", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: VerifiedBootKey) {
-        encoder.encodeString(
-            when (value) {
-                VerifiedBootKey.OEM -> "OEM"
-                is VerifiedBootKey.Digest -> value.value.toHexString()
-            }
-        )
+        encoder.encodeString(value.toString())
     }
 
-    override fun deserialize(decoder: Decoder): VerifiedBootKey {
-        val value = decoder.decodeString().trim()
-        return if (value.equals("OEM", ignoreCase = true)) VerifiedBootKey.OEM
-        else VerifiedBootKey.Digest(value.replace(":", "").parseHex())
-    }
+    override fun deserialize(decoder: Decoder): VerifiedBootKey = VerifiedBootKey.fromString(decoder.decodeString())
+
 }
 
 object ByteArrayHexStringSerializer : KSerializer<ByteArray> {
@@ -1323,7 +1331,7 @@ object ByteArrayHexStringSerializer : KSerializer<ByteArray> {
     }
 
     override fun deserialize(decoder: Decoder): ByteArray {
-        return decoder.decodeString().replace(":", "").parseHex()
+        return decoder.decodeString().parseHex()
     }
 
 }

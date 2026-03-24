@@ -54,7 +54,7 @@ val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = false)) {
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.attestation.supreme.client.test", //automated tests
-                            listOf(
+                            setOf(
                                 "a3 e5 5b a9 45 7d e2 90 0f e8 63 03 a5 d5 56 c4 96 b6 91 af ff 2c 0d d5 04 88 be d3 e4 00 cc 6b".parseHex()
                             )
                         )

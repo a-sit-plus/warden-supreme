@@ -63,13 +63,13 @@ val TimeOffsetTest by testSuite(testConfig = TestConfig.testScope(isEnabled = tr
                 val androidAttestationConfiguration = if (validity != null) AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         "foo",
-                        listOf(byteArrayOf())
+                        setOf(byteArrayOf())
                     ),
                     attestationStatementValiditySeconds = expectedValidity.inWholeSeconds
                 ) else AndroidAttestationConfiguration(
                     AndroidAttestationConfiguration.AppData(
                         "foo",
-                        listOf(byteArrayOf())
+                        setOf(byteArrayOf())
                     )
                 )
                 val iosAttestationConfiguration = if (validity != null) IosAttestationConfiguration(

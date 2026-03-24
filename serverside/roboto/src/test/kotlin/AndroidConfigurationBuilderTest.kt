@@ -36,7 +36,7 @@ val AndroidConfigurationBuilderTests by testSuite {
     "Android configuration builder sets fields" {
         val app = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
-            signerFingerprints = listOf(ByteArray(32) { 2 })
+            signerFingerprints = setOf(ByteArray(32) { 2 })
         )
         val hardwareRoots = setOf(GOOGLE_RKP_EC_ROOT)
         val softwareRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.take(1).toSet()
@@ -87,17 +87,17 @@ val AndroidConfigurationBuilderTests by testSuite {
 
         val first = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
-            signerFingerprints = listOf(digestA1, digestB1),
+            signerFingerprints = setOf(digestA1, digestB1),
             verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, bootDigest1)
         )
         val sameContent = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
-            signerFingerprints = listOf(digestA2, digestB2),
+            signerFingerprints = setOf(digestA2, digestB2),
             verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, bootDigest2)
         )
         val reordered = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
-            signerFingerprints = listOf(digestB2.copyOf(), digestA2.copyOf()),
+            signerFingerprints = setOf(digestB2.copyOf(), digestA2.copyOf()),
             verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, VerifiedBootKey.Digest(byteArrayOf(9, 9, 9)))
         )
 
@@ -109,7 +109,7 @@ val AndroidConfigurationBuilderTests by testSuite {
     "AndroidAttestationConfiguration compares byte-array sets by content regardless of set iteration order" {
         val app = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
-            signerFingerprints = listOf(byteArrayOf(7, 8, 9))
+            signerFingerprints = setOf(byteArrayOf(7, 8, 9))
         )
         val configA = AndroidAttestationConfiguration(
             applications = listOf(app),
@@ -126,7 +126,7 @@ val AndroidConfigurationBuilderTests by testSuite {
             applications = listOf(
                 AndroidAttestationConfiguration.AppData(
                     packageName = "com.example",
-                    signerFingerprints = listOf(byteArrayOf(7, 8, 9))
+                    signerFingerprints = setOf(byteArrayOf(7, 8, 9))
                 )
             ),
             hardwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
