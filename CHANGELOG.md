@@ -4,7 +4,7 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-# NEXT
+# 1.0.0-RC6
 * Features
     * Support custom verified boot keys
         * Allows treating self-signed just like a locked bootloader if desired
@@ -13,6 +13,9 @@ this changelog also includes the original WARDEN changelog.
     * Signer fingerprints is now a `Set` and not a list anymore
 * Behavioural Changes:
     * `parseHex` now also strips `:` by default
+* Dependency Updates
+    * Signum 3.20.0 + Supreme 0.12.0 fixing DER SET ordering
+    * Kotlinx.serialization 1.10.0
 
 # 1.0.0-RC5
 * Features
