@@ -1289,7 +1289,8 @@ fun String.parseHex(): ByteArray =
 sealed interface VerifiedBootKey {
     @Serializable
     data object OEM : VerifiedBootKey {
-        override fun toString(): String = "OEM"
+        const val name = "OEM"
+        override fun toString(): String = name
     }
 
     @Serializable
@@ -1304,7 +1305,7 @@ sealed interface VerifiedBootKey {
     companion object {
         fun fromString(str: String): VerifiedBootKey {
             val value = str.trim()
-            return if (value.equals("OEM", ignoreCase = true)) VerifiedBootKey.OEM
+            return if (value.equals(OEM.name, ignoreCase = true)) VerifiedBootKey.OEM
             else VerifiedBootKey.Digest(value.parseHex())
         }
     }
