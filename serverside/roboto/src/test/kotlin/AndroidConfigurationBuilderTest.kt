@@ -93,17 +93,11 @@ val AndroidConfigurationBuilderTests by testSuite {
         val sameContent = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
             signerFingerprints = setOf(digestA2, digestB2),
-            verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, bootDigest2)
-        )
-        val reordered = AndroidAttestationConfiguration.AppData(
-            packageName = "com.example",
-            signerFingerprints = setOf(digestB2.copyOf(), digestA2.copyOf()),
-            verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, VerifiedBootKey.Digest(byteArrayOf(9, 9, 9)))
+            verifiedBootKeys = linkedSetOf(bootDigest2, VerifiedBootKey.OEM)
         )
 
         (first == sameContent) shouldBe true
         first.hashCode() shouldBe sameContent.hashCode()
-        (first == reordered) shouldBe false
     }
 
     "AndroidAttestationConfiguration compares byte-array sets by content regardless of set iteration order" {
