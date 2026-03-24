@@ -1,5 +1,4 @@
 import at.asitplus.gradle.setupDokka
-import org.gradle.api.publish.PublishingExtension
 
 plugins {
     kotlin("jvm")
@@ -118,26 +117,4 @@ signing {
     val signingPassword: String? by project
     useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign(publishing.publications)
-}
-
-afterEvaluate {
-    extensions.findByType(PublishingExtension::class.java)?.let { publishing ->
-        listOf("version", "versions").forEach { publicationName ->
-            publishing.publications.findByName(publicationName)?.let(publishing.publications::remove)
-        }
-    }
-
-    tasks.matching { task ->
-        task.name.contains("VersionsPublication") ||
-            task.name == "checkPomFileForVersionsPublication" ||
-            task.name == "signVersionsPublication"
-    }.configureEach {
-        enabled = false
-    }
-
-    tasks.matching { task ->
-        task.name == "cyclonedxMavenJavaPublicationBomDirectDependencies"
-    }.configureEach {
-        enabled = false
-    }
 }

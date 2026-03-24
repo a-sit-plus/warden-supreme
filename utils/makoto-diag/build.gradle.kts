@@ -1,5 +1,3 @@
-import org.gradle.api.publish.PublishingExtension
-
 plugins {
     kotlin("jvm")
     application
@@ -20,19 +18,4 @@ application {
 
 dependencies {
     implementation(project(":makoto"))
-}
-
-afterEvaluate {
-    extensions.findByType(PublishingExtension::class.java)?.let { publishing ->
-        listOf("version", "versions").forEach { publicationName ->
-            publishing.publications.findByName(publicationName)?.let(publishing.publications::remove)
-        }
-    }
-
-    tasks.matching { task ->
-        task.name.contains("VersionsPublication") ||
-            task.name == "checkPomFileForVersionsPublication"
-    }.configureEach {
-        enabled = false
-    }
 }

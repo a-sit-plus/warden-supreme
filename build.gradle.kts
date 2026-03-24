@@ -1,5 +1,4 @@
 import groovy.json.JsonSlurper
-import org.gradle.api.publish.PublishingExtension
 import org.gradle.plugins.signing.Sign
 
 plugins {
@@ -83,60 +82,6 @@ tasks.register("publishReleaseModulesToLocalRepository") {
 }
 
 val signLocalRepoArtefacts = System.getenv("SIGN_LOCAL_REPO_ARTEFACTS")?.ifBlank { "false" } == "true"
-
-publishedProjects.forEach { moduleProject ->
-    moduleProject.tasks.matching { task ->
-        task.name.startsWith("cyclonedx") &&
-            task.name.endsWith("PublicationBom") &&
-            !task.name.endsWith("BomNormalized") &&
-            !task.name.endsWith("BomConsistency") &&
-            !task.name.endsWith("BomDirectDependencies")
-    }.configureEach {
-        doLast {
-            val publicationName = name
-                .removePrefix("cyclonedx")
-                .removeSuffix("PublicationBom")
-                .replaceFirstChar { it.lowercase() }
-            val publicationDir = moduleProject.layout.buildDirectory
-                .dir("reports/cyclonedx-publications/$publicationName")
-                .get()
-                .asFile
-
-            val rawJson = publicationDir.resolve("bom.raw.json")
-            val rawXml = publicationDir.resolve("bom.raw.xml")
-            val json = publicationDir.resolve("bom.json")
-            val xml = publicationDir.resolve("bom.xml")
-
-            if (rawJson.isFile && !json.exists()) {
-                rawJson.copyTo(json, overwrite = true)
-            }
-            if (rawXml.isFile && !xml.exists()) {
-                rawXml.copyTo(xml, overwrite = true)
-            }
-        }
-    }
-
-    moduleProject.tasks.matching { task ->
-        task.name.startsWith("publish") &&
-            task.name.contains("PublicationTo") &&
-            !task.name.contains("VersionsPublication")
-    }.configureEach {
-        val publicationName = name
-            .removePrefix("publish")
-            .substringBefore("PublicationTo")
-        val cyclonedxTaskName = "cyclonedx${publicationName}PublicationBom"
-
-        dependsOn(moduleProject.tasks.matching { candidate -> candidate.name == cyclonedxTaskName })
-    }
-
-    moduleProject.tasks.matching { task ->
-        task.name.endsWith("BomDirectDependencies") ||
-            task.name.endsWith("BomNormalized") ||
-            task.name.endsWith("BomConsistency")
-    }.configureEach {
-        enabled = false
-    }
-}
 
 val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
     group = "documentation"

@@ -1,7 +1,3 @@
-
-import org.gradle.api.publish.PublishingExtension
-
-
 plugins {
     kotlin("jvm")
     application
@@ -40,20 +36,5 @@ dependencies {
     implementation(project(":supreme-common"))
     implementation(libs.signum) {
         exclude("org.bouncycastle", "bcpkix-jdk18on")
-    }
-}
-
-afterEvaluate {
-    extensions.findByType(PublishingExtension::class.java)?.let { publishing ->
-        listOf("version", "versions").forEach { publicationName ->
-            publishing.publications.findByName(publicationName)?.let(publishing.publications::remove)
-        }
-    }
-
-    tasks.matching { task ->
-        task.name.contains("VersionsPublication") ||
-            task.name == "checkPomFileForVersionsPublication"
-    }.configureEach {
-        enabled = false
     }
 }
