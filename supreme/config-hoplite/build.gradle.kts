@@ -14,6 +14,10 @@ val groupId: String by extra
 group = groupId
 version = artifactVersion
 
+java {
+    withSourcesJar()
+}
+
 dependencies {
     api(project(":supreme-common"))
     implementation(libs.hoplite.core)

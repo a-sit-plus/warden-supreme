@@ -15,6 +15,10 @@ val groupId: String by extra
 group = groupId
 version = artifactVersion
 
+java {
+    withSourcesJar()
+}
+
 dependencies {
     api(project(":supreme-common"))
     compileOnly(libs.spring.boot)

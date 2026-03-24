@@ -45,8 +45,8 @@ filtering out cheap, commoditised attacks.
     You can accept OEM Android, hardened custom ROMs such as GrapheneOS, or only those hardened custom ROMs for
     high-security deployments.
     GrapheneOS publishes its [verified boot key hashes](https://grapheneos.org/install/web#verified-boot-key-hash).
-    See [High-Assurance Android Policies](why-supreme.md#high-assurance-android-policies), [Threat Models and Risks](bg/threatmodels.md), and
-    [Externalising Configuration](integration/config.md).
+    See [High-Assurance Android Policies](../why-supreme.md#high-assurance-android-policies), [Threat Models and Risks](threatmodels.md), and
+    [Externalising Configuration](../integration/config.md).
 
 !!! example "Example Repackaging Attacks"
     Attestation thwarts common repackaging patterns such as:
