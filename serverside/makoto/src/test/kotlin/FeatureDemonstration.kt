@@ -26,7 +26,7 @@ val FeatureDemonstration by testSuite {
             listOf(
                 AndroidAttestationConfiguration.AppData(
                     packageName = "at.asitplus.attestation_client",
-                    signerFingerprints = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()),
+                    signerFingerprints = setOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()),
                     appVersion = 1, //optional
                 )
             ),
@@ -202,7 +202,7 @@ val FeatureDemonstration by testSuite {
                     listOf(
                         AndroidAttestationConfiguration.AppData(
                             packageName = "at.asitplus.attestation_client",
-                            signerFingerprints = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()),
+                            signerFingerprints = setOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()),
                             appVersion = 1, //optional
                         )
                     ),

@@ -19,7 +19,7 @@ val DebugStatementSerializationRegressionTests by testSuite {
             applications = listOf(
                 AndroidAttestationConfiguration.AppData(
                     packageName = "at.asitplus.test",
-                    signerFingerprints = listOf(ByteArray(32))
+                    signerFingerprints = setOf(ByteArray(32))
                 )
             ),
             hardwareTrustedRoots = setOf(trustedRoot),

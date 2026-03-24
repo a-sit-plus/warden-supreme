@@ -33,7 +33,7 @@ val ConfigurationBuilderTest by testSuite {
     "Makoto validity duration picks min and max" {
         val androidApp = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
-            signerFingerprints = listOf(ByteArray(32) { 1 })
+            signerFingerprints = setOf(ByteArray(32) { 1 })
         )
         val androidConfig = AndroidAttestationConfiguration(
             applications = listOf(androidApp),

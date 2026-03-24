@@ -94,7 +94,7 @@ val AttestationTests by testSuite {
         ).apply {
 
             val packageName = "at.asitplus.atttest"
-            val signatureDigests = listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray())
+            val signatureDigests = setOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray())
 
 
             withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
@@ -179,7 +179,7 @@ val AttestationTests by testSuite {
                 ),
                 isoDate = "2023-09-10T00:00:00Z"
             )
-            val signatureDigests = listOf(
+            val signatureDigests = setOf(
                 "88E5C393EAEF36829800B41DF786A52FF0A58215850CA8A65073859ADCF0190F".hexToByteArray(HexFormat.UpperCase)
             )
             val packageName = "com.example.trustedapplication"
@@ -622,7 +622,7 @@ val AttestationTests by testSuite {
                             shouldThrow<AttestationValueException> {
                                 attestationService(
                                     supreme,
-                                    androidAppSignatureDigest = listOf(
+                                    androidAppSignatureDigest = setOf(
                                         byteArrayOf(0, 32, 55, 29, 120, 22, 0),
                                         /*this one's an invalid digest and must not affect the tests*/
                                         "LvfTC77F/uSecSfJDeLdxQ3gZrVLHX8+NNBp7AiUO0E=".decodeBase64ToArray()!!
@@ -637,7 +637,7 @@ val AttestationTests by testSuite {
 
                         "no signature digests, cannot instantiate" {
                             shouldThrow<AndroidAttestationException> {
-                                attestationService(supreme, androidAppSignatureDigest = listOf())
+                                attestationService(supreme, androidAppSignatureDigest = setOf())
                             }
                         }
 
@@ -694,7 +694,7 @@ val AttestationTests by testSuite {
 
 private const val ATT_CLIENT_PKG_NAME = "at.asitplus.attestation_client"
 
-val ATT_CLIENT_DIGESTS = listOf(
+val ATT_CLIENT_DIGESTS = setOf(
     "NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray(),
     /*this one's an invalid digest and must not affect the tests*/
     "LvfTC77F/uSecSfJDeLdxQ3gZrVLHX8+NNBp7AiUO0E=".decodeBase64ToArray()
@@ -703,7 +703,7 @@ val ATT_CLIENT_DIGESTS = listOf(
 fun attestationService(
     supreme: Boolean,
     androidPackageName: String = ATT_CLIENT_PKG_NAME,
-    androidAppSignatureDigest: List<ByteArray> = ATT_CLIENT_DIGESTS,
+    androidAppSignatureDigest: Set<ByteArray> = ATT_CLIENT_DIGESTS,
     verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM),
     androidVersion: Int? = 10000,
     androidAppVersion: Int? = 1,

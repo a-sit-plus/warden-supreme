@@ -122,7 +122,7 @@ val WardenTest by testSuite {
             AndroidAttestationConfiguration.Builder(
                 AndroidAttestationConfiguration.AppData(
                     "foo",
-                    listOf(byteArrayOf())
+                    setOf(byteArrayOf())
                 )
             )
                 .enforceLeafValidity()
@@ -845,7 +845,7 @@ val WardenTest by testSuite {
 
                         "wrong signature digests" {
                             attestationService(
-                                androidAppSignatureDigest = listOf(
+                                androidAppSignatureDigest = setOf(
                                     byteArrayOf(0, 32, 55, 29, 120, 22, 0),
                                     /*this one's an invalid digest and must not affect the tests*/
                                     "LvfTC77F/uSecSfJDeLdxQ3gZrVLHX8+NNBp7AiUO0E=".decodeBase64ToArray()!!
@@ -877,7 +877,7 @@ val WardenTest by testSuite {
                         "no signature digests, cannot instantiate" {
                             shouldThrow<at.asitplus.attestation.android.exceptions.AndroidAttestationException> {
                                 attestationService(
-                                    androidAppSignatureDigest = listOf(),
+                                    androidAppSignatureDigest = setOf(),
                                     timeSource = FixedTimeClock(
                                         recordedAttestation.verificationDate
                                     ),
@@ -1095,7 +1095,7 @@ val WardenTest by testSuite {
                 ),
                 isoDate = "2023-09-10T00:00:00Z"
             )
-            val signatureDigests = listOf(
+            val signatureDigests = setOf(
                 "88E5C393EAEF36829800B41DF786A52FF0A58215850CA8A65073859ADCF0190F".hexToByteArray(HexFormat.UpperCase)
             )
             val packageName = "com.example.trustedapplication"
@@ -1226,7 +1226,7 @@ val WardenTest by testSuite {
         val android = "CAC4307080875C418BEB668E825649DC".hexToByteArray(HexFormat.UpperCase) to
                 Json.decodeFromStream<Attestation>(this::class.java.classLoader.getResourceAsStream("aksattest.json"))
 
-        val androidSigDigests = listOf(
+        val androidSigDigests = setOf(
             "941A4513A3027563D3A6EA48EEE85BA45EB9F69CEEA19EF0EBB17F100BFC8878".hexToByteArray(
                 HexFormat.UpperCase
             )
@@ -1441,7 +1441,7 @@ val WardenTest by testSuite {
                     AndroidAttestationConfiguration.Builder(
                         AndroidAttestationConfiguration.AppData(
                             "at.asitplus.cryptotest.androidApp",
-                            listOf( //wrong digest
+                            setOf( //wrong digest
                                 "491A4513A3027563D3A6EA48EEE85BA45EB9F69CEEA19EF0EBB17F100BFC8878".hexToByteArray(
                                     HexFormat.UpperCase
                                 )

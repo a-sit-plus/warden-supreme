@@ -267,7 +267,7 @@ val iosGood = listOf(
 
 const val ANDROID_PACKAGE_NAME = "at.asitplus.attestation_client"
 
-val ANDROID_SIGNATURE_DIGESTS = listOf(
+val ANDROID_SIGNATURE_DIGESTS = setOf(
     "NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray(),
     /*this one's an invalid digest and must not affect the tests*/
     "LvfTC77F/uSecSfJDeLdxQ3gZrVLHX8+NNBp7AiUO0E=".decodeBase64ToArray()!!
@@ -285,7 +285,7 @@ val DEFAULT_IOS_ATTESTATION_CFG = IosAttestationConfiguration(
 
 fun attestationService(
     androidPackageName: String = ANDROID_PACKAGE_NAME,
-    androidAppSignatureDigest: List<ByteArray> = ANDROID_SIGNATURE_DIGESTS,
+    androidAppSignatureDigest: Set<ByteArray> = ANDROID_SIGNATURE_DIGESTS,
     androidVersion: Int? = 10000,
     androidAppVersion: Int? = 1,
     androidPatchLevel: PatchLevel? = PatchLevel(2021, 8),

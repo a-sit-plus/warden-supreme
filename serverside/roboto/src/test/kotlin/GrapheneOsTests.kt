@@ -14,7 +14,7 @@ import kotlin.time.Duration.Companion.minutes
 
 private const val ATTEST_TEST_PKG_NAME = "at.asitplus.atttest"
 
-private val ATTEST_TEST_DIGESTS = listOf(
+private val ATTEST_TEST_DIGESTS = setOf(
     "NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray()
 )
 
