@@ -62,12 +62,16 @@ sealed class RtgAttestationEngine(
             .map { it.version().toUInt() }
 
     override val AuthorizationList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
-        get() = when (rootOfTrust().get().verifiedBootState()) {
+        get() = when (catchingUnwrapped {  rootOfTrust().get()}.getOrNull()?.verifiedBootState()) {
             RootOfTrust.VerifiedBootState.VERIFIED -> GeneralizedVerifiedBootState.VERIFIED
             RootOfTrust.VerifiedBootState.SELF_SIGNED -> GeneralizedVerifiedBootState.SELF_SIGNED
             RootOfTrust.VerifiedBootState.UNVERIFIED -> GeneralizedVerifiedBootState.UNVERIFIED
             RootOfTrust.VerifiedBootState.FAILED -> GeneralizedVerifiedBootState.FAILED
+            else -> null
         }
+
+    override val AuthorizationList.verifiedBootKeyDigest: ByteArray?
+        get() = catchingUnwrapped {  rootOfTrust()?.get()}.getOrNull()?.verifiedBootKey()?.toByteArray()
 
     override val AuthorizationList.hasRootOfTrust: Boolean get() = rootOfTrust() != null
 

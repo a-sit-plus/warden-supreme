@@ -138,6 +138,14 @@ It is possible to add time sources other than the system clock and externalise t
     --8<-- "android.yaml"
     ```
 
+!!! tip "Known-good custom ROM keys"
+    `verifiedBootKeys` defaults to `[OEM]`, which accepts vendor-managed `VERIFIED` boot on locked devices.
+    Add pinned hex digests to also allow explicitly whitelisted `SELF_SIGNED` verified boot keys, or omit `OEM` to
+    require only those custom keys. This only has an effect while `allowBootloaderUnlock` remains `false`, because
+    Warden skips verified boot state and key checks entirely once unlocked bootloaders are allowed. A concrete example
+    is GrapheneOS, which publishes its
+    [verified boot key hashes](https://grapheneos.org/install/web#verified-boot-key-hash).
+
 ??? example "JSON for a Sample App"
     The below example shows every configuration property in JSON form.
     Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.

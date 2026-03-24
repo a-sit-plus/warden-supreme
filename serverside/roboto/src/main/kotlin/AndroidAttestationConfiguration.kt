@@ -11,8 +11,14 @@ import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
 import io.ktor.util.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import net.mamoe.yamlkt.Yaml
@@ -268,16 +274,22 @@ val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
 private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("EC")
         .generatePublic(
-            X509EncodedKeySpec(Base64.getDecoder().decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
-                    "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="))
+            X509EncodedKeySpec(
+                Base64.getDecoder().decode(
+                    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+                            "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
+                )
+            )
         ),
     KeyFactory.getInstance("RSA")
         .generatePublic(
             X509EncodedKeySpec(
-                Base64.getDecoder().decode(    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
-                        "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
-                        "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
-                        "+Vfkl5YLCazOkjWFmwIDAQAB")
+                Base64.getDecoder().decode(
+                    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+                            "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+                            "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+                            "+Vfkl5YLCazOkjWFmwIDAQAB"
+                )
             )
         )
 )
@@ -303,7 +315,9 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
  * @param allowBootloaderUnlock optional parameter. Set to true if unlocked bootloaders should be allowed.
  * **Attention:** Allowing unlocked bootloaders in production effectively defeats the purpose of app attestation.
  * (but retains the ability to attest whether a key is securely stored in hardware)
- * Useful for debugging/testing
+ * Useful for debugging/testing.
+ * When this is `true`, verified boot state and verified boot key digest checks are skipped, because they only make
+ * sense when requiring a locked bootloader.
  * @param requireRollbackResistance optional parameter. Unsupported by most devices.
  * See [Official Documentation](https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance)
  * @param ignoreLeafValidity optional parameter. Whether to ignore the timely validity of the leaf certificate (looking at you, Samsung!)
@@ -325,7 +339,7 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
 data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
-     * List of applications which can be attested
+     * List of applications which can be attested. Intentionally a list to prioritise.
      */
     val applications: List<AppData>,
 
@@ -350,7 +364,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
-     * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
+     * effectively defeats the purpose of Key Attestation. Useful for debugging/testing.
+     * When this is `true`, verified boot state and verified boot key digest checks are skipped, because they only make
+     * sense when requiring a locked bootloader.
      * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
      */
     val allowBootloaderUnlock: Boolean = false,
@@ -415,17 +431,30 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+     * Intentionally a list to prioritise.
      * @see AndroidRevocationList.HttpLoader.Configuration
      * @see AndroidRevocationList.FileLoader.Configuration
      */
     val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
     /**
+     * Configures which verified boot keys are accepted while requiring a locked bootloader.
+     * The default is [VerifiedBootKey.OEM], which accepts vendor-managed `VERIFIED` boot without checking a custom digest.
+     * Additional [VerifiedBootKey.Digest] entries allow matching explicit `SELF_SIGNED` verified boot keys by digest.
+     * Combining [VerifiedBootKey.OEM] with digest entries accepts both vendor-managed `VERIFIED` boot and explicitly
+     * whitelisted `SELF_SIGNED` keys. Omitting [VerifiedBootKey.OEM] accepts only explicitly whitelisted `SELF_SIGNED`
+     * keys.
+     * This check is only meaningful when [allowBootloaderUnlock] is `false`, because verified boot state and
+     * verified boot key digest checks are skipped when unlocked bootloaders are allowed.
+     */
+    val verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM),
+
+    /**
      * Flag to try out the new supreme parser
      */
     val supremeParser: Boolean = false,
 
-) : AttestationConfiguration {
+    ) : AttestationConfiguration {
 
     /**
      * Convenience constructor to attest a single app
@@ -457,7 +486,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
-         * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
+         * effectively defeats the purpose of Key Attestation. Useful for debugging/testing.
+         * When this is `true`, verified boot state and verified boot key digest checks are skipped, because they only make
+         * sense when requiring a locked bootloader.
          * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
@@ -517,6 +548,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * Intentionally a list to prioritise.
          * @see AndroidRevocationList.HttpLoader.Configuration
          * @see AndroidRevocationList.FileLoader.Configuration
          */
@@ -527,6 +559,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * for attestation checks to pass
          */
         requireRemoteKeyProvisioning: Boolean = false,
+
+        /**
+         * @see AndroidAttestationConfiguration.verifiedBootKeys
+         */
+        verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM),
 
         /**
          * Flag to try out the new supreme parser
@@ -548,6 +585,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+        verifiedBootKeys = verifiedBootKeys,
         supremeParser = supremeParser,
     )
 
@@ -576,7 +614,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to true if unlocked bootloaders should be allowed. **Attention:** Allowing unlocked bootloaders in production
-         * effectively defeats the purpose of Key Attestation. Useful for debugging/testing
+         * effectively defeats the purpose of Key Attestation. Useful for debugging/testing.
+         * When this is `true`, verified boot state and verified boot key digest checks are skipped, because they only make
+         * sense when requiring a locked bootloader.
          * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
          */
         allowBootloaderUnlock: Boolean = false,
@@ -659,6 +699,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         requireRemoteKeyProvisioning: Boolean = false,
 
         /**
+         * @see AndroidAttestationConfiguration.verifiedBootKeys
+         */
+        verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM),
+
+        /**
          * Flag to try out the new supreme parser
          */
         supremeParser: Boolean = false,
@@ -678,6 +723,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enableSoftwareAttestation = enableSoftwareAttestation,
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+        verifiedBootKeys = verifiedBootKeys,
         supremeParser = supremeParser,
     )
 
@@ -706,7 +752,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        val signerFingerprints: List<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
+        val signerFingerprints: Set<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
 
         /**
          * optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -741,6 +787,15 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         val requireStrongBoxOverride: Boolean? = null,
 
+        /**
+         * Optional app-specific override for [AndroidAttestationConfiguration.verifiedBootKeys].
+         * This is only meaningful for hardware attestation with a locked bootloader.
+         * Use [VerifiedBootKey.OEM] to keep accepting vendor-managed `VERIFIED` boot, add
+         * [VerifiedBootKey.Digest] entries to also allow specific `SELF_SIGNED` keys, or omit
+         * [VerifiedBootKey.OEM] to require only those explicitly whitelisted `SELF_SIGNED` keys.
+         */
+        val verifiedBootKeys: Set<VerifiedBootKey>? = null,
+
         ) {
 
         init {
@@ -760,7 +815,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        class Builder(private val packageName: String, private val signatureDigests: List<ByteArray>) {
+        class Builder(private val packageName: String, private val signatureDigests: Collection<ByteArray>) {
 
             /**
              * Builder for more java-friendliness
@@ -783,6 +838,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             private var requireRemoteKeyProvisioningOverride: Boolean? = null
 
             private var requireStrongBoxOverride: Boolean? = null
+
+            /**
+             * App-specific override for [AndroidAttestationConfiguration.verifiedBootKeys].
+             * This is only meaningful for hardware attestation with a locked bootloader.
+             */
+            private var verifiedBootKeys: Set<VerifiedBootKey>? = null
 
             /**
              * @see AppData.appVersion
@@ -823,16 +884,22 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
              */
             fun requireStrongBoxOverride(required: Boolean) = apply { requireStrongBoxOverride = required }
 
+            /**
+             * @see AppData.verifiedBootKeys
+             */
+            fun verifiedBootKeys(keys: Set<VerifiedBootKey>) = apply { verifiedBootKeys = keys }
+
             fun build() =
                 AppData(
                     packageName,
-                    signatureDigests,
+                    signatureDigests.toSet(),
                     appVersion,
                     androidVersionOverride,
                     patchLevelOverride,
                     requireRemoteKeyProvisioningOverride,
                     trustedRootOverrides,
                     requireStrongBoxOverride,
+                    verifiedBootKeys,
                 )
         }
 
@@ -855,14 +922,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             if (androidVersionOverride != other.androidVersionOverride) return false
             if (osPatchLevel != other.osPatchLevel) return false
             if (packageName != other.packageName) return false
-
-            if (signerFingerprints.size != other.signerFingerprints.size) return false
-            signerFingerprints.forEachIndexed { index, byteArray ->
-                if (!other.signerFingerprints[index].contentEquals(
-                        byteArray
-                    )
-                ) return false
-            }
+            if (!(signerFingerprints contentEqualsIfArray other.signerFingerprints)) return false
 
             if (patchLevelOverride != other.patchLevelOverride) return false
 
@@ -871,6 +931,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             if (trustedRootOverrides != other.trustedRootOverrides) return false
 
             if (requireStrongBoxOverride != other.requireStrongBoxOverride) return false
+            if (verifiedBootKeys != other.verifiedBootKeys) return false
 
             return true
         }
@@ -880,11 +941,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + (androidVersionOverride ?: 0)
             result = 31 * result + (osPatchLevel ?: 0)
             result = 31 * result + packageName.hashCode()
-            result = 31 * result + signerFingerprints.hashCode()
+            result = 31 * result + signerFingerprints.contentHashCodeIfArray()
             result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
             result = 31 * result + (trustedRootOverrides?.hashCode() ?: 0)
             result = 31 * result + (requireRemoteKeyProvisioningOverride?.hashCode() ?: 0)
             result = 31 * result + (requireStrongBoxOverride?.hashCode() ?: 0)
+            result = 31 * result + (verifiedBootKeys?.hashCode() ?: 0)
             return result
         }
 
@@ -895,6 +957,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             throw object : AndroidAttestationException("No trust anchors configured", null) {}
 
         if (applications.isEmpty()) throw object : AndroidAttestationException("No apps configured", null) {}
+        if (verifiedBootKeys.isEmpty()) throw object :
+            AndroidAttestationException("No verified boot key policy configured", null) {}
+        if (applications.any { it.verifiedBootKeys?.isEmpty() == true })
+            throw object :
+                AndroidAttestationException("App-specific verified boot key policy must not be empty", null) {}
         if (disableHardwareAttestation && !enableSoftwareAttestation)
             throw object : AndroidAttestationException(
                 "Neither hardware, nor software attestation enabled", null
@@ -933,7 +1000,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var revocation: List<AndroidRevocationList.Loader.Configuration<*>> =
             listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
-
+        private var verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM)
         private var supremeParser: Boolean = false
 
         /**
@@ -954,6 +1021,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * @see AndroidAttestationConfiguration.allowBootloaderUnlock
+         *
+         * Allowing unlocked bootloaders also disables verified boot state and verified boot key checks.
          */
         fun allowBootloaderUnlock() = apply { bootloaderUnlockAllowed = true }
 
@@ -1048,6 +1117,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
+         * Intentionally a list to prioritise.
          * @see AndroidRevocationList.HttpLoader.Configuration
          * @see AndroidRevocationList.FileLoader.Configuration
          */
@@ -1059,6 +1129,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * @see at.asitplus.attestation.android.AndroidAttestationConfiguration.requireRemoteKeyProvisioning
          */
         fun requireRemoteKeyProvisioning(required: Boolean) = apply { requireRemoteKeyProvisioning = required }
+
+        /**
+         * @see AndroidAttestationConfiguration.verifiedBootKeys
+         */
+        fun verifiedBootKeys(keys: Set<VerifiedBootKey>) = apply { verifiedBootKeys = keys }
+
         /**
          * Flag to try out the new supreme parser
          */
@@ -1080,6 +1156,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             enableSoftwareAttestation = enableSwAttestation,
             revocation = revocation,
             requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
+            verifiedBootKeys = verifiedBootKeys,
             supremeParser = supremeParser,
         )
 
@@ -1101,6 +1178,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "disableHardwareAttestation=$disableHardwareAttestation, " +
                 "enableSoftwareAttestation=$enableSoftwareAttestation, " +
                 "revocation=$revocation, " +
+                "verifiedBootKeys=$verifiedBootKeys, " +
                 "osPatchLevel=$osPatchLevel, " +
                 "supremeParser=$supremeParser" +
                 ")"
@@ -1129,7 +1207,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (revocation != other.revocation) return false
 
         if (requireRemoteKeyProvisioning != other.requireRemoteKeyProvisioning) return false
-        if(supremeParser != other.supremeParser) return false
+        if (verifiedBootKeys != other.verifiedBootKeys) return false
+        if (supremeParser != other.supremeParser) return false
 
         return true
     }
@@ -1149,8 +1228,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + (patchLevel?.hashCode() ?: 0)
         result = 31 * result + hardwareTrustedRoots.hashCode()
         result = 31 * result + softwareTrustedRoots.hashCode()
-        result = 31 * result + (revocation.hashCode() ?: 0)
+        result = 31 * result + revocation.hashCode()
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
+        result = 31 * result + verifiedBootKeys.hashCode()
         result = 31 * result + supremeParser.hashCode()
         return result
     }
@@ -1200,6 +1280,59 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 }
 
 /**
- * Leniently (ignore case, and whitespace) parse hex to bytes
+ * Leniently (ignore case, and whitespace andd `:`) parse hex to bytes
  */
-fun String.parseHex(): ByteArray = this.filterNot { it.isWhitespace() }.lowercase().hexToByteArray(HexFormat.Default)
+fun String.parseHex(): ByteArray =
+    this.filterNot { it.isWhitespace() }.replace(":", "").lowercase().hexToByteArray(HexFormat.Default)
+
+@Serializable(with = VerifiedBootKeySerializer::class)
+sealed interface VerifiedBootKey {
+    @Serializable
+    data object OEM : VerifiedBootKey {
+        const val name = "OEM"
+        override fun toString(): String = name
+    }
+
+    @Serializable
+    class Digest(@Serializable(with = ByteArrayHexStringSerializer::class) val value: ByteArray) : VerifiedBootKey {
+        override fun equals(other: Any?): Boolean = other is Digest && value.contentEquals(other.value)
+
+        override fun hashCode(): Int = value.contentHashCode()
+
+        override fun toString(): String = value.toHexString()
+    }
+
+    companion object {
+        fun fromString(str: String): VerifiedBootKey {
+            val value = str.trim()
+            return if (value.equals(OEM.name, ignoreCase = true)) VerifiedBootKey.OEM
+            else VerifiedBootKey.Digest(value.parseHex())
+        }
+    }
+}
+
+object VerifiedBootKeySerializer : KSerializer<VerifiedBootKey> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("VerifiedBootKeySerializer", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: VerifiedBootKey) {
+        encoder.encodeString(value.toString())
+    }
+
+    override fun deserialize(decoder: Decoder): VerifiedBootKey = VerifiedBootKey.fromString(decoder.decodeString())
+
+}
+
+object ByteArrayHexStringSerializer : KSerializer<ByteArray> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("ByteArrayHexStringSerializer", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ByteArray) {
+        encoder.encodeString(value.toHexString())
+    }
+
+    override fun deserialize(decoder: Decoder): ByteArray {
+        return decoder.decodeString().parseHex()
+    }
+
+}

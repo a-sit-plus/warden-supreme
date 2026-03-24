@@ -9,7 +9,7 @@ val makoto = Makoto(
     androidAttestationConfiguration = AndroidAttestationConfiguration(
      /*(1)!*/AndroidAttestationConfiguration.AppData(
             packageName = "at.asitplus.attestation_client",
-            signerFingerprints = listOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex())
+            signerFingerprints = setOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex())
         )
     ),
     iosAttestationConfiguration = IosAttestationConfiguration(

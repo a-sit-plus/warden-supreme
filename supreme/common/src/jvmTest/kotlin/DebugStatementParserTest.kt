@@ -66,7 +66,7 @@ val DebugStatementParserTest by testSuite {
 
                     val digests = androidApp.getValue("signatureDigests").jsonArray.map {
                         it.jsonPrimitive.content.decodeToByteArray(Base64UrlStrict)
-                    }
+                    }.toSet()
 
                     val attestationCfg =
                         AndroidAttestationConfiguration(
@@ -205,14 +205,14 @@ val DebugStatementParserTest by testSuite {
                             applications = listOf(
                                 AndroidAttestationConfiguration.AppData(
                                     "UnknownPackage",
-                                    signerFingerprints = listOf(byteArrayOf())
+                                    signerFingerprints = setOf(byteArrayOf())
                                 )
                             )
                         ) to rLegacy.copy(
                             applications = listOf(
                                 AndroidAttestationConfiguration.AppData(
                                     "UnknownPackage",
-                                    signerFingerprints = listOf(byteArrayOf())
+                                    signerFingerprints = setOf(byteArrayOf())
                                 )
                             )
                         )

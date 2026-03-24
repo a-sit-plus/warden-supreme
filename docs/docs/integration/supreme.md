@@ -149,22 +149,33 @@ The full details on the configuration can be found in the [API documentation](..
     8. We want our app to have a dedicated HSM
     9. By default, Android 13 with a somewhat recent patch level will be required without enforcing the most recent security patches or StrongBox to reach a wider audience.
        This concerns the first app, since the second one overrides these values.
-    10. This is rarely used in practice and shows the default
-    11. This is rather optimistic, but the majority of devices running Android 13 should handle this correctly.
-    12. Usually, you will want hardware attestation, so you'd need to explicitly disable it
-    13. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
+    10. Allow OEM-managed `VERIFIED` boot and one pinned `SELF_SIGNED` verified boot key for locked devices only.
+        Omit `OEM` if you want to trust only explicitly pinned custom ROM keys. This has no effect once unlocked
+        bootloaders are allowed.
+    11. This is rarely used in practice and shows the default
+    12. This is rather optimistic, but the majority of devices running Android 13 should handle this correctly.
+    13. Usually, you will want hardware attestation, so you'd need to explicitly disable it
+    14. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
        It is not recommended to set this value because many OEMs get this wrong.
-    14. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
-    15. A single iOS app for evaluation purposes.
-    16. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
-    17. Uses the test stage
-    18. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
-    19. This could already be a production value, in preparation for the real iOS app
-    20. This is simply Apple's recommendation plus five minutes offset
-    21. Explicitly set production trusted roots as default
-    22. Account for clock drift!
-    
+    15. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
+    16. A single iOS app for evaluation purposes.
+    17. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
+    18. Uses the test stage
+    19. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
+    20. This could already be a production value, in preparation for the real iOS app
+    21. This is simply Apple's recommendation plus five minutes offset
+    22. Explicitly set production trusted roots as default
+    23. Account for clock drift!
+
     Note that revocation configuration has been revamped after 0.9.9999 (see below)!
+
+!!! tip "Pinned SELF_SIGNED Android boot keys"
+    If you need to trust a known-good custom Android build, configure `verifiedBootKeys`. The default `[OEM]` accepts
+    vendor-managed `VERIFIED` boot, `[OEM, "<hex>"]` accepts either vendor-managed `VERIFIED` boot or an explicitly
+    whitelisted `SELF_SIGNED` key, and `["<hex>"]` accepts only explicitly whitelisted `SELF_SIGNED` keys. Keep
+    `allowBootloaderUnlock = false`, otherwise bootloader-lock, verified boot state, and verified boot key checks are
+    skipped entirely. A practical example is GrapheneOS, which publishes its
+    [verified boot key hash](https://grapheneos.org/install/web#verified-boot-key-hash).
 
 
 Starting with Warden Supreme 1.0.0, it is possible to configure attestation only for iOS or only for Android by simply omitting

@@ -53,6 +53,30 @@ With platform libraries alone, teams still need to design and maintain:
 Warden Supreme reduces this integration overhead and makes policy operations more predictable.
 See [Externalising Configuration](integration/config.md).
 
+## High-Assurance Android Policies
+
+One place where Warden Supreme goes beyond "just wire the platform library" is Android verified-boot policy.
+
+Modern Android attestation does not force you into a false choice between "accept only OEM Android" and
+"allow any unlocked or modified device". Warden Supreme lets you express the policy you actually want:
+
+- Accept OEM-verified Android only
+- Accept OEM Android and explicitly trusted hardened custom ROMs
+- Accept only explicitly trusted hardened custom ROMs for high-security deployments
+
+This works by treating locked-bootloader `SELF_SIGNED` verified boot keys as first-class policy inputs rather than as
+an automatic failure case. In practice, that means secure custom-ROM deployments such as GrapheneOS can be supported
+without weakening integrity checks or falling back to heuristics.
+
+In practice, this matters for any of the following cases:
+
+- You want to embrace users that depend on privacy- or hardening-focused Android distributions
+- You want to exclude generic OEM firmware in a high-security environment and admit only a curated hardened ROM fleet
+- You need policy semantics that map directly to your threat model instead of being hardcoded in application logic
+
+See [Externalising Configuration](integration/config.md) for the actual policy format and
+[Threat Models and Risks](bg/threatmodels.md) for when OEM-only, mixed, or custom-only policies make sense.
+
 ## Comparison Matrix
 
 | Criterion | Warden Supreme | `android/keyattestation` | `veehaitch/devicecheck-appattest` |
@@ -104,6 +128,12 @@ Yes. As of 1.0.0, verifier configuration can be Android-only or iOS-only by omit
 
 No. If you need custom clients or custom flows, use the verifier modules directly
 (see [Usage without Integrated Clients](integration/raw.md)).
+
+### Does this only work on Google Play certified Android?
+
+No. If the device presents a locked-bootloader attestation with a verified boot key you trust, Warden Supreme can
+accept it even when the OS is not OEM-certified. That is exactly how you can support hardened custom ROMs such as
+GrapheneOS without weakening your server-side integrity policy.
 
 ## Related Reading
 

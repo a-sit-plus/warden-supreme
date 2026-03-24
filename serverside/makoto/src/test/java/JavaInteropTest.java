@@ -30,7 +30,7 @@ public class JavaInteropTest {
                                     "1234567890",
                                     "at.asitplus.attestation-example")),
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData(
-                                    "at.asitplus.attestation-example", Collections.emptyList())).build());
+                                    "at.asitplus.attestation-example", Collections.emptySet())).build());
                 },
                 "No signature digests specified");
 
@@ -40,7 +40,7 @@ public class JavaInteropTest {
                                     "1234567890",
                                     "at.asitplus.attestation-example")),
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
-                                    new ArrayList<>()
+                                    new HashSet<>()
                             )).build(),
 
                             Duration.ZERO);
@@ -53,7 +53,7 @@ public class JavaInteropTest {
                                     "1234567890",
                                     "at.asitplus.attestation-example")),
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
-                                    new ArrayList<>(),
+                                    new HashSet<>(),
                                     10)
                             ).build(),
 
@@ -68,7 +68,7 @@ public class JavaInteropTest {
                                     "at.asitplus.attestation-example",
                                     true)),
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
-                                    new ArrayList<>(),
+                                    new HashSet<>(),
                                     10,
                                     10000)
                             ).build(),
@@ -84,7 +84,7 @@ public class JavaInteropTest {
                                     false),
                                     new IosAttestationConfiguration.OsVersions("14.1", "18A8395")),
                             new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
-                                    new ArrayList<>()
+                                    new HashSet<>()
                             )).build(),
                             Duration.ZERO);
                 },
@@ -99,7 +99,7 @@ public class JavaInteropTest {
                         false),
                         new IosAttestationConfiguration.OsVersions("14.1", "18A8395")),
                 new AndroidAttestationConfiguration.Builder(new AndroidAttestationConfiguration.AppData("at.asitplus.attestation-example",
-                        Arrays.asList(new byte[][]{new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}}))
+                        new HashSet<>(Arrays.asList(new byte[][]{new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}})))
                 ).build(),
                 Duration.ZERO);
 
@@ -120,11 +120,11 @@ public class JavaInteropTest {
 
         apps.add(new AndroidAttestationConfiguration.AppData(
                 "at.asitplus.example",
-                Collections.singletonList(Base64.getDecoder().decode("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU="))
+                new HashSet<>(Collections.singletonList(Base64.getDecoder().decode("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=")))
         ));
         apps.add(new AndroidAttestationConfiguration.AppData(
                 "at.asitplus.anotherexample",
-                Collections.singletonList(Base64.getDecoder().decode("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=")),
+                new HashSet<>(Collections.singletonList(Base64.getDecoder().decode("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU="))),
                 2
         ));
         AndroidAttestationConfiguration config = new AndroidAttestationConfiguration.Builder(apps)

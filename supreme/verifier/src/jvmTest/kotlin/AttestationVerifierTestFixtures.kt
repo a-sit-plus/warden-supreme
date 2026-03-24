@@ -84,7 +84,7 @@ internal const val attestationEndpoint = "https://example.invalid/attest"
 internal val androidConfig = AndroidAttestationConfiguration.Builder(
     AndroidAttestationConfiguration.AppData(
         packageName = "at.asitplus.cryptotest.androidApp",
-        signerFingerprints = listOf(
+        signerFingerprints = setOf(
             "941A4513A3027563D3A6EA48EEE85BA45EB9F69CEEA19EF0EBB17F100BFC8878"
                 .hexToByteArray(HexFormat.UpperCase)
         ),

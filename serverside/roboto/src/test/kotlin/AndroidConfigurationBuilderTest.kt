@@ -4,6 +4,7 @@ import at.asitplus.attestation.android.GOOGLE_RKP_EC_ROOT
 import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.shouldBe
@@ -35,7 +36,7 @@ val AndroidConfigurationBuilderTests by testSuite {
     "Android configuration builder sets fields" {
         val app = AndroidAttestationConfiguration.AppData(
             packageName = "com.example",
-            signerFingerprints = listOf(ByteArray(32) { 2 })
+            signerFingerprints = setOf(ByteArray(32) { 2 })
         )
         val hardwareRoots = setOf(GOOGLE_RKP_EC_ROOT)
         val softwareRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.take(1).toSet()
@@ -74,5 +75,65 @@ val AndroidConfigurationBuilderTests by testSuite {
         config.enableSoftwareAttestation shouldBe true
         config.revocation shouldBe revocation
         config.requireRemoteKeyProvisioning shouldBe true
+    }
+
+    "AppData equality is content-based for byte arrays and order-sensitive for lists" {
+        val digestA1 = byteArrayOf(1, 2, 3)
+        val digestA2 = byteArrayOf(1, 2, 3)
+        val digestB1 = byteArrayOf(4, 5, 6)
+        val digestB2 = byteArrayOf(4, 5, 6)
+        val bootDigest1 = VerifiedBootKey.Digest(byteArrayOf(9, 9, 9))
+        val bootDigest2 = VerifiedBootKey.Digest(byteArrayOf(9, 9, 9))
+
+        val first = AndroidAttestationConfiguration.AppData(
+            packageName = "com.example",
+            signerFingerprints = setOf(digestA1, digestB1),
+            verifiedBootKeys = linkedSetOf(VerifiedBootKey.OEM, bootDigest1)
+        )
+        val sameContent = AndroidAttestationConfiguration.AppData(
+            packageName = "com.example",
+            signerFingerprints = setOf(digestA2, digestB2),
+            verifiedBootKeys = linkedSetOf(bootDigest2, VerifiedBootKey.OEM)
+        )
+
+        (first == sameContent) shouldBe true
+        first.hashCode() shouldBe sameContent.hashCode()
+    }
+
+    "AndroidAttestationConfiguration compares byte-array sets by content regardless of set iteration order" {
+        val app = AndroidAttestationConfiguration.AppData(
+            packageName = "com.example",
+            signerFingerprints = setOf(byteArrayOf(7, 8, 9))
+        )
+        val configA = AndroidAttestationConfiguration(
+            applications = listOf(app),
+            hardwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
+            softwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
+            revocation = emptyList(),
+            verifiedBootKeys = linkedSetOf(
+                VerifiedBootKey.OEM,
+                VerifiedBootKey.Digest(byteArrayOf(1)),
+                VerifiedBootKey.Digest(byteArrayOf(2))
+            )
+        )
+        val configB = AndroidAttestationConfiguration(
+            applications = listOf(
+                AndroidAttestationConfiguration.AppData(
+                    packageName = "com.example",
+                    signerFingerprints = setOf(byteArrayOf(7, 8, 9))
+                )
+            ),
+            hardwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
+            softwareTrustedRoots = setOf(GOOGLE_RKP_EC_ROOT),
+            revocation = emptyList(),
+            verifiedBootKeys = linkedSetOf(
+                VerifiedBootKey.Digest(byteArrayOf(2)),
+                VerifiedBootKey.OEM,
+                VerifiedBootKey.Digest(byteArrayOf(1))
+            )
+        )
+
+        (configA == configB) shouldBe true
+        configA.hashCode() shouldBe configB.hashCode()
     }
 }
