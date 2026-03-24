@@ -46,7 +46,7 @@ jobs:
       - name: Install deps
         run: brew install cairo freetype libffi libjpeg libpng zlib
       - name: Publish to project-local repo
-        run: ./gradlew clean publishAllPublicationsToLocalRepository
+        run: ./gradlew clean publishReleaseModulesToLocalRepository
         env:
           SIGN_LOCAL_REPO_ARTEFACTS: 'true'
           ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.PUBLISH_SIGNING_KEYID }}

@@ -1,5 +1,5 @@
+import groovy.json.JsonSlurper
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.plugins.signing.Sign
 
 plugins {
@@ -52,7 +52,91 @@ val publishedProjects = listOf(
     project(":config-spring"),
 )
 
+val releasePublicationsByProject = linkedMapOf(
+    ":makoto" to listOf("mavenJava"),
+    ":roboto" to listOf("mavenJava"),
+    ":config-hoplite" to listOf("mavenJava"),
+    ":config-spring" to listOf("mavenJava"),
+    ":supreme-common" to listOf("android", "iosArm64", "iosSimulatorArm64", "iosX64", "jvm", "kotlinMultiplatform"),
+    ":supreme-client" to listOf("android", "iosArm64", "iosSimulatorArm64", "iosX64", "kotlinMultiplatform"),
+    ":supreme-verifier" to listOf("jvm", "kotlinMultiplatform"),
+)
+
+tasks.register("publishReleaseModulesToSonatype") {
+    group = "publishing"
+    description = "Publishes only the release modules declared in publishedProjects to Sonatype."
+    dependsOn(releasePublicationsByProject.flatMap { (projectPath, publicationNames) ->
+        publicationNames.map { publicationName ->
+            "$projectPath:publish${publicationName.replaceFirstChar { it.uppercase() }}PublicationToSonatypeRepository"
+        }
+    })
+}
+
+tasks.register("publishReleaseModulesToLocalRepository") {
+    group = "publishing"
+    description = "Publishes only the release modules declared in publishedProjects to the project-local repo."
+    dependsOn(releasePublicationsByProject.flatMap { (projectPath, publicationNames) ->
+        publicationNames.map { publicationName ->
+            "$projectPath:publish${publicationName.replaceFirstChar { it.uppercase() }}PublicationToLocalRepository"
+        }
+    })
+}
+
 val signLocalRepoArtefacts = System.getenv("SIGN_LOCAL_REPO_ARTEFACTS")?.ifBlank { "false" } == "true"
+
+publishedProjects.forEach { moduleProject ->
+    moduleProject.tasks.matching { task ->
+        task.name.startsWith("cyclonedx") &&
+            task.name.endsWith("PublicationBom") &&
+            !task.name.endsWith("BomNormalized") &&
+            !task.name.endsWith("BomConsistency") &&
+            !task.name.endsWith("BomDirectDependencies")
+    }.configureEach {
+        doLast {
+            val publicationName = name
+                .removePrefix("cyclonedx")
+                .removeSuffix("PublicationBom")
+                .replaceFirstChar { it.lowercase() }
+            val publicationDir = moduleProject.layout.buildDirectory
+                .dir("reports/cyclonedx-publications/$publicationName")
+                .get()
+                .asFile
+
+            val rawJson = publicationDir.resolve("bom.raw.json")
+            val rawXml = publicationDir.resolve("bom.raw.xml")
+            val json = publicationDir.resolve("bom.json")
+            val xml = publicationDir.resolve("bom.xml")
+
+            if (rawJson.isFile && !json.exists()) {
+                rawJson.copyTo(json, overwrite = true)
+            }
+            if (rawXml.isFile && !xml.exists()) {
+                rawXml.copyTo(xml, overwrite = true)
+            }
+        }
+    }
+
+    moduleProject.tasks.matching { task ->
+        task.name.startsWith("publish") &&
+            task.name.contains("PublicationTo") &&
+            !task.name.contains("VersionsPublication")
+    }.configureEach {
+        val publicationName = name
+            .removePrefix("publish")
+            .substringBefore("PublicationTo")
+        val cyclonedxTaskName = "cyclonedx${publicationName}PublicationBom"
+
+        dependsOn(moduleProject.tasks.matching { candidate -> candidate.name == cyclonedxTaskName })
+    }
+
+    moduleProject.tasks.matching { task ->
+        task.name.endsWith("BomDirectDependencies") ||
+            task.name.endsWith("BomNormalized") ||
+            task.name.endsWith("BomConsistency")
+    }.configureEach {
+        enabled = false
+    }
+}
 
 val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
     group = "documentation"
@@ -64,8 +148,10 @@ val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
     val sbomRendererFile = rootProject.layout.projectDirectory.file("docs/tools/render_sbom_pages.py")
     val sortedProjects = publishedProjects.sortedBy { it.name }
 
-    dependsOn(sortedProjects.map { project ->
-        project.tasks.matching { task -> task.name == "cyclonedxPublishedBom" }
+    dependsOn(releasePublicationsByProject.flatMap { (projectPath, publicationNames) ->
+        publicationNames.map { publicationName ->
+            "$projectPath:cyclonedx${publicationName.replaceFirstChar { it.uppercase() }}PublicationBom"
+        }
     })
     if (signLocalRepoArtefacts) {
         dependsOn(sortedProjects.map { project ->
@@ -84,48 +170,82 @@ val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
     }
 
     doLast {
+        val jsonSlurper = JsonSlurper()
+        val repoRoot = rootProject.layout.projectDirectory.dir("repo").asFile
         val entries = sortedProjects.flatMap { moduleProject ->
             val publicationRoot = moduleProject.layout.buildDirectory.dir("reports/cyclonedx-publications").get().asFile
-            val publishing = moduleProject.extensions.findByType(PublishingExtension::class.java)
-            val publications = publishing
-                ?.publications
-                ?.withType(MavenPublication::class.java)
-                ?.associateBy { it.name }
-                .orEmpty()
+            releasePublicationsByProject[moduleProject.path].orEmpty().mapNotNull { publicationName ->
+                val publicationDir = publicationRoot.resolve(publicationName)
+                val bomJsonFile = publicationDir.resolve("bom.json")
+                if (!bomJsonFile.isFile) return@mapNotNull null
 
-            publicationRoot
-                .listFiles { file -> file.isDirectory }
-                .orEmpty()
-                .sortedBy { it.name }
-                .map { publicationDir ->
-                    val publication = publications[publicationDir.name]
-                    val primaryArtifact = publication
-                        ?.artifacts
-                        ?.firstOrNull { artifact ->
-                            artifact.classifier.isNullOrBlank() && artifact.extension !in setOf("module", "pom")
-                        }
-                    val jsonSig = publicationDir.resolve("bom.json.asc").takeIf { it.isFile }?.let {
-                        "publications/${moduleProject.name}/${publicationDir.name}/bom.json.asc"
+                @Suppress("UNCHECKED_CAST")
+                val bom = jsonSlurper.parse(bomJsonFile) as Map<String, Any?>
+                @Suppress("UNCHECKED_CAST")
+                val metadata = bom["metadata"] as? Map<String, Any?> ?: emptyMap()
+                @Suppress("UNCHECKED_CAST")
+                val component = metadata["component"] as? Map<String, Any?> ?: emptyMap()
+                val groupId = component["group"]?.toString().orEmpty()
+                val artifactId = component["name"]?.toString().orEmpty()
+                val version = component["version"]?.toString().orEmpty()
+                val artifactDir = repoRoot.resolve(groupId.replace('.', '/')).resolve(artifactId).resolve(version)
+                val packaging = artifactDir
+                    .listFiles()
+                    .orEmpty()
+                    .mapNotNull { artifactFile ->
+                        artifactFile.name
+                            .removePrefix("$artifactId-$version.")
+                            .takeIf {
+                                artifactFile.isFile &&
+                                    artifactFile.name.startsWith("$artifactId-$version.") &&
+                                    it !in setOf(
+                                        "pom",
+                                        "module",
+                                        "json",
+                                        "xml",
+                                        "jar.asc",
+                                        "aar.asc",
+                                        "klib.asc",
+                                        "module.asc",
+                                        "pom.asc",
+                                        "json.asc",
+                                        "xml.asc",
+                                        "javadoc.jar",
+                                        "sources.jar",
+                                        "kotlin-tooling-metadata.json",
+                                        "metadata.jar",
+                                    ) &&
+                                    !artifactFile.name.endsWith(".md5") &&
+                                    !artifactFile.name.endsWith(".sha1") &&
+                                    !artifactFile.name.endsWith(".sha256") &&
+                                    !artifactFile.name.endsWith(".sha512")
+                            }
                     }
-                    val xmlSig = publicationDir.resolve("bom.xml.asc").takeIf { it.isFile }?.let {
-                        "publications/${moduleProject.name}/${publicationDir.name}/bom.xml.asc"
-                    }
+                    .firstOrNull()
+                    ?: ""
 
-                    linkedMapOf(
-                        "module" to moduleProject.name,
-                        "publication" to publicationDir.name,
-                        "kind" to if (publicationDir.name == "kotlinMultiplatform") "metadata" else "target",
-                        "groupId" to (publication?.groupId ?: rootProject.group.toString()),
-                        "artifactId" to (publication?.artifactId ?: moduleProject.name),
-                        "version" to (publication?.version ?: rootProject.version.toString()),
-                        "packaging" to (primaryArtifact?.extension ?: ""),
-                        "json" to "publications/${moduleProject.name}/${publicationDir.name}/bom.json",
-                        "xml" to "publications/${moduleProject.name}/${publicationDir.name}/bom.xml",
-                        "jsonSig" to (jsonSig ?: ""),
-                        "xmlSig" to (xmlSig ?: ""),
-                        "mavenCentralClassifier" to "cyclonedx",
-                    )
+                val jsonSig = publicationDir.resolve("bom.json.asc").takeIf { it.isFile }?.let {
+                    "publications/${moduleProject.name}/${publicationName}/bom.json.asc"
                 }
+                val xmlSig = publicationDir.resolve("bom.xml.asc").takeIf { it.isFile }?.let {
+                    "publications/${moduleProject.name}/${publicationName}/bom.xml.asc"
+                }
+
+                linkedMapOf(
+                    "module" to moduleProject.name,
+                    "publication" to publicationName,
+                    "kind" to if (publicationName == "kotlinMultiplatform") "metadata" else "target",
+                    "groupId" to groupId,
+                    "artifactId" to artifactId,
+                    "version" to version,
+                    "packaging" to packaging,
+                    "json" to "publications/${moduleProject.name}/${publicationName}/bom.json",
+                    "xml" to "publications/${moduleProject.name}/${publicationName}/bom.xml",
+                    "jsonSig" to (jsonSig ?: ""),
+                    "xmlSig" to (xmlSig ?: ""),
+                    "mavenCentralClassifier" to "cyclonedx",
+                )
+            }
         }
         val sbomModulesDir = sbomDocsDir.dir("modules").asFile
         sbomModulesDir.mkdirs()
