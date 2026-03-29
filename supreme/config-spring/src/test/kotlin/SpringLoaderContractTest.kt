@@ -20,9 +20,11 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.longOrNull
+import org.springframework.boot.context.properties.source.ConfigurationPropertySources
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.StandardEnvironment
+import org.springframework.core.env.SystemEnvironmentPropertySource
 
 val SpringLoaderContractTest by testSuite {
     "fromSpringMap matches canonical oracle for minimal and maximal configs" {
@@ -75,6 +77,17 @@ val SpringLoaderContractTest by testSuite {
         AndroidAttestationConfiguration.fromSpringEnvironment(android, "cfg").applications.single().packageName shouldBe "at.asitplus.android"
         IosAttestationConfiguration.fromSpringEnvironment(ios, "cfg").applications.single().bundleIdentifier shouldBe "at.asitplus.ios"
         SupremeConfiguration.fromSpringEnvironment(supreme, "cfg").android!!.applications.single().packageName shouldBe "at.asitplus.supreme"
+    }
+
+    "spring environment variables reject snake case inside property segments for raw map binding" {
+        val android = systemEnvironmentOf(
+            "ATTESTATION_ANDROID_APPLICATIONS_0_PACKAGE_NAME" to "at.asitplus.android.env",
+            "ATTESTATION_ANDROID_APPLICATIONS_0_SIGNER_FINGERPRINTS_0" to "NLl2LE1skNSEMZQMV73nMUJYsmQg7A",
+        )
+
+        shouldThrow<IllegalArgumentException> {
+            AndroidAttestationConfiguration.fromSpringEnvironment(android, "attestation.android")
+        }
     }
 
     "spring blanks become null only for optional values and fail for required ones" {
@@ -234,6 +247,17 @@ private fun environmentOf(vararg properties: Pair<String, Any?>): ConfigurableEn
             if (value != null) source[key] = value
         }
         propertySources.addFirst(MapPropertySource("test", source))
+        ConfigurationPropertySources.attach(this)
+    }
+
+private fun systemEnvironmentOf(vararg properties: Pair<String, Any?>): ConfigurableEnvironment =
+    StandardEnvironment().apply {
+        val source = linkedMapOf<String, Any>()
+        properties.forEach { (key, value) ->
+            if (value != null) source[key] = value
+        }
+        propertySources.addFirst(SystemEnvironmentPropertySource("test-system-env", source))
+        ConfigurationPropertySources.attach(this)
     }
 
 private fun JsonElement.toSpringValue(): Any? = when (this) {
