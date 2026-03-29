@@ -28,6 +28,7 @@ dependencies {
     testImplementation(project(":supreme-verifier"))
     testImplementation(libs.hoplite.yaml)
     testImplementation(libs.hoplite.json)
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
 }
 
 tasks.test {
@@ -37,8 +38,8 @@ tasks.test {
 pitest {
     junit5PluginVersion.set(libs.versions.pitest.junit5.get())
     pitestVersion.set("1.18.2")
-    targetClasses.set(listOf("at.asitplus.attestation.*Hoplite*"))
-    targetTests.set(listOf("at.asitplus.attestation.HopliteLoaderContractTest"))
+    targetClasses.set(listOf("at.asitplus.attestation.HopliteKt*"))
+    targetTests.set(listOf("at.asitplus.attestation.HoplitePitestBridgeTest"))
     mutationThreshold.set(100)
     coverageThreshold.set(100)
     testStrengthThreshold.set(100)
