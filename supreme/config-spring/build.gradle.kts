@@ -8,6 +8,7 @@ plugins {
     id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
     alias(libs.plugins.sbombastic)
+    alias(libs.plugins.pitest)
 }
 
 val artifactVersion: String by extra
@@ -27,6 +28,24 @@ dependencies {
     testImplementation(libs.spring.boot.autoconfigure)
     testImplementation(libs.spring.boot.starter)
     testImplementation(libs.spring.boot.starter.test)
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+pitest {
+    junit5PluginVersion.set(libs.versions.pitest.junit5.get())
+    pitestVersion.set("1.18.2")
+    targetClasses.set(listOf("at.asitplus.attestation.*Spring*"))
+    targetTests.set(listOf("at.asitplus.attestation.SpringLoaderContractTest"))
+    mutationThreshold.set(100)
+    coverageThreshold.set(100)
+    testStrengthThreshold.set(100)
+    outputFormats.set(listOf("HTML", "XML"))
+    timestampedReports.set(false)
+    threads.set(1)
+    verbose.set(false)
 }
 
 val javadocJar = setupDokka(

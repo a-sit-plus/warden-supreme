@@ -5,8 +5,10 @@ plugins {
     id("org.jetbrains.dokka")
     id("maven-publish")
     id("signing")
+    id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
     alias(libs.plugins.sbombastic)
+    alias(libs.plugins.pitest)
 }
 
 val artifactVersion: String by extra
@@ -21,6 +23,29 @@ java {
 dependencies {
     api(project(":supreme-common"))
     implementation(libs.hoplite.core)
+
+    testImplementation(project(":makoto"))
+    testImplementation(project(":supreme-verifier"))
+    testImplementation(libs.hoplite.yaml)
+    testImplementation(libs.hoplite.json)
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+pitest {
+    junit5PluginVersion.set(libs.versions.pitest.junit5.get())
+    pitestVersion.set("1.18.2")
+    targetClasses.set(listOf("at.asitplus.attestation.*Hoplite*"))
+    targetTests.set(listOf("at.asitplus.attestation.HopliteLoaderContractTest"))
+    mutationThreshold.set(100)
+    coverageThreshold.set(100)
+    testStrengthThreshold.set(100)
+    outputFormats.set(listOf("HTML", "XML"))
+    timestampedReports.set(false)
+    threads.set(1)
+    verbose.set(false)
 }
 
 val javadocJar = setupDokka(

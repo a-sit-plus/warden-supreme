@@ -23,3 +23,25 @@ jobs:
           name: All Tests
           path: serverside/**/build/test-results/**/TEST*.xml,utils/**/build/test-results/**/TEST*.xml,supreme/**/build/test-results/**/TEST*.xml
           reporter: java-junit
+  loader-mutation:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      NO_PRIVATE_TEST_DATA: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Run Loader Mutation Gate
+        run: ./gradlew loaderMutationTest
+      - name: Upload PIT Reports
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: loader-mutation-reports
+          path: supreme/**/build/reports/pitest/**

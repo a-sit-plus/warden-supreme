@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.asp)
     alias(libs.plugins.agp) apply (false)
     alias(libs.plugins.sbombastic)
+    alias(libs.plugins.pitest) apply false
 }
 
 val artifactVersion: String by extra
@@ -79,6 +80,15 @@ tasks.register("publishReleaseModulesToLocalRepository") {
             "$projectPath:publish${publicationName.replaceFirstChar { it.uppercase() }}PublicationToLocalRepository"
         }
     })
+}
+
+tasks.register("loaderMutationTest") {
+    group = "verification"
+    description = "Runs mutation testing for the dedicated config loader adapter modules."
+    dependsOn(
+        ":config-hoplite:pitest",
+        ":config-spring:pitest",
+    )
 }
 
 val signLocalRepoArtefacts = System.getenv("SIGN_LOCAL_REPO_ARTEFACTS")?.ifBlank { "false" } == "true"
