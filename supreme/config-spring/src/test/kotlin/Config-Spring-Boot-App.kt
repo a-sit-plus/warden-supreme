@@ -2,8 +2,15 @@ package examples.docs
 
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.AndroidRevocationList
+import at.asitplus.attestation.android.GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
+import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
+import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.fromSpringEnvironment
 import at.asitplus.attestation.supreme.SupremeConfiguration
+import at.asitplus.signum.indispensable.asn1.encodeToPEM
+import at.asitplus.signum.indispensable.toCryptoPublicKey
+import at.asitplus.signum.indispensable.toKmpCertificate
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
@@ -229,6 +236,75 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
             }
         }
     }
+
+    "Spring Boot loads multiline pem trust anchors and revocation config from yaml" {
+        val hardwareAnchor = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.first()
+        val softwareAnchor = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.first()
+
+        withTempConfigDir(
+            "application.yaml" to """
+                attestation:
+                  android:
+                    applications:
+                      - packageName: at.asitplus.multiline.spring
+                        signerFingerprints:
+                          - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+                    hardwareTrustedRoots:
+                      - |-
+${trustedRootPem(hardwareAnchor).prependIndent("                          ")}
+                    softwareTrustedRoots:
+                      - |-
+${trustedRootPem(softwareAnchor).prependIndent("                          ")}
+                    revocation:
+                      - type: mem
+                        list:
+                          entries:
+                            deadbeef:
+                              status: REVOKED
+                              reason: SOFTWARE_FLAW
+                            cafebabe:
+                              status: SUSPENDED
+                              expires: 2026-03-31
+                              comment: still suspended
+                          expires: 2026-04-01T00:00:00Z
+                      - type: file
+                        path: ./localrevocation.json
+                        fallbackRevocationListValiditySeconds: 123
+                        fallbackToFileSystemInfo: false
+            """.trimIndent(),
+        ) { configDir ->
+            runWithConfigDirectory(configDir.toString()).use { context ->
+                val cfg = AndroidAttestationConfiguration.fromSpringEnvironment(
+                    context.environment,
+                    "attestation.android"
+                )
+
+                cfg.hardwareTrustedRoots shouldBe setOf(hardwareAnchor)
+                cfg.softwareTrustedRoots shouldBe setOf(softwareAnchor)
+                cfg.revocation[0] shouldBe AndroidRevocationList.InMemoryLoader.Configuration(
+                    AndroidRevocationList(
+                        entries = mapOf(
+                            "deadbeef" to AndroidRevocationList.Entry(
+                                status = AndroidRevocationList.RevocationStatus.REVOKED,
+                                reason = AndroidRevocationList.RevocationReason.SOFTWARE_FLAW
+                            ),
+                            "cafebabe" to AndroidRevocationList.Entry(
+                                status = AndroidRevocationList.RevocationStatus.SUSPENDED,
+                                expires = kotlin.time.Instant.parse("2026-03-31T00:00:00Z"),
+                                comment = "still suspended"
+                            )
+                        ),
+                        expires = kotlin.time.Instant.parse("2026-04-01T00:00:00Z")
+                    )
+                )
+                cfg.revocation[1] shouldBe AndroidRevocationList.FileLoader.Configuration(
+                    path = "./localrevocation.json",
+                    fallbackRevocationListValiditySeconds = 123,
+                    fallbackToFileSystemInfo = false
+                )
+            }
+        }
+    }
 }
 
 private fun runWithYaml(path: String): ConfigurableApplicationContext {
@@ -293,4 +369,9 @@ private fun withTempConfigDir(
     } finally {
         dir.toFile().deleteRecursively()
     }
+}
+
+private fun trustedRootPem(root: TrustedRoot): String = when (root) {
+    is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().getOrThrow().encodeToPEM().getOrThrow()
+    is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().getOrThrow().encodeToPEM().getOrThrow()
 }

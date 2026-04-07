@@ -2,10 +2,16 @@ package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
+import at.asitplus.attestation.android.GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
+import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
 import at.asitplus.attestation.android.PatchLevel
+import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.attestation.supreme.SupremeConfiguration
+import at.asitplus.signum.indispensable.asn1.encodeToPEM
+import at.asitplus.signum.indispensable.toCryptoPublicKey
+import at.asitplus.signum.indispensable.toKmpCertificate
 import com.sksamuel.hoplite.ConfigException
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.ExperimentalHoplite
@@ -131,6 +137,65 @@ val HopliteLoaderContractTest by testSuite {
             }
         }
     }
+
+    "hoplite loads multiline pem trust anchors and explicit revocation payloads" {
+        val hardwareAnchor = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.first()
+        val softwareAnchor = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.first()
+        val yaml = """
+            applications:
+              - packageName: at.asitplus.multiline
+                signerFingerprints:
+                  - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+            hardwareTrustedRoots:
+              - |-
+${trustedRootPem(hardwareAnchor).prependIndent("                  ")}
+            softwareTrustedRoots:
+              - |-
+${trustedRootPem(softwareAnchor).prependIndent("                  ")}
+            revocation:
+              - type: mem
+                list:
+                  entries:
+                    deadbeef:
+                      status: REVOKED
+                      reason: SOFTWARE_FLAW
+                    cafebabe:
+                      status: SUSPENDED
+                      expires: 2026-03-31
+                      comment: still suspended
+                  expires: 2026-04-01T00:00:00Z
+              - type: file
+                path: ./localrevocation.json
+                fallbackRevocationListValiditySeconds: 123
+                fallbackToFileSystemInfo: false
+        """.trimIndent()
+
+        val loaded = loadYaml<AndroidAttestationConfiguration>(yaml)
+
+        loaded.hardwareTrustedRoots shouldBe setOf(hardwareAnchor)
+        loaded.softwareTrustedRoots shouldBe setOf(softwareAnchor)
+        loaded.revocation[0] shouldBe AndroidRevocationList.InMemoryLoader.Configuration(
+            AndroidRevocationList(
+                entries = mapOf(
+                    "deadbeef" to AndroidRevocationList.Entry(
+                        status = AndroidRevocationList.RevocationStatus.REVOKED,
+                        reason = AndroidRevocationList.RevocationReason.SOFTWARE_FLAW
+                    ),
+                    "cafebabe" to AndroidRevocationList.Entry(
+                        status = AndroidRevocationList.RevocationStatus.SUSPENDED,
+                        expires = kotlin.time.Instant.parse("2026-03-31T00:00:00Z"),
+                        comment = "still suspended"
+                    )
+                ),
+                expires = kotlin.time.Instant.parse("2026-04-01T00:00:00Z")
+            )
+        )
+        loaded.revocation[1] shouldBe AndroidRevocationList.FileLoader.Configuration(
+            path = "./localrevocation.json",
+            fallbackRevocationListValiditySeconds = 123,
+            fallbackToFileSystemInfo = false
+        )
+    }
 }
 
 private inline fun <reified A : AttestationConfiguration> assertHopliteMatchesCanonical(expected: A) {
@@ -251,4 +316,9 @@ private object HopliteFixtures {
     val supremeAndroidOnly = SupremeConfiguration(androidMinimal)
     val supremeIosOnly = SupremeConfiguration(iosMinimal)
     val supremeDualPlatform = SupremeConfiguration(androidMaximal, iosMaximal)
+}
+
+private fun trustedRootPem(root: TrustedRoot): String = when (root) {
+    is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().getOrThrow().encodeToPEM().getOrThrow()
+    is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().getOrThrow().encodeToPEM().getOrThrow()
 }
