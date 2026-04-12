@@ -4,7 +4,8 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-# NEXT
+# 1.0.0-RC8
+* Stabilise Hoplite and Spring Config Loading
 
 # 1.0.0-RC7
 * Features

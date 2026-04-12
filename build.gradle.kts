@@ -93,7 +93,7 @@ tasks.register("loaderMutationTest") {
 
 val signLocalRepoArtefacts = System.getenv("SIGN_LOCAL_REPO_ARTEFACTS")?.ifBlank { "false" } == "true"
 
-val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
+val syncSbomDocs by tasks.register("syncSbomDocs") {
     group = "documentation"
     description = "Exports CycloneDX SBOMs for all published Maven publications into the docs tree."
 
@@ -115,18 +115,14 @@ val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
     }
     inputs.file(sbomTemplateFile)
     inputs.file(sbomRendererFile)
-
-    into(sbomDocsDir)
-    sortedProjects.forEach { moduleProject ->
-        from(moduleProject.layout.buildDirectory.dir("reports/cyclonedx-publications")) {
-            include("*/bom.json", "*/bom.xml", "*/bom.json.asc", "*/bom.xml.asc")
-            into("publications/${moduleProject.name}")
-        }
-    }
+    outputs.file(sbomIndexFile)
+    outputs.dir(sbomDocsDir.dir("modules"))
 
     doLast {
         val jsonSlurper = JsonSlurper()
         val repoRoot = rootProject.layout.projectDirectory.dir("repo").asFile
+        val sbomPublicationsDir = sbomDocsDir.dir("publications").asFile
+        val mavenCentralBaseUrl = "https://repo1.maven.org/maven2"
         val entries = sortedProjects.flatMap { moduleProject ->
             val publicationRoot = moduleProject.layout.buildDirectory.dir("reports/cyclonedx-publications").get().asFile
             releasePublicationsByProject[moduleProject.path].orEmpty().mapNotNull { publicationName ->
@@ -179,12 +175,22 @@ val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
                     .firstOrNull()
                     ?: ""
 
-                val jsonSig = publicationDir.resolve("bom.json.asc").takeIf { it.isFile }?.let {
-                    "publications/${moduleProject.name}/${publicationName}/bom.json.asc"
+                val mavenCentralArtifactBase = buildString {
+                    append(mavenCentralBaseUrl)
+                    append("/")
+                    append(groupId.replace('.', '/'))
+                    append("/")
+                    append(artifactId)
+                    append("/")
+                    append(version)
+                    append("/")
+                    append(artifactId)
+                    append("-")
+                    append(version)
+                    append("-cyclonedx")
                 }
-                val xmlSig = publicationDir.resolve("bom.xml.asc").takeIf { it.isFile }?.let {
-                    "publications/${moduleProject.name}/${publicationName}/bom.xml.asc"
-                }
+                val jsonUrl = "$mavenCentralArtifactBase.json"
+                val xmlUrl = "$mavenCentralArtifactBase.xml"
 
                 linkedMapOf(
                     "module" to moduleProject.name,
@@ -194,15 +200,16 @@ val syncSbomDocs by tasks.register<Sync>("syncSbomDocs") {
                     "artifactId" to artifactId,
                     "version" to version,
                     "packaging" to packaging,
-                    "json" to "publications/${moduleProject.name}/${publicationName}/bom.json",
-                    "xml" to "publications/${moduleProject.name}/${publicationName}/bom.xml",
-                    "jsonSig" to (jsonSig ?: ""),
-                    "xmlSig" to (xmlSig ?: ""),
+                    "json" to jsonUrl,
+                    "xml" to xmlUrl,
+                    "jsonSig" to "$jsonUrl.asc",
+                    "xmlSig" to "$xmlUrl.asc",
                     "mavenCentralClassifier" to "cyclonedx",
                 )
             }
         }
         val sbomModulesDir = sbomDocsDir.dir("modules").asFile
+        sbomPublicationsDir.deleteRecursively()
         sbomModulesDir.mkdirs()
 
         val json = buildString {

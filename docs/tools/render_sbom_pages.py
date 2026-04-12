@@ -25,10 +25,10 @@ def render_rows(entries: list[dict[str, str]]) -> str:
         publication = item["publication"]
         return (0 if publication == "kotlinMultiplatform" else 1, publication)
 
-    def artifact_link(label: str, path: str, sig_path: str) -> str:
-        link = f"[{label}](../{path})"
-        if sig_path:
-            link += f" ([sig](../{sig_path}))"
+    def artifact_link(label: str, url: str, sig_url: str) -> str:
+        link = f"[{label}]({url})"
+        if sig_url:
+            link += f" ([sig]({sig_url}))"
         return link
 
     rows = []
