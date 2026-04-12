@@ -101,11 +101,12 @@ Hence, loading configurations must only be done through one of the following fun
 
 As a consequence, any Spring Boot configurations should contain a string pointing to Warden Supreme configurations, with
 those configuration files being read and their contents being fed into `fromYamlString()`. Alternatively, Spring Boot
-users can use the `config-spring` module to map an `Environment` into the same `fromJsonObject()`
-path, which avoids direct binding while still allowing native Spring configuration sources. For Hoplite, register
+users can use the `config-spring` module to enable native spring config loading.
+(On a technical level, this pushes an `Environment` into the same `fromJsonObject()`
+codepath, which avoids direct binding while still allowing native Spring configuration sources.)  
+For Hoplite, register
 `hopliteDecoder()` (from the `config-hoplite` module) and load from your chosen sources, which will delegate into
 `fromJsonObject()`.
-
 
 
 ### Configuration Differences

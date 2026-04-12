@@ -58,8 +58,7 @@ private class AttestationConfigurationHopliteDecoder<A : AttestationConfiguratio
 
 private fun hopliteNodeToJsonElement(node: Node): JsonElement = when (node) {
     is MapNode -> buildJsonObject {
-        val denormalized = node.denormalize()
-        denormalized.map.forEach { (key, entry) ->
+        node.denormalize().map.forEach { (key, entry) ->
             put(key, hopliteNodeToJsonElement(entry))
         }
     }
