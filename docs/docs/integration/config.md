@@ -15,6 +15,14 @@ single, canonical way to serialise and load configurations across Android, iOS, 
     Until 1.0.0-RC3, YAML polymorphic configs used a `type`/`value` wrapper. Newer versions use the same flat `type` shape as JSON. Legacy YAML with a `type`/`value` wrapper
     still works for `fromYaml`-based loading, but will be retired with release 1.1.
 
+!!! warning "Quote YAML scalars that look numeric"
+    This applies to all YAML loading paths: native `fromYaml...` readers, Hoplite, and Spring-backed YAML config.
+
+    Some plain YAML scalars that look numeric or scientific can be parsed as numbers before Warden Supreme sees them.
+    If a property is semantically a string, quote it.
+
+    A concrete example is iOS build numbers such as `"21E236"`, which must stay quoted in YAML.
+
 Each configuration type exposes:
 
 * **Serialisation (instance methods):**
@@ -42,15 +50,23 @@ In addition, approaches based on reflection that do not invoke the configuration
     --8<-- "Readme-Config-Hoplite.kt:15:25"
     ```
 
-??? tip "Spring Boot Loading (Experimental)"
-    Spring Boot loading is available through the **experimental** `at.asitplus.warden:config-spring` module. It binds a
+??? tip "Spring Boot Loading (JVM)"
+    Spring Boot loading is available through the `at.asitplus.warden:config-spring` module. It binds a
     Spring `Environment` (or a property prefix inside it) into a nested map and then calls `fromJsonObject()` so all
-    validation and defaulting still go through the canonical configuration path.  
-    **[Issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json)
-    should not occur**, but no guarantees. (Which is why this module will remain experimental for now.)
+    validation and defaulting still go through the canonical configuration path.
     
     The module pulls Spring boot as a `compileOnly` dependency to avoid version conflicts. You bring your own Spring Boot
     dependency (3.x or 4.x) in the application.
+
+    Supported and tested Spring loading scenarios include:
+
+    * loading from a nested prefix inside a larger `Environment`
+    * indexed collection binding from flat property maps
+    * profile overrides and property-source precedence
+    * composition through `spring.config.import`
+
+    See [Quirks, Bugs, Workarounds, and Hints](../technical/quirks.md#configuration-loading) for Spring-specific caveats such as
+    limitations around raw environment-variable binding.
 
     Example with a nested prefix:
 

@@ -7,6 +7,37 @@ Due to the diversity of its device landscape, Android is most affected. iOS, how
 This page lists known quirks and bugs and discusses how to deal with them.
 It starts with general guidance that applies across platforms.
 
+## Configuration Loading
+
+Warden Supreme's supported configuration loading integrations are the canonical readers themselves (`fromJsonString()`,
+`fromYamlString()`, `fromJsonObject()`, file helpers on JVM), the Hoplite decoder from `config-hoplite`, and the Spring
+`Environment` bridge from `config-spring`.
+
+The Hoplite and Spring helper modules delegate back into the canonical configuration readers, so validation and defaults
+still happen in exactly one place.
+
+### YAML Parsing Caveats
+
+This is not specific to Spring. It applies equally to native YAML loading, Hoplite, and Spring-backed YAML config.
+
+* **Quote string properties whose plain YAML form can be interpreted as numbers.**
+  For example, iOS build numbers such as `"21E236"` must remain quoted, otherwise YAML may parse them as a number before
+  Warden Supreme sees the value.
+
+### Spring Loading Quirks
+
+The Spring bridge is tested for nested prefixes, indexed collection binding, profile overrides, property-source
+precedence, and `spring.config.import` composition. A few Spring-specific caveats are still worth documenting:
+
+* **Prefer prefix-based loading from Spring config files, property maps, or imported config trees.**
+  `fromSpringEnvironment(env, "your.prefix")` is the intended integration point.
+* **Do not rely on raw environment-variable binding into the Spring map bridge.**
+  Spring's environment-variable normalisation can split property-name segments such as `packageName` or
+  `signerFingerprints` in ways that do not round-trip into the raw `Map<String, Any?>` structure used by
+  `config-spring`. In practice, names like `PACKAGE_NAME` or `SIGNER_FINGERPRINTS` are not a stable contract here.
+* **If you need system-environment-based configuration, prefer pointing Spring at a YAML/JSON config file or another
+  Spring-supported config source, and then load via `fromSpringEnvironment(...)` from the resolved prefix.**
+
 ## General Hints
 Using attestation to strongly enforce policies and to remotely establish trust in mobile clients is rooted in cryptographic
 mechanisms and PKI procedures.
