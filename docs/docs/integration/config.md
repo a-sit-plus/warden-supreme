@@ -45,6 +45,7 @@ In addition, approaches based on reflection that do not invoke the configuration
     Add the `at.asitplus.warden:config-hoplite` dependency to access `hopliteDecoder()`. This way you can directly load any `AttestationConfiguration` by
     registering the provided decoder and letting Hoplite load from your preferred sources (files, env, etc.).  
     The `hopliteDecoder()` function ensures that all config loading happens through well-defined serialisation paths.
+    Loading like this accepts canonical camelCase, snake_case, UPPER_SNAKE_CASE, and kebap-case property names.
     
     ```kotlin
     --8<-- "Readme-Config-Hoplite.kt:15:25"
@@ -54,6 +55,7 @@ In addition, approaches based on reflection that do not invoke the configuration
     Spring Boot loading is available through the `at.asitplus.warden:config-spring` module. It binds a
     Spring `Environment` (or a property prefix inside it) into a nested map and then calls `fromJsonObject()` so all
     validation and defaulting still go through the canonical configuration path.
+    Loading like this accepts canonical camelCase, snake_case, UPPER_SNAKE_CASE, and kebap-case property names.
     
     The module pulls Spring boot as a `compileOnly` dependency to avoid version conflicts. You bring your own Spring Boot
     dependency (3.x or 4.x) in the application.

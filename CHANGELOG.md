@@ -7,6 +7,10 @@ this changelog also includes the original WARDEN changelog.
 
 # NEXT
 
+# 1.0.0-RC9
+* Relax Spring and Hoplite parsing (property names / keys can now be snake_case (upper and lower) and kebap-case as well)
+* Signum 3.20.1 / Supreme 0.12.1
+
 # 1.0.0-RC8
 * Stabilise Hoplite and Spring Config Loading
 
