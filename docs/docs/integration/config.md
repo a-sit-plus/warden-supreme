@@ -70,29 +70,22 @@ In addition, approaches based on reflection that do not invoke the configuration
     See [Quirks, Bugs, Workarounds, and Hints](../technical/quirks.md#configuration-loading) for Spring-specific caveats such as
     limitations around raw environment-variable binding.
 
-    Example with a nested prefix:
+    Example configuration:
 
     ```yaml
-    app:
-      security:
-        warden:
-          supreme:
-            android: 
-              applications:
-                - packageName: at.asitplus.attestation_client
-                  signerFingerprints:
-                    - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
-            ios:
-              applications: 
-                - teamIdentifier: 9CYHJNG644
-                  bundleIdentifier: 'at.asitplus.attestation-client'
-                  sandbox: false
+    --8<-- "Config-Spring-Boot-App.kt:springboot-config-yaml"
     ```
      
-    Load it with:
+    Loading from a then environment using a prefix:
     
     ```kotlin
-    val config = SupremeConfiguration.fromSpringEnvironment(env, "app.security.warden.supreme")
+    --8<-- "Config-Spring-Boot-App.kt:springboot-env"
+    ```
+    
+    Automagically loading Android and iOS configuration through composition as part of configuration properties:
+    
+    ```kotlin
+    --8<-- "Config-Spring-Boot-App.kt:springboot-config"
     ```
     
     That’s the intended way to load a config that lives inside a larger Spring Boot config.
