@@ -24,7 +24,6 @@ kotlin {
     jvm()
     iosArm64()
     iosSimulatorArm64()
-    iosX64()
     androidLibrary {
         namespace = "at.asitplus.warden.supreme.common"
         withDeviceTestBuilder {

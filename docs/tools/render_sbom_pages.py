@@ -34,13 +34,11 @@ def render_rows(entries: list[dict[str, str]]) -> str:
     rows = []
     for entry in sorted(entries, key=sort_key):
         coordinates = f"`{entry['groupId']}:{entry['artifactId']}:{entry['version']}`"
-        artifact = f"`{entry['packaging']}`" if entry.get("packaging") else "n/a"
         rows.append(
-            "| `{publication}` | `{kind}` | {coordinates} | {artifact} | {json_link} | {xml_link} |".format(
+            "| `{publication}` | `{kind}` | {coordinates} | {json_link} | {xml_link} |".format(
                 publication=entry["publication"],
                 kind=entry["kind"],
                 coordinates=coordinates,
-                artifact=artifact,
                 json_link=artifact_link("JSON", entry["json"], entry.get("jsonSig", "")),
                 xml_link=artifact_link("XML", entry["xml"], entry.get("xmlSig", "")),
             )
