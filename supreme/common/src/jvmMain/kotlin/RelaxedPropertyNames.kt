@@ -3,12 +3,7 @@ package at.asitplus.attestation
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonArray
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
+import kotlinx.serialization.json.*
 
 fun JsonElement.withRelaxedPropertyNames(rootSerializer: KSerializer<*>): JsonElement =
     withRelaxedPropertyNames(rootSerializer.descriptor)
@@ -25,7 +20,11 @@ private fun JsonObject.normalizeObject(descriptor: SerialDescriptor?): JsonObjec
 
     return buildJsonObject {
         entries.forEach { (rawKey, rawValue) ->
-            val canonicalKey = descriptorInfo?.canonicalNameFor(rawKey) ?: rawKey.toRelaxedFallbackName()
+            // When we have a concrete descriptor, emit its exact canonical field name.
+            // Otherwise we still need a usable property name for descriptor-less pockets such as
+            // polymorphic map-like payloads. Example: `proxy-config` must become `proxyConfig`,
+            // not `proxyconfig`, or the downstream loader will miss the field entirely.
+            val canonicalKey = descriptorInfo?.canonicalNameFor(rawKey) ?: rawKey.relaxedFallbackName()
             val childDescriptor = descriptorInfo?.childDescriptorFor(canonicalKey) ?: mapValueDescriptor
             put(canonicalKey, rawValue.withRelaxedPropertyNames(childDescriptor))
         }
@@ -44,7 +43,7 @@ private data class ObjectDescriptorInfo(
     private val childDescriptors: Map<String, SerialDescriptor>
 ) {
     fun canonicalNameFor(rawKey: String): String =
-        canonicalNamesByFoldedAlias[rawKey.foldForRelaxedLookup()] ?: rawKey.toRelaxedFallbackName()
+        canonicalNamesByFoldedAlias[rawKey.relaxedLookupToken()] ?: rawKey.relaxedFallbackName()
 
     fun childDescriptorFor(canonicalKey: String): SerialDescriptor? = childDescriptors[canonicalKey]
 }
@@ -54,7 +53,7 @@ private fun SerialDescriptor.objectDescriptorInfo(): ObjectDescriptorInfo? {
 
     val foldedAliases = buildMap(elementsCount) {
         repeat(elementsCount) { index ->
-            put(getElementName(index).foldForRelaxedLookup(), getElementName(index))
+            put(getElementName(index).relaxedLookupToken(), getElementName(index))
         }
     }
     val childDescriptors = buildMap(elementsCount) {
@@ -72,23 +71,42 @@ private fun SerialDescriptor.listElementDescriptor(): SerialDescriptor? =
 private fun SerialDescriptor.mapValueDescriptor(): SerialDescriptor? =
     if (kind == StructureKind.MAP) getElementDescriptor(1) else null
 
-private fun String.foldForRelaxedLookup(): String =
-    lowercase().filter(Char::isLetterOrDigit)
+private fun String.relaxedLookupToken(): String =
+    lowercase().replace("-", "").replace("_", "")
 
-private fun String.toRelaxedFallbackName(): String {
-    if (none { !it.isLetterOrDigit() }) {
-        return if (any(Char::isLowerCase) || none(Char::isLetter)) this else lowercase()
+/**
+ * Produces the property name that should be written back into the normalized JSON tree when
+ * relaxed matching cannot consult an authoritative serializer descriptor.
+ *
+ * This is intentionally different from [relaxedLookupToken]:
+ * - [relaxedLookupToken] is only for comparison and destroys formatting
+ * - this function must emit a usable property name for downstream deserializers
+ *
+ * Concrete examples:
+ * - `proxy-config` -> `proxyConfig`
+ * - `proxy_config` -> `proxyConfig`
+ * - `proxyConfig` -> `proxyConfig`
+ * - `GENERICDEVICENAMEOID` -> `genericdevicenameoid`
+ *
+ * The fallback matters for descriptor-less subtrees such as polymorphic configuration pockets.
+ * If we emitted the lookup token instead, `proxy-config` would become `proxyconfig`, which would
+ * no longer match the actual Kotlin property `proxyConfig`.
+ */
+private fun String.relaxedFallbackName(): String =
+    if ('-' !in this && '_' !in this) {
+        if (any(Char::isLowerCase) || none(Char::isLetter)) this else lowercase()
     }
-
-    val parts = split(RELAXED_NAME_SEPARATOR_REGEX).filter(String::isNotBlank)
-    if (parts.isEmpty()) return this
-
-    return buildString {
-        append(parts.first().lowercase())
-        parts.drop(1).forEach { part ->
-            append(part.lowercase().replaceFirstChar(Char::titlecase))
+    else {
+        val segments = relaxedKeySegments()
+        // Preserve separator-only junk like "---" instead of collapsing it to "",
+        // so it still fails as an unknown key rather than turning into a synthetic empty name.
+        if (segments.isEmpty()) this
+        else buildString {
+            append(segments.first())
+            segments.drop(1).forEach { append(it.replaceFirstChar(Char::uppercaseChar)) }
         }
     }
-}
 
-private val RELAXED_NAME_SEPARATOR_REGEX = Regex("[^A-Za-z0-9]+")
+
+private fun String.relaxedKeySegments(): List<String> =
+    split('-', '_').filter { it.isNotEmpty() }.map(String::lowercase)
