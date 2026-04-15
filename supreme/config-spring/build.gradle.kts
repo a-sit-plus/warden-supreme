@@ -37,7 +37,7 @@ tasks.test {
 pitest {
     junit5PluginVersion.set(libs.versions.pitest.junit5.get())
     pitestVersion.set("1.18.2")
-    targetClasses.set(listOf("at.asitplus.attestation.ConfigurationSpringKt*"))
+    targetClasses.set(listOf("at.asitplus.attestation.ConfigurationSpring*"))
     targetTests.set(listOf("at.asitplus.attestation.SpringPitestBridgeTest"))
     mutationThreshold.set(100)
     coverageThreshold.set(100)
