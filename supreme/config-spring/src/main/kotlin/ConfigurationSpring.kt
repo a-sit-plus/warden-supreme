@@ -8,10 +8,12 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.serializer
 import org.springframework.boot.context.properties.bind.Bindable
 import org.springframework.boot.context.properties.bind.Binder
 import org.springframework.core.env.Environment
+import kotlin.reflect.KClass
 
 /**
  * Binds a Spring Environment prefix into a nested map structure.
@@ -34,14 +36,52 @@ fun Map<String, *>.toAttestationJsonObject(): JsonObject =
 inline fun <reified A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromSpringEnvironment(
     environment: Environment,
     prefix: String
-): A = fromSpringMap(environment.toAttestationConfigMap(prefix))
+): A = fromSpringEnvironment(environment, prefix, A::class)
+
+/**
+ * Loads an [AttestationConfiguration] from a Spring Environment using the given prefix.
+ */
+fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromSpringEnvironment(
+    environment: Environment,
+    prefix: String,
+    kClass: KClass<A>
+): A = fromSpringMap(environment.toAttestationConfigMap(prefix), kClass)
+
+/**
+ * Loads an [AttestationConfiguration] from a Spring Environment using the given prefix.
+ * This version is available for Java callers.
+ */
+fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromSpringEnvironment(
+    environment: Environment,
+    prefix: String,
+    clazz: Class<A>
+): A = fromSpringEnvironment(environment, prefix, clazz.kotlin)
 
 /**
  * Loads an [AttestationConfiguration] from a Spring-bound config map.
  */
 inline fun <reified A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromSpringMap(
     configMap: Map<String, *>
-): A = fromJsonObject(configMap.toAttestationJsonObject().withRelaxedPropertyNames(serializer<A>()))
+): A = fromSpringMap(configMap, A::class)
+
+/**
+ * Loads an [AttestationConfiguration] from a Spring-bound config map.
+ */
+@OptIn(InternalSerializationApi::class)
+fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromSpringMap(
+    configMap: Map<String, *>,
+    kClass: KClass<A>
+): A = fromJsonObject(configMap.toAttestationJsonObject().withRelaxedPropertyNames(kClass.serializer()))
+
+/**
+ * Loads an [AttestationConfiguration] from a Spring-bound config map.
+ * This version is available for Java callers.
+ */
+fun <A : AttestationConfiguration> AttestationConfiguration.Reader<A>.fromSpringMap(
+    configMap: Map<String, *>,
+    clazz: Class<A>
+): A = fromSpringMap(configMap, clazz.kotlin)
+
 
 private fun mapToJsonElement(value: Any?): JsonElement = when (value) {
     null -> JsonNull

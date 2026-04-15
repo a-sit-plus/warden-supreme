@@ -24,6 +24,30 @@ class SpringPitestBridgeTest {
     }
 
     @Test
+    fun springClassOverloadsMatchReifiedEntrypoints() {
+        val environment = environmentOf(
+            "cfg.applications[0].packageName" to "at.asitplus.android-min",
+            "cfg.applications[0].signerFingerprints[0]" to "NLl2LE1skNSEMZQMV73nMUJYsmQg7A",
+        )
+
+        assertEquals(
+            AndroidAttestationConfiguration.fromSpringMap(SpringPitestFixtures.androidSpringMap),
+            AndroidAttestationConfiguration.fromSpringMap(
+                SpringPitestFixtures.androidSpringMap,
+                AndroidAttestationConfiguration::class.java
+            )
+        )
+        assertEquals(
+            AndroidAttestationConfiguration.fromSpringEnvironment(environment, "cfg"),
+            AndroidAttestationConfiguration.fromSpringEnvironment(
+                environment,
+                "cfg",
+                AndroidAttestationConfiguration::class.java
+            )
+        )
+    }
+
+    @Test
     fun springEnvironmentBindingUsesOnlyTheRequestedPrefix() {
         val environment = environmentOf(
             "alpha.applications[0].packageName" to "at.asitplus.alpha",
