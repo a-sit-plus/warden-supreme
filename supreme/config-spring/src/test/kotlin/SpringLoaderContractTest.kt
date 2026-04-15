@@ -64,18 +64,13 @@ val SpringLoaderContractTest by testSuite {
             "cfg.clock" to "system",
         )
 
-        AndroidAttestationConfiguration.fromSpringEnvironment(
-            android,
-            "cfg"
-        ).applications.single().packageName shouldBe "at.asitplus.android"
-        IosAttestationConfiguration.fromSpringEnvironment(
-            ios,
-            "cfg"
-        ).applications.single().bundleIdentifier shouldBe "at.asitplus.ios"
-        SupremeConfiguration.fromSpringEnvironment(
-            supreme,
-            "cfg"
-        ).android!!.applications.single().packageName shouldBe "at.asitplus.supreme"
+        AndroidAttestationConfiguration.fromSpringEnvironment(android, "cfg")
+            .applications.single().packageName shouldBe "at.asitplus.android"
+        IosAttestationConfiguration.fromSpringEnvironment(ios, "cfg")
+            .applications.single().bundleIdentifier shouldBe "at.asitplus.ios"
+        SupremeConfiguration.fromSpringEnvironment(supreme, "cfg")
+            .android.shouldNotBeNull()
+            .applications.single().packageName shouldBe "at.asitplus.supreme"
     }
 
     "spring property binding and relaxed property spellings are accepted" {
@@ -106,11 +101,11 @@ val SpringLoaderContractTest by testSuite {
             )
         )
 
-        supreme.android!!.applications.single().packageName shouldBe "at.asitplus.relaxed"
+        supreme.android.shouldNotBeNull().applications.single().packageName shouldBe "at.asitplus.relaxed"
         supreme.genericDeviceNameOID.toString() shouldBe "1.2.3.4"
-        supreme.android!!.applications.single().signerFingerprints.single() shouldBe "NLl2LE1skNSEMZQMV73nMUJYsmQg7A".decodeToByteArray(
-            Base64UrlStrict
-        )
+        supreme.android.shouldNotBeNull()
+            .applications.single().signerFingerprints
+            .single() shouldBe "NLl2LE1skNSEMZQMV73nMUJYsmQg7A".decodeToByteArray(Base64UrlStrict)
     }
 
     "spring relaxed property casings all load to the same equivalent config" {
