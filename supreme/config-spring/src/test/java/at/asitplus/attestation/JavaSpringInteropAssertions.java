@@ -1,6 +1,7 @@
 package at.asitplus.attestation;
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration;
+import at.asitplus.attestation.supreme.SupremeConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -52,5 +53,75 @@ public final class JavaSpringInteropAssertions {
 
         Assertions.assertEquals("at.asitplus.java-env", fromEnvironment.getApplications().get(0).getPackageName());
         Assertions.assertEquals(1, fromEnvironment.getApplications().get(0).getSignerFingerprints().size());
+
+        Map<String, Object> iosSpringMap = Map.of(
+                "applications", List.of(
+                        Map.of(
+                                "teamIdentifier", "9CYHJNG644",
+                                "bundleIdentifier", "at.asitplus.ios-min"
+                        )
+                )
+        );
+
+        IosAttestationConfiguration iosFromMap = JavaSpringConfigurationLoader.load(
+                iosSpringMap,
+                IosAttestationConfiguration.class
+        );
+
+        Assertions.assertEquals("9CYHJNG644", iosFromMap.getApplications().get(0).getTeamIdentifier());
+        Assertions.assertEquals("at.asitplus.ios-min", iosFromMap.getApplications().get(0).getBundleIdentifier());
+
+        StandardEnvironment iosEnvironment = new StandardEnvironment();
+        iosEnvironment.getPropertySources().addFirst(new MapPropertySource(
+                "java-ios-test",
+                Map.of(
+                        "cfg.applications[0].teamIdentifier", "9CYHJNG644",
+                        "cfg.applications[0].bundleIdentifier", "at.asitplus.ios-min"
+                )
+        ));
+
+        IosAttestationConfiguration iosFromEnvironment = JavaSpringConfigurationLoader.load(
+                iosEnvironment,
+                "cfg",
+                IosAttestationConfiguration.class
+        );
+
+        Assertions.assertEquals("9CYHJNG644", iosFromEnvironment.getApplications().get(0).getTeamIdentifier());
+        Assertions.assertEquals("at.asitplus.ios-min", iosFromEnvironment.getApplications().get(0).getBundleIdentifier());
+
+        Map<String, Object> supremeSpringMap = Map.of(
+                "android", springMap,
+                "ios", iosSpringMap,
+                "clock", "system"
+        );
+
+        SupremeConfiguration supremeFromMap = JavaSpringConfigurationLoader.load(
+                supremeSpringMap,
+                SupremeConfiguration.class
+        );
+
+        Assertions.assertEquals("at.asitplus.java-map", supremeFromMap.getAndroid().getApplications().get(0).getPackageName());
+        Assertions.assertEquals("at.asitplus.ios-min", supremeFromMap.getIos().getApplications().get(0).getBundleIdentifier());
+
+        StandardEnvironment supremeEnvironment = new StandardEnvironment();
+        supremeEnvironment.getPropertySources().addFirst(new MapPropertySource(
+                "java-supreme-test",
+                Map.of(
+                        "cfg.android.applications[0].packageName", "at.asitplus.java-env",
+                        "cfg.android.applications[0].signerFingerprints[0]", "NLl2LE1skNSEMZQMV73nMUJYsmQg7A",
+                        "cfg.ios.applications[0].teamIdentifier", "9CYHJNG644",
+                        "cfg.ios.applications[0].bundleIdentifier", "at.asitplus.ios-min",
+                        "cfg.clock", "system"
+                )
+        ));
+
+        SupremeConfiguration supremeFromEnvironment = JavaSpringConfigurationLoader.load(
+                supremeEnvironment,
+                "cfg",
+                SupremeConfiguration.class
+        );
+
+        Assertions.assertEquals("at.asitplus.java-env", supremeFromEnvironment.getAndroid().getApplications().get(0).getPackageName());
+        Assertions.assertEquals("at.asitplus.ios-min", supremeFromEnvironment.getIos().getApplications().get(0).getBundleIdentifier());
     }
 }
