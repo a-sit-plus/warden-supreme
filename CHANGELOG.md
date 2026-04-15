@@ -7,8 +7,9 @@ this changelog also includes the original WARDEN changelog.
 
 # NEXT
 
-# 1.0.0-SNAPSHOT
+# 1.0.0-RC9
 * Relax Spring and Hoplite parsing (property names / keys can now be snake_case (upper and lower) and kebap-case as well)
+* Add Java-friendly Spring config loading functions
 * Signum 3.21.0 / Supreme 0.13.0
 * Drop Apple X64 targets
 
