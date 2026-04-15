@@ -98,32 +98,27 @@ In addition, approaches based on reflection that do not invoke the configuration
     ```kotlin
     --8<-- "Config-Spring-Boot-App.kt:springboot-env"
     ```
-
-    Equivalent Java call:
-
-    ```java
-    --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-env"
-    ```
-
-    The same pattern applies to map-based loading:
-
-    ```java
-    --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-map"
-    ```
-
-    These Java examples are taken from the `config-spring` interop regression test, so they are compiled and executed as part of the test suite.
-    For Java callers, `JavaSpringConfigurationLoader` is the intended facade to avoid direct use of Kotlin companions.
       
     Automagically loading Android and iOS configuration through composition as part of configuration properties:
     
     ```kotlin
     --8<-- "Config-Spring-Boot-App.kt:springboot-config"
     ```
+
+    Equivalent Java calls using `JavaSpringConfigurationLoader`:
+
+    ```java
+    --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-env"
+    ```
+
+    ```java
+    --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-map"
+    ```
     
     Both ways of loading are the intended ways to load a config that lives inside a larger Spring Boot config.  
     **It is necessary to enforce this way of loading because Warden Supreme's configurations heavily rely on kotlinx.serialization
-    for the sanitization, normalization and parsing of various properties. Only throuhg these loaders is it possible to still
-    involve these critical codepaths and guarantee correct config loading.**
+    for the sanitisation, normalisation and parsing of various properties. Only through these loaders is it possible to
+    guarantee correct config loading.**
 
 ## Supreme (Fully Integrated) Configuration
 To externalise configuration for fully integrated attestation flows conveniently, use the umbrella `SupremeConfiguration`.
