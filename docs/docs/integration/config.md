@@ -50,12 +50,29 @@ In addition, approaches based on reflection that do not invoke the configuration
     ```kotlin
     --8<-- "Readme-Config-Hoplite.kt:15:25"
     ```
+    
+    **It is necessary to use these decoders because Warden Supreme's configurations heavily rely on kotlinx.serialization
+    for the sanitization, normalization and parsing of various properties. Only throuhg these decoders is it possible to still
+    involve these critical codepaths and guarantee correct config loading.**
 
 ??? tip "Spring Boot Loading (JVM)"
     Spring Boot loading is available through the `at.asitplus.warden:config-spring` module. It binds a
     Spring `Environment` (or a property prefix inside it) into a nested map and then calls `fromJsonObject()` so all
     validation and defaulting still go through the canonical configuration path.
     Loading like this accepts canonical camelCase, snake_case, UPPER_SNAKE_CASE, and kebap-case property names.
+
+    !!! warning "Spring loading cannot reliably distinguish `null` from unset properties"
+        This affects `fromSpringEnvironment(...)` and, in practice, also `fromSpringMap(...)` when that map originates
+        from Spring's own config binding.
+
+        Concretely, this means you should **not** rely on Spring-backed loading to override a non-null default with an
+        explicit `null`. By the time Warden Supreme sees the data, Spring will often already have normalised explicit
+        `null` away as if the property had simply been absent.
+
+        If you need precise `null` semantics, load canonical configuration directly via
+        `fromYamlString(...)`, `fromJsonString(...)`, `fromYamlFile(...)`, or `fromJsonFile(...)`.
+        If you want seamless Spring integration, use `fromSpringEnvironment(...)` on a prefix inside the Spring
+        `Environment`, but treat explicit `null` overrides as unsupported.
     
     The module pulls Spring boot as a `compileOnly` dependency to avoid version conflicts. You bring your own Spring Boot
     dependency (3.x or 4.x) in the application.
@@ -88,7 +105,10 @@ In addition, approaches based on reflection that do not invoke the configuration
     --8<-- "Config-Spring-Boot-App.kt:springboot-config"
     ```
     
-    That’s the intended way to load a config that lives inside a larger Spring Boot config.
+    Both ways of loading are the intended ways to load a config that lives inside a larger Spring Boot config.  
+    **It is necessary to enforce this way of loading because Warden Supreme's configurations heavily rely on kotlinx.serialization
+    for the sanitization, normalization and parsing of various properties. Only throuhg these loaders is it possible to still
+    involve these critical codepaths and guarantee correct config loading.**
 
 ## Supreme (Fully Integrated) Configuration
 To externalise configuration for fully integrated attestation flows conveniently, use the umbrella `SupremeConfiguration`.

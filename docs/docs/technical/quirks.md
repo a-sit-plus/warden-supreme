@@ -30,7 +30,15 @@ The Spring bridge is tested for nested prefixes, indexed collection binding, pro
 precedence, and `spring.config.import` composition. A few Spring-specific caveats are still worth documenting:
 
 * **Prefer prefix-based loading from Spring config files, property maps, or imported config trees.**
-  `fromSpringEnvironment(env, "your.prefix")` is the intended integration point.
+  `fromSpringEnvironment(env, "your.prefix")` and `fromSpringMap(map)` are the intended integration points.
+* **Do not rely on Spring-backed loading for explicit `null` overrides.**
+  This limitation applies to `fromSpringEnvironment(...)` and, in practice, usually also to `fromSpringMap(...)` when
+  that map came from Spring's own binder or config parsing. Spring frequently normalises explicit `null` to the same
+  effective state as a missing property before Warden Supreme sees the data. As a result, non-null defaults generally
+  cannot be overridden with `null` through the Spring integration path.
+* **If you need exact `null` semantics, use the canonical readers directly.**
+  Prefer `fromYamlString(...)`, `fromJsonString(...)`, `fromYamlFile(...)`, or `fromJsonFile(...)` for configurations
+  where explicit `null` must survive unchanged until Warden Supreme decodes them.
 * **Do not rely on raw environment-variable binding into the Spring map bridge.**
   Spring's environment-variable normalisation can split property-name segments such as `packageName` or
   `signerFingerprints` in ways that do not round-trip into the raw `Map<String, Any?>` structure used by
