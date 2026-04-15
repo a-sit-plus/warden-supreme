@@ -94,11 +94,26 @@ In addition, approaches based on reflection that do not invoke the configuration
     ```
      
     Loading from a then environment using a prefix:
-    
+     
     ```kotlin
     --8<-- "Config-Spring-Boot-App.kt:springboot-env"
     ```
-    
+
+    Equivalent Java call:
+
+    ```java
+    --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-env"
+    ```
+
+    The same pattern applies to map-based loading:
+
+    ```java
+    --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-map"
+    ```
+
+    These Java examples are taken from the `config-spring` interop regression test, so they are compiled and executed as part of the test suite.
+    For Java callers, `JavaSpringConfigurationLoader` is the intended facade to avoid direct use of Kotlin companions.
+      
     Automagically loading Android and iOS configuration through composition as part of configuration properties:
     
     ```kotlin

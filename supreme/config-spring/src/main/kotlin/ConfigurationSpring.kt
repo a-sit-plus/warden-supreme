@@ -1,3 +1,5 @@
+@file:kotlin.jvm.JvmName("ConfigurationSpring")
+
 package at.asitplus.attestation
 
 import kotlinx.serialization.json.JsonElement
