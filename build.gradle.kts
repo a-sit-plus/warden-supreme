@@ -57,8 +57,8 @@ val releasePublicationsByProject = linkedMapOf(
     ":roboto" to listOf("mavenJava"),
     ":config-hoplite" to listOf("mavenJava"),
     ":config-spring" to listOf("mavenJava"),
-    ":supreme-common" to listOf("android", "iosArm64", "iosSimulatorArm64", "iosX64", "jvm", "kotlinMultiplatform"),
-    ":supreme-client" to listOf("android", "iosArm64", "iosSimulatorArm64", "iosX64", "kotlinMultiplatform"),
+    ":supreme-common" to listOf("android", "iosArm64", "iosSimulatorArm64", "jvm", "kotlinMultiplatform"),
+    ":supreme-client" to listOf("android", "iosArm64", "iosSimulatorArm64", "kotlinMultiplatform"),
     ":supreme-verifier" to listOf("jvm", "kotlinMultiplatform"),
 )
 

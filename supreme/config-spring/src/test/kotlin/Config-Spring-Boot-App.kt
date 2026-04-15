@@ -1,12 +1,9 @@
 package examples.docs
 
 import at.asitplus.attestation.IosAttestationConfiguration
-import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.AndroidRevocationList
-import at.asitplus.attestation.android.GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
-import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
-import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.android.*
 import at.asitplus.attestation.fromSpringEnvironment
+import at.asitplus.attestation.fromSpringMap
 import at.asitplus.attestation.supreme.SupremeConfiguration
 import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.toCryptoPublicKey
@@ -17,20 +14,46 @@ import at.asitplus.testballoon.withData
 import de.infix.testBalloon.framework.core.TestCompartment
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.matchers.shouldBe
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.env.YamlPropertySourceLoader
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.io.FileSystemResource
-import java.nio.file.Files
 import java.io.FileReader
+import java.nio.file.Files
 
 @SpringBootApplication
 private open class ConfigSpringExampleApp
+
+
+@EnableConfigurationProperties(value = [AttestationProperties::class])
+@Configuration
+private open class TestConfig {
+    @Autowired
+    lateinit var configurationProperties: AttestationProperties
+
+}
+
+@ConfigurationProperties("attestation")
+private
+// --8<-- [start:springboot-config]
+data class AttestationProperties(
+    private val android: Map<String, Any?>? = null,
+    private val ios: Map<String, Any?>? = null
+) {
+    val androidConfig = android?.let { AndroidAttestationConfiguration.fromSpringMap(it) }
+    val iosConfig = ios?.let { IosAttestationConfiguration.fromSpringMap(it) }
+}
+
+// --8<-- [end:springboot-config]
 
 val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Sequential }) {
     "Load example configs from YAML" - {
@@ -57,6 +80,7 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
     "Spring Boot applies active profile overrides on nested supreme config" {
         withTempConfigDir(
             "application.yaml" to """
+                # --8<-- [start:springboot-config-yaml]
                 attestation:
                   android:
                     applications:
@@ -73,6 +97,7 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
                       buildNumber: "21E236"
                   clock: system
                   genericDeviceNameOID: 1.2.3.4
+                # --8<-- [end:springboot-config-yaml]  
             """.trimIndent(),
             "application-prod.yaml" to """
                 attestation:
@@ -82,13 +107,24 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
             """.trimIndent(),
         ) { configDir ->
             runWithConfigDirectory(configDir.toString(), profiles = listOf("prod")).use { context ->
+                // --8<-- [start:springboot-env]
                 val cfg = SupremeConfiguration.fromSpringEnvironment(context.environment, "attestation")
+                // --8<-- [end:springboot-env]
 
+                val testConfig = context.getBean(TestConfig::class.java)
+                val props = context.getBean(AttestationProperties::class.java)
+
+                props.iosConfig shouldBe cfg.ios
+                props.androidConfig shouldBe cfg.android
+                testConfig.configurationProperties.iosConfig shouldBe cfg.ios
+                testConfig.configurationProperties.androidConfig shouldBe cfg.android
                 cfg.android!!.applications.single().packageName shouldBe "at.asitplus.base.android"
                 cfg.android!!.verificationSecondsOffset shouldBe 30
                 cfg.android!!.requireStrongBox shouldBe true
                 cfg.ios!!.applications.single().bundleIdentifier shouldBe "at.asitplus.base.ios"
                 cfg.genericDeviceNameOID.toString() shouldBe "1.2.3.999"
+
+
             }
         }
     }
@@ -113,7 +149,8 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
                     "attestation.android.requireRemoteKeyProvisioning" to true,
                 )
             ).use { context ->
-                val cfg = AndroidAttestationConfiguration.fromSpringEnvironment(context.environment, "attestation.android")
+                val cfg =
+                    AndroidAttestationConfiguration.fromSpringEnvironment(context.environment, "attestation.android")
 
                 cfg.applications.single().packageName shouldBe "at.asitplus.base.android"
                 cfg.verificationSecondsOffset shouldBe 123

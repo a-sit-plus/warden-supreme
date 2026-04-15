@@ -58,10 +58,10 @@ XML, and detached signature files.
 
 Examples:
 
-- `supreme-common` Kotlin Multiplatform metadata: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common/1.0.0-RC6/supreme-common-1.0.0-RC6-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common/1.0.0-RC6/supreme-common-1.0.0-RC6-cyclonedx.xml)
-- `supreme-common` JVM: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-jvm/1.0.0-RC6/supreme-common-jvm-1.0.0-RC6-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-jvm/1.0.0-RC6/supreme-common-jvm-1.0.0-RC6-cyclonedx.xml)
-- `supreme-common` Android: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-android/1.0.0-RC6/supreme-common-android-1.0.0-RC6-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-android/1.0.0-RC6/supreme-common-android-1.0.0-RC6-cyclonedx.xml)
-- `makoto` JVM: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/makoto/1.0.0-RC6/makoto-1.0.0-RC6-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/makoto/1.0.0-RC6/makoto-1.0.0-RC6-cyclonedx.xml)
+- `supreme-common` Kotlin Multiplatform metadata: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common/1.0.0-RC8/supreme-common-1.0.0-RC8-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common/1.0.0-RC8/supreme-common-1.0.0-RC8-cyclonedx.xml)
+- `supreme-common` JVM: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-jvm/1.0.0-RC8/supreme-common-jvm-1.0.0-RC8-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-jvm/1.0.0-RC8/supreme-common-jvm-1.0.0-RC8-cyclonedx.xml)
+- `supreme-common` Android: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-android/1.0.0-RC8/supreme-common-android-1.0.0-RC8-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-android/1.0.0-RC8/supreme-common-android-1.0.0-RC8-cyclonedx.xml)
+- `makoto` JVM: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/makoto/1.0.0-RC8/makoto-1.0.0-RC8-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/makoto/1.0.0-RC8/makoto-1.0.0-RC8-cyclonedx.xml)
 
 The index is a lightweight discovery document for Maven Central SBOM locations.
 

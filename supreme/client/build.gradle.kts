@@ -24,7 +24,6 @@ version = artifactVersion
 kotlin {
     iosArm64()
     iosSimulatorArm64()
-    iosX64()
     androidLibrary {
         namespace = "at.asitplus.attestation.supreme.client"
         withDeviceTestBuilder {

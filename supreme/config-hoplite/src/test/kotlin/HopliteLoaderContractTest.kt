@@ -10,6 +10,7 @@ import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.attestation.supreme.SupremeConfiguration
 import at.asitplus.signum.indispensable.asn1.encodeToPEM
+import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.toKmpCertificate
 import com.sksamuel.hoplite.ConfigException
@@ -23,6 +24,11 @@ import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.nulls.shouldBeNull
+import io.matthewnelson.encoding.base64.Base64
+import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import java.io.File
 
 @OptIn(ExperimentalHoplite::class)
@@ -54,6 +60,47 @@ val HopliteLoaderContractTest by testSuite {
         loaded.genericDeviceNameOID.shouldBeNull()
         loaded.android shouldBe HopliteFixtures.supremeDualPlatform.android
         loaded.ios shouldBe HopliteFixtures.supremeDualPlatform.ios
+    }
+
+    "hoplite accepts relaxed kebab-case and snake_case property names" {
+        val android = loadYaml<AndroidAttestationConfiguration>(
+            """
+            applications:
+              - package-name: at.asitplus.relaxed-hoplite
+                signer_fingerprints:
+                  - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+            verification-seconds-offset: 12
+            """.trimIndent()
+        )
+
+        android.applications.single().packageName shouldBe "at.asitplus.relaxed-hoplite"
+        android.applications.single().signerFingerprints.single() shouldBe "NLl2LE1skNSEMZQMV73nMUJYsmQg7A".decodeToByteArray(Base64UrlStrict)
+        android.verificationSecondsOffset shouldBe 12
+
+        val supreme = loadYaml<SupremeConfiguration>(
+            """
+            android:
+              applications:
+                - package-name: at.asitplus.supreme-relaxed
+                  signer_fingerprints:
+                    - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+            ios: null
+            clock: system
+            generic-device-name-oid: 1.2.3.4
+            """.trimIndent()
+        )
+
+        supreme.android!!.applications.single().packageName shouldBe "at.asitplus.supreme-relaxed"
+        supreme.android!!.applications.single().signerFingerprints.single() shouldBe "NLl2LE1skNSEMZQMV73nMUJYsmQg7A".decodeToByteArray(Base64UrlStrict)
+        supreme.ios.shouldBeNull()
+        supreme.clock shouldBe SupremeConfiguration.Clock.System
+        supreme.genericDeviceNameOID.toString() shouldBe "1.2.3.4"
+    }
+
+    "hoplite relaxed property casings all load to the same equivalent config" {
+        assertHopliteCasingsEquivalent(HopliteFixtures.androidMaximal)
+        assertHopliteCasingsEquivalent(HopliteFixtures.iosMaximal)
+        assertHopliteCasingsEquivalent(HopliteFixtures.supremeDualPlatform)
     }
 
     "hoplite rejects missing required values and malformed collection shapes" - {
@@ -206,6 +253,13 @@ private inline fun <reified A : AttestationConfiguration> assertHopliteMatchesCa
     fromJson shouldBe expected
 }
 
+private inline fun <reified A : AttestationConfiguration> assertHopliteCasingsEquivalent(expected: A) {
+    PropertyCaseStyle.entries.forEach { style ->
+        val recasedJson = expected.toJsonElement().recaseKeys(style).toString()
+        loadJson<A>(recasedJson) shouldBe expected
+    }
+}
+
 private inline fun <reified A : AttestationConfiguration> loadYaml(yaml: String): A =
     loadWithHoplite(yaml, ".yaml")
 
@@ -322,3 +376,32 @@ private fun trustedRootPem(root: TrustedRoot): String = when (root) {
     is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().getOrThrow().encodeToPEM().getOrThrow()
     is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().getOrThrow().encodeToPEM().getOrThrow()
 }
+
+private fun JsonElement.recaseKeys(style: PropertyCaseStyle): JsonElement = when (this) {
+    is JsonObject -> JsonObject(entries.associate { (key, value) -> style.recase(key) to value.recaseKeys(style) })
+    is JsonArray -> JsonArray(map { it.recaseKeys(style) })
+    else -> this
+}
+
+private enum class PropertyCaseStyle {
+    CAMEL,
+    KEBAB,
+    SNAKE,
+    UPPER_SNAKE;
+
+    fun recase(key: String): String {
+        val words = key.splitCamelCase()
+        return when (this) {
+            CAMEL -> words.first() + words.drop(1).joinToString("") { it.replaceFirstChar(Char::titlecase) }
+            KEBAB -> words.joinToString("-")
+            SNAKE -> words.joinToString("_")
+            UPPER_SNAKE -> words.joinToString("_") { it.uppercase() }
+        }
+    }
+}
+
+private fun String.splitCamelCase(): List<String> =
+    replace(Regex("([a-z0-9])([A-Z])"), "$1 $2")
+        .split(Regex("[^A-Za-z0-9]+"))
+        .filter(String::isNotBlank)
+        .map(String::lowercase)

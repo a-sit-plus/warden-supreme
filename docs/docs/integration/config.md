@@ -45,15 +45,34 @@ In addition, approaches based on reflection that do not invoke the configuration
     Add the `at.asitplus.warden:config-hoplite` dependency to access `hopliteDecoder()`. This way you can directly load any `AttestationConfiguration` by
     registering the provided decoder and letting Hoplite load from your preferred sources (files, env, etc.).  
     The `hopliteDecoder()` function ensures that all config loading happens through well-defined serialisation paths.
+    Loading like this accepts canonical camelCase, snake_case, UPPER_SNAKE_CASE, and kebap-case property names.
     
     ```kotlin
     --8<-- "Readme-Config-Hoplite.kt:15:25"
     ```
+    
+    **It is necessary to use these decoders because Warden Supreme's configurations heavily rely on kotlinx.serialization
+    for the sanitization, normalization and parsing of various properties. Only throuhg these decoders is it possible to still
+    involve these critical codepaths and guarantee correct config loading.**
 
 ??? tip "Spring Boot Loading (JVM)"
     Spring Boot loading is available through the `at.asitplus.warden:config-spring` module. It binds a
     Spring `Environment` (or a property prefix inside it) into a nested map and then calls `fromJsonObject()` so all
     validation and defaulting still go through the canonical configuration path.
+    Loading like this accepts canonical camelCase, snake_case, UPPER_SNAKE_CASE, and kebap-case property names.
+
+    !!! warning "Spring loading cannot reliably distinguish `null` from unset properties"
+        This affects `fromSpringEnvironment(...)` and, in practice, also `fromSpringMap(...)` when that map originates
+        from Spring's own config binding.
+
+        Concretely, this means you should **not** rely on Spring-backed loading to override a non-null default with an
+        explicit `null`. By the time Warden Supreme sees the data, Spring will often already have normalised explicit
+        `null` away as if the property had simply been absent.
+
+        If you need precise `null` semantics, load canonical configuration directly via
+        `fromYamlString(...)`, `fromJsonString(...)`, `fromYamlFile(...)`, or `fromJsonFile(...)`.
+        If you want seamless Spring integration, use `fromSpringEnvironment(...)` on a prefix inside the Spring
+        `Environment`, but treat explicit `null` overrides as unsupported.
     
     The module pulls Spring boot as a `compileOnly` dependency to avoid version conflicts. You bring your own Spring Boot
     dependency (3.x or 4.x) in the application.
@@ -68,32 +87,38 @@ In addition, approaches based on reflection that do not invoke the configuration
     See [Quirks, Bugs, Workarounds, and Hints](../technical/quirks.md#configuration-loading) for Spring-specific caveats such as
     limitations around raw environment-variable binding.
 
-    Example with a nested prefix:
+    Example configuration:
 
     ```yaml
-    app:
-      security:
-        warden:
-          supreme:
-            android: 
-              applications:
-                - packageName: at.asitplus.attestation_client
-                  signerFingerprints:
-                    - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
-            ios:
-              applications: 
-                - teamIdentifier: 9CYHJNG644
-                  bundleIdentifier: 'at.asitplus.attestation-client'
-                  sandbox: false
+    --8<-- "Config-Spring-Boot-App.kt:springboot-config-yaml"
     ```
      
-    Load it with:
+    Loading from a then environment using a prefix:
+     
+    ```kotlin
+    --8<-- "Config-Spring-Boot-App.kt:springboot-env"
+    ```
+      
+    Automagically loading Android and iOS configuration through composition as part of configuration properties:
     
     ```kotlin
-    val config = SupremeConfiguration.fromSpringEnvironment(env, "app.security.warden.supreme")
+    --8<-- "Config-Spring-Boot-App.kt:springboot-config"
+    ```
+
+    Equivalent Java calls using `JavaSpringConfigurationLoader`:
+
+    ```java
+    --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-env"
+    ```
+
+    ```java
+    --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-map"
     ```
     
-    That’s the intended way to load a config that lives inside a larger Spring Boot config.
+    Both ways of loading are the intended ways to load a config that lives inside a larger Spring Boot config.  
+    **It is necessary to enforce this way of loading because Warden Supreme's configurations heavily rely on kotlinx.serialization
+    for the sanitisation, normalisation and parsing of various properties. Only through these loaders is it possible to
+    guarantee correct config loading.**
 
 ## Supreme (Fully Integrated) Configuration
 To externalise configuration for fully integrated attestation flows conveniently, use the umbrella `SupremeConfiguration`.

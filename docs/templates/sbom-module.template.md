@@ -13,6 +13,6 @@ The table below lists all SBOM publications for this module.
 
 Use the JSON/XML links for the exact CycloneDX SBOM attached to that publication.
 
-| Publication | Type | Coordinates | Artifact | JSON SBOM | XML SBOM |
-| --- | --- | --- | --- | --- | --- |
+| Publication | Type | Coordinates | JSON SBOM | XML SBOM |
+| --- | --- | --- | --- | ---  |
 {{ table_rows }}

@@ -1,30 +1,21 @@
 package at.asitplus.attestation
 
-import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.AndroidRevocationList
-import at.asitplus.attestation.android.PatchLevel
-import at.asitplus.attestation.android.VerifiedBootKey
-import at.asitplus.attestation.android.parseHex
+import at.asitplus.attestation.android.*
 import at.asitplus.attestation.supreme.SupremeConfiguration
+import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.longOrNull
+import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
+import kotlinx.serialization.json.*
 import org.springframework.boot.context.properties.source.ConfigurationPropertySources
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.StandardEnvironment
-import org.springframework.core.env.SystemEnvironmentPropertySource
 
 val SpringLoaderContractTest by testSuite {
     "fromSpringMap matches canonical oracle for minimal and maximal configs" {
@@ -74,20 +65,54 @@ val SpringLoaderContractTest by testSuite {
             "cfg.clock" to "system",
         )
 
-        AndroidAttestationConfiguration.fromSpringEnvironment(android, "cfg").applications.single().packageName shouldBe "at.asitplus.android"
-        IosAttestationConfiguration.fromSpringEnvironment(ios, "cfg").applications.single().bundleIdentifier shouldBe "at.asitplus.ios"
-        SupremeConfiguration.fromSpringEnvironment(supreme, "cfg").android!!.applications.single().packageName shouldBe "at.asitplus.supreme"
+        AndroidAttestationConfiguration.fromSpringEnvironment(android, "cfg")
+            .applications.single().packageName shouldBe "at.asitplus.android"
+        IosAttestationConfiguration.fromSpringEnvironment(ios, "cfg")
+            .applications.single().bundleIdentifier shouldBe "at.asitplus.ios"
+        SupremeConfiguration.fromSpringEnvironment(supreme, "cfg")
+            .android.shouldNotBeNull()
+            .applications.single().packageName shouldBe "at.asitplus.supreme"
     }
 
-    "spring environment variables reject snake case inside property segments for raw map binding" {
-        val android = systemEnvironmentOf(
-            "ATTESTATION_ANDROID_APPLICATIONS_0_PACKAGE_NAME" to "at.asitplus.android.env",
-            "ATTESTATION_ANDROID_APPLICATIONS_0_SIGNER_FINGERPRINTS_0" to "NLl2LE1skNSEMZQMV73nMUJYsmQg7A",
+    "spring property binding and relaxed property spellings are accepted" {
+        val android = environmentOf(
+            "attestation.android.applications[0].package-name" to "at.asitplus.android.env",
+            "attestation.android.applications[0].signer-fingerprints[0]" to "NLl2LE1skNSEMZQMV73nMUJYsmQg7A",
         )
 
-        shouldThrow<IllegalArgumentException> {
-            AndroidAttestationConfiguration.fromSpringEnvironment(android, "attestation.android")
-        }
+        val parsed = AndroidAttestationConfiguration.fromSpringEnvironment(android, "attestation.android")
+
+        parsed.applications.single().packageName shouldBe "at.asitplus.android.env"
+        parsed.applications.single().signerFingerprints.single() shouldBe "NLl2LE1skNSEMZQMV73nMUJYsmQg7A".decodeToByteArray(
+            Base64UrlStrict
+        )
+        val supreme = SupremeConfiguration.fromSpringMap(
+            mapOf(
+                "android" to mapOf(
+                    "applications" to listOf(
+                        mapOf(
+                            "package-name" to "at.asitplus.relaxed",
+                            "signer_fingerprints" to listOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7A")
+                        )
+                    )
+                ),
+                "ios" to null,
+                "clock" to "system",
+                "generic-device-name-oid" to "1.2.3.4"
+            )
+        )
+
+        supreme.android.shouldNotBeNull().applications.single().packageName shouldBe "at.asitplus.relaxed"
+        supreme.genericDeviceNameOID.toString() shouldBe "1.2.3.4"
+        supreme.android.shouldNotBeNull()
+            .applications.single().signerFingerprints
+            .single() shouldBe "NLl2LE1skNSEMZQMV73nMUJYsmQg7A".decodeToByteArray(Base64UrlStrict)
+    }
+
+    "spring relaxed property casings all load to the same equivalent config" {
+        assertSpringCasingsEquivalent(SpringFixtures.androidMaximal)
+        assertSpringCasingsEquivalent(SpringFixtures.iosMaximal)
+        assertSpringCasingsEquivalent(SpringFixtures.supremeDualPlatform)
     }
 
     "spring blanks become null only for optional values and fail for required ones" {
@@ -240,6 +265,30 @@ private fun <A : AttestationConfiguration> assertSpringMapMatchesCanonical(expec
     loaded shouldBe expected
 }
 
+private fun <A : AttestationConfiguration> assertSpringCasingsEquivalent(expected: A) {
+    val canonicalJson = expected.toJsonElement()
+    val canonicalSpringValue = canonicalJson.toSpringValue()
+    require(canonicalSpringValue is Map<*, *>) { "Expected top-level map for ${expected::class.qualifiedName}" }
+
+    PropertyCaseStyle.entries.forEach { style ->
+        val variantJson = canonicalJson.recaseKeys(style)
+        val variantSpringValue = variantJson.toSpringValue()
+        require(variantSpringValue is Map<*, *>) { "Expected top-level map for ${expected::class.qualifiedName}" }
+        val springMap = variantSpringValue.entries.associate { (key, value) ->
+            require(key is String) { "Top-level config map keys must be strings" }
+            key to value
+        }
+        val loadedFromMap = when (expected) {
+            is AndroidAttestationConfiguration -> AndroidAttestationConfiguration.fromSpringMap(springMap)
+            is IosAttestationConfiguration -> IosAttestationConfiguration.fromSpringMap(springMap)
+            is SupremeConfiguration -> SupremeConfiguration.fromSpringMap(springMap)
+            else -> error("Unsupported configuration type ${expected::class.qualifiedName}")
+        }
+
+        loadedFromMap shouldBe expected
+    }
+}
+
 private fun environmentOf(vararg properties: Pair<String, Any?>): ConfigurableEnvironment =
     StandardEnvironment().apply {
         val source = linkedMapOf<String, Any>()
@@ -250,22 +299,41 @@ private fun environmentOf(vararg properties: Pair<String, Any?>): ConfigurableEn
         ConfigurationPropertySources.attach(this)
     }
 
-private fun systemEnvironmentOf(vararg properties: Pair<String, Any?>): ConfigurableEnvironment =
-    StandardEnvironment().apply {
-        val source = linkedMapOf<String, Any>()
-        properties.forEach { (key, value) ->
-            if (value != null) source[key] = value
-        }
-        propertySources.addFirst(SystemEnvironmentPropertySource("test-system-env", source))
-        ConfigurationPropertySources.attach(this)
-    }
-
 private fun JsonElement.toSpringValue(): Any? = when (this) {
     JsonNull -> null
     is JsonObject -> entries.associate { (key, value) -> key to value.toSpringValue() }
     is JsonArray -> map { it.toSpringValue() }
     is JsonPrimitive -> if (isString) content else booleanOrNull ?: longOrNull ?: doubleOrNull ?: content
 }
+
+private fun JsonElement.recaseKeys(style: PropertyCaseStyle): JsonElement = when (this) {
+    is JsonObject -> JsonObject(entries.associate { (key, value) -> style.recase(key) to value.recaseKeys(style) })
+    is JsonArray -> JsonArray(map { it.recaseKeys(style) })
+    else -> this
+}
+
+private enum class PropertyCaseStyle {
+    CAMEL,
+    KEBAB,
+    SNAKE,
+    UPPER_SNAKE;
+
+    fun recase(key: String): String {
+        val words = key.splitCamelCase()
+        return when (this) {
+            CAMEL -> words.first() + words.drop(1).joinToString("") { it.replaceFirstChar(Char::titlecase) }
+            KEBAB -> words.joinToString("-")
+            SNAKE -> words.joinToString("_")
+            UPPER_SNAKE -> words.joinToString("_") { it.uppercase() }
+        }
+    }
+}
+
+private fun String.splitCamelCase(): List<String> =
+    replace(Regex("([a-z0-9])([A-Z])"), "$1 $2")
+        .split(Regex("[^A-Za-z0-9]+"))
+        .filter(String::isNotBlank)
+        .map(String::lowercase)
 
 private enum class SampleEnum {
     VALUE
