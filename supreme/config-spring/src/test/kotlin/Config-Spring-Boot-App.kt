@@ -114,10 +114,6 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
                 val testConfig = context.getBean(TestConfig::class.java)
                 val props = context.getBean(AttestationProperties::class.java)
 
-                println(props.androidConfig)
-                println(testConfig.configurationProperties)
-
-
                 props.iosConfig shouldBe cfg.ios
                 props.androidConfig shouldBe cfg.android
                 testConfig.configurationProperties.iosConfig shouldBe cfg.ios

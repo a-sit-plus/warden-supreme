@@ -150,6 +150,9 @@ Some vendors encode **UTC Time vs. GeneralizedTime** incorrectly leading to year
 Only the vendor can fix this through updates. However, relying on a tight freshness window based on a cryptographic nonce
 sourced from true randomness is recommended anyway (see [Clock Drifts and Temporal Validity](#clock-drifts-and-temporal-validity)).
 
+#### Malformed DER Encoding of Certificates
+Some vendors even fail properly encoding DER BOOLEANs. Warden Supreme is lenient about this, but if you are using a strict
+DER decoder, this might trip it.
 
 #### Patch Level Misencoding
 One would assume a dead-simple encoding of dates is easy to get right. Wrong!
