@@ -5,12 +5,13 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion
 import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonString
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
+import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
 import io.ktor.util.*
+import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -752,7 +753,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        val signerFingerprints: Set<@Serializable(with = ByteArrayBase64UrlSerializer::class) ByteArray>,
+        val signerFingerprints: Set<@Serializable(with = ByteArrayB64HexSerializer::class) ByteArray>,
 
         /**
          * optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
@@ -906,7 +907,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         override fun toString(): String {
             return "AppData(" +
                     "packageName='$packageName', " +
-                    "signatureDigests=${signerFingerprints.joinToString { it.encodeBase64() }}, " +
+                    "signatureDigests=${signerFingerprints.joinToString { it.toHexString() }}, " +
                     "appVersion=$appVersion, " +
                     "androidVersionOverride=$androidVersionOverride, " +
                     "patchLevelOverride=$patchLevelOverride, " +
@@ -1299,14 +1300,14 @@ sealed interface VerifiedBootKey {
 
         override fun hashCode(): Int = value.contentHashCode()
 
-        override fun toString(): String = value.toHexString()
+        override fun toString(): String = value.toHexString().chunked(2).joinToString(":")
     }
 
     companion object {
         fun fromString(str: String): VerifiedBootKey {
             val value = str.trim()
-            return if (value.equals(OEM.name, ignoreCase = true)) VerifiedBootKey.OEM
-            else VerifiedBootKey.Digest(value.parseHex())
+            return if (value.equals(OEM.name, ignoreCase = true)) OEM
+            else Digest(value.parseHex())
         }
     }
 }
@@ -1328,11 +1329,24 @@ object ByteArrayHexStringSerializer : KSerializer<ByteArray> {
         PrimitiveSerialDescriptor("ByteArrayHexStringSerializer", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ByteArray) {
-        encoder.encodeString(value.toHexString())
+        encoder.encodeString(value.toHexString().chunked(2).joinToString(":"))
     }
 
     override fun deserialize(decoder: Decoder): ByteArray {
         return decoder.decodeString().parseHex()
     }
 
+}
+
+object ByteArrayB64HexSerializer : KSerializer<ByteArray> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("ByteArrayB64HexSerializer", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ByteArray) = ByteArrayHexStringSerializer.serialize(encoder, value)
+
+    override fun deserialize(decoder: Decoder): ByteArray {
+        val string = decoder.decodeString()
+        return if (string.length < 64) string.decodeToByteArray(Base64UrlStrict)
+        else string.parseHex()
+    }
 }
