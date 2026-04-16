@@ -1346,7 +1346,11 @@ object ByteArrayB64HexSerializer : KSerializer<ByteArray> {
 
     override fun deserialize(decoder: Decoder): ByteArray {
         val string = decoder.decodeString()
-        return if (string.length < 64) string.decodeToByteArray(Base64UrlStrict)
-        else string.parseHex()
+        return if (
+            string.length >= 64 ||
+            string.trim().contains(Regex("\\s")) ||
+            string.contains(":")
+        ) string.parseHex()
+        else string.decodeToByteArray(Base64UrlStrict)
     }
 }
