@@ -124,6 +124,7 @@ constructor(
     /**
      * Verifies the received CSR:
      * * Validates nonce contained in the [csr] against the [challengeValidator]
+     * * invokes [onChallengeValidated] after a matching challenge was found
      * * extracts the attestation statement from the [csr]
      * * calls upon [makoto] for key and app attestation based on the extracted attestation statement
      * * verifies the [csr] signature against the contained public key
@@ -137,8 +138,10 @@ constructor(
      * * issues trying to extract the challenge from the CSR
      * * challenge validation errors
      *
-     * [onChallengeValidated] allows side-effect-free investigating/logging/handling of validated challenges.
-     * Includes the CSR from the client.
+     * [onChallengeValidated] allows side-effect-free investigating/logging/handling of challenge matches.
+     * It is invoked immediately after [challengeValidator] matched the CSR to a stored challenge and before
+     * attestation verification and CSR proof-of-possession are checked. Includes the CSR from the client.
+     * Consequently, this callback must not be used for state transitions or to infer eventual success.
      *
      * [onAttestationError] allows side-effect-free investigating attestation statement verification errors.
      * Gives you not only the Attestation error, but also a ready-made [WardenDebugAttestationStatement].
@@ -333,7 +336,7 @@ constructor(
 
 /**
  * Invoked from [AttestationVerifier.verifyAttestation]. Useful to match against in-transit attestation processes.
- * Most probably, this will check against a nonce cache and evict any matched nonce from the cache.
+ * Most probably, this will check against a nonce cache and eagerly evict any matched nonce from the cache.
  * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
  * matching, ensuring freshness!
  *
@@ -354,6 +357,8 @@ interface ChallengeValidator {
      * In all other cases, it must return a [ChallengeValidationResult.Failure]:
      * * It must return a [ChallengeValidationResult.Failure.NonceExtraction] if nonce extraction fails (relevant for nonce-cache based implementations)
      * * It must return a [ChallengeValidationResult.Failure.Other] if other validation errors occur, such as no valid challenge matching the passed  [csr].
+     * A successful validation may already consume or otherwise reserve the matched challenge. The default
+     * [InMemoryChallengeCache] eagerly removes matched challenges to preserve single-use semantics.
      * In addition, it **should** also remove all expired challenges, to keep stale challenges from inflating memory/storage.
      */
     suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult
@@ -376,7 +381,7 @@ sealed class ChallengeValidationResult {
 
 /**
  * Gets passed the signed CSR from the mobile client after it was thoroughly checked and verified.
- * At this point, the CSR's signature has been verified, then challenge checked, and the public key attested.
+ * At this point, the challenge has been matched, the public key attested, and the CSR's signature verified.
  * Hence, a certificate can be issued and the whole certificate chain (from newly issued certificate up to the CA)
  * shall be returned.
  */

@@ -336,7 +336,8 @@ four callbacks to analyse challenge validation, attestation errors, and success 
 ```
 
 1. This is simply the CSR from the client, as in the minimal example
-2. `onChallengeValidated` is called after the CSR’s challenge binding was validated. It has the validated challenge as receiver and the CSR as parameter.
+2. `onChallengeValidated` is called immediately after the CSR was matched to a stored challenge. It has the matched challenge as receiver and the CSR as parameter.
+   This happens before attestation verification and before CSR proof-of-possession is checked, so it must remain side-effect-free and should be used only for logging or inspection.
 3. `onPreAttestationError` is called in case of operational/internal errors, or if the attestation statement cannot
    be extracted from a CSR. Different side-effect-free handling strategies can be employed based on error type.
 4. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).
