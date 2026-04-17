@@ -57,11 +57,30 @@ sealed class AttestationResult {
         abstract val attestationRecord: ParsedAttestationRecord
 
         /**
-         * The attestation extension present in the [attestationCertificate]
+         * The attestation extension present in the certificate that actually carries the attestation
+         * record. When multiple certificates in the chain contain an attestation extension, this is
+         * the one closest to the root, matching the verifier's parsing strategy.
          */
         val androidAttestationExtension: AttestationKeyDescription by lazy { attestationCertificate.androidAttestationExtension!! }
 
-        val attestationCertificate by lazy { attestationCertificateChain.first() }
+        /**
+         * The certificate from [attestationCertificateChain] whose attestation extension was used for
+         * verification. This is the certificate closest to the root that still carries the Android
+         * attestation extension.
+         */
+        val attestationCertificate by lazy {
+            attestationCertificateChain.lastOrNull { it.androidAttestationExtension != null }
+                ?: throw IllegalStateException("No Android attestation extension present in certificate chain")
+        }
+
+        val leafCertificate by lazy {
+            attestationCertificateChain.firstOrNull()
+                ?: throw IllegalStateException("Android attestation certificate chain is empty")
+        }
+
+        val isLeafAttestationCertificate by lazy {
+            leafCertificate.encoded.contentEquals(attestationCertificate.encoded)
+        }
 
         @DisabledAttestation
         class NOOP internal constructor(attestationCertificateChain: List<ByteArray>) :

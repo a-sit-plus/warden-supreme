@@ -292,6 +292,32 @@ val AttestationVerifierFakeAndroidTest by testSuite(
             response.shouldBeInstanceOf<AttestationResponse.Success>()
             seenPayload shouldBe listOf("tenant-a")
         }
+
+        test("forged leaf above attestation leaf is rejected") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig())
+            val forged = fixture.fake.prependForgedLeaf()
+            val csr = fixture.issueCsr(
+                verifier = verifier,
+                attestationJson = forged.attestationJson(),
+                keyPair = forged.leafKeyPair,
+            )
+
+            val response = verifier.verifyAttestation(csr, certificateIssuer = { emptyList() })
+            response.shouldBeInstanceOf<AttestationResponse.Failure>()
+        }
+
+        test("forged leaf with copied attestation extension is rejected") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig())
+            val forged = fixture.fake.prependForgedLeaf(copyAttestationExtension = true)
+            val csr = fixture.issueCsr(
+                verifier = verifier,
+                attestationJson = forged.attestationJson(),
+                keyPair = forged.leafKeyPair,
+            )
+
+            val response = verifier.verifyAttestation(csr, certificateIssuer = { emptyList() })
+            response.shouldBeInstanceOf<AttestationResponse.Failure>()
+        }
     }
 
     withData(
