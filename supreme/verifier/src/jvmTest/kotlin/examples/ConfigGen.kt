@@ -35,7 +35,7 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
         /*(1)!*/
         AndroidAttestationConfiguration.AppData(
             packageName = "at.asitplus.attestation_client",
-            signerFingerprints = setOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex())
+            signerFingerprints = setOf("4a c9 ad ee 7a a0 c5 56 02 ac e2 28 bc ac e1 1b 41 2c c8 b4 aa 8c 08 96 41 8e dd 94 d7 5e 0e e6".parseHex())
         ),
         verifiedBootKeys = linkedSetOf(
             VerifiedBootKey.OEM,
@@ -151,7 +151,7 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
             applications: 
               - packageName: at.asitplus.attestation_client
                 signerFingerprints: 
-                  - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+                  - 4a c9 ad ee 7a a0 c5 56 02 ac e2 28 bc ac e1 1b 41 2c c8 b4 aa 8c 08 96 41 8e dd 94 d7 5e 0e e6
             verifiedBootKeys:
               - OEM
               - '00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff'

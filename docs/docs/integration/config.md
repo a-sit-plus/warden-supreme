@@ -11,9 +11,14 @@ Warden Supreme configuration consists of two parts:
 All externalised configuration classes implement `AttestationConfiguration`. This provides a
 single, canonical way to serialise and load configurations across Android, iOS, and integrated setups.
 
+
+!!! note "Changed Fingerprint Format"
+    Android signer fingerprints were previously BAse64-URL encoded. This is still supported, but the preferred representation is hex-encoded (with or without whitespace and/or `:` seprators).  
+    **Starting with release 1.1, only hex-encoded fingerprints will be supported.**
+
 !!! note inline end "Changed YAML Format"
     Until 1.0.0-RC3, YAML polymorphic configs used a `type`/`value` wrapper. Newer versions use the same flat `type` shape as JSON. Legacy YAML with a `type`/`value` wrapper
-    still works for `fromYaml`-based loading, but will be retired with release 1.1.
+    still works for `fromYaml`-based loading, **but will be retired with release 1.1**.
 
 !!! warning "Quote YAML scalars that look numeric"
     This applies to all YAML loading paths: native `fromYaml...` readers, Hoplite, and Spring-backed YAML config.
