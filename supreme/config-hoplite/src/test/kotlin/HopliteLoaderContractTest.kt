@@ -192,7 +192,7 @@ val HopliteLoaderContractTest by testSuite {
             applications:
               - packageName: at.asitplus.multiline
                 signerFingerprints:
-                  - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+                  - 34b9762c4d6c90d48431940c57bde7314258b26420ec
             hardwareTrustedRoots:
               - |-
 ${trustedRootPem(hardwareAnchor).prependIndent("                  ")}
@@ -295,7 +295,7 @@ private object HopliteFixtures {
     val androidMinimal = AndroidAttestationConfiguration(
         singleApp = AndroidAttestationConfiguration.AppData(
             packageName = "at.asitplus.android-min",
-            signerFingerprints = setOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex())
+            signerFingerprints = setOf("0a 3e d5 8f d5 39 cb a3 f2 52 aa ab 23 c3 9c 90 e9 08 13 56 cf a6 ad 21 00 3c f7 94 85 61 3a e3".parseHex())
         )
     )
 
@@ -304,7 +304,7 @@ private object HopliteFixtures {
             AndroidAttestationConfiguration.AppData(
                 packageName = "at.asitplus.attestation-client",
                 signerFingerprints = setOf(
-                    "34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()
+                    "b0 2d 99 66 b7 02 df 5f 45 21 a4 17 7d 18 39 8f c0 b3 49 4a b1 27 83 a9 3b a9 68 be 07 91 ed 9a".parseHex()
                 ),
                 appVersion = 42,
                 androidVersionOverride = 340000,
@@ -314,7 +314,7 @@ private object HopliteFixtures {
                 verifiedBootKeys = linkedSetOf(
                     VerifiedBootKey.OEM,
                     VerifiedBootKey.Digest(
-                        "00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff"
+                        "38 92 38 5f a8 7f f5 8e 33 8d 84 09 f9 61 b8 0b 6a f4 5b 8b c2 b6 ed a3 c2 43 7c 32 cc b6 b0 ec"
                             .parseHex()
                     )
                 )
@@ -338,7 +338,7 @@ private object HopliteFixtures {
         verifiedBootKeys = linkedSetOf(
             VerifiedBootKey.OEM,
             VerifiedBootKey.Digest(
-                "00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff"
+                "0a 3e d5 8f d5 39 cb a3 f2 52 aa ab 23 c3 9c 90 e9 08 13 56 cf a6 ad 21 00 3c f7 94 85 61 3a e3"
                     .parseHex()
             )
         ),

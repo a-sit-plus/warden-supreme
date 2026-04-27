@@ -14,7 +14,7 @@ android:
   applications: 
     - packageName: at.asitplus.attestation_client
       signerFingerprints: 
-        - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+        - 4a c9 ad ee 7a a0 c5 56 02 ac e2 28 bc ac e1 1b 41 2c c8 b4 aa 8c 08 96 41 8e dd 94 d7 5e 0e e6
       appVersion: null
       androidVersionOverride: null
       patchLevelOverride: null
