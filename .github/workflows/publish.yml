@@ -89,6 +89,11 @@ jobs:
         run: |
           export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib
           ./gradlew mkDocsSite
+        env:
+          SIGN_LOCAL_REPO_ARTEFACTS: 'true'
+          ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.PUBLISH_SIGNING_KEYID }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.PUBLISH_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PUBLISH_SIGNING_PASSWORD }}
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
