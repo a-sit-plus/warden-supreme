@@ -2367,8 +2367,8 @@ data class AuthorizationList private constructor(
      *
      * For a detailed definition of the `Modules` and `Module` structures, as well as the computation of `moduleHash`, you can refer to the Android Open Source Project's documentation on Keymaster's attestation process.
      */
-    data class ModuleHash(val sha256Digest: ByteArray) : Asn1Encodable<Asn1Primitive>,
-        Tagged.WithTag<Asn1Primitive> {
+    data class ModuleHash(val sha256Digest: ByteArray) : Asn1Encodable<Asn1Element>,
+        Tagged.WithTag<Asn1Element> {
         override fun encodeToTlv() = Asn1.OctetString(sha256Digest)
 
         @OptIn(ExperimentalStdlibApi::class)
@@ -2376,8 +2376,8 @@ data class AuthorizationList private constructor(
             return "ModuleHash(sha256Digest=${sha256Digest.toHexString()})"
         }
 
-        companion object Tag : Tagged(724uL), Asn1Decodable<Asn1Primitive, ModuleHash> {
-            override fun doDecode(src: Asn1Primitive) = ModuleHash(src.asOctetString().content)
+        companion object Tag : Tagged(724uL), Asn1Decodable<Asn1Element, ModuleHash> {
+            override fun doDecode(src: Asn1Element) = ModuleHash(src.asOctetString().content)
         }
 
         override val tagged get() = Tag

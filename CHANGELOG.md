@@ -5,8 +5,10 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 
-# NEXT
-* Android: Prefer hex encoding of signer fingerprints over base64Url (use 64 characters length as a threshold plus checks for `:` and whitespace to discriminate)
+# 1.0.0-RC10
+* Android:
+    * Fix `AuthorizationList` parser bug
+    * Canonical configuration now prefers hex encoding of signer fingerprints over base64Url (use 64 characters length as a threshold plus checks for `:` and whitespace to discriminate)
 
 # 1.0.0-RC9
 * Relax Spring and Hoplite parsing (property names / keys can now be snake_case (upper and lower) and kebap-case as well)
