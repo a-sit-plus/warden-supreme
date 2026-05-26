@@ -47,6 +47,7 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
             AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("https://localhost:2345"),
             AndroidRevocationList.FileLoader.Configuration("./localrevocation.json")
         ), // Defaults to null
+        enforceFactoryProvisionedChainValidity = true
     )
     val iosAttestationConfiguration = IosAttestationConfiguration(
         /*(2)!*/IosAttestationConfiguration.AppData(

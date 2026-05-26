@@ -1,0 +1,51 @@
+name: Publish to GitHub
+on:
+  workflow_dispatch:
+    inputs:
+      kotlin-version:
+        description: 'Override Kotlin version?'
+        required: false
+        default: ''
+        type: string
+      kotest-version:
+        description: 'Override Kotest version?'
+        required: false
+        default: ''
+        type: string
+      ksp-version:
+        description: 'Override KSP version? (full version string)?'
+        required: false
+        default: ''
+        type: string
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      KOTLIN_VERSION_ENV: ${{ inputs.kotlin-version }}
+      KOTEST_VERSION_ENV: ${{ inputs.kotest-version }}
+      KSP_VERSION_ENV: ${{ inputs.ksp-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Publish to GitHub Repo
+        run: ./gradlew -PpublishVersionCatalog=false clean publishAllPublicationsToGitHubPackagesRepository
+        env:
+          SIGN_LOCAL_REPO_ARTEFACTS: 'true'
+          ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.PUBLISH_SIGNING_KEYID }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.PUBLISH_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PUBLISH_SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.PUBLISH_SONATYPE_USER }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.PUBLISH_SONATYPE_PASSWORD }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}

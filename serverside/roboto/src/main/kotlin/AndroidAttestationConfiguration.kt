@@ -335,6 +335,9 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
  * Only change this flag, if you **really** know what you are doing!
  * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
  * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
+ * @param enforceFactoryProvisionedChainValidity Whether to enforce timely validity for factory-provisioned certificate
+ * chains. Some old devices may have expired intermediate certificates, which will trip a validity check unless this is
+ * false.
  */
 @Serializable
 data class AndroidAttestationConfiguration @JvmOverloads constructor(
@@ -449,6 +452,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * verified boot key digest checks are skipped when unlocked bootloaders are allowed.
      */
     val verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM),
+
+    /**
+     * Whether to enforce timely validity for factory-provisioned certificate chains.
+     * Some old (as in: almost certainly not receiving security updates) devices may have expired intermediate certificates.
+     * Those will trip a validity check unless this flag is set to false.
+     */
+    val enforceFactoryProvisionedChainValidity: Boolean = true,
 
     /**
      * Flag to try out the new supreme parser
@@ -566,6 +576,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM),
 
+        enforceFactoryProvisionedChainValidity: Boolean = true,
+
         /**
          * Flag to try out the new supreme parser
          */
@@ -587,6 +599,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
         verifiedBootKeys = verifiedBootKeys,
+        enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
         supremeParser = supremeParser,
     )
 
@@ -704,6 +717,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM),
 
+
+        enforceFactoryProvisionedChainValidity: Boolean = true,
+
         /**
          * Flag to try out the new supreme parser
          */
@@ -725,6 +741,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         revocation = revocation,
         requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
         verifiedBootKeys = verifiedBootKeys,
+        enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
         supremeParser = supremeParser,
     )
 
@@ -1002,6 +1019,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)
         private var requireRemoteKeyProvisioning: Boolean = false
         private var verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM)
+        private var enforceFactoryProvisionedChainValidity: Boolean = true
         private var supremeParser: Boolean = false
 
         /**
@@ -1137,6 +1155,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         fun verifiedBootKeys(keys: Set<VerifiedBootKey>) = apply { verifiedBootKeys = keys }
 
         /**
+         * @see AndroidAttestationConfiguration.enforceFactoryProvisionedChainValidity
+         */
+        fun enforceFactoryProvisionedChainValidity(enforce: Boolean) =
+            apply { enforceFactoryProvisionedChainValidity = enforce }
+
+        /**
          * Flag to try out the new supreme parser
          */
         fun supremeParser(supremeParser: Boolean) = apply { this.supremeParser = supremeParser }
@@ -1158,6 +1182,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             revocation = revocation,
             requireRemoteKeyProvisioning = requireRemoteKeyProvisioning,
             verifiedBootKeys = verifiedBootKeys,
+            enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
             supremeParser = supremeParser,
         )
 
@@ -1181,6 +1206,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "revocation=$revocation, " +
                 "verifiedBootKeys=$verifiedBootKeys, " +
                 "osPatchLevel=$osPatchLevel, " +
+                "enforceFactoryProvisionedChainValidity=$enforceFactoryProvisionedChainValidity, " +
                 "supremeParser=$supremeParser" +
                 ")"
     }
@@ -1209,6 +1235,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         if (requireRemoteKeyProvisioning != other.requireRemoteKeyProvisioning) return false
         if (verifiedBootKeys != other.verifiedBootKeys) return false
+        if (enforceFactoryProvisionedChainValidity != other.enforceFactoryProvisionedChainValidity) return false
         if (supremeParser != other.supremeParser) return false
 
         return true
@@ -1232,6 +1259,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + revocation.hashCode()
         result = 31 * result + requireRemoteKeyProvisioning.hashCode()
         result = 31 * result + verifiedBootKeys.hashCode()
+        result = 31 * result + enforceFactoryProvisionedChainValidity.hashCode()
         result = 31 * result + supremeParser.hashCode()
         return result
     }

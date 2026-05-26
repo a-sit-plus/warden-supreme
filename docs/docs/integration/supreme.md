@@ -158,14 +158,16 @@ The full details on the configuration can be found in the [API documentation](..
     14. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
        It is not recommended to set this value because many OEMs get this wrong.
     15. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
-    16. A single iOS app for evaluation purposes.
-    17. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
-    18. Uses the test stage
-    19. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
-    20. This could already be a production value, in preparation for the real iOS app
-    21. This is simply Apple's recommendation plus five minutes offset
-    22. Explicitly set production trusted roots as default
-    23. Account for clock drift!
+    16. Factory-provisioned Android attestation chains are checked for timely certificate validity by default. Only
+        disable this for old devices with expired intermediate certificates after accepting the resulting risk.
+    17. A single iOS app for evaluation purposes.
+    18. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
+    19. Uses the test stage
+    20. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
+    21. This could already be a production value, in preparation for the real iOS app
+    22. This is simply Apple's recommendation plus five minutes offset
+    23. Explicitly set production trusted roots as default
+    24. Account for clock drift!
 
     Note that revocation configuration has been revamped after 0.9.9999 (see below)!
 

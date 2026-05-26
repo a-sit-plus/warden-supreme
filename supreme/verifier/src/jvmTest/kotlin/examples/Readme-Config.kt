@@ -51,24 +51,25 @@ val makoto = Makoto(
      /*(15)!*/revocation = listOf(
             AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("https://192.168.178.74:8000")
         ),
-        requireRemoteKeyProvisioning = false //DEFAULT
+        requireRemoteKeyProvisioning = false, //DEFAULT
+     /*(16)!*/enforceFactoryProvisionedChainValidity = true //DEFAULT
 
     ),
     iosAttestationConfiguration = IosAttestationConfiguration(
         applications = listOf(
-         /*(16)!*/IosAttestationConfiguration.AppData(
+         /*(17)!*/IosAttestationConfiguration.AppData(
                 teamIdentifier = "9CYHJNG644",
                 bundleIdentifier = "at.asitplus.attestation-client",
-             /*(17)!*/iosVersionOverride = OsVersions("16.0", "20A10"),
-             /*(18)!*/sandbox = true, //defaults to false
-             /*(19)!*/trustedRootOverrides = myCustomRoots
+             /*(18)!*/iosVersionOverride = OsVersions("16.0", "20A10"),
+             /*(19)!*/sandbox = true, //defaults to false
+             /*(20)!*/trustedRootOverrides = myCustomRoots
             )
         ),
                 /* Same as 17.0 ↘↘ */
-     /*(20)!*/iosVersion = OsVersions("17", "21A36"), //defaults to null (= no version check)
-     /*(21)!*/attestationStatementValiditySeconds = 600, //DEFAULT
-     /*(22)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS //DEFAULT
+     /*(21)!*/iosVersion = OsVersions("17", "21A36"), //defaults to null (= no version check)
+     /*(22)!*/attestationStatementValiditySeconds = 600, //DEFAULT
+     /*(23)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS //DEFAULT
     ),
     clock = Clock.System, //DEFAULT
- /*(23)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults shown
+ /*(24)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults shown
 )

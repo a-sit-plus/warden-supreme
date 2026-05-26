@@ -1,5 +1,4 @@
 import groovy.json.JsonSlurper
-import org.gradle.plugins.signing.Sign
 
 plugins {
     val kotlinVer = System.getenv("KOTLIN_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotlin.get()
@@ -9,6 +8,7 @@ plugins {
     id("de.infix.testBalloon") version testballoonVer apply false
     kotlin("jvm") version kotlinVer apply false
     kotlin("plugin.serialization") version kotlinVer apply false
+    id("maven-publish")
     alias(libs.plugins.asp)
     alias(libs.plugins.agp) apply (false)
     alias(libs.plugins.sbombastic)
@@ -30,6 +30,23 @@ dokka {
 
 subprojects {
     rootProject.dependencies.add("dokka", this)
+
+    val githubActor = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+    val githubToken = findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+    val githubRepository =
+        findProperty("gpr.repo") as String? ?: System.getenv("GITHUB_REPOSITORY") ?: "a-sit-plus/warden-supreme"
+    afterEvaluate {
+        if (githubToken != null && githubActor != null) {
+            publishing.repositories.maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/$githubRepository")
+                credentials {
+                    username = githubActor
+                    password = githubToken
+                }
+            }
+        }
+    }
 }
 
 allprojects {
@@ -132,8 +149,10 @@ val syncSbomDocs by tasks.register("syncSbomDocs") {
 
                 @Suppress("UNCHECKED_CAST")
                 val bom = jsonSlurper.parse(bomJsonFile) as Map<String, Any?>
+
                 @Suppress("UNCHECKED_CAST")
                 val metadata = bom["metadata"] as? Map<String, Any?> ?: emptyMap()
+
                 @Suppress("UNCHECKED_CAST")
                 val component = metadata["component"] as? Map<String, Any?> ?: emptyMap()
                 val groupId = component["group"]?.toString().orEmpty()
@@ -148,28 +167,28 @@ val syncSbomDocs by tasks.register("syncSbomDocs") {
                             .removePrefix("$artifactId-$version.")
                             .takeIf {
                                 artifactFile.isFile &&
-                                    artifactFile.name.startsWith("$artifactId-$version.") &&
-                                    it !in setOf(
-                                        "pom",
-                                        "module",
-                                        "json",
-                                        "xml",
-                                        "jar.asc",
-                                        "aar.asc",
-                                        "klib.asc",
-                                        "module.asc",
-                                        "pom.asc",
-                                        "json.asc",
-                                        "xml.asc",
-                                        "javadoc.jar",
-                                        "sources.jar",
-                                        "kotlin-tooling-metadata.json",
-                                        "metadata.jar",
-                                    ) &&
-                                    !artifactFile.name.endsWith(".md5") &&
-                                    !artifactFile.name.endsWith(".sha1") &&
-                                    !artifactFile.name.endsWith(".sha256") &&
-                                    !artifactFile.name.endsWith(".sha512")
+                                        artifactFile.name.startsWith("$artifactId-$version.") &&
+                                        it !in setOf(
+                                    "pom",
+                                    "module",
+                                    "json",
+                                    "xml",
+                                    "jar.asc",
+                                    "aar.asc",
+                                    "klib.asc",
+                                    "module.asc",
+                                    "pom.asc",
+                                    "json.asc",
+                                    "xml.asc",
+                                    "javadoc.jar",
+                                    "sources.jar",
+                                    "kotlin-tooling-metadata.json",
+                                    "metadata.jar",
+                                ) &&
+                                        !artifactFile.name.endsWith(".md5") &&
+                                        !artifactFile.name.endsWith(".sha1") &&
+                                        !artifactFile.name.endsWith(".sha256") &&
+                                        !artifactFile.name.endsWith(".sha512")
                             }
                     }
                     .firstOrNull()

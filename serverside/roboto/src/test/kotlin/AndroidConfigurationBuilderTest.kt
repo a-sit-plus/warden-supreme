@@ -59,6 +59,7 @@ val AndroidConfigurationBuilderTests by testSuite {
             .enableSoftwareAttestation()
             .revocation(revocation)
             .requireRemoteKeyProvisioning(true)
+            .enforceFactoryProvisionedChainValidity(false)
             .build()
 
         config.androidVersion shouldBe 140000
@@ -75,6 +76,24 @@ val AndroidConfigurationBuilderTests by testSuite {
         config.enableSoftwareAttestation shouldBe true
         config.revocation shouldBe revocation
         config.requireRemoteKeyProvisioning shouldBe true
+        config.enforceFactoryProvisionedChainValidity shouldBe false
+    }
+
+    "Android configuration alternative constructors propagate factory-provisioned chain validity checks" {
+        val app = AndroidAttestationConfiguration.AppData(
+            packageName = "com.example",
+            signerFingerprints = setOf(ByteArray(32) { 3 })
+        )
+
+        AndroidAttestationConfiguration(
+            singleApp = app,
+            enforceFactoryProvisionedChainValidity = false
+        ).enforceFactoryProvisionedChainValidity shouldBe false
+
+        AndroidAttestationConfiguration(
+            apps = listOf(app),
+            enforceFactoryProvisionedChainValidity = false
+        ).enforceFactoryProvisionedChainValidity shouldBe false
     }
 
     "AppData equality is content-based for byte arrays and order-sensitive for lists" {

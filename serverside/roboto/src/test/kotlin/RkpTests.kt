@@ -1,10 +1,14 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
+import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
 import de.infix.testBalloon.framework.core.testSuite
+import io.kotest.assertions.throwables.shouldThrow
+import kotlin.time.Instant
 
 val sammy14 = AttestationData(
     name = "Samsung SM-S921B",
@@ -82,13 +86,37 @@ val pixel6KeyMint200Good = AttestationData(
 val RkpTests by testSuite {
     "RKP Ext Present" - {
         withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
-            withData(listOf(sammy14 to null, pixel6KeyMint200Good to false)) { (it, rkpOverride) ->
-                attestationService(
-                    experimental,
-                    androidPackageName = it.packageOverride!!,
-                    rkpRequired = true,
-                    rkpAppRequired = rkpOverride,
-                ).verify(it.attestationCertChain, it.verificationDate, it.challenge).getOrThrow()
+            withData(listOf(sammy14 to null, pixel6KeyMint200Good to false)) - { (it, rkpOverride) ->
+                "OK" {
+                    attestationService(
+                        experimental,
+                        androidPackageName = it.packageOverride!!,
+                        rkpRequired = true,
+                        rkpAppRequired = rkpOverride,
+                    ).verify(it.attestationCertChain, it.verificationDate, it.challenge).getOrThrow()
+                }
+
+                "expected fail distant future" {
+                    shouldThrow<CertificateInvalidException> {
+                        attestationService(
+                            experimental,
+                            androidPackageName = it.packageOverride!!,
+                            rkpRequired = true,
+                            rkpAppRequired = rkpOverride,
+                        ).verify(it.attestationCertChain, Instant.DISTANT_FUTURE, it.challenge).getOrThrow()
+                    }
+                }
+                "expected fail distant future with relaxed checks for factory provisioned" {
+                    shouldThrow<CertificateInvalidException> {
+                        attestationService(
+                            experimental,
+                            androidPackageName = it.packageOverride!!,
+                            rkpRequired = true,
+                            rkpAppRequired = rkpOverride,
+                            enforceFactoryProvisionedValidity = false
+                        ).verify(it.attestationCertChain, Instant.DISTANT_FUTURE, it.challenge).getOrThrow()
+                    }
+                }
             }
         }
     }
