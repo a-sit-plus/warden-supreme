@@ -36,7 +36,7 @@ sbombastic {
         supplierEmail.set("security@google.com")
     }
     manualDependency("keyattestation") {
-        version.set("9066c0a003225e776b93ba5906d46c45904173de")
+        version.set("a83ff03aa1c1c03ab5090bfcdc352aa8ff5eeb60")
         vcsUrls.set(listOf("https://github.com/android/keyattestation"))
         supplierName.set("Google LLC")
         supplierUrls.set(listOf("https://source.android.com"))
