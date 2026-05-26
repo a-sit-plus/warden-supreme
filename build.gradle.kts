@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+import org.gradle.plugins.signing.Sign
 
 plugins {
     val kotlinVer = System.getenv("KOTLIN_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotlin.get()
