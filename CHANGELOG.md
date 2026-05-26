@@ -4,6 +4,8 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
+# NEXT
+
 # 1.0.0-RC10
 
 * Update to latest Google upstream attestation library (`a83ff03aa1c1c03ab5090bfcdc352aa8ff5eeb60`)
