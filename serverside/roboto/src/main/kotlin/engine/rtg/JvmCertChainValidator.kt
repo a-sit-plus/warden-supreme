@@ -1,32 +1,22 @@
 package at.asitplus.attestation.android.engine
 
-import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.attestation.android.AndroidRevocationList
-import at.asitplus.attestation.android.ConfigWithList
-import at.asitplus.attestation.android.EternalX509Certificate
-import at.asitplus.attestation.android.GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
-import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
-import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
-import at.asitplus.attestation.android.isRemoteKeyProvisioned
 import at.asitplus.catchingUnwrapped
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.android.keyattestation.verifier.provider.KeyAttestationProvider
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.security.Security
-import java.security.cert.CertPathValidator
-import java.security.cert.CertificateExpiredException
-import java.security.cert.CertificateNotYetValidException
-import java.security.cert.PKIXParameters
-import java.security.cert.X509Certificate
-import java.util.Date
+import java.security.cert.*
+import java.util.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.toKotlinInstant
 
-class JvmCertChainValidator(private val attestationConfiguration: AndroidAttestationConfiguration) : CertChainValidator<X509Certificate> {
+class JvmCertChainValidator(private val attestationConfiguration: AndroidAttestationConfiguration) :
+    CertChainValidator<X509Certificate> {
 
     companion object {
         init {
@@ -36,6 +26,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         private fun getValidator() = CertPathValidator.getInstance("KeyAttestation")
 
     }
+
     private val newPkixCertPathValidator = getValidator()
     override val revocationCheckers: List<Pair<AndroidRevocationList.Loader.Configuration<*>, AndroidRevocationList.Loader>> by lazy {
         attestationConfiguration.revocation.map { (it to it.createLoader()) }
@@ -53,16 +44,20 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
     ) {
-        val trustedRoot = catchingUnwrapped { verifyRootCertificate(verificationDate, actualTrustAnchors) }
-            .getOrElse {
-                throw if (it is CertificateInvalidException) it else CertificateInvalidException.InvalidRoot(
-                    message = "could not verify root certificate (valid from: ${last().notBefore} to ${last().notAfter}), verification date: $verificationDate",
-                    cause = it,
-                    reason = if ((it is CertificateExpiredException) || (it is CertificateNotYetValidException)) CertificateInvalidException.Reason.TIME else CertificateInvalidException.Reason.TRUST,
-                    certificateChain = this,
-                    invalidCertificate = last()
-                )
-            }
+
+        val verifyTimelyValidity = isRemoteKeyProvisioned() || attestationConfiguration.enforceFactoryProvisionedChainValidity
+
+        val trustedRoot =
+            catchingUnwrapped { verifyRootCertificate(verificationDate, actualTrustAnchors, verifyTimelyValidity) }
+                .getOrElse {
+                    throw if (it is CertificateInvalidException) it else CertificateInvalidException.InvalidRoot(
+                        message = "could not verify root certificate (valid from: ${last().notBefore} to ${last().notAfter}), verification date: $verificationDate",
+                        cause = it,
+                        reason = if ((it is CertificateExpiredException) || (it is CertificateNotYetValidException)) CertificateInvalidException.Reason.TIME else CertificateInvalidException.Reason.TRUST,
+                        certificateChain = this,
+                        invalidCertificate = last()
+                    )
+                }
         val certificateChain =
             if (attestationConfiguration.ignoreLeafValidity) mapIndexed { i, cert ->
                 if (i == 0) EternalX509Certificate(cert) else cert
@@ -71,7 +66,13 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
 
 
         certificateChain.reversed().zipWithNext { parent, certificate ->
-            verifyCertificatePair(certificate, parent, verificationDate, certificateChain)
+            verifyCertificatePair(
+                certificate,
+                parent,
+                verificationDate,
+                verifyTimelyValidity,
+                fullChainForDebugging = certificateChain
+            )
         }
 
         //now we double-check against the new validator to rule out manipulations of the certificate chain
@@ -110,10 +111,11 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         certificate: X509Certificate,
         parent: X509Certificate,
         verificationDate: Date,
+        verifyTimelyValidity: Boolean,
         fullChainForDebugging: List<X509Certificate>
     ) {
         catchingUnwrapped {
-            certificate.checkValidity(verificationDate)
+            if (verifyTimelyValidity) certificate.checkValidity(verificationDate)
             certificate.verify(parent.publicKey)
         }.onFailure {
             throw CertificateInvalidException(
@@ -158,9 +160,10 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
     private fun List<X509Certificate>.verifyRootCertificate(
         verificationDate: Date,
         actualTrustAnchors: Collection<TrustedRoot>,
+        verifyTimelyValidity: Boolean
     ): TrustedRoot {
         val root = last()
-        root.checkValidity(verificationDate)
+        if (verifyTimelyValidity) root.checkValidity(verificationDate)
         val matchingTrustAnchor = actualTrustAnchors.filter { it is TrustedRoot.Certificate }
             .firstOrNull { root.encoded.contentEquals(it.derEncoded) }
             ?: actualTrustAnchors.filter { it is TrustedRoot.PublicKey }

@@ -2,6 +2,8 @@ import at.asitplus.gradle.bouncycastle
 import at.asitplus.gradle.datetime
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
+import java.io.BufferedWriter
+import java.io.FileWriter
 import java.nio.file.Files
 import kotlin.io.path.extension
 import kotlin.io.path.readText
@@ -55,7 +57,8 @@ File("$generatedSrcDir/wardenVersion.kt").writer().apply {
         """
 package at.asitplus.attestation
 
-internal val wardenVersion: String = """" + "$version\"\n")
+internal val wardenVersion: String = """" + "$version\"\n"
+    )
     close()
 }
 
@@ -77,6 +80,11 @@ sourceSets.main {
                 it.delete()
             }
         }
+        File("${project.rootDir}/dependencies/keyattestation/src/main/kotlin/VerifierCli.kt").let {
+            if (it.exists()) {
+                it.delete()
+            }
+        }
         File("${project.rootDir}/dependencies/android-key-attestation/src/main/java/com/google/android/attestation/RootOfTrust.java").let {
             if (it.exists()) {
                 it.delete()
@@ -87,6 +95,21 @@ sourceSets.main {
             if (it.exists()) {
                 it.delete()
             }
+        }
+
+        //relax check, from factory provisioned, to non-rkp, so we can test better
+        val certPathChecker =
+            File("${project.rootDir}/dependencies/keyattestation/src/main/kotlin/provider/KeyAttestationCertPathValidator.kt")
+        val lines = certPathChecker.readText(Charsets.UTF_8).lines().map {
+            if (it.contains("if (certPath.provisioningMethod() == ProvisioningMethod.FACTORY_PROVISIONED)"))
+                it.replace(
+                    "if (certPath.provisioningMethod() == ProvisioningMethod.FACTORY_PROVISIONED)",
+                    "if (certPath.provisioningMethod() != ProvisioningMethod.REMOTELY_PROVISIONED)"
+                )
+            else it
+        }
+        BufferedWriter(FileWriter(certPathChecker, Charsets.UTF_8, false)).use { writer ->
+            lines.forEach { writer.write(it); writer.newLine() }
         }
 
         listOf("import androidx.annotation.RequiresApi", "@RequiresApi(24)").forEach { target ->

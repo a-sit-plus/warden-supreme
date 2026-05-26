@@ -14,6 +14,7 @@ import java.time.YearMonth
 import java.time.ZoneOffset
 import java.util.*
 import kotlin.random.Random
+import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
 
 val FakeAttestationTests by testSuite {
@@ -170,8 +171,14 @@ val FakeAttestationTests by testSuite {
 
                 "OEM plus custom accepts both" {
                     val policy = linkedSetOf(VerifiedBootKey.OEM, VerifiedBootKey.Digest(customBootKey))
-                    checkerFor(verifiedAttestation, policy).verify(certificates = verifiedAttestation, expectedChallenge = challenge).getOrThrow()
-                    checkerFor(selfSignedAttestation, policy).verify(certificates = selfSignedAttestation, expectedChallenge = challenge).getOrThrow()
+                    checkerFor(verifiedAttestation, policy).verify(
+                        certificates = verifiedAttestation,
+                        expectedChallenge = challenge
+                    ).getOrThrow()
+                    checkerFor(selfSignedAttestation, policy).verify(
+                        certificates = selfSignedAttestation,
+                        expectedChallenge = challenge
+                    ).getOrThrow()
                 }
 
                 "app-specific verified boot keys override global policy" {
@@ -467,6 +474,84 @@ val FakeAttestationTests by testSuite {
             }
 
 
+            "ignore-non-RKP timely validity" - {
+                "baseline OK" - {
+                    val trustedChecker = Roboto(
+                        AndroidAttestationConfiguration(
+                            applications = listOf(
+                                AndroidAttestationConfiguration.AppData(
+                                    packageName = packageName,
+                                    signerFingerprints = setOf(signatureDigest),
+                                    appVersion = appVersion,
+                                )
+                            ),
+                            androidVersion = androidVersion,
+                            patchLevel = patchLevel,
+                            requireStrongBox = false,
+                            allowBootloaderUnlock = false,
+                            ignoreLeafValidity = false,
+                            attestationStatementValiditySeconds = 300,
+                            supremeParser = supreme,
+                            hardwareTrustedRoots = setOf(TrustedRoot.Certificate(attestationProof.last())),
+                        )
+                    )
+
+                    "timely valid" {
+                        trustedChecker.verify(
+                            certificates = attestationProof,
+                            expectedChallenge = challenge
+                        ).getOrThrow() shouldBe attestationProof
+                    }
+                    "timely invalid" {
+                        shouldThrow<CertificateInvalidException> {
+                            trustedChecker.verify(
+                                certificates = attestationProof,
+                                expectedChallenge = challenge,
+                                verificationDate = Instant.DISTANT_FUTURE
+                            ).getOrThrow() shouldBe attestationProof
+                        }
+                    }
+                }
+
+                "enforce false, baseline no change" - {
+                    val trustedChecker = Roboto(
+                        AndroidAttestationConfiguration(
+                            applications = listOf(
+                                AndroidAttestationConfiguration.AppData(
+                                    packageName = packageName,
+                                    signerFingerprints = setOf(signatureDigest),
+                                    appVersion = appVersion,
+                                )
+                            ),
+                            androidVersion = androidVersion,
+                            patchLevel = patchLevel,
+                            requireStrongBox = false,
+                            allowBootloaderUnlock = false,
+                            ignoreLeafValidity = false,
+                            attestationStatementValiditySeconds = null,
+                            enforceFactoryProvisionedChainValidity = false,
+                            supremeParser = supreme,
+                            hardwareTrustedRoots = setOf(TrustedRoot.Certificate(attestationProof.last())),
+                        )
+                    )
+
+                    "OK" {
+                        trustedChecker.verify(
+                            certificates = attestationProof,
+                            expectedChallenge = challenge
+                        ).getOrThrow() shouldBe attestationProof
+                    }
+
+
+                    "Still OK in distant future" {
+                        trustedChecker.verify(
+                            certificates = attestationProof,
+                            expectedChallenge = challenge,
+                            verificationDate = Instant.DISTANT_FUTURE
+                        ).getOrThrow() shouldBe attestationProof
+                    }
+                }
+            }
         }
     }
 }

@@ -714,6 +714,7 @@ fun attestationService(
     attestationStatementValiditiy: Duration = 5.minutes,
     rkpRequired: Boolean = false,
     rkpAppRequired: Boolean? = null,
+    enforceFactoryProvisionedValidity: Boolean = true,
 ) = Roboto(
     AndroidAttestationConfiguration(
         listOf(
@@ -724,6 +725,7 @@ fun attestationService(
                 requireRemoteKeyProvisioningOverride = rkpAppRequired
             )
         ),
+        enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedValidity,
         androidVersion = androidVersion,
         patchLevel = androidPatchLevel,
         requireStrongBox = requireStrongBox,

@@ -6,6 +6,9 @@ this changelog also includes the original WARDEN changelog.
 
 # NEXT
 
+* Update to latest Google upstream attestation library (`a83ff03aa1c1c03ab5090bfcdc352aa8ff5eeb60`)
+* Possibility to configure cert chain validity checks for non-RKP chains
+
 # 1.0.0-RC10
 * Android:
     * Fix `AuthorizationList` parser bug
