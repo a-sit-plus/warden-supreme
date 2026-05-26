@@ -7,7 +7,6 @@ import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
-import at.asitplus.testballoon.withDataSuites
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.string.shouldContain
@@ -103,7 +102,7 @@ val TemporalOffsetTest by testSuite {
         }
 
         "Exact Time of Validity - 1D" - {
-            withDataSuites(exactStartOfValidity) {
+            withData(exactStartOfValidity) - {
                 withData(exactStartOfValidity) {
                     shouldThrow<AttestationValueException> {
                         attestationService(experimental).verify(

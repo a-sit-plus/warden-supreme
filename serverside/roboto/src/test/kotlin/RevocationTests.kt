@@ -3,7 +3,6 @@ package at.asitplus.attestation.android
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
-import at.asitplus.testballoon.withDataSuites
 import com.zkdcloud.proxy.http.ServerStart
 import com.zkdcloud.proxy.http.handler.client.ExceptionDuplexHandler
 import com.zkdcloud.proxy.http.handler.client.JudgeTypeInboundHandler
@@ -337,12 +336,12 @@ val RevocationTests by testSuite {
                     ),
                 )
 
-                withDataSuites(
+                withData(
                     mapOf(
                         "parse expiry from headers" to true,
                         "ignore headers (JSON only)" to false,
                     )
-                ) { preferHeaderBasedExpiry ->
+                ) - { preferHeaderBasedExpiry ->
                     withData(scenarios) { scenario ->
                         val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
 
@@ -388,12 +387,12 @@ val RevocationTests by testSuite {
                 }
 
                 "invalid json expiry must throw" - {
-                    withDataSuites(
+                    withData(
                         mapOf(
                             "parse expiry from headers" to true,
                             "ignore headers (JSON only)" to false,
                         )
-                    ) { preferHeaderBasedExpiry ->
+                    ) - { preferHeaderBasedExpiry ->
                         "throws" {
                             val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
                             val client = AndroidRevocationList.HttpLoader(

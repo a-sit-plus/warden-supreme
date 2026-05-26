@@ -73,6 +73,10 @@ kotlin {
             implementation(ktor("serialization-kotlinx-json"))
             implementation(ktor("client-content-negotiation"))
         }
+
+        commonTest.dependencies {
+            implementation("at.asitplus.gradle:testhelper:20251114")
+        }
     }
 }
 
