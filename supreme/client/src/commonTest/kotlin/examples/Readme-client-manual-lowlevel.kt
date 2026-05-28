@@ -5,7 +5,6 @@ import ENDPOINT_CHALLENGE
 import at.asitplus.attestation.supreme.AttestationClient
 import at.asitplus.attestation.supreme.AttestationResponse
 import at.asitplus.attestation.supreme.attestationEndpointUrl
-import at.asitplus.attestation.supreme.createAttestationProof
 import at.asitplus.attestation.supreme.createCsr
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.pki.CertificateChain
@@ -21,11 +20,14 @@ object myCertStore {
     fun store(chain: CertificateChain) {}
 }
 
-suspend fun main() {
+suspend fun lowlevel() {
+
+
+
 
 
  /*(1)!*/val client = AttestationClient(ktorClient)
- /*(2)!*/val challenge = client.getChallenge(Url(ENDPOINT_CHALLENGE)).getOrThrow()
+ /*(2)!*/val serverChallenge = client.getChallenge(Url(ENDPOINT_CHALLENGE)).getOrThrow()
 
  /*(3)!*/val signer = PlatformSigningProvider.createSigningKey(ALIAS) {
         ec {
@@ -37,6 +39,9 @@ suspend fun main() {
         }
         hardware {
             backing = REQUIRED
+            attestation {
+             /*(4)!*/challenge = serverChallenge.nonce
+            }
             protection {
                 factors {
                     biometry = true
@@ -46,15 +51,17 @@ suspend fun main() {
         }
     }.getOrThrow() //handle error
 
- /*(4)!*/val csr = signer.createCsr(challenge).getOrThrow()
+ /*(5)!*/val csr = signer.createCsr(serverChallenge,
+     /*optional SubjectName, extns, attributes go here*/
+     ).getOrThrow()
 
- /*(4)!*/when (val result = client.attest(csr, challenge.attestationEndpointUrl)) {
+ /*(6)!*/when (val result = client.attest(csr, serverChallenge.attestationEndpointUrl)) {
         is AttestationResponse.Success -> {
-            /*(5)!*/myCertStore.store(result.certificateChain) //<-- You're golden!
+         /*(7)!*/myCertStore.store(result.certificateChain) //<-- You're golden!
         }
 
         is AttestationResponse.Failure -> {
-            /*(6)!*/when (result.kind) {
+         /*(8)!*/when (result.kind) {
                 AttestationResponse.Failure.Type.TRUST -> TODO()
                 AttestationResponse.Failure.Type.TIME -> TODO()
                 AttestationResponse.Failure.Type.CONTENT -> TODO()
@@ -62,5 +69,8 @@ suspend fun main() {
             }
         }
     }
+
+
+
 }
 

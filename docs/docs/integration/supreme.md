@@ -274,7 +274,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 
 1. We're using JSON to transmit the challenge and the final response.
 2. Endpoint to serve challenges to clients
-3. It does nothing but issuing challenges
+3. It does nothing but issue challenges
 4. The full URL to post the attestation proof to
 5. Endpoint expecting CSRs containing attestation statement payloads
 6. Read the raw CSR from the HTTP body
@@ -313,6 +313,35 @@ specifies key constraints:
 This really is it! If you've made it this far, you have successfully issued certificates to mobile clients that fulfil your policy.
 The `AttestationClient` doesn't even come with any configuration options.
 
+??? "Lower-level APIs"
+    If you need more control, you can also manually perform individual steps, as shown below
+    
+    ```kotlin
+    --8<-- "Readme-client-step-by-step.kt:20:45"
+    ```
+    
+    1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
+    2. Fetch the challenge
+    3. Create a local attestation proof (a signed CSR) to be sent to the verifier
+    4. Send it to the verifier endpoint contained in the challenge
+    5. Store the received certificate chain on success
+    6. Handle errors based on what went wrong
+    
+    In addition, even more low-level access is possible by directly using Signum Supreme:
+
+    ```kotlin
+    --8<-- "Readme-client-manual-lowlevel.kt:25:70"
+    ```
+    
+    1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
+    2. Fetch the challenge
+    3. Create and configure a signer using Signum Supreme based on your demands  
+       This means that you can also override any client hints from the received challenge
+    4. Don't forget to pass the nonce to enable attestation!
+    5. Create the CSR as desired
+    6. Send it to the verifier endpoint contained in the challenge
+    7. Store the received certificate chain on success
+    8. Handle errors based on what went wrong
 
 ## Beyond the Basics
 
