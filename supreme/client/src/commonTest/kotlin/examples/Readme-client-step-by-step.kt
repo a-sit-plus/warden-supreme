@@ -9,7 +9,7 @@ import at.asitplus.attestation.supreme.createAttestationProof
 import io.ktor.http.*
 
 
-suspend fun main() {
+suspend fun stepbystep() {
 
 
  /*(1)!*/val client = AttestationClient(ktorClient)
