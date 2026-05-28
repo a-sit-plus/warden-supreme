@@ -1,4 +1,9 @@
 # Externalising Configuration
+
+
+!!! tip "Configuration Reference"
+    For a comprehensive configuration reference, see [Attestation Policy Configuration](supreme.md#attestation-policy-configuration).
+
 Warden Supreme configuration consists of two parts:
 
 1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split into
