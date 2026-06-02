@@ -257,6 +257,30 @@ attestation policies, as well as everything needed on top (object identifiers, e
 1. Default, secure nonce generator.
 2. Default in-memory challenge validator.
 
+#### Additional Verification Policy
+
+`Makoto` verifies the generic platform and app attestation policy: challenge freshness, attestation statement validity,
+trust anchors, app identifiers, signer digests, boot state, OS and app version constraints, and similar platform-specific
+properties. Some back-ends also need service-specific checks on top of that policy, for example tenant binding, account
+state, risk engine decisions, device inventory rules, or values carried in `AttestationChallenge.additionalPayload`.
+
+Use `additionalVerifications` for such checks:
+
+```kotlin
+--8<-- "Readme-Backend-additional-verifications.kt:17:33"
+```
+
+1. This is the verified CSR from the client.
+2. `additionalVerifications` runs after challenge validation, attestation verification, and CSR signature verification.
+   The validated `AttestationChallenge` is the receiver; the CSR and verified attestation result are parameters.
+3. Challenge payload can carry service context that is not part of generic platform attestation policy.
+4. Return an `AttestationResponse.Failure` to stop the flow with your own failure kind and explanation.
+5. Return `null` to continue to certificate issuance.
+6. Certificate issuance only runs if generic attestation and all additional checks succeed.
+
+Do not throw from this lambda; if an exception escapes, Warden Supreme maps it to an `INTERNAL` failure and does not call
+the certificate issuer.
+
 
 
 !!! tip

@@ -5,7 +5,10 @@ package at.asitplus.attestation.supreme
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.withData
 import at.asitplus.testballoon.withFixtureGenerator
+import de.infix.testBalloon.framework.core.TestConfig
+import de.infix.testBalloon.framework.core.invocation
 import de.infix.testBalloon.framework.core.testSuite
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.security.MessageDigest
@@ -14,7 +17,9 @@ import kotlin.random.Random
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 
-val AttestationVerifierFakeAndroidTest by testSuite {
+val AttestationVerifierFakeAndroidTest by testSuite(
+    testConfig = TestConfig.invocation(TestConfig.Invocation.Sequential)
+) {
     data class FailureCase(
         val name: String,
         val config: AndroidFixture.() -> AndroidAttestationConfiguration,
@@ -31,6 +36,83 @@ val AttestationVerifierFakeAndroidTest by testSuite {
 
             val response = verifier.verifyAttestation(csr, certificateIssuer = { emptyList() })
             response.shouldBeInstanceOf<AttestationResponse.Success>()
+        }
+
+        test("additional verifications run after attestation and before certificate issuer") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig())
+            val csr = fixture.issueCsr(verifier)
+            val calls = mutableListOf<String>()
+
+            val response = verifier.verifyAttestation(
+                csr,
+                additionalVerifications = { receivedCsr, _ ->
+                    calls += "additional"
+                    receivedCsr shouldBe csr
+                    nonce.contentEquals(fixture.nonce) shouldBe true
+                    null
+                },
+                certificateIssuer = {
+                    calls += "issuer"
+                    emptyList()
+                }
+            )
+
+            response.shouldBeInstanceOf<AttestationResponse.Success>()
+            calls shouldBe listOf("additional", "issuer")
+        }
+
+        test("additional verification failure returns custom failure and skips certificate issuer") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig())
+            val csr = fixture.issueCsr(verifier)
+            val calls = mutableListOf<String>()
+            val customFailure = AttestationResponse.Failure(
+                AttestationResponse.Failure.Type.CONTENT,
+                "tenant policy rejected"
+            )
+
+            val response = verifier.verifyAttestation(
+                csr,
+                additionalVerifications = { _, _ ->
+                    calls += "additional"
+                    customFailure
+                },
+                certificateIssuer = {
+                    calls += "issuer"
+                    emptyList()
+                }
+            )
+
+            response.shouldBeInstanceOf<AttestationResponse.Failure>().also { failure ->
+                failure.kind shouldBe customFailure.kind
+                failure.explanation shouldBe customFailure.explanation
+            }
+            calls.shouldHaveSize(1)
+            calls.single() shouldBe "additional"
+        }
+
+        test("additional verification exception maps to internal failure and skips certificate issuer") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig())
+            val csr = fixture.issueCsr(verifier)
+            val calls = mutableListOf<String>()
+
+            val response = verifier.verifyAttestation(
+                csr,
+                additionalVerifications = { _, _ ->
+                    calls += "additional"
+                    error("custom policy exploded")
+                },
+                certificateIssuer = {
+                    calls += "issuer"
+                    emptyList()
+                }
+            )
+
+            response.shouldBeInstanceOf<AttestationResponse.Failure>().also { failure ->
+                failure.kind shouldBe AttestationResponse.Failure.Type.INTERNAL
+                failure.explanation shouldBe "Custom checks failed"
+            }
+            calls.shouldHaveSize(1)
+            calls.single() shouldBe "additional"
         }
     }
 
