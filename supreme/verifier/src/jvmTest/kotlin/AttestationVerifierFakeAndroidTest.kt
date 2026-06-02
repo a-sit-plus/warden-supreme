@@ -114,6 +114,55 @@ val AttestationVerifierFakeAndroidTest by testSuite(
             calls.shouldHaveSize(1)
             calls.single() shouldBe "additional"
         }
+
+        test("custom check failure consumes challenge so csr cannot be replayed") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig())
+            val csr = fixture.issueCsr(verifier)
+
+            val policyFailure = verifier.verifyAttestation(
+                csr,
+                additionalVerifications = { _, _ ->
+                    AttestationResponse.Failure(
+                        AttestationResponse.Failure.Type.CONTENT,
+                        "tenant policy rejected"
+                    )
+                },
+                certificateIssuer = { emptyList() }
+            )
+
+            policyFailure.shouldBeInstanceOf<AttestationResponse.Failure>().also { failure ->
+                failure.kind shouldBe AttestationResponse.Failure.Type.CONTENT
+                failure.explanation shouldBe "tenant policy rejected"
+            }
+
+            val replay = verifier.verifyAttestation(csr, certificateIssuer = { emptyList() })
+            replay.shouldBeInstanceOf<AttestationResponse.Failure>().also { failure ->
+                failure.kind shouldBe AttestationResponse.Failure.Type.CONTENT
+            }
+        }
+
+        test("additional verifications do not run when generic attestation fails") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig(packageName = "com.example.other"))
+            val csr = fixture.issueCsr(verifier)
+            val calls = mutableListOf<String>()
+
+            val response = verifier.verifyAttestation(
+                csr,
+                additionalVerifications = { _, _ ->
+                    calls += "additional"
+                    null
+                },
+                certificateIssuer = {
+                    calls += "issuer"
+                    emptyList()
+                }
+            )
+
+            response.shouldBeInstanceOf<AttestationResponse.Failure>().also { failure ->
+                failure.kind shouldBe AttestationResponse.Failure.Type.CONTENT
+            }
+            calls.shouldHaveSize(0)
+        }
     }
 
     withData(
