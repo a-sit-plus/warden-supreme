@@ -149,22 +149,29 @@ constructor(
      * [onAttestationSuccess] allows side-effect-free operations on successful attestation statement verification.
      * Logging and/or collecting numbers for statistical analysis comes to mind.
      *
+     * [additionalVerifications] allows to tighten attestation constraints even more. If any custom checks fail, it should return an
+     * [AttestationResponse.Failure], on success it should return null. The reason for this design is to allow additional checks to define their own semantics
+     * for specific failure reasons. It *should* not throw (but should an exception bubble up, it will be mapped to an internal error).
+     * Don't make your checks throw, unless you want internal errors to hit the end-users.
+     *
      * Should any verification step fail, an [AttestationResponse.Failure] is returned.
      *
-     * Any exception thrown by any of the callback lambdas is ignored (treated as if the callback were a NOOP).
+     * Any exception thrown by the observation callback lambdas is ignored (treated as if the callback were a NOOP).
+     * [additionalVerifications] is policy logic, not an observation callback, so exceptions from it cause an internal failure to be sent as response.
      */
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun verifyAttestation(
         csr: Pkcs10CertificationRequest,
-        onChallengeValidated: suspend AttestationChallenge.(Pkcs10CertificationRequest) -> Unit = {  },
+        onChallengeValidated: suspend AttestationChallenge.(Pkcs10CertificationRequest) -> Unit = { },
         onPreAttestationError: suspend PreAttestationError.() -> String? = { null },
         onAttestationError: suspend AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
         onAttestationSuccess: suspend AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
+        additionalVerifications: suspend AttestationChallenge.(Pkcs10CertificationRequest, AttestationResult.Verified) -> AttestationResponse.Failure? = { _, _ -> null },
         certificateIssuer: CertificateIssuer,
     ): AttestationResponse {
 
 
-        val nonce = when (val challengeValidationResult = challengeValidator.validate(csr)) {
+        val validatedChallenge = when (val challengeValidationResult = challengeValidator.validate(csr)) {
             is ChallengeValidationResult.Failure.NonceExtraction -> return Failure(
                 Type.CONTENT,
                 challengeValidationResult.reason.challengeReason(onPreAttestationError)
@@ -176,10 +183,9 @@ constructor(
 
             is ChallengeValidationResult.Success -> {
                 catchingUnwrapped { challengeValidationResult.validatedChallenge.onChallengeValidated(csr) }
-                challengeValidationResult.validatedChallenge.nonce
+                challengeValidationResult.validatedChallenge
             }
         }
-
 
 
         val attestationStatement = csr.tbsCsr.attestationStatementForOid(attestationProofOID).getOrElse {
@@ -187,9 +193,10 @@ constructor(
         }
 
         with(makoto) {
-            return verifyKeyAttestation(attestationStatement, nonce).foldTyped(
+            return verifyKeyAttestation(attestationStatement, validatedChallenge.nonce).foldTyped(
                 onError = {
-                    val explanation = it.extractReason(onAttestationError, attestationStatement, nonce)
+                    val explanation =
+                        it.extractReason(onAttestationError, attestationStatement, validatedChallenge.nonce)
                     when (it.cause) {
                         is AttestationException.Certificate.Time -> Failure(Type.TIME, explanation)
                         is AttestationException.Content -> when (it.cause as AttestationException.Content) {
@@ -216,12 +223,20 @@ constructor(
                             initVerify(pubKey)
                             update(csr.tbsCsr.encodeToDer())
                             if (!verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)) {
-                                return Failure(Type.TRUST, csrReason(onAttestationError, attestationStatement, nonce))
+                                return Failure(
+                                    Type.TRUST,
+                                    csrReason(onAttestationError, attestationStatement, validatedChallenge.nonce)
+                                )
                             }
                         }
                     }.onFailure {
                         return Failure(Type.INTERNAL, it.operationalReason(onPreAttestationError))
                     }
+
+                    //if additional checks fail, we error out
+                    catchingUnwrapped {
+                        validatedChallenge.additionalVerifications(csr, details)?.let { return it }
+                    }.getOrElse { return AttestationResponse.Failure(Type.INTERNAL, "Custom checks failed") }
 
                     catchingUnwrapped { details.certificateIssuer(csr) }.fold(
                         onSuccess = {
