@@ -18,7 +18,6 @@ import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import ch.veehait.devicecheck.appattest.common.App
 import ch.veehait.devicecheck.appattest.common.AppleAppAttestEnvironment
-import ch.veehait.devicecheck.appattest.common.AuthenticatorData
 import ch.veehait.devicecheck.appattest.receipt.ReceiptException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory
@@ -309,7 +308,8 @@ class Makoto
                         expectedChallenge
                     ).also { assertion ->
                         if (assertion.authenticatorData.signCount - 1 > validCounters.last) {
-                            val msg = "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
+                            val msg =
+                                "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
                             throw AttestationException.Content.iOS(
                                 msg,
                                 IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
@@ -548,15 +548,8 @@ class Makoto
             ).let {
                 when (it) {
                     is AttestationResult.Android -> it.requireLeafAttestationCertificateForKeyBinding().fold(
-                        onSuccess = { leaf ->
-                            KeyAttestation(
-                                leaf.publicKey,
-                                it
-                            )
-                        },
-                        onFailure = { error ->
-                            KeyAttestation(null, error.toAttestationResultError())
-                        }
+                        onSuccess = { leaf -> KeyAttestation(leaf.publicKey, it) },
+                        onFailure = { error -> KeyAttestation(null, error.toAttestationResultError()) }
                     )
 
                     is AttestationResult.Error -> KeyAttestation(null, it)
@@ -1035,7 +1028,7 @@ class Makoto
             }.toMap()
 
         val iosVersion: IosAttestationConfiguration.OsVersions? = iosAttestationConfiguration.iosVersion
-            }
+    }
 
 }
 

@@ -61,15 +61,18 @@ sealed class AttestationResult {
          * record. When multiple certificates in the chain contain an attestation extension, this is
          * the one closest to the root, matching the verifier's parsing strategy.
          */
-        val androidAttestationExtension: AttestationKeyDescription by lazy { attestationCertificate.androidAttestationExtension!! }
+        val androidAttestationExtension: AttestationKeyDescription by lazy {
+            attestationCertificateClosestToRoot.androidAttestationExtension
+                ?: throw IllegalStateException("No Android attestation extension present in certificate chain")
+        }
 
         /**
          * The certificate from [attestationCertificateChain] whose attestation extension was used for
          * verification. This is the certificate closest to the root that still carries the Android
          * attestation extension.
          */
-        val attestationCertificate by lazy {
-            attestationCertificateChain.lastOrNull { it.androidAttestationExtension != null }
+        val attestationCertificateClosestToRoot by lazy {
+            attestationCertificateChain.closestToRootOrNull { it.androidAttestationExtension != null }
                 ?: throw IllegalStateException("No Android attestation extension present in certificate chain")
         }
 
@@ -79,7 +82,7 @@ sealed class AttestationResult {
         }
 
         val isLeafAttestationCertificate by lazy {
-            leafCertificate.encoded.contentEquals(attestationCertificate.encoded)
+            leafCertificate.encoded.contentEquals(attestationCertificateClosestToRoot.encoded)
         }
 
         @DisabledAttestation
@@ -112,9 +115,9 @@ sealed class AttestationResult {
                     append(", attestation security level: ")
                     append(androidAttestationExtension.attestationSecurityLevel.name)
                     append(", ")
-                    append(attestationCertificate.publicKey.algorithm)
+                    append(attestationCertificateClosestToRoot.publicKey.algorithm)
                     append(" public key: ")
-                    append(attestationCertificate.publicKey.encoded.encodeBase64())
+                    append(attestationCertificateClosestToRoot.publicKey.encoded.encodeBase64())
                     append(
                         androidAttestationExtension.softwareEnforced.attestationApplicationId?.let { app ->
                             ", packageInfos: ${

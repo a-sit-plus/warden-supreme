@@ -5,6 +5,11 @@ package at.asitplus.attestation
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.android.androidAttestationExtension
+import at.asitplus.attestation.android.closestToRoot
+import at.asitplus.attestation.android.closestToRootOrNull
+import at.asitplus.attestation.android.contentHashCodeIfArray
+import at.asitplus.attestation.android.hasAndroidKeystoreAttestation
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.testSuite
@@ -96,20 +101,22 @@ val GeneratedAttestationTests by testSuite {
 
     "Generated Attestation Test" {
         attestationService.verifyAttestation(attestationProof = attestationProof.map { it.encoded }, challenge)
-            .shouldBeInstanceOf<AttestationResult.Android.Verified>().attestationCertificate shouldBe attestationProof.first()
+            .shouldBeInstanceOf<AttestationResult.Android.Verified>().attestationCertificateClosestToRoot shouldBe attestationProof.first()
 
         val dbg = attestationService.collectDebugInfo(attestationProof.map { it.encoded }, challenge).serialize()
 
         WardenDebugAttestationStatement.deserialize(dbg).replayGenericAttestation()
-            .shouldBeInstanceOf<AttestationResult.Android.Verified>().attestationCertificate shouldBe attestationProof.first()
+            .shouldBeInstanceOf<AttestationResult.Android.Verified>().attestationCertificateClosestToRoot shouldBe attestationProof.first()
     }
 
     "Android result surfaces attestation certificate closest to root" {
         val forgedChain = prependForgedAttestationLeaf(attestationProof)
         val result = AttestationResult.Android.Verified(forgedChain)
 
+        forgedChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }!!.encoded shouldBe attestationProof.first().encoded
+
         result.isLeafAttestationCertificate shouldBe false
-        result.attestationCertificate shouldBe attestationProof.first()
+        result.attestationCertificateClosestToRoot shouldBe attestationProof.first()
         result.androidAttestationExtension.attestationChallenge shouldBe challenge
     }
 

@@ -5,12 +5,9 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
-import at.asitplus.attestation.replayBlocking
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.testballoon.withData
-import com.google.android.attestation.ParsedAttestationRecord
-import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -148,8 +145,8 @@ val AttestationTests by testSuite {
                             verificationDate,
                             challenge
                         ).getOrThrow().shouldBeInstanceOf<List<X509Certificate>>().apply {
-                            androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                            androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                            closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                            closestToRoot {  it.hasAndroidKeystoreAttestation }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
                         }
 
                         val collectDebugInfo =
@@ -157,8 +154,8 @@ val AttestationTests by testSuite {
 
                         AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                             .shouldBeInstanceOf<List<X509Certificate>>().apply {
-                                androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                                androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                                closestToRoot {  it.hasAndroidKeystoreAttestation }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                                closestToRoot {  it.hasAndroidKeystoreAttestation }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
                             }
 
                     }

@@ -14,7 +14,10 @@ this changelog also includes the original WARDEN changelog.
     * Add `InMemoryChallengeCache.ChallengeCacheFullException` for cache-overflow handling; callers should map this to back-end rate limiting / HTTP `429 Too Many Requests` as appropriate.
     * Allow duplicate nonce overwrites and prune expired entries before enforcing the in-memory challenge limit.
 
-# 1.0.0-RC10
+* Explicitly support only a single attestation certificate as leaf for now.
+* Deprecate insecure attestation extension accessor on cert chains
+
+# 1.0.0-RC11
 
 * Update to latest Google upstream attestation library (`a83ff03aa1c1c03ab5090bfcdc352aa8ff5eeb60`)
 * Possibility to configure cert chain validity checks for non-RKP chains
