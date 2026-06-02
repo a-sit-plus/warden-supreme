@@ -3,6 +3,7 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.testballoon.checkAll
+import at.asitplus.catching
 import at.asitplus.testballoon.invoke
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
@@ -39,6 +40,27 @@ val AttestationVerifierChallengeTest by testSuite {
             verifier.challengeValidator.validate(csr)
                 .shouldBeInstanceOf<ChallengeValidationResult.Failure>()
         }
+    }
+
+    "issueChallenge propagates challenge cache overflow" {
+        val firstNonce = Random.Default.nextBytes(16)
+        val secondNonce = Random.Default.nextBytes(16)
+        var first = true
+        val verifier = AttestationVerifier(
+            makoto = makoto,
+            nonceGenerator = suspend {
+                if (first) {
+                    first = false
+                    firstNonce
+                } else secondNonce
+            },
+            challengeValidator = InMemoryChallengeCache(fixedClock, -verificationOffset, maxChallenges = 1),
+        )
+
+        verifier.issueChallenge(attestationEndpoint).nonce.contentEquals(firstNonce) shouldBe true
+        catching { verifier.issueChallenge(attestationEndpoint) }.exceptionOrNull()
+            .shouldBeInstanceOf<InMemoryChallengeCache.ChallengeCacheFullException>()
+            .maxChallenges shouldBe 1
     }
 
     "concurrent verification only consumes a challenge once" {
