@@ -5,6 +5,7 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # NEXT
+* Add hook to explicitly perform additional verifications before issuing
 
 # 1.0.0-RC10
 
