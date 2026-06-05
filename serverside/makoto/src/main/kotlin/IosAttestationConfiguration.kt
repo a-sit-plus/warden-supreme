@@ -3,6 +3,7 @@ package at.asitplus.attestation
 import at.asitplus.attestation.IosAttestationConfiguration.Companion.DEFAULT_VALIDITY_SECONDS
 import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromJsonObject
 import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromJsonString
+import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromYamlString
 import at.asitplus.attestation.android.TrustedRoot
 import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.receipt.ReceiptValidator
@@ -50,7 +51,14 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
      * Note that currently only Certificates are supported as trust anchors, no raw public keys
      */
     val trustedRoots: Set<TrustedRootPair> = APPLE_DEFAULT_TRUSTED_ROOTS,
-) : AttestationConfiguration {
+
+    /**
+     * Allows attaching custom configuration properties to this configuration.
+     * Sensible for extending it with custom configs while still relying on the configuration parser.
+     */
+    val customProperties: Map<String, String> = emptyMap(),
+
+    ) : AttestationConfiguration {
 
 
     @JvmOverloads
@@ -60,7 +68,14 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         attestationStatementValiditySeconds: Long = (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET).inWholeSeconds,
         trustedRoots: Set<TrustedRootPair>
         = APPLE_DEFAULT_TRUSTED_ROOTS,
-    ) : this(listOf(singleApp), iosVersion, attestationStatementValiditySeconds, trustedRoots)
+        customProperties: Map<String, String> = emptyMap()
+    ) : this(
+        listOf(singleApp),
+        iosVersion,
+        attestationStatementValiditySeconds,
+        trustedRoots,
+        customProperties
+    )
 
     init {
         if (trustedRoots.isEmpty())
@@ -198,7 +213,12 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
          */
         val trustedRootOverrides: Set<TrustedRootPair>? = null,
 
-        ) {
+        /**
+         * Allows attaching custom configuration properties to this configuration.
+         * Sensible for extending it with custom configs while still relying on the configuration parser.
+         */
+        val customProperties: Map<String, String> = emptyMap(),
+    ) {
 
         init {
             require(teamIdentifier.length == 10) { "Team identifier must be exactly 10 characters long" }
@@ -213,8 +233,8 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         class Builder(private val teamIdentifier: String, private val bundleIdentifier: String) {
             private var sandbox = false
             private var iosVersionOverride: OsVersions? = null
-            private var trustedRootOverrides: Set<TrustedRootPair>? =
-                null
+            private var trustedRootOverrides: Set<TrustedRootPair>? = null
+            private var customProperties: Map<String, String> = emptyMap()
 
             /**
              * @see AppData.sandbox
@@ -232,7 +252,20 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             fun trustedRootOverrides(trustAnchors: Set<TrustedRootPair>) =
                 apply { trustedRootOverrides = trustAnchors }
 
-            fun build() = AppData(teamIdentifier, bundleIdentifier, sandbox, iosVersionOverride, trustedRootOverrides)
+
+            /**
+             * @see AppData.customProperties
+             */
+            fun customProperties(properties: Map<String, String>) = apply { customProperties = properties }
+
+            fun build() = AppData(
+                teamIdentifier,
+                bundleIdentifier,
+                sandbox,
+                iosVersionOverride,
+                trustedRootOverrides,
+                customProperties
+            )
         }
 
         override fun equals(other: Any?): Boolean {
@@ -243,6 +276,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             if (teamIdentifier != other.teamIdentifier) return false
             if (bundleIdentifier != other.bundleIdentifier) return false
             if (iosVersionOverride != other.iosVersionOverride) return false
+            if (customProperties != other.customProperties) return false
             if (trustedRootOverrides?.map { it.toString() } != other.trustedRootOverrides?.map { it.toString() }) return false
 
             return true
@@ -254,6 +288,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + bundleIdentifier.hashCode()
             result = 31 * result + (iosVersionOverride?.hashCode() ?: 0)
             result = 31 * result + (trustedRootOverrides?.hashCode() ?: 0)
+            result = 31 * result + (customProperties?.hashCode() ?: 0)
             return result
         }
     }
@@ -265,6 +300,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         if (attestationStatementValiditySeconds != other.attestationStatementValiditySeconds) return false
         if (applications != other.applications) return false
         if (iosVersion != other.iosVersion) return false
+        if (customProperties != other.customProperties) return false
         if (trustedRoots.map { it.toString() } != other.trustedRoots.map { it.toString() }) return false
 
         return true

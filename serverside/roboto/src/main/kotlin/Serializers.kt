@@ -3,8 +3,11 @@ package at.asitplus.attestation.android
 import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.io.TransformingSerializerTemplate
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.text.SimpleDateFormat
@@ -41,4 +44,26 @@ object DateTimeSerializer : KSerializer<Date> {
         val dateString = decoder.decodeString()
         return dateFormat.parse(dateString) ?: throw IllegalArgumentException("Invalid date format: $dateString")
     }
+}
+
+object CustomPropertiesSerializer : KSerializer<Map<String, String>> {
+    private val ser = MapSerializer(String.serializer(), String.serializer())
+    override val descriptor: SerialDescriptor
+        get() = SerialDescriptor("at.asitplus.attestation.AdditionalProperties", ser.descriptor)
+
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun serialize(
+        encoder: Encoder,
+        value: Map<String, String>
+    ) {
+        if (value.isNotEmpty()) ser.serialize(encoder, value)
+        else encoder.encodeNull()
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun deserialize(decoder: Decoder): Map<String, String> {
+        val additionalProps = decoder.decodeNullableSerializableValue(ser)
+        return additionalProps ?: emptyMap()
+    }
+
 }

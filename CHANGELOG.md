@@ -6,6 +6,8 @@ this changelog also includes the original WARDEN changelog.
 
 # NEXT
 * Add hook to explicitly perform additional verifications before issuing
+* Rename `AndroidAttestationConfiguration.AppData.Builder.signatureDigests` -> `AndroidAttestationConfiguration.AppData.Builder.signerFingerprints` for conistency
+* Add the ability to attach custom properties to AndroidAttestationConfiguration and IosAttestationConfiguration
 
 # 1.0.0-RC10
 

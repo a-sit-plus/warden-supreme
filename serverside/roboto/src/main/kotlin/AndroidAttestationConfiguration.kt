@@ -465,7 +465,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      */
     val supremeParser: Boolean = false,
 
-    ) : AttestationConfiguration {
+    /**
+     * Allows attaching custom configuration properties to this configuration.
+     * Sensible for extending it with custom configs while still relying on the configuration parser.
+     */
+    val customProperties: Map<String, String> = emptyMap()
+
+) : AttestationConfiguration {
 
     /**
      * Convenience constructor to attest a single app
@@ -582,6 +588,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * Flag to try out the new supreme parser
          */
         supremeParser: Boolean = false,
+
+        /**
+         * Allows attaching custom configuration properties to this configuration.
+         * Sensible for extending it with custom configs while still relying on the configuration parser.
+         */
+        customProperties: Map<String, String> = emptyMap()
     ) : this(
         listOf(singleApp),
         androidVersion = androidVersion,
@@ -601,6 +613,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         verifiedBootKeys = verifiedBootKeys,
         enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
         supremeParser = supremeParser,
+        customProperties = customProperties,
     )
 
     /**
@@ -724,6 +737,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * Flag to try out the new supreme parser
          */
         supremeParser: Boolean = false,
+
+        /**
+         * Allows attaching custom configuration properties to this configuration.
+         * Sensible for extending it with custom configs while still relying on the configuration parser.
+         */
+        customProperties: Map<String, String> = emptyMap()
     ) : this(
         applications = apps,
         androidVersion = version,
@@ -743,6 +762,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         verifiedBootKeys = verifiedBootKeys,
         enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
         supremeParser = supremeParser,
+        customProperties = customProperties
     )
 
     /**
@@ -814,7 +834,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         val verifiedBootKeys: Set<VerifiedBootKey>? = null,
 
-        ) {
+        /**
+         * Allows attaching custom configuration properties to this configuration.
+         * Sensible for extending it with custom configs while still relying on the configuration parser.
+         */
+        val customProperties: Map<String, String> = emptyMap()
+
+    ) {
 
         init {
             if (signerFingerprints.isEmpty()) throw object :
@@ -829,11 +855,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Builder for more java-friendliness
          * @param packageName Android app package name (e.g. `at.asitplus.demo`)
-         * @param signatureDigests  SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing certificate for
+         * @param signerFingerprints  SHA-256 digests of signature certificates used to sign the APK. This is a Google cloud signing certificate for
          * production play store releases.
          * Being able to specify multiple digests makes it easy to use development builds and production builds in parallel
          */
-        class Builder(private val packageName: String, private val signatureDigests: Collection<ByteArray>) {
+        class Builder(private val packageName: String, private val signerFingerprints: Collection<ByteArray>) {
 
             /**
              * Builder for more java-friendliness
@@ -856,6 +882,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             private var requireRemoteKeyProvisioningOverride: Boolean? = null
 
             private var requireStrongBoxOverride: Boolean? = null
+
+            /**
+             * Allows attaching custom configuration properties to this configuration.
+             * Sensible for extending it with custom configs while still relying on the configuration parser.
+             */
+            private var customProperties: Map<String, String> = emptyMap()
 
             /**
              * App-specific override for [AndroidAttestationConfiguration.verifiedBootKeys].
@@ -907,10 +939,15 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
              */
             fun verifiedBootKeys(keys: Set<VerifiedBootKey>) = apply { verifiedBootKeys = keys }
 
+            /**
+             * @see AppData.customProperties
+             */
+            fun customProperties(properties: Map<String, String>) = apply { customProperties = properties }
+
             fun build() =
                 AppData(
                     packageName,
-                    signatureDigests.toSet(),
+                    signerFingerprints.toSet(),
                     appVersion,
                     androidVersionOverride,
                     patchLevelOverride,
@@ -918,6 +955,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                     trustedRootOverrides,
                     requireStrongBoxOverride,
                     verifiedBootKeys,
+                    customProperties,
                 )
         }
 
@@ -929,6 +967,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                     "androidVersionOverride=$androidVersionOverride, " +
                     "patchLevelOverride=$patchLevelOverride, " +
                     "osPatchLevel=$osPatchLevel" +
+                    "verifiedBootKeys=$verifiedBootKeys" +
+                    "customProperties=$customProperties" +
                     ")"
         }
 
@@ -949,7 +989,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             if (trustedRootOverrides != other.trustedRootOverrides) return false
 
             if (requireStrongBoxOverride != other.requireStrongBoxOverride) return false
+
             if (verifiedBootKeys != other.verifiedBootKeys) return false
+
+            if (customProperties != other.customProperties) return false
 
             return true
         }
@@ -965,6 +1008,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + (requireRemoteKeyProvisioningOverride?.hashCode() ?: 0)
             result = 31 * result + (requireStrongBoxOverride?.hashCode() ?: 0)
             result = 31 * result + (verifiedBootKeys?.hashCode() ?: 0)
+            result = 31 * result + (customProperties?.hashCode() ?: 0)
             return result
         }
 
@@ -1021,6 +1065,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM)
         private var enforceFactoryProvisionedChainValidity: Boolean = true
         private var supremeParser: Boolean = false
+        private var customProperties: Map<String, String> = emptyMap()
 
         /**
          * specifies a minimum Android version
@@ -1165,6 +1210,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          */
         fun supremeParser(supremeParser: Boolean) = apply { this.supremeParser = supremeParser }
 
+
+        /**
+         * @see AndroidAttestationConfiguration.customProperties
+         */
+        fun customProperties(properties: Map<String, String>) = apply { customProperties = properties }
+
         fun build() = AndroidAttestationConfiguration(
             applications = applications,
             androidVersion = androidVersion,
@@ -1184,6 +1235,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             verifiedBootKeys = verifiedBootKeys,
             enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
             supremeParser = supremeParser,
+            customProperties = customProperties,
         )
 
     }
@@ -1208,6 +1260,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "osPatchLevel=$osPatchLevel, " +
                 "enforceFactoryProvisionedChainValidity=$enforceFactoryProvisionedChainValidity, " +
                 "supremeParser=$supremeParser" +
+                "customProperties=$customProperties" +
                 ")"
     }
 
@@ -1237,6 +1290,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (verifiedBootKeys != other.verifiedBootKeys) return false
         if (enforceFactoryProvisionedChainValidity != other.enforceFactoryProvisionedChainValidity) return false
         if (supremeParser != other.supremeParser) return false
+        if (customProperties != other.customProperties) return false
 
         return true
     }
@@ -1261,6 +1315,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + verifiedBootKeys.hashCode()
         result = 31 * result + enforceFactoryProvisionedChainValidity.hashCode()
         result = 31 * result + supremeParser.hashCode()
+        result = 31 * result + customProperties.hashCode()
         return result
     }
 

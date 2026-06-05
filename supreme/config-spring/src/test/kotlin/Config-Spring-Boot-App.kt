@@ -203,6 +203,9 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
                         applications:
                           - teamIdentifier: 9CYHJNG644
                             bundleIdentifier: at.asitplus.supreme.ios
+                            customProperties:
+                                flag: present
+                                secondFlag: alsoPresent
                       clock: system
             """.trimIndent(),
         ) { configDir ->
@@ -224,6 +227,8 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
                 ios.applications.single().bundleIdentifier shouldBe "at.asitplus.ios.nested"
                 supreme.android!!.applications.single().packageName shouldBe "at.asitplus.supreme.android"
                 supreme.ios!!.applications.single().bundleIdentifier shouldBe "at.asitplus.supreme.ios"
+                supreme.ios!!.applications.single().customProperties["flag"] shouldBe "present"
+                supreme.ios!!.applications.single().customProperties["secondFlag"] shouldBe "alsoPresent"
             }
         }
     }
