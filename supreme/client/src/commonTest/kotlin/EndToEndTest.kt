@@ -2,7 +2,7 @@ import at.asitplus.attestation.supreme.*
 import at.asitplus.signum.indispensable.pki.leaf
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.test.Target
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -20,7 +20,7 @@ val ENDPOINT_SHUTDOWN = "http://10.0.2.2:8080/shutdown"
 
 val ALIAS = "ALIAS"
 
-val EndToEndTest by testSuite {
+val EndToEndTest by matrixSuite {
     //This test lives here due to IDEA not recognizing androidDevicTest sources being wired to commonTest
     //to not make ios fail, we guard it here
     if (Target.current == Target.ANDROID_ART) {

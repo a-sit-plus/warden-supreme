@@ -4,11 +4,8 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.WardenDebugAttestationStatement
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.withData
-import at.asitplus.testballoon.withFixtureGenerator
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.engine.runBlocking
 import io.kotest.matchers.collections.shouldHaveSize
@@ -17,7 +14,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
 import kotlin.text.HexFormat
 
-val AttestationVerifierCallbackTest by testSuite {
+val AttestationVerifierCallbackTest by matrixSuite {
     data class PreErrorCase(
         val name: String,
         val csr: suspend AndroidFixture.(AttestationVerifier) -> Pkcs10CertificationRequest,
@@ -27,8 +24,9 @@ val AttestationVerifierCallbackTest by testSuite {
         val extraAssert: (PreAttestationError) -> Unit = {},
     )
 
-    withData(
-       nameFn= { it.name },
+    data(
+        "pre-attestation errors",
+        listOf(
         PreErrorCase(
             name = "reports challenge extraction failures via onPreAttestationError",
             csr = { createCsrWithoutNonce(fake.leafKeyPair, fake.attestationJson()) },
@@ -76,7 +74,9 @@ val AttestationVerifierCallbackTest by testSuite {
             expectedClass = PreAttestationError.OperationalError::class.java,
             issuer = { error("boom") },
         ),
-    ) { case ->
+        ),
+        nameFn = { _, value -> value.name },
+    ) test { case ->
         val fixture = generateAndroidFixture()
         val verifier = fixture.verifier(fixture.trustedConfig())
         val csr = case.csr(fixture, verifier)
@@ -100,7 +100,7 @@ val AttestationVerifierCallbackTest by testSuite {
         case.extraAssert(preErrors.single())
     }
 
-    withFixtureGenerator(::generateAndroidFixture) - {
+    fixture { generateAndroidFixture() } - {
         test("reports attestation failures via onAttestationError") { fixture ->
             val verifier = fixture.verifier(fixture.trustedConfig(packageName = "com.example.other"))
             val csr = fixture.issueCsr(verifier)
@@ -135,7 +135,7 @@ val AttestationVerifierCallbackTest by testSuite {
         }
     }
 
-    withData(nameFn = { it.name }, *e2eCases.toTypedArray()) { case ->
+    data("e2e cases", e2eCases, nameFn = { _, value -> value.name }) test { case ->
         val nonce = case.nonceHex.hexToByteArray(HexFormat.UpperCase)
         val verifier = verifierForNonce(nonce)
         val attestationJson = loadResourceText(case.attestationResource)

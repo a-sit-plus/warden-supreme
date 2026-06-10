@@ -5,13 +5,10 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.catchingUnwrapped
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
 import ch.veehait.devicecheck.appattest.receipt.ReceiptValidator
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import kotlin.random.Random
@@ -23,7 +20,7 @@ import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
 
-val TimeOffsetTest by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 15.minutes)) {
+val TimeOffsetTest by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEnabled = true, timeout = 15.minutes) }) {
 
     val rands = Array<Duration?>(10) {
         //There are limits to durations, and this will mostly be infinities, but it caught an Android config bug, so it stays
@@ -39,14 +36,14 @@ val TimeOffsetTest by testSuite(testConfig = TestConfig.testScope(isEnabled = tr
         Random.nextInt().nanoseconds
     }
     "makoto vs bare" - {
-        withData(
+        data("offsets", listOf(
             5.minutes, Duration.ZERO, null as Duration?, *rands,
-        ) - { offset ->
+        )) - { offset ->
 
             //we only have seconds precision here
-            withData(
+            data("validities", listOf(
                 *Array<Duration?>(50) { Random.nextInt(0, Int.MAX_VALUE).seconds },
-            ) - { validity ->
+            )) - { validity ->
 
                 val expectedValidity =
                     validity
@@ -109,7 +106,8 @@ val TimeOffsetTest by testSuite(testConfig = TestConfig.testScope(isEnabled = tr
                 }
 
 
-                withData(
+                data(
+                    "verifiers",
                     mapOf(
                         "makoto" to AttestationVerifier(makoto),
                         "bare" to AttestationVerifier(
@@ -120,8 +118,8 @@ val TimeOffsetTest by testSuite(testConfig = TestConfig.testScope(isEnabled = tr
                                 verificationTimeOffset = expectedOffset,
                             )
                         )
-                    )
-                ) { verifier ->
+                    ).values
+                ) test { verifier ->
                     verifier.nonceValidity shouldBe expectedValidity
                     verifier.issueChallenge("").let {
                         withClue("Issued at") { it.issuedAt shouldBe expectedIssuedAt }

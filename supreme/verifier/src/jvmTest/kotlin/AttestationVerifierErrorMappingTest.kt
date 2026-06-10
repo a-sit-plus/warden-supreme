@@ -6,9 +6,7 @@ import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.security.MessageDigest
@@ -19,7 +17,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-val AttestationVerifierErrorMappingTest by testSuite {
+val AttestationVerifierErrorMappingTest by matrixSuite {
     data class MappingCase(
         val name: String,
         val expected: AttestationResponse.Failure.Type,
@@ -29,8 +27,9 @@ val AttestationVerifierErrorMappingTest by testSuite {
     suspend fun withFixture(block: suspend (AndroidFixture) -> AttestationResponse): AttestationResponse =
         block(generateAndroidFixture())
 
-    withData(
-        nameFn = { it.name },
+    data(
+        "mapping cases",
+        listOf(
         MappingCase(
             name = "maps missing nonce to CONTENT (challenge extraction)",
             expected = AttestationResponse.Failure.Type.CONTENT,
@@ -268,7 +267,9 @@ val AttestationVerifierErrorMappingTest by testSuite {
                 }
             },
         ),
-    ) { case ->
+        ),
+        nameFn = { _, value -> value.name },
+    ) test { case ->
         val response = case.run()
         response.shouldBeInstanceOf<AttestationResponse.Failure>().also { failure ->
             failure.kind shouldBe case.expected

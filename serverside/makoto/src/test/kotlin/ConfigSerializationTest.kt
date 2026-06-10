@@ -2,12 +2,10 @@ import at.asitplus.attestation.APPLE_DEFAULT_TRUSTED_ROOTS
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.IosAttestationConfiguration.OsVersions
 import at.asitplus.attestation.android.*
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 
-val serializationTest by testSuite {
+val serializationTest by matrixSuite {
     val androidAttestationConfiguration = AndroidAttestationConfiguration(
         applications = listOf(
             /*(1)!*/AndroidAttestationConfiguration.AppData(

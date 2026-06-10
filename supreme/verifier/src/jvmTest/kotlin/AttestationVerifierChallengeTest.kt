@@ -2,22 +2,19 @@
 
 package at.asitplus.attestation.supreme
 
-import at.asitplus.testballoon.checkAll
-import at.asitplus.catching
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.kotest.property.Gen
+import at.asitplus.catching
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.text.HexFormat
 
-val AttestationVerifierChallengeTest by testSuite {
+val AttestationVerifierChallengeTest by matrixSuite {
     "issueChallenge encodes inverse offset" {
         val nonce = Random.Default.nextBytes(16)
         val verifier = verifierForNonce(nonce)

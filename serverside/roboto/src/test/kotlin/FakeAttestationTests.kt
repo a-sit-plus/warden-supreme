@@ -4,10 +4,7 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.attestation.data.BootState
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import java.time.YearMonth
@@ -17,7 +14,7 @@ import kotlin.random.Random
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
 
-val FakeAttestationTests by testSuite {
+val FakeAttestationTests by matrixSuite {
 
     "Fake Attestation Test" - {
         val challenge = "42".encodeToByteArray()
@@ -35,7 +32,7 @@ val FakeAttestationTests by testSuite {
             androidVersion = androidVersion,
             androidPatchLevel = patchLevel.asSingleInt,
         )
-        withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
+        data("supreme Parser", listOf(false, true), nameFn = { _, value -> "supreme Parser = $value" }) - { supreme ->
 
             val checker = Roboto(
                 AndroidAttestationConfiguration(

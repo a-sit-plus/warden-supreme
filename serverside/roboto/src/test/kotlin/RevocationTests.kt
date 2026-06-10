@@ -1,12 +1,9 @@
 package at.asitplus.attestation.android
 
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
 import com.zkdcloud.proxy.http.ServerStart
 import com.zkdcloud.proxy.http.handler.client.ExceptionDuplexHandler
 import com.zkdcloud.proxy.http.handler.client.JudgeTypeInboundHandler
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -65,7 +62,7 @@ val TEST_CERT = """
 
 
 @OptIn(ExperimentalTime::class)
-val RevocationTests by testSuite {
+val RevocationTests by matrixSuite {
 
     "custom implementation" - {
 
@@ -336,13 +333,14 @@ val RevocationTests by testSuite {
                     ),
                 )
 
-                withData(
+                data(
+                    "header preference",
                     mapOf(
                         "parse expiry from headers" to true,
                         "ignore headers (JSON only)" to false,
-                    )
+                    ).values
                 ) - { preferHeaderBasedExpiry ->
-                    withData(scenarios) { scenario ->
+                    data("scenarios", scenarios.values) test { scenario ->
                         val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
 
                         val jsonExpires =
@@ -387,11 +385,12 @@ val RevocationTests by testSuite {
                 }
 
                 "invalid json expiry must throw" - {
-                    withData(
+                    data(
+                        "header preference",
                         mapOf(
                             "parse expiry from headers" to true,
                             "ignore headers (JSON only)" to false,
-                        )
+                        ).values
                     ) - { preferHeaderBasedExpiry ->
                         "throws" {
                             val now = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)

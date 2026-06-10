@@ -5,17 +5,12 @@ package at.asitplus.attestation
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.attestation.android.androidAttestationExtension
-import at.asitplus.attestation.android.closestToRoot
 import at.asitplus.attestation.android.closestToRootOrNull
-import at.asitplus.attestation.android.contentHashCodeIfArray
 import at.asitplus.attestation.android.hasAndroidKeystoreAttestation
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.attestation.data.CreatedAttestation
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Sequence
@@ -23,6 +18,7 @@ import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509v3CertificateBuilder
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.math.BigInteger
@@ -34,7 +30,7 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-val GeneratedAttestationTests by testSuite {
+val GeneratedAttestationTests by matrixSuite {
 
     val challenge = "42".encodeToByteArray()
     val packageName = "fa.ke.it.till.you.make.it"

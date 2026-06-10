@@ -4,11 +4,7 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import at.asitplus.testballoon.withData
-import at.asitplus.testballoon.withFixtureGenerator
-import de.infix.testBalloon.framework.core.TestConfig
-import de.infix.testBalloon.framework.core.invocation
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -16,8 +12,8 @@ import java.security.MessageDigest
 import java.util.*
 import kotlin.random.Random
 
-val AttestationVerifierFakeAndroidTest by testSuite(
-    testConfig = TestConfig.invocation(TestConfig.Invocation.Sequential)
+val AttestationVerifierFakeAndroidTest by matrixSuite(
+    matrixConfig { execution = ExecutionMode.Sequential }
 ) {
     data class FailureCase(
         val name: String,
@@ -28,7 +24,7 @@ val AttestationVerifierFakeAndroidTest by testSuite(
         val expected: AttestationResponse.Failure.Type,
     )
 
-    withFixtureGenerator(::generateAndroidFixture) - {
+    fixture { generateAndroidFixture() } - {
         test("android fake attestation verifies with custom trusted root") { fixture ->
             val verifier = fixture.verifier(fixture.trustedConfig())
             val csr = fixture.issueCsr(verifier)
@@ -319,8 +315,9 @@ val AttestationVerifierFakeAndroidTest by testSuite(
         }
     }
 
-    withData(
-        nameFn = { it.name },
+    data(
+        "fake android cases",
+        listOf(
         FailureCase(
             name = "android fake attestation fails without trusted root",
             config = {
@@ -378,7 +375,9 @@ val AttestationVerifierFakeAndroidTest by testSuite(
             csr = { verifier -> issueCsr(verifier, "{not-json") },
             expected = AttestationResponse.Failure.Type.CONTENT,
         ),
-    ) { case ->
+        ),
+        nameFn = { _, value -> value.name },
+    ) test { case ->
         val fixture = generateAndroidFixture()
         val verifier = fixture.verifier(case.config(fixture))
         val csr = case.csr(fixture, verifier)

@@ -1,6 +1,5 @@
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 
-val alibiTest by testSuite {
+val alibiTest by matrixSuite {
     "test are running" {}
 }

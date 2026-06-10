@@ -3,10 +3,7 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlin.text.HexFormat
@@ -67,10 +64,10 @@ private val GRAPHENE_OS_FIXTURES = listOf(
     )
 )
 
-val GrapheneOsTests by testSuite {
+val GrapheneOsTests by matrixSuite {
     "GrapheneOS verified boot key policies" - {
-        withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
-            withData(nameFn = { it.data.name }, GRAPHENE_OS_FIXTURES) - { fixture ->
+        data("supreme Parser", listOf(false, true), nameFn = { _, value -> "supreme Parser = $value" }) - { supreme ->
+            data("fixtures", GRAPHENE_OS_FIXTURES, nameFn = { _, value -> value.data.name }) - { fixture ->
                 "single matching GrapheneOS verified boot key succeeds" {
                     assertGrapheneVerification(
                         fixture = fixture,
