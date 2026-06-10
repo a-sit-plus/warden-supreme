@@ -7,14 +7,10 @@ import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.attestation.hopliteDecoder
 import at.asitplus.attestation.supreme.SupremeConfiguration
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.ExperimentalHoplite
 import com.sksamuel.hoplite.addFileSource
-import de.infix.testBalloon.framework.core.TestCompartment
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import java.io.File
@@ -22,7 +18,7 @@ import java.io.FileReader
 import java.io.FileWriter
 
 @OptIn(ExperimentalHoplite::class)
-val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.Sequential }) {
+val ConfigurationExampleGenerator by matrixSuite(matrixConfig { execution = ExecutionMode.Sequential }) {
 
     fun readResource(path: String): String =
         requireNotNull(object {}.javaClass.classLoader.getResourceAsStream(path)) {
@@ -56,10 +52,13 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
         )
     )
 
-    withData(
-        nameFn = { (name, _) -> name },
+    data(
+        "configs",
+        listOf(
         "android" to androidAttestationConfiguration,
         "ios" to iosAttestationConfiguration
+        ),
+        nameFn = { _, value -> value.first },
     ) - { (name, config) ->
         "Writing $name" {
             withClue("JSON") {

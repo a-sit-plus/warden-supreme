@@ -6,6 +6,12 @@ this changelog also includes the original WARDEN changelog.
 
 # NEXT
 * Add hook to explicitly perform additional verifications before issuing
+* Dependency updates:
+    * Bouncy Castle 1.84
+    * Ktor 3.5.0
+    * kotlinx.coroutines 1.11.0
+    * kotlinx.serialization 1.11.0
+* Matrix testing
 
 # 1.0.0-RC10
 

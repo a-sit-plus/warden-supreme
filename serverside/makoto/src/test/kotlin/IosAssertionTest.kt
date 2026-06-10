@@ -1,16 +1,13 @@
 import at.asitplus.attestation.*
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
 import kotlin.time.Instant
 
-val iosAssertionTests by testSuite {
-    withData(
+val iosAssertionTests by matrixSuite {
+    data("captured iOS data", listOf(
         CapturedIosData(
             Instant.parse("2026-02-23T18:05:00+01"),
             "9CYHJNG644",
@@ -101,7 +98,7 @@ val iosAssertionTests by testSuite {
                 )
             )
         ),
-    ) - {
+    )) - {
         val makoto = Makoto(
             iosAttestationConfiguration = IosAttestationConfiguration(
                 IosAttestationConfiguration.AppData(
@@ -133,7 +130,7 @@ val iosAssertionTests by testSuite {
             CanonicalIosAttestation.decodeFromDer(derEncoded).encodeToDer() shouldBe derEncoded
         }
         "Assertion" - {
-            withData(it.assertions) { assertion ->
+            data("assertions", it.assertions) test { assertion ->
                 iosResult as AttestationResult.IOS.Verified
                 val asserted = makoto.ios.verifyAssertion(
                     iosResult.attestation,
@@ -215,4 +212,3 @@ data class CapturedIosData(
                 ")"
     }
 }
-

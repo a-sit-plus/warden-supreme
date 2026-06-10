@@ -6,15 +6,14 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.data.AttestationCreator
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-val GeneratedAttestationTests by testSuite {
+val GeneratedAttestationTests by matrixSuite {
 
     val challenge = "42".encodeToByteArray()
     val packageName = "fa.ke.it.till.you.make.it"

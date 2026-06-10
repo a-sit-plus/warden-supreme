@@ -1,14 +1,10 @@
 import at.asitplus.attestation.BuildNumber
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
-import io.kotest.core.spec.style.FreeSpec
-import io.kotest.datatest.withData
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.comparables.shouldBeLessThan
 import java.util.*
 import kotlin.random.Random
 
-val BuildNumberTest by testSuite {
+val BuildNumberTest by matrixSuite {
 
     "presorted" - {
         val buildTrains = List(50) { it }
@@ -59,11 +55,14 @@ val BuildNumberTest by testSuite {
             }
         }
 
-        withData(
+        compact("presorted build numbers") {
+            report = CompactReport.FailuresOnly
+        } - {
+            data(
             testVectors.dropLast(1).mapIndexed { index, s -> index to s },
-            compact = true
-        ) {
-            BuildNumber(it.second) shouldBeLessThan BuildNumber(testVectors[it.first + 1])
+            ) test {
+                BuildNumber(it.second) shouldBeLessThan BuildNumber(testVectors[it.first + 1])
+            }
         }
     }
 }

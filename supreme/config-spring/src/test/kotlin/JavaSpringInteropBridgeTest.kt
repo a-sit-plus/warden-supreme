@@ -1,10 +1,8 @@
 package at.asitplus.attestation
 
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 
-val JavaSpringInteropBridgeTest by testSuite {
+val JavaSpringInteropBridgeTest by matrixSuite {
     "java can call spring config loaders through Class overloads" {
         JavaSpringInteropAssertions.run()
     }

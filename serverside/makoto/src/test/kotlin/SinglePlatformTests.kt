@@ -1,14 +1,12 @@
 import at.asitplus.attestation.*
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldNotBeInstanceOf
 import kotlin.time.toKotlinInstant
 
-val singlePlatform by testSuite {
+val singlePlatform by matrixSuite {
 
     "iOS-only" - {
         iosGood.forEach { recordedAttestation ->

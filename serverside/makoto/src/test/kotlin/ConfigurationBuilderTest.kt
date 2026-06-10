@@ -3,12 +3,11 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.IosAttestationConfiguration.OsVersions
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import kotlin.time.Duration.Companion.seconds
 
-val ConfigurationBuilderTest by testSuite {
+val ConfigurationBuilderTest by matrixSuite {
 
     "iOS AppData builder preserves trusted roots" {
         val roots = APPLE_DEFAULT_TRUSTED_ROOTS

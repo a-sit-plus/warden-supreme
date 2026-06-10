@@ -6,12 +6,9 @@ import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.attestation.replayBlocking
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
 import com.google.android.attestation.ParsedAttestationRecord
 import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -24,7 +21,7 @@ import kotlin.time.Duration.Companion.minutes
 
 
 @OptIn(ExperimentalStdlibApi::class)
-val AttestationTests by testSuite {
+val AttestationTests by matrixSuite {
 
 
     "TODO" {
@@ -97,7 +94,7 @@ val AttestationTests by testSuite {
             val signatureDigests = setOf("NLl2LE1skNSEMZQMV73nMUJYsmQg7+Fqx/cnTw0zCtU=".decodeBase64ToArray())
 
 
-            withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
+            data("supreme Parser", listOf(false, true), nameFn = { _, value -> "supreme Parser = $value" }) - { supreme ->
                 "should fail with HardwareAttestationChecker" {
                     Roboto(
                         AndroidAttestationConfiguration(
@@ -168,7 +165,7 @@ val AttestationTests by testSuite {
     }
 
     "Nougat Hybrid Attestation" - {
-        withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
+        data("supreme Parser", listOf(false, true), nameFn = { _, value -> "supreme Parser = $value" }) - { supreme ->
             val data = AttestationData(
                 "bq Aquaris X with LineageOS",
                 "foobdar".encodeToByteArray().encodeBase64(),
@@ -392,7 +389,7 @@ val AttestationTests by testSuite {
             ).forEach { recordedAttestation ->
 
             recordedAttestation.name - {
-                withData(nameFn = { "supreme Parser = $it" }, false, true) - { supreme ->
+                data("supreme Parser", listOf(false, true), nameFn = { _, value -> "supreme Parser = $value" }) - { supreme ->
                     "OK" - {
                         "enforce locked bootloader" {
                             attestationService(supreme, unlockedBootloaderAllowed = false).apply {

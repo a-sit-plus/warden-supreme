@@ -1,8 +1,7 @@
 import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.Constrained
 import at.asitplus.attestation.supreme.WardenDefaults
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -15,7 +14,7 @@ private val json = Json {
     encodeDefaults = true
 }
 
-val ConstrainedPayloadSerializerTest by testSuite {
+val ConstrainedPayloadSerializerTest by matrixSuite {
     "precise primitives + nested map roundtrip" {
         val challenge = AttestationChallenge(
             issuedAt = Instant.fromEpochMilliseconds(0),

@@ -3,12 +3,9 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toKmpCertificate
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
 import com.android.keyattestation.verifier.KeyDescription
 import com.google.android.attestation.ParsedAttestationRecord
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -43,7 +40,7 @@ val DebugStmt.details get() = third
 
 
 @OptIn(ExperimentalAtomicApi::class)
-val DebugStatementParserTest by testSuite {
+val DebugStatementParserTest by matrixSuite {
     val json = Json { ignoreUnknownKeys = true }
     val classLoader = Thread.currentThread().contextClassLoader
 
@@ -89,10 +86,10 @@ val DebugStatementParserTest by testSuite {
         if (System.getenv("NO_PRIVATE_TEST_DATA") != "true") throw RuntimeException("NO PRIVATE TEST DATA PRESENT. Fine for CI, but not for local tests")
 
         "No private test data present" {}
-        return@testSuite
+        return@matrixSuite
     }
 
-    withData(nameFn = { "${it.value.first.size} certs" }, proofs.withIndex()) - { (index, it) ->
+    data("proofs", proofs.withIndex().toList(), nameFn = { _, value -> "${value.index}: ${value.value.first.size} certs" }) - { (index, it) ->
         val attestationCertChain =
             it.certificateChain.map {
                 val certBytes = Base64.getUrlDecoder().decode(it)
@@ -113,7 +110,7 @@ val DebugStatementParserTest by testSuite {
                 androidAttestationExtension shouldBe attestationCertChain.androidAttestationExtension
             }
             "convert" - {
-                withData(nameFn = { it.subjectX500Principal.toString() }, attestationCertChain) {
+                data("certificates", attestationCertChain, nameFn = { _, value -> value.subjectX500Principal.toString() }) test {
                     it.toKmpCertificate().isSuccess shouldBe true
 
                     var own = it.toKmpCertificate().getOrThrow()
@@ -187,9 +184,10 @@ val DebugStatementParserTest by testSuite {
                 val rSupreme = stmt.cfg.copy(supremeParser = true, revocation = emptyList())
                 val rLegacy = stmt.cfg.copy(supremeParser = false, revocation = emptyList())
 
-
-                withData(
-                    listOf(
+                compact("config pairs") {
+                    report = CompactReport.FailuresOnly
+                } - {
+                    data(listOf(
                         rSupreme to rLegacy,
                         rSupreme.copy(patchLevel = PatchLevel(2025, 1)) to
                                 rLegacy.copy(patchLevel = PatchLevel(2025, 1)),
@@ -216,23 +214,22 @@ val DebugStatementParserTest by testSuite {
                                 )
                             )
                         )
-                    ),
-                    compact = true
-                ) { (rSupreme, rLegacy) ->
-                    val supreme = Roboto(rSupreme).verify(
-                        attestationCertChain,
-                        stmt.details.verificationTime,
-                        stmt.details.challenge
-                    )
-                    val legacy = Roboto(rLegacy).verify(
-                        attestationCertChain,
-                        stmt.details.verificationTime,
-                        stmt.details.challenge
-                    )
+                    )) test { (rSupreme, rLegacy) ->
+                        val supreme = Roboto(rSupreme).verify(
+                            attestationCertChain,
+                            stmt.details.verificationTime,
+                            stmt.details.challenge
+                        )
+                        val legacy = Roboto(rLegacy).verify(
+                            attestationCertChain,
+                            stmt.details.verificationTime,
+                            stmt.details.challenge
+                        )
 
-                    //needs toString, because types inside result differ on error
-                    withClue("Supreme success: ${supreme.isSuccess}, Legacy success: ${legacy.isSuccess}") {
-                        supreme.toString() shouldBe legacy.toString()
+                        //needs toString, because types inside result differ on error
+                        withClue("Supreme success: ${supreme.isSuccess}, Legacy success: ${legacy.isSuccess}") {
+                            supreme.toString() shouldBe legacy.toString()
+                        }
                     }
                 }
             }

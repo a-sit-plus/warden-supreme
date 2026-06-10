@@ -5,9 +5,7 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.string.shouldContain
 import kotlin.time.Duration.Companion.days
@@ -15,7 +13,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
-val TemporalOffsetTest by testSuite {
+val TemporalOffsetTest by matrixSuite {
 
     val exactStartOfValidity: Map<String, AttestationData> = mapOf(
         "KeyMint 200" to AttestationData(
@@ -77,9 +75,12 @@ val TemporalOffsetTest by testSuite {
         )
     )
 
-    withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
+    data(
+        "Experimental Parser",
+        listOf(false, true),
+        nameFn = { _, value -> "Supreme Parser = $value" }) - { experimental ->
         "Exact Time of Validity" - {
-            withData(exactStartOfValidity) {
+            data("attestations", exactStartOfValidity.values, nameFn = { _, it -> it.name }) test {
                 attestationService(experimental).verify(
                     it.attestationCertChain,
                     it.verificationDate,
@@ -89,7 +90,7 @@ val TemporalOffsetTest by testSuite {
         }
 
         "Exact Time of Validity + 1D" - {
-            withData(exactStartOfValidity) {
+            data("attestations", exactStartOfValidity.values, nameFn = { _, it -> it.name }) test {
                 attestationService(
                     experimental,
                     attestationStatementValiditiy = 1.days + 1.seconds
@@ -102,31 +103,26 @@ val TemporalOffsetTest by testSuite {
         }
 
         "Exact Time of Validity - 1D" - {
-            withData(exactStartOfValidity) - {
-                withData(exactStartOfValidity) {
-                    shouldThrow<AttestationValueException> {
-                        attestationService(experimental).verify(
-                            it.attestationCertChain,
-                            it.verificationDate - 1.seconds,
-                            it.challenge,
-                        ).getOrThrow()
-                    }.message!!.shouldContain("too far in the future")
-                }
-
-
-                withData(exactStartOfValidity) {
-                    shouldThrow<AttestationValueException> {
-                        attestationService(experimental).verify(
-                            it.attestationCertChain,
-                            it.verificationDate + 10.minutes,
-                            it.challenge,
-                        ).getOrThrow()
-                    }.message!!.shouldContain("too far in the past")
-                }
-
+            data("future", exactStartOfValidity.values, nameFn = { _, it -> it.name }) test {
+                shouldThrow<AttestationValueException> {
+                    attestationService(experimental).verify(
+                        it.attestationCertChain,
+                        it.verificationDate - 1.seconds,
+                        it.challenge,
+                    ).getOrThrow()
+                }.message!!.shouldContain("too far in the future")
             }
 
+
+            data("past", exactStartOfValidity.values) test {
+                shouldThrow<AttestationValueException> {
+                    attestationService(experimental).verify(
+                        it.attestationCertChain,
+                        it.verificationDate + 10.minutes,
+                        it.challenge,
+                    ).getOrThrow()
+                }.message!!.shouldContain("too far in the past")
+            }
         }
     }
-
 }

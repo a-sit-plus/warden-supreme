@@ -1,9 +1,7 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.data.AttestationData
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldNotBeInstanceOf
@@ -11,7 +9,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
-val TemporalOffsetTest by testSuite {
+val TemporalOffsetTest by matrixSuite {
 
     val exactStartOfValidity: Map<String, AttestationData> = mapOf(
         "iOS" to ios16,
@@ -20,7 +18,7 @@ val TemporalOffsetTest by testSuite {
 
 
     "Exact Time of Validity" - {
-        withData(exactStartOfValidity) {
+        data("attestations", exactStartOfValidity.toList(), nameFn = { _, (name, _) -> name }) test { (_, it) ->
             val attestationService = attestationService(timeSource = FixedTimeClock(it.verificationDate))
             attestationService.verifyAttestation(
                 it.attestationProof,
@@ -35,7 +33,7 @@ val TemporalOffsetTest by testSuite {
     }
 
     "Exact Time of Validity + 1D" - {
-        withData(exactStartOfValidity) {
+        data("attestations", exactStartOfValidity.toList(), nameFn = { _, (name, _) -> name }) test { (_, it) ->
             val attestationService = attestationService(
                 timeSource = FixedTimeClock(it.verificationDate),
                 offset = 1.days,
@@ -55,7 +53,7 @@ val TemporalOffsetTest by testSuite {
     }
 
     "Exact Time of Validity - 1D" - {
-        withData(mapOf("KeyMint 200" to pixel6KeyMint200Good)) {
+        data("attestations", listOf(pixel6KeyMint200Good), nameFn = { _, it -> it.name }) test {
             val attestationService = attestationService(
                 timeSource = FixedTimeClock(it.verificationDate),
                 offset = (-1).days,
@@ -76,7 +74,7 @@ val TemporalOffsetTest by testSuite {
     }
 
     "KeyMint eternal leaves - 1D" - {
-        withData("eternal" to true, "expiring" to false) {
+        data("validity", listOf("eternal" to true, "expiring" to false), nameFn = { _, (name, _) -> name }) test {
             val attestationService = attestationService(
                 timeSource = FixedTimeClock(pixel6KeyMint200Good.verificationDate),
                 offset = (-1).days,
@@ -99,7 +97,7 @@ val TemporalOffsetTest by testSuite {
     }
 
     "iOS Temporal Offset Strict Fail" - {
-        withData(nameFn = { it.toIsoString() }, 1.days, -1.days) { offset ->
+        data("offset", listOf(1.days, -1.days), nameFn = { _, value -> value.toIsoString() }) test { offset ->
             val attestationService = attestationService(
                 timeSource = FixedTimeClock(ios16.verificationDate),
                 offset = offset,
@@ -123,4 +121,3 @@ val TemporalOffsetTest by testSuite {
 
     }
 }
-

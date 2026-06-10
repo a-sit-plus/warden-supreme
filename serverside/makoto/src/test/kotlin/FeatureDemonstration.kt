@@ -6,9 +6,7 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.data.attestationCertChain
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
@@ -18,7 +16,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-val FeatureDemonstration by testSuite {
+val FeatureDemonstration by matrixSuite {
 
 
     val service = Makoto(

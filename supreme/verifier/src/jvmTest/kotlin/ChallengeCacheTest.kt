@@ -1,8 +1,6 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.FixedTimeClock
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
 import at.asitplus.signum.indispensable.CryptoSignature
 import at.asitplus.signum.indispensable.X509SignatureAlgorithm
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
@@ -11,7 +9,7 @@ import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -42,7 +40,7 @@ private fun csrForChallenge(challenge: AttestationChallenge): Pkcs10Certificatio
     )
 }
 
-val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 10.minutes)) {
+val ChallengeVerifierTest by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEnabled = true, timeout = 10.minutes) }) {
 
     "once" {
         val nonce = Random.nextBytes(16)

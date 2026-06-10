@@ -3,11 +3,8 @@ import at.asitplus.attestation.android.androidAttestationExtension
 import at.asitplus.attestation.android.prettyPrint
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.toKmpCertificate
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
 import com.google.android.attestation.ParsedAttestationRecord
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -29,7 +26,7 @@ import java.util.*
 
 internal val certificateFactory = CertificateFactory.getInstance("X.509")
 
-val CustomParserTests by testSuite {
+val CustomParserTests by matrixSuite {
     val chain: Map<String, JsonObject> by lazy {
         val json = Json { ignoreUnknownKeys = true }
         val classLoader = Thread.currentThread().contextClassLoader
@@ -73,7 +70,7 @@ val CustomParserTests by testSuite {
         chain.forEach { (_, json) -> json.isNotEmpty() shouldBe true }
     }
 
-    withData(chain) - {
+    data("chains", chain.values) - {
         val challenge = it.getValue("challenge").jsonPrimitive.content
         val chain = it.getValue("attestationProof").jsonArray.map {
             Base64.getMimeDecoder().decode(it.jsonPrimitive.content.replace("\n", ""))
@@ -88,7 +85,7 @@ val CustomParserTests by testSuite {
             }
         }
         "convert" - {
-            withData(nameFn = { it.subjectX500Principal.toString() }, attestationCertChain) {
+            data("certificates", attestationCertChain, nameFn = { _, value -> value.subjectX500Principal.toString() }) test {
                 it.toKmpCertificate().isSuccess shouldBe true
                 it.toKmpCertificate().getOrThrow().encodeToDer() shouldBe it.encoded
             }
