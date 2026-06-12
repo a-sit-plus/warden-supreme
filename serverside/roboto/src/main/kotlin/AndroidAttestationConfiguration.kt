@@ -472,6 +472,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
 ) : AttestationConfiguration {
 
+    init { Signum.installSupreme() }
+
     /**
      * Convenience constructor to attest a single app
      */
@@ -1393,6 +1395,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonElement(): JsonObject = jsonDebug.encodeToJsonElement(this).jsonObject
 
     companion object : AttestationConfiguration.Reader<AndroidAttestationConfiguration> {
+
+        init { Signum.installSupreme() }
 
         private val yaml by lazy {
             Yaml {

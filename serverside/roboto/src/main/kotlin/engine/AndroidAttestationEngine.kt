@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android.engine
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.AuthorizationList.RootOfTrust.VerifiedBootState
