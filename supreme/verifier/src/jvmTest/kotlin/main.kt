@@ -6,19 +6,19 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.Asn1Time
+import at.asitplus.signum.indispensable.decodeFromDer
+import at.asitplus.signum.indispensable.decodeFromPem
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
 import at.asitplus.signum.indispensable.toJcaPublicKey
-import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
+import at.asitplus.testballoon.matrix.matrixConfig
+import at.asitplus.testballoon.matrix.matrixSuite
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
-import at.asitplus.testballoon.matrix.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -63,7 +63,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                                         "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
                                         "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
                                         "-----END PUBLIC KEY-----"
-                            ).getOrThrow().toJcaPublicKey().getOrThrow()
+                            ).toJcaPublicKey().getOrThrow()
                         )
                     )
                         .build(),
@@ -109,7 +109,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
 
                         val resp =
                             attestationValidator.verifyAttestation(
-                                Pkcs10CertificationRequest.decodeFromDer(src),
+                                CertificationRequest.decodeFromDer(src),
                                 onPreAttestationError = {
                                     val msg = throwable?.message ?: ""
                                     println(msg)
@@ -127,16 +127,13 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                                         TbsCertificate(
                                             serialNumber = Random.nextBytes(32),
                                             publicKey = csr.tbsCsr.publicKey,
-                                            signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
-                                                .getOrThrow(),
-                                            validFrom = Asn1Time(Clock.System.now()),
-                                            validUntil = Asn1Time(Clock.System.now() + 10.days),
+                                            signatureAlgorithm = signer.signatureAlgorithm,
+                                            validFrom = (Clock.System.now()),
+                                            validUntil = (Clock.System.now() + 10.days),
                                             issuerName = listOf(
                                                 RelativeDistinguishedName(
                                                     AttributeTypeAndValue.CommonName(
-                                                        Asn1String.UTF8(
-                                                            "WARDEN Supreme"
-                                                        )
+                                                        "WARDEN Supreme"
                                                     )
                                                 )
                                             ),

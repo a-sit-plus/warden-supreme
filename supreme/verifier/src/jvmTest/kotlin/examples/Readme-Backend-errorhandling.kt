@@ -3,12 +3,12 @@ package examples.docs.service.callbacks
 import at.asitplus.attestation.AttestationException
 import at.asitplus.attestation.IosAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import examples.docs.config.minimal.verifier
 import java.util.logging.Level
 import java.util.logging.Logger
 
-private val csr: Pkcs10CertificationRequest = TODO()
+private val csr: CertificationRequest = TODO()
 private val logger = Logger.getLogger("demo")
 //@formatter:off
 private suspend fun foo() {

@@ -1,6 +1,8 @@
 import at.asitplus.attestation.android.*
+import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.catchingUnwrapped
 import at.asitplus.io.MultiBase
+import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toKmpCertificate
 import com.android.keyattestation.verifier.KeyDescription

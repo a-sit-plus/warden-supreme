@@ -31,3 +31,11 @@ include("config-hoplite")
 project(":config-hoplite").projectDir = file("supreme/config-hoplite")
 include("config-spring")
 project(":config-spring").projectDir = file("supreme/config-spring")
+
+
+val signumFile = file("../signum/build.gradle.kts")
+if (signumFile.exists()) {
+    logger.warn("Detected signum in ${signumFile.absolutePath}.")
+    logger.warn("Including signum as composite build.")
+    includeBuild("../signum")
+}

@@ -1,7 +1,7 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.signum.indispensable.io.X509CertificateBase64UrlSerializer
-import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -11,7 +11,7 @@ sealed class AttestationResponse {
     @SerialName("Success")
     @Serializable
     class Success(
-        val certificateChain: List<@Serializable(with = X509CertificateBase64UrlSerializer::class) X509Certificate>
+        val certificateChain: List<@Serializable(with = X509CertificateBase64UrlSerializer::class) Certificate>
     ) : AttestationResponse()
 
     @SerialName("Failure")

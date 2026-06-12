@@ -5,8 +5,9 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion
 import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonString
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.decodeFromPem
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
-import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
@@ -74,7 +75,7 @@ data class PatchLevel @JvmOverloads constructor(
 
 
 val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate(
-    X509Certificate.decodeFromPem(
+    Certificate.decodeFromPem(
         """
             -----BEGIN CERTIFICATE-----
             MIICIjCCAaigAwIBAgIRAISp0Cl7DrWK5/8OgN52BgUwCgYIKoZIzj0EAwMwUjEc
@@ -91,7 +92,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate(
             uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
             -----END CERTIFICATE-----
             """.trimIndent()
-    ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+    ).toJcaCertificateBlocking().getOrThrow()
 )
 
 /**
@@ -100,7 +101,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate(
 val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
     //Current RSA ROOT
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.decodeFromPem(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAPHBcqaZ6vUdMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -133,13 +134,13 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             w1IdYIg2Wxg7yHcQZemFQg==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+        ).toJcaCertificateBlocking().getOrThrow()
     ),
     //new Google EC Root
     GOOGLE_RKP_EC_ROOT,
     //Old, but as of 2025 still valid root certificate. Will expire in 2026
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.decodeFromPem(
             """
             -----BEGIN CERTIFICATE-----
             MIIFYDCCA0igAwIBAgIJAOj6GWMU0voYMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -173,12 +174,12 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             wDB5y0USicV3YgYGmi+NZfhA4URSh77Yd6uuJOJENRaNVTzk
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+        ).toJcaCertificateBlocking().getOrThrow()
     ),
 
     //old, but still valid
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.decodeFromPem(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJANUP8luj8tazMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -211,12 +212,12 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             ex0SdDrx+tWUDqG8At2JHA==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+        ).toJcaCertificateBlocking().getOrThrow()
     ),
 
     //old, but still valid
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.decodeFromPem(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAMNrfES5rhgxMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -249,7 +250,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             mD/vFDkzF+wm7cyWpQpCVQ==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+        ).toJcaCertificateBlocking().getOrThrow()
     ),
 )
 

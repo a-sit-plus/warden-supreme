@@ -5,6 +5,8 @@ import at.asitplus.attestation.CanonicalIosAttestation
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.ValidatedAttestationSerializer
 import at.asitplus.attestation.canonicalize
+import at.asitplus.awesn1.encoding.decodeFromDer
+import at.asitplus.awesn1.encoding.encodeToDer
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import kotlinx.serialization.json.Json
@@ -27,9 +29,7 @@ object RawIosAssertionExample {
         assertionFromDevice: ByteArray,
         expectedChallenge: ByteArray,
         previousCounter: Long,
-    ): Pair<Result<Assertion>, Result<Assertion>> {
-        val json = Json {}
-
+    ): Pair<Result<Assertion>, Result<Assertion>> { val json = Json {}
 
 
         val registration = /*(1)!*/makoto.ios.verifyAppAttestation(attestationObject, challengeAtRegistration)

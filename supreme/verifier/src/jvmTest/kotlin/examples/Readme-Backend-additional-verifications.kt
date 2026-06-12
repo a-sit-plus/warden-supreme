@@ -2,13 +2,13 @@ package examples.docs.service.additionalverifications
 
 import at.asitplus.attestation.supreme.AttestationResponse
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import examples.docs.config.minimal.verifier
 
-private val csr: Pkcs10CertificationRequest = TODO()
+private val csr: CertificationRequest = TODO()
 private val expectedTenant = "tenant-a"
 
-private suspend fun issueCertificateChain(csr: Pkcs10CertificationRequest): CertificateChain = TODO()
+private suspend fun issueCertificateChain(csr: CertificationRequest): CertificateChain = TODO()
 
 private suspend fun foo() {
 

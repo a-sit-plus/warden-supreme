@@ -9,6 +9,7 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
+import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.AppleAppAttest
 import ch.veehait.devicecheck.appattest.assertion.Assertion
@@ -544,7 +545,7 @@ class Makoto
             ).let {
                 when (it) {
                     is AttestationResult.Android -> KeyAttestation(
-                        attestationProof.certificateChain.first().decodedPublicKey.getOrThrow().toJcaPublicKey()
+                        attestationProof.certificateChain.first().publicKey.toJcaPublicKey()
                             .getOrThrow(), it
                     )
 

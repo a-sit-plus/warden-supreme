@@ -8,6 +8,7 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
+import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
@@ -377,7 +378,7 @@ object NoopAttestationService : AttestationService() {
             )
 
             is AndroidKeystoreAttestation -> KeyAttestation(
-                attestationProof.certificateChain.first().decodedPublicKey.getOrThrow().toJcaPublicKey().getOrThrow(),
+                attestationProof.certificateChain.first().publicKey.toJcaPublicKey().getOrThrow(),
                 AttestationResult.Android.NOOP(attestationProof.certificateChain.map { it.encodeToDer() })
             )
 
