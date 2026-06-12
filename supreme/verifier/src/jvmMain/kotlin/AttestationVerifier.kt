@@ -13,10 +13,10 @@ import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.asn1.Asn1StructuralException
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
+import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.encoding.Asn1
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.pki.X509CertificateExtension
 import at.asitplus.signum.supreme.hash.digest
@@ -178,12 +178,12 @@ constructor(
      */
     @Deprecated("To be removed in 1.3. Replace with forward-compatible variant taking AttestationProof")
     suspend fun verifyAttestation(
-        csr: Pkcs10CertificationRequest,
-        onChallengeValidated: suspend AttestationChallenge.(Pkcs10CertificationRequest) -> Unit = { },
+        csr: CertificationRequest,
+        onChallengeValidated: suspend AttestationChallenge.(CertificationRequest) -> Unit = { },
         onPreAttestationError: suspend PreAttestationError.() -> String? = { null },
         onAttestationError: suspend AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
         onAttestationSuccess: suspend AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
-        additionalVerifications: suspend AttestationChallenge.(Pkcs10CertificationRequest, AttestationResult.Verified) -> AttestationResponse.Failure? = { _, _ -> null },
+        additionalVerifications: suspend AttestationChallenge.(CertificationRequest, AttestationResult.Verified) -> AttestationResponse.Failure? = { _, _ -> null },
         certificateIssuer: CertificateIssuer,
     ): AttestationResponse = verifyAttestation(
         attestationProof = AttestationProof.Signed(csr),
@@ -564,7 +564,7 @@ constructor(
         data class Failure(val response: AttestationResponse.Failure) : KeyVerification
     }
 
-    private fun Pkcs10CertificationRequest.jcaSignature(): KmmResult<Signature> =
+    private fun CertificationRequest.jcaSignature(): KmmResult<Signature> =
         (signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance()
 
     context(challenge: AttestationChallenge)
@@ -631,7 +631,7 @@ constructor(
     }.getOrNull()
 
     private suspend fun Throwable.extractionReason(
-        csr: Pkcs10CertificationRequest,
+        csr: CertificationRequest,
         onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.AttestationStatementExtraction(this, csr).onPreAttestationError()
@@ -800,7 +800,7 @@ interface AttestationChallengeValidator : ChallengeValidator {
      */
     suspend fun validate(attestationProof: AttestationProof): ChallengeValidationResult
 
-    override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult =
+    override suspend fun validate(csr: CertificationRequest): ChallengeValidationResult =
         validate(AttestationProof.Signed(csr))
 }
 
@@ -831,7 +831,7 @@ sealed class ChallengeValidationResult {
  * shall be returned.
  */
 @Deprecated("To be removed in Warden Supreme 1.3", replaceWith = ReplaceWith("ProofToChain"))
-typealias CertificateIssuer = suspend AttestationResult.Verified.(Pkcs10CertificationRequest) -> CertificateChain
+typealias CertificateIssuer = suspend AttestationResult.Verified.(CertificationRequest) -> CertificateChain
 
 /**
  * Receives the signed CSR or unsigned TBS CSR from the mobile client after it was thoroughly checked and verified.
@@ -856,7 +856,7 @@ sealed class PreAttestationError {
         "To be removed in Warden Supreme 1.3. Replace with forward-compatible AugmentedAttestationStatementExtraction",
         replaceWith = ReplaceWith("AugmentedAttestationStatementExtraction")
     )
-    class AttestationStatementExtraction(override val throwable: Throwable, val csr: Pkcs10CertificationRequest) :
+    class AttestationStatementExtraction(override val throwable: Throwable, val csr: CertificationRequest) :
         PreAttestationError()
 
     class AugmentedAttestationStatementExtraction(

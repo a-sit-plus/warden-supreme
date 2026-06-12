@@ -1,16 +1,7 @@
 package examples.docs.service
 
-import at.asitplus.attestation.supreme.AttestationProof
-import at.asitplus.attestation.supreme.decodeAttestationProof
-import at.asitplus.attestation.supreme.tbsCsr
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.Asn1Time
-import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
-import at.asitplus.signum.indispensable.pki.TbsCertificate
-import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
+import at.asitplus.signum.indispensable.decodeFromDer
+import at.asitplus.signum.indispensable.pki.*
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import examples.docs.config.minimal.verifier
@@ -30,26 +21,27 @@ val PATH_CHALLENGE = "/api/v1/challenge"
 val PATH_ATTEST = "/api/v1/attest"
 
 val publicEndpoint: String = ""
-val signer =  Signer.Ephemeral {
+val signer = Signer.Ephemeral {
     ec { }
 }.getOrThrow()
 
 var issuerName = listOf(
     RelativeDistinguishedName(
-        AttributeTypeAndValue.CommonName(
-            Asn1String.UTF8("Supreme Verifier")
-        )
+        AttributeTypeAndValue.CommonName("Supreme Verifier")
     )
 )
 var subjectName = listOf(
     RelativeDistinguishedName(
-        AttributeTypeAndValue.CommonName(
-            Asn1String.UTF8("Supreme Client")
-        )
+        AttributeTypeAndValue.CommonName("Supreme Client")
     )
 )
 
-val caCert: X509Certificate = TODO()
+val caCert: Certificate = TODO()
+
+
+
+
+
 
 
 
@@ -60,7 +52,7 @@ val caCert: X509Certificate = TODO()
 
 // --8<-- [start:backend-server]
 val server = embeddedServer(Netty, port = 8080) {
-   /*(1)!*/install(ContentNegotiation) { json() }
+    /*(1)!*/install(ContentNegotiation) { json() }
 
     routing {
      /*(2)!*/get(PATH_CHALLENGE) {

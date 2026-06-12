@@ -5,12 +5,12 @@ import at.asitplus.attestation.supreme.AttestationChallenge.Companion.CURRENT_VE
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Attestation
-import at.asitplus.signum.indispensable.asn1.*
-import at.asitplus.signum.indispensable.asn1.encoding.decodeToString
-import at.asitplus.signum.indispensable.asn1.encoding.decodeToUtf8String
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.*
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
+import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
@@ -220,10 +220,10 @@ private constructor(
     /**
      * Encapsulates the nonce encoded into a [KnownOIDs.serialNumber] RDN component for easier parsing
      */
-    fun getRdnSerialNumber(): AttributeTypeAndValue = AttributeTypeAndValue.Other(
+    fun getRdnSerialNumber(): AttributeTypeAndValue = AttributeTypeAndValue(
         KnownOIDs.serialNumber, Asn1String.Printable(
             nonce.toHexString(HexFormat.UpperCase)
-        )
+        ).encodeToTlv()
     )
 
     override fun equals(other: Any?): Boolean {
@@ -392,10 +392,10 @@ fun TbsCertificationRequest.deviceNameForChallenge(challenge: AttestationChallen
 /**
  * @see TbsCertificationRequest.deviceName
  */
-fun Pkcs10CertificationRequest.deviceNameForOid(oid: ObjectIdentifier): String? = tbsCsr.deviceNameForOid(oid)
+fun CertificationRequest.deviceNameForOid(oid: ObjectIdentifier): String? = tbsCsr.deviceNameForOid(oid)
 
 /**
  * @see TbsCertificationRequest.deviceNameForChallenge
  */
-fun Pkcs10CertificationRequest.deviceNameForChallenge(challenge: AttestationChallenge): String? =
+fun CertificationRequest.deviceNameForChallenge(challenge: AttestationChallenge): String? =
     tbsCsr.deviceNameForChallenge(challenge)

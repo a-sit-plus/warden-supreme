@@ -1,13 +1,11 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.*
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.decodeToEnum
-import at.asitplus.signum.indispensable.asn1.encoding.decodeToInt
-import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1ContentBytes
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.*
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
+import at.asitplus.signum.indispensable.pki.CertificateExtension
 
 
 interface AttestationExtension<A: AttestationExtension.AuthList> {
@@ -187,11 +185,11 @@ data class AttestationKeyDescription(
  * Tries to parse an [AttestationKeyDescription] certificate extension, if present.
  * Never throws.
  */
-val X509Certificate.androidAttestationExtension: AttestationKeyDescription?
+val Certificate.androidAttestationExtension: AttestationKeyDescription?
     get() = tbsCertificate.extensions?.firstOrNull { it.oid == AttestationKeyDescription.oid }
         ?.let {
             catchingUnwrapped {
-                val children = it.value.asEncapsulatingOctetString().children
+                val children = Asn1OctetString((it as CertificateExtension.X509Representable).derEncodedValue).asEncapsulatingOctetString().children
                 require(children.size == 1)
                 AttestationKeyDescription.decodeFromTlv(children.first().asSequence())
             }.getOrElse {

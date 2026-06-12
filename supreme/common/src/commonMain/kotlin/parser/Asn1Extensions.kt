@@ -1,9 +1,7 @@
 package at.asitplus.attestation.android
 
-import at.asitplus.signum.indispensable.asn1.Asn1CustomStructure
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.Asn1Element.Tag
-import at.asitplus.signum.indispensable.asn1.Asn1Set
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.Asn1Element.Tag
 
 internal fun Asn1Set.Companion.fromPresorted(children: List<Asn1Element>) = Asn1CustomStructure(
     tag = Tag.SET.tagValue.toUByte(),
