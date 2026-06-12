@@ -17,14 +17,16 @@ import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.CryptoSignature
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
-import at.asitplus.signum.indispensable.X509SignatureAlgorithm
-import at.asitplus.signum.indispensable.asn1.Asn1String
+import at.asitplus.signum.indispensable.SignatureAlgorithm
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.signum.indispensable.decodeFromDer
+import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.jsonEncoded
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
+import at.asitplus.signum.indispensable.pki.CertificationRequest
+import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate as SignumX509Certificate
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
@@ -151,7 +153,7 @@ internal fun publicKeyForAttestation(attestationJson: String): CryptoPublicKey {
     val attestation = Attestation.fromJSON(attestationJson)
     return when (attestation) {
         is AndroidKeystoreAttestation ->
-            attestation.certificateChain.first().decodedPublicKey.getOrThrow()
+            attestation.certificateChain.first().publicKey
         is IosHomebrewAttestation ->
             attestation.parsedClientData.publicKey
         else -> error("Unsupported attestation type: ${attestation::class.simpleName}")
@@ -170,12 +172,12 @@ internal fun createCsr(
     challenge: AttestationChallenge,
     attestationJson: String,
     keyPair: KeyPair,
-): Pkcs10CertificationRequest {
+): CertificationRequest {
     return createCsrWithAttributes(
         challenge,
         keyPair,
         listOf(
-            Pkcs10CertificationRequestAttribute(
+            CsrAttribute(
                 challenge.proofOID,
                 Asn1String.UTF8(attestationJson).encodeToTlv()
             )
@@ -188,9 +190,9 @@ internal fun createCsr(
 internal fun createCsrWithAttributes(
     challenge: AttestationChallenge,
     keyPair: KeyPair,
-    attributes: List<Pkcs10CertificationRequestAttribute>,
+    attributes: List<CsrAttribute>,
     publicKey: CryptoPublicKey = keyPair.public.toCryptoPublicKey().getOrThrow(),
-): Pkcs10CertificationRequest {
+): CertificationRequest {
     return createCsrWithSubject(
         subjectName = listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber())),
         keyPair = keyPair,
@@ -202,11 +204,11 @@ internal fun createCsrWithAttributes(
 internal fun createCsrWithoutNonce(
     keyPair: KeyPair,
     attestationJson: String,
-): Pkcs10CertificationRequest = createCsrWithSubject(
+): CertificationRequest = createCsrWithSubject(
     subjectName = emptyList(),
     keyPair = keyPair,
     attributes = listOf(
-        Pkcs10CertificationRequestAttribute(
+        CsrAttribute(
             WardenDefaults.OIDs.ATTESTATION_PROOF,
             Asn1String.UTF8(attestationJson).encodeToTlv()
         )
@@ -216,17 +218,17 @@ internal fun createCsrWithoutNonce(
 internal fun createCsrWithSubject(
     subjectName: List<RelativeDistinguishedName>,
     keyPair: KeyPair,
-    attributes: List<Pkcs10CertificationRequestAttribute>,
+    attributes: List<CsrAttribute>,
     publicKey: CryptoPublicKey = keyPair.public.toCryptoPublicKey().getOrThrow(),
-): Pkcs10CertificationRequest {
+): CertificationRequest {
     val tbsCsr = TbsCertificationRequest(
         subjectName = subjectName,
         publicKey = publicKey,
         attributes = attributes,
     )
     val (sigAlg, signature) = when (keyPair.private) {
-        is ECPrivateKey -> X509SignatureAlgorithm.ES256 to "SHA256withECDSA"
-        is RSAPrivateKey -> X509SignatureAlgorithm.RS256 to "SHA256withRSA"
+        is ECPrivateKey -> SignatureAlgorithm.ECDSAwithSHA256 to "SHA256withECDSA"
+        is RSAPrivateKey -> SignatureAlgorithm.RSAwithSHA256andPSSPadding to "SHA256withRSA"
         else -> error("Unsupported key algorithm: ${keyPair.private.algorithm}")
     }.let { (alg, jcaAlg) ->
         val signatureBytes = Signature.getInstance(jcaAlg).apply {
@@ -236,11 +238,11 @@ internal fun createCsrWithSubject(
         alg to signatureBytes
     }
     val cryptoSignature = when (sigAlg) {
-        X509SignatureAlgorithm.ES256 -> CryptoSignature.EC.decodeFromDer(signature)
-        X509SignatureAlgorithm.RS256 -> CryptoSignature.RSA(signature)
+        SignatureAlgorithm.ECDSAwithSHA256 -> CryptoSignature.EC.decodeFromDer(signature)
+        SignatureAlgorithm.RSAwithSHA256andPSSPadding -> CryptoSignature.RSA(signature)
         else -> error("Unsupported signature algorithm: $sigAlg")
     }
-    return Pkcs10CertificationRequest(tbsCsr, sigAlg, cryptoSignature)
+    return CertificationRequest(tbsCsr, sigAlg, cryptoSignature)
 }
 
 internal data class FakeAndroidAttestation(
@@ -300,12 +302,12 @@ internal data class AndroidFixture(
         verifier: AttestationVerifier,
         attestationJson: String = fake.attestationJson(),
         keyPair: KeyPair = fake.leafKeyPair,
-    ): Pkcs10CertificationRequest {
+    ): CertificationRequest {
         val challenge = verifier.issueChallenge(attestationEndpoint)
         return createCsr(challenge, attestationJson, keyPair)
     }
 
-    suspend fun issueCsrWithoutAttestationProof(verifier: AttestationVerifier): Pkcs10CertificationRequest {
+    suspend fun issueCsrWithoutAttestationProof(verifier: AttestationVerifier): CertificationRequest {
         val challenge = verifier.issueChallenge(attestationEndpoint)
         return createCsrWithAttributes(challenge, fake.leafKeyPair, attributes = emptyList())
     }

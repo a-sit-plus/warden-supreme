@@ -1,8 +1,8 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.encoding.parse
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.encoding.parse
 import co.nstant.`in`.cbor.CborDecoder
 import com.android.keyattestation.verifier.provisioningInfo
 import java.security.cert.X509Certificate

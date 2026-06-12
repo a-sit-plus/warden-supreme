@@ -2,10 +2,10 @@ package at.asitplus.attestation.android
 
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
-import at.asitplus.signum.indispensable.asn1.Asn1Encodable
-import at.asitplus.signum.indispensable.asn1.Asn1Exception
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.signum.indispensable.asn1.encodeToPEM
-import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import io.ktor.util.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SealedSerializationApi
@@ -38,7 +38,7 @@ import kotlin.io.encoding.Base64
  */
 @Serializable(with = TrustedRootSerializer::class)
 sealed interface TrustedRoot {
-    val value: Asn1Encodable<*>
+    val value: Encodable<*>
 
     /** Android-only policy attached to a trust root. */
     sealed interface AndroidSpecific : TrustedRoot {
@@ -106,7 +106,7 @@ sealed interface TrustedRoot {
 
         @Throws(Throwable::class)
         constructor(encoded: ByteArray) : this(
-            X509Certificate.decodeFromDer(encoded).toJcaCertificateBlocking().getOrThrow()
+            at.asitplus.signum.indispensable.pki.Certificate.decodeFromDer(encoded).toJcaCertificateBlocking().getOrThrow()
         )
 
         override val publicKey: java.security.PublicKey by lazy { certificate.publicKey }
@@ -144,7 +144,10 @@ sealed interface TrustedRoot {
     val publicKey: java.security.PublicKey
 
 
-    val derEncoded: ByteArray get() = value.encodeToDer()
+    val derEncoded: ByteArray get() = when(this) {
+        is PublicKey -> value.encodeToDer()
+        is Certificate -> value.encodeToDer()
+    }
 
     val trustAnchor: TrustAnchor
 
@@ -272,7 +275,7 @@ object TrustedRootSerializer : KSerializer<TrustedRoot> {
 
         val certificates = strings.mapNotNull { pem ->
             catchingUnwrapped {
-                at.asitplus.signum.indispensable.pki.X509Certificate.decodeFromPem(pem).getOrThrow()
+                at.asitplus.signum.indispensable.pki.Certificate.decodeFromPem(pem).getOrThrow()
                     .toJcaCertificateBlocking().getOrThrow()
             }.getOrNull()
         }

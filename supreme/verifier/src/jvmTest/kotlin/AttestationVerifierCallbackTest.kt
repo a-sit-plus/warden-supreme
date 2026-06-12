@@ -4,10 +4,9 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.WardenDebugAttestationStatement
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
-import io.kotest.engine.runBlocking
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -17,7 +16,7 @@ import kotlin.text.HexFormat
 val AttestationVerifierCallbackTest by matrixSuite {
     data class PreErrorCase(
         val name: String,
-        val csr: suspend AndroidFixture.(AttestationVerifier) -> Pkcs10CertificationRequest,
+        val csr: suspend AndroidFixture.(AttestationVerifier) -> CertificationRequest,
         val expected: AttestationResponse.Failure.Type,
         val expectedClass: Class<out PreAttestationError>,
         val issuer: CertificateIssuer = { emptyList() },

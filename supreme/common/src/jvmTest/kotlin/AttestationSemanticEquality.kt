@@ -1,10 +1,10 @@
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AttestationValue
 import at.asitplus.attestation.android.AuthorizationList
-import at.asitplus.signum.indispensable.asn1.Asn1Encodable
-import at.asitplus.signum.indispensable.asn1.Asn1Integer
-import at.asitplus.signum.indispensable.asn1.encoding.decodeFromAsn1ContentBytes
-import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1ContentBytes
+import at.asitplus.awesn1.Asn1Encodable
+import at.asitplus.awesn1.Asn1Integer
+import at.asitplus.awesn1.encoding.decodeFromAsn1ContentBytes
+import at.asitplus.awesn1.encoding.encodeToAsn1ContentBytes
 import com.google.android.attestation.ParsedAttestationRecord
 import com.google.protobuf.ByteString
 import kotlinx.datetime.number

@@ -2,7 +2,7 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.RSAPadding
+import at.asitplus.signum.indispensable.asymmetric.RSAPadding
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.nativeDigest
 import kotlinx.serialization.SerialName
@@ -37,7 +37,7 @@ data class KeyConstraints(
         @SerialName("RSA")
         class RSA(
             val keySize: @Serializable(with = BitLengthSerializer::class) BitLength,
-            val paddings: Set<RSAPadding> = setOf(RSAPadding.PSS),
+            val paddings: Set<RSAPadding> = setOf(RSAPadding.OAEP.SHA256),
             override val digests: Set<Digest> = setOf(Digest.SHA256),
             val allowDecrypting: Boolean = false,
         ) : AlgorithmParameters() {
