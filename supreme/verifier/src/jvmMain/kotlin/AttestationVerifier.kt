@@ -1,5 +1,10 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.Signum
+
+import at.asitplus.awesn1.encoding.encodeToDer
+import at.asitplus.signum.indispensable.pki.*
+
 import at.asitplus.KmmResult
 import at.asitplus.attestation.*
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
@@ -12,14 +17,14 @@ import at.asitplus.attestation.supreme.PreAttestationError.ChallengeVerification
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
-import at.asitplus.signum.indispensable.asn1.Asn1StructuralException
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
+import at.asitplus.awesn1.Asn1StructuralException
+import at.asitplus.awesn1.ObjectIdentifier
+import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.indispensable.pki.X509CertificateExtension
-import at.asitplus.signum.supreme.hash.digest
+import at.asitplus.signum.indispensable.pki.CertificateExtension
+import at.asitplus.signum.indispensable.digest.digest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
@@ -178,12 +183,12 @@ constructor(
      */
     @Deprecated("To be removed in 1.3. Replace with forward-compatible variant taking AttestationProof")
     suspend fun verifyAttestation(
-        csr: Pkcs10CertificationRequest,
-        onChallengeValidated: suspend AttestationChallenge.(Pkcs10CertificationRequest) -> Unit = { },
+        csr: CertificationRequest,
+        onChallengeValidated: suspend AttestationChallenge.(CertificationRequest) -> Unit = { },
         onPreAttestationError: suspend PreAttestationError.() -> String? = { null },
         onAttestationError: suspend AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
         onAttestationSuccess: suspend AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
-        additionalVerifications: suspend AttestationChallenge.(Pkcs10CertificationRequest, AttestationResult.Verified) -> AttestationResponse.Failure? = { _, _ -> null },
+        additionalVerifications: suspend AttestationChallenge.(CertificationRequest, AttestationResult.Verified) -> AttestationResponse.Failure? = { _, _ -> null },
         certificateIssuer: CertificateIssuer,
     ): AttestationResponse = verifyAttestation(
         attestationProof = AttestationProof.Signed(csr),
@@ -318,8 +323,8 @@ constructor(
                     val proof = tbsCsr.attributes.single { it.oid == validatedChallenge.proofOID }
                     val hashInput = tbsCsr.toHashInput(validatedChallenge.proofOID)
                     require(
-                        hashInput.toTbsCsr(tbsCsr.publicKey, proof).encodeToDer()
-                            .contentEquals(tbsCsr.encodeToDer())
+                        hashInput.toTbsCsr(tbsCsr.publicKey, proof).asn1.toDer()
+                            .contentEquals(tbsCsr.asn1.toDer())
                     ) { "TBS CSR does not use the canonical attestation binding" }
                     (expectedAuthentication as DataAuthentication.Hash).algorithm.digest(hashInput.encodeToDer())
                 }.getOrElse {
@@ -361,8 +366,8 @@ constructor(
         }
         attributes.singleOrNull { it.oid == extensionRequestOid }?.let { extensionRequest ->
             val extensions = catchingUnwrapped {
-                extensionRequest.value.single().asSequence().map {
-                    X509CertificateExtension.decodeFromTlv(it.asSequence())
+                extensionRequest.asn1.toRepresentation().value.single().asSequence().map {
+                    CertificateExtension.fromAsn1(it.asSequence())
                 }
             }.getOrElse {
                 return clientDataValidationFailure(
@@ -386,7 +391,9 @@ constructor(
                 )
             }
         }
-        return if (challenge.dataAuth != DataAuthentication.Signature && (attributes.map { it.encodeToTlv() } != Asn1.SetOf { attributes.forEach { +it } }
+        return if (challenge.dataAuth != DataAuthentication.Signature && (attributes.map { it.asn1.toTlv() } != Asn1.SetOf {
+                attributes.forEach { +it.asn1.toTlv() }
+            }
                 .toList())) {
             clientDataValidationFailure(
                 type = Type.CONTENT,
@@ -433,7 +440,7 @@ constructor(
                 )
             },
             onSuccess = { publicKey, details ->
-                if (publicKey.encoded.contentEquals(tbsCsr.publicKey.encodeToDer())) KeyVerification.Success(
+                if (publicKey.encoded.contentEquals(tbsCsr.publicKey.asn1.toDer())) KeyVerification.Success(
                     VerifiedAttestation(publicKey, details)
                 )
                 else KeyVerification.Failure(
@@ -459,10 +466,10 @@ constructor(
         if (prepared.attestationProof is AttestationProof.Signed) {
             val csr = prepared.attestationProof.data
             val signatureValid = catchingUnwrapped {
-                csr.jcaSignature().getOrThrow().run {
+                csr.jcaSignature().run {
                     initVerify(verified.publicKey)
-                    update(csr.tbsCsr.encodeToDer())
-                    verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)
+                    update(csr.tbsCsr.asn1.toDer())
+                    verify(csr.signature.jcaSignatureBytes)
                 }
             }.getOrElse {
                 return Failure(Type.INTERNAL, it.operationalReason(callbacks.onPreAttestationError))
@@ -523,7 +530,7 @@ constructor(
                 catchingUnwrapped {
                     callbacks.onAttestationSuccess(
                         verified.details,
-                        verified.publicKey.toCryptoPublicKey().getOrThrow()/*TODO mlDSA once Signum supports it*/
+                        verified.publicKey.toCryptoPublicKey()/*TODO mlDSA once Signum supports it*/
                     )
                 }
                 AttestationResponse.Success(certificateChain)
@@ -564,13 +571,13 @@ constructor(
         data class Failure(val response: AttestationResponse.Failure) : KeyVerification
     }
 
-    private fun Pkcs10CertificationRequest.jcaSignature(): KmmResult<Signature> =
-        (signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance()
+    private fun CertificationRequest.jcaSignature(): Signature =
+        signatureAlgorithm.getJCASignatureInstance()
 
     context(challenge: AttestationChallenge)
     private fun TbsCertificationRequest.attestedAttributes() = AttestedAttributes(
         otherAttributesEncoded = challenge.toBeAttestedAttributes?.let { requested ->
-            attributes.singleOrNull { it.oid == requested.oid }?.value?.singleOrNull()?.asSequence()
+            attributes.singleOrNull { it.oid == requested.oid }?.asn1?.toRepresentation()?.value?.singleOrNull()?.asSequence()
                 ?: throw Asn1StructuralException("Requested attested attributes not present")
         },
     )
@@ -631,7 +638,7 @@ constructor(
     }.getOrNull()
 
     private suspend fun Throwable.extractionReason(
-        csr: Pkcs10CertificationRequest,
+        csr: CertificationRequest,
         onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.AttestationStatementExtraction(this, csr).onPreAttestationError()
@@ -720,7 +727,11 @@ constructor(
             attestationChallengeValidator: (Clock, Duration) -> AttestationChallengeValidator = { clock, verificationTimeOffset ->
                 InMemoryChallengeCache(clock, verificationTimeOffset)
             }
-        ): AttestationVerifier =   @Suppress("DEPRECATION") invoke(configuration, nonceGenerator, challengeValidator =  attestationChallengeValidator)
+        ): AttestationVerifier = @Suppress("DEPRECATION") invoke(
+            configuration,
+            nonceGenerator,
+            challengeValidator = attestationChallengeValidator
+        )
     }
 }
 
@@ -729,11 +740,11 @@ fun AttestationVerifier.decodeAttestationProof(payload: ByteArray): KmmResult<At
     require(payload.size <= maxAttestationPayloadBytes) {
         "Attestation payload exceeds $maxAttestationPayloadBytes bytes"
     }
-        catchingUnwrapped {
-            Signed(Pkcs10CertificationRequest.decodeFromDer(payload))
-        }.getOrElse {
-            Hashed(TbsCertificationRequest.decodeFromDer(payload))
-        }
+    catchingUnwrapped {
+        Signed(CertificationRequest.fromAsn1(payload))
+    }.getOrElse {
+        Hashed(TbsCertificationRequest.fromAsn1(payload))
+    }
 }
 
 
@@ -764,7 +775,7 @@ interface ChallengeValidator {
      * * It must return a [ChallengeValidationResult.Failure.Other] if other validation errors occur, such as no valid challenge matching the request.
      * In addition, it **should** also remove all expired challenges, to keep stale challenges from inflating memory/storage.
      */
-    suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult
+    suspend fun validate(csr: CertificationRequest): ChallengeValidationResult
 }
 
 //this is for compatibility reasons
@@ -800,7 +811,7 @@ interface AttestationChallengeValidator : ChallengeValidator {
      */
     suspend fun validate(attestationProof: AttestationProof): ChallengeValidationResult
 
-    override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult =
+    override suspend fun validate(csr: CertificationRequest): ChallengeValidationResult =
         validate(AttestationProof.Signed(csr))
 }
 
@@ -831,7 +842,7 @@ sealed class ChallengeValidationResult {
  * shall be returned.
  */
 @Deprecated("To be removed in Warden Supreme 1.3", replaceWith = ReplaceWith("ProofToChain"))
-typealias CertificateIssuer = suspend AttestationResult.Verified.(Pkcs10CertificationRequest) -> CertificateChain
+typealias CertificateIssuer = suspend AttestationResult.Verified.(CertificationRequest) -> CertificateChain
 
 /**
  * Receives the signed CSR or unsigned TBS CSR from the mobile client after it was thoroughly checked and verified.
@@ -856,7 +867,7 @@ sealed class PreAttestationError {
         "To be removed in Warden Supreme 1.3. Replace with forward-compatible AugmentedAttestationStatementExtraction",
         replaceWith = ReplaceWith("AugmentedAttestationStatementExtraction")
     )
-    class AttestationStatementExtraction(override val throwable: Throwable, val csr: Pkcs10CertificationRequest) :
+    class AttestationStatementExtraction(override val throwable: Throwable, val csr: CertificationRequest) :
         PreAttestationError()
 
     class AugmentedAttestationStatementExtraction(

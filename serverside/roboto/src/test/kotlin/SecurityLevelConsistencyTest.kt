@@ -7,14 +7,13 @@ import at.asitplus.attestation.android.engine.RtgAttestationEngine
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.generator.Provisioning
 import at.asitplus.attestation.generator.androidAttestationIssuer
-import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.testballoon.matrix.matrixSuite
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
+import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel as ParsedSecurityLevel
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
-import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel as ParsedSecurityLevel
 
 val SecurityLevelConsistencyTest by matrixSuite {
     val issuedAt = Instant.parse("2025-01-10T00:00:00Z")
@@ -122,7 +121,7 @@ val SecurityLevelConsistencyTest by matrixSuite {
                         verifiedBootHash = ByteArray(32) { 3 },
                     )
                 )
-            }.certificateChain.map { it.toJcaCertificateBlocking().getOrThrow() }
+            }.certificateChain
             val app = AndroidAttestationConfiguration.AppData("security.level.test", setOf(fingerprint))
             val configuration = AndroidAttestationConfiguration(
                 applications = listOf(app),
@@ -133,11 +132,11 @@ val SecurityLevelConsistencyTest by matrixSuite {
                 "hardware fallback distinguishes an unknown chain level from SOFTWARE" {
                     val engine = RtgAttestationEngine.Hardware(configuration, ByteArray::contentEquals)
                     val chainLevel =
-                        with(engine.certChainValidator) { KeyAttestationCertPath(chain).generalizedSecurityLevel }
-                    chainLevel shouldBe null
+                        with(engine.certChainValidator) {chain.verify(issuedAt, setOf(TrustedRoot.Certificate(chain.last())), requireRKP = false)}
+                    chainLevel.verdict.getOrThrow() shouldBe null
                     val record = with(engine) { chain.attestationRecord }
                     with(engine.HardwareEngine()) {
-                        chainLevel.coerce() shouldBe TEE
+                        chainLevel.verdict.getOrThrow().coerce() shouldBe TEE
                         SOFTWARE.coerce() shouldBe SOFTWARE
                         shouldThrow<AttestationValueException> {
                             verifySecurityLevel(SOFTWARE.coerce(), record, appOverride = null)

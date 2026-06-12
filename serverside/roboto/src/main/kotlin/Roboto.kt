@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.KmmResult
 import at.asitplus.attestation.android.engine.AndroidAttestationEngine
 import at.asitplus.attestation.android.engine.RtgAttestationEngine
@@ -9,7 +10,7 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
-import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
+import at.asitplus.signum.indispensable.toKmpCertificate
 import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.coroutines.runBlocking
 import java.security.cert.X509Certificate
@@ -71,7 +72,7 @@ constructor(
 
 
     private val engines =
-        mutableListOf<AndroidAttestationEngine<*, *, X509Certificate, KeyAttestationCertPath>>().apply {
+        mutableListOf<AndroidAttestationEngine<*, *>>().apply {
             if (!attestationConfiguration.disableHardwareAttestation) add(
                 if (attestationConfiguration.supremeParser)
                     SupremeAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
@@ -146,6 +147,15 @@ constructor(
         certificates
     )
 
+    @JvmName("collectDebugInfoSignumCertificates")
+    suspend fun collectDebugInfo(
+        certificates: CertificateChain,
+        expectedChallenge: ByteArray,
+        verificationDate: Instant = Clock.System.now(),
+    ) = AndroidDebugAttestationStatement(
+        this, attestationConfiguration, verificationDate, expectedChallenge, certificates,
+    )
+
     /**
      * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
      * Checks are performed according to the properties set in the [attestationConfiguration].
@@ -163,8 +173,18 @@ constructor(
     suspend fun verify(
         certificates: List<X509Certificate>,
         verificationDate: Instant = Clock.System.now(),
-        expectedChallenge: ByteArray
+        expectedChallenge: ByteArray,
     ): KmmResult<List<X509Certificate>> = catching {
+        verify(certificates.map { it.toKmpCertificate() }, verificationDate, expectedChallenge).getOrThrow()
+        certificates
+    }
+
+    @JvmName("verifySignumCertificates")
+    suspend fun verify(
+        certificates: CertificateChain,
+        verificationDate: Instant = Clock.System.now(),
+        expectedChallenge: ByteArray
+    ): KmmResult<CertificateChain> = catching {
         var revocationLists = emptyList<ConfigWithList>()
         val results = engines.map {
             catchingUnwrapped {
@@ -226,11 +246,25 @@ fun Roboto.verifyBlocking(
     expectedChallenge: ByteArray
 ): KmmResult<List<X509Certificate>> = runBlocking { verify(certificates, verificationDate, expectedChallenge) }
 
+@JvmName("verifySignumCertificatesBlocking")
+fun Roboto.verifyBlocking(
+    certificates: CertificateChain,
+    verificationDate: Instant = Clock.System.now(),
+    expectedChallenge: ByteArray,
+): KmmResult<CertificateChain> = runBlocking { verify(certificates, verificationDate, expectedChallenge) }
+
 /**
  * Blocking version of [Roboto.collectDebugInfo]
  */
 fun Roboto.collectDebugInfoBlocking(
     certificates: List<X509Certificate>,
+    expectedChallenge: ByteArray,
+    verificationDate: Instant = Clock.System.now(),
+) = runBlocking { collectDebugInfo(certificates, expectedChallenge, verificationDate) }
+
+@JvmName("collectSignumDebugInfoBlocking")
+fun Roboto.collectDebugInfoBlocking(
+    certificates: CertificateChain,
     expectedChallenge: ByteArray,
     verificationDate: Instant = Clock.System.now(),
 ) = runBlocking { collectDebugInfo(certificates, expectedChallenge, verificationDate) }

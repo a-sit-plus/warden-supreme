@@ -10,7 +10,7 @@ import at.asitplus.signum.indispensable.toKmpCertificate
  */
 val java.security.cert.X509Certificate.androidAttestationExtension: AttestationKeyDescription?
     get() = catchingUnwrapped {
-        toKmpCertificate().getOrNull()?.androidAttestationExtension
+        toKmpCertificate().androidAttestationExtension
     }.getOrElse {
         null
     }
@@ -18,7 +18,7 @@ val java.security.cert.X509Certificate.androidAttestationExtension: AttestationK
 @Deprecated("To be Removed in Warden Supreme 1.2; Unsafe behaviour", replaceWith = ReplaceWith("closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension"), DeprecationLevel.ERROR)
 val List<java.security.cert.X509Certificate>.androidAttestationExtension: AttestationKeyDescription?
     get() = catchingUnwrapped {
-        mapNotNull { it.toKmpCertificate().getOrNull() }.let {
+        map { it.toKmpCertificate() }.let {
             if (it.size != this.size) null else it.androidAttestationExtension
         }
     }.getOrElse {
@@ -42,7 +42,7 @@ val java.security.cert.X509Certificate.hasAndroidKeystoreAttestation get() = and
  */
 @Throws(Throwable::class)
 fun List<java.security.cert.X509Certificate>.withAndroidAttestationExtensions(): List<java.security.cert.X509Certificate> =
-    filter { it.toKmpCertificate().getOrThrow().androidAttestationExtension != null }
+    filter { it.toKmpCertificate().androidAttestationExtension != null }
 
 /**
  * Returns the certificate matching the predicate that is closes to the root. Can be the root itself.
