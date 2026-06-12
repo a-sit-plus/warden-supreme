@@ -1,12 +1,17 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.supreme.installSupreme
+import at.asitplus.signum.Signum
+
+
 import at.asitplus.attestation.AttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
+import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.fromAsn1
 import at.asitplus.attestation.isYamlDecoder
 import at.asitplus.attestation.isYamlEncoder
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
-import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.indispensable.toJcaCertificateBlocking
+import at.asitplus.signum.indispensable.pki.Certificate
 import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
@@ -30,7 +35,6 @@ import net.mamoe.yamlkt.YamlLiteral
 import net.mamoe.yamlkt.YamlMap
 import java.security.KeyFactory
 import java.security.PublicKey
-import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
 import kotlin.io.encoding.Base64
 import kotlin.math.absoluteValue
@@ -78,7 +82,7 @@ data class PatchLevel @JvmOverloads constructor(
 
 
 val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
-    X509Certificate.decodeFromPem(
+    Certificate.fromAsn1(
         """
             -----BEGIN CERTIFICATE-----
             MIICIjCCAaigAwIBAgIRAISp0Cl7DrWK5/8OgN52BgUwCgYIKoZIzj0EAwMwUjEc
@@ -95,7 +99,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
             uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
             -----END CERTIFICATE-----
             """.trimIndent()
-    ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+    ),
     enforceFactoryProvisionedChainValidity = true /*NOOP for an RKP root, but better safe than sorry*/
 )
 
@@ -105,7 +109,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
 val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
     //Current RSA ROOT
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAPHBcqaZ6vUdMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -138,14 +142,14 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             w1IdYIg2Wxg7yHcQZemFQg==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
     //new Google EC Root
     GOOGLE_RKP_EC_ROOT,
     //Old, but as of 2025 still valid root certificate. Will expire in 2026
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFYDCCA0igAwIBAgIJAOj6GWMU0voYMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -179,13 +183,13 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             wDB5y0USicV3YgYGmi+NZfhA4URSh77Yd6uuJOJENRaNVTzk
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 
     //old, but still valid
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJANUP8luj8tazMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -218,13 +222,13 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             ex0SdDrx+tWUDqG8At2JHA==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 
     //old, but still valid
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAMNrfES5rhgxMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -257,33 +261,19 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             mD/vFDkzF+wm7cyWpQpCVQ==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 )
 
 private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
-    KeyFactory.getInstance("EC")
-        .generatePublic(
-            X509EncodedKeySpec(
-                Base64.decode(
-                    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
-                            "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
-                )
-            )
-        ),
-    KeyFactory.getInstance("RSA")
-        .generatePublic(
-            X509EncodedKeySpec(
-                Base64.decode(
-                    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
-                            "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
-                            "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
-                            "+Vfkl5YLCazOkjWFmwIDAQAB"
-                )
-            )
-        )
-)
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+        "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA==",
+    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+        "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+        "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+        "+Vfkl5YLCazOkjWFmwIDAQAB",
+).map { CryptoPublicKey.fromAsn1(Base64.decode(it)) }
 
 /**
  * Default trust anchors used to verify software attestation working up to Android 12. Useful for testing.
@@ -294,7 +284,7 @@ private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
 val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
     GOOGLE_OLD_TRUST_ANCHORS.map {
         TrustedRoot.PublicKey(
-            publicKey = it,
+            value = it,
             enforceFactoryProvisionedChainValidity = false
         )
     }.toSet()
@@ -487,6 +477,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val allowTeeSecurityLevelForStrongbox: Boolean = false,
 
 ) : AttestationConfiguration {
+
+    init { Signum.installSupreme() }
 
     /**
      * Convenience constructor to attest a single app
@@ -1404,6 +1396,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonElement(): JsonObject = jsonDebug.encodeToJsonElement(this).jsonObject
 
     companion object : AttestationConfiguration.Reader<AndroidAttestationConfiguration> {
+
+        init { Signum.installSupreme() }
 
         private val yaml by lazy {
             Yaml {

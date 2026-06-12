@@ -2,6 +2,9 @@
 
 package at.asitplus.attestation.data
 
+
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AuthorizationList
 import at.asitplus.attestation.generator.CertifiedKey
@@ -10,13 +13,13 @@ import at.asitplus.attestation.generator.RootSpec
 import at.asitplus.attestation.generator.androidAttestationIssuer
 import at.asitplus.attestation.generator.mangle
 import at.asitplus.signum.indispensable.CryptoPrivateKey
-import at.asitplus.signum.indispensable.asn1.encodeToPEM
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
+import kotlinx.coroutines.runBlocking
+import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.signum.indispensable.toJcaPrivateKey
 import at.asitplus.signum.indispensable.toJcaPublicKey
-import at.asitplus.signum.supreme.sign.Signer
+import at.asitplus.signum.indispensable.sign.Signer
 import java.security.KeyPair
 import java.security.cert.X509Certificate
 import java.util.Date
@@ -239,19 +242,19 @@ private fun AuthorizationList.withRawInt(property: AuthorizationList.Tagged, val
     mangle(property, Asn1.ExplicitlyTagged(property.explicitTag) { +Asn1.Int(value) })
 
 private fun ProvisioningAuthority.asRootSpec() = RootSpec(
-    certificatePem = rootCertificate.toKmp().encodeToPEM().getOrThrow(),
-    privateKeyPkcs8Pem = CryptoPrivateKey.decodeFromDer(rootKeyPair.private.encoded).encodeToPEM().getOrThrow(),
+    certificatePem = rootCertificate.toKmp().asn1.toPem(),
+    privateKeyPkcs8Pem = CryptoPrivateKey.fromAsn1(rootKeyPair.private.encoded).asn1.toPem(),
 )
 
 private fun java.security.cert.X509Certificate.toKmp() =
-    at.asitplus.signum.indispensable.pki.X509Certificate.decodeFromDer(encoded)
+    at.asitplus.signum.indispensable.pki.Certificate.fromAsn1(encoded)
 
-private fun at.asitplus.signum.indispensable.pki.X509Certificate.toJava(): X509Certificate =
-    toJcaCertificateBlocking().getOrThrow()
+private fun at.asitplus.signum.indispensable.pki.Certificate.toJava(): X509Certificate =
+    toJcaCertificateBlocking()
 
 private fun CertifiedKey.toJavaKeyPair(): KeyPair = signer.toJavaKeyPair()
 
-private fun Signer.toJavaKeyPair(): KeyPair {
-    val privateKey = exportPrivateKey().getOrThrow() as CryptoPrivateKey.WithPublicKey<*>
-    return KeyPair(publicKey.toJcaPublicKey().getOrThrow(), privateKey.toJcaPrivateKey().getOrThrow())
+private fun Signer.WithExportableKey.toJavaKeyPair(): KeyPair = runBlocking {
+    val privateKey = exportPrivateKey() as CryptoPrivateKey.WithPublicKey
+    KeyPair(publicKey.toJcaPublicKey(), privateKey.toJcaPrivateKey())
 }

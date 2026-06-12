@@ -4,7 +4,7 @@ import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.WardenDebugAttestationStatement
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +65,7 @@ internal class JavaAttestationVerifier internal constructor(configuration: Supre
         fun certificateIssuer(
             verified: AttestationResult.Verified,
             proof: AttestationProof,
-        ): List<X509Certificate>
+        ): List<Certificate>
     }
 
     private fun <T> submit(block: suspend () -> T): CompletableFuture<T> = CompletableFuture<T>().also { future ->

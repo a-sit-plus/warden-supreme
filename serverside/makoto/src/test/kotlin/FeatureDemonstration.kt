@@ -2,6 +2,8 @@
 
 package at.asitplus.attestation
 
+import at.asitplus.signum.indispensable.sign.*
+
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.PatchLevel

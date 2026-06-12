@@ -1,24 +1,34 @@
 package at.asitplus.attestation.android.engine
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.hasAndroidKeyAttestationExtensionOid
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.Asn1ExplicitlyTagged
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.parse
-import com.google.android.attestation.Constants.KEY_DESCRIPTION_OID
-import java.nio.charset.StandardCharsets.UTF_8
-import java.security.cert.X509Certificate
+import at.asitplus.awesn1.Asn1Structure
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.Asn1ExplicitlyTagged
+import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.awesn1.encoding.parse
+import at.asitplus.attestation.android.AttestationKeyDescription
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.signum.indispensable.pki.Certificate
 
 /** Reads only the bounded application identity needed to choose an app-specific trust policy. */
-internal fun List<X509Certificate>.selectAttestedApplication(
+internal fun CertificateChain.selectAttestedApplication(
     applications: List<AndroidAttestationConfiguration.AppData>,
 ): AndroidAttestationConfiguration.AppData? {
     val certificate = lastOrNull { it.hasAndroidKeyAttestationExtensionOid } ?: return null
-    val extension = certificate.getExtensionValue(KEY_DESCRIPTION_OID) ?: return null
+    val extension = certificate.tbsCertificate.extensions.firstOrNull { it.oid == AttestationKeyDescription.oid }
+        ?.asn1?.toRepresentation()?.let { Asn1.OctetString(it.value).derEncoded } ?: return null
     return selectAttestedApplication(extension, applications)
 }
+
+@JvmName("selectAttestedApplicationJvm")
+internal fun List<java.security.cert.X509Certificate>.selectAttestedApplication(
+    applications: List<AndroidAttestationConfiguration.AppData>,
+): AndroidAttestationConfiguration.AppData? =
+    map { Certificate.fromAsn1(it.encoded) }.selectAttestedApplication(applications)
 
 internal fun selectAttestedApplication(
     extension: ByteArray,
@@ -27,7 +37,7 @@ internal fun selectAttestedApplication(
     require(extension.size <= MAX_EXTENSION_BYTES) { "Attestation extension is too large" }
 
     val keyDescriptionBytes = Asn1Element.parse(extension).asOctetString().content
-    val keyDescription = Asn1Element.parse(keyDescriptionBytes).asSequence()
+    val keyDescription = parseBounded(keyDescriptionBytes).asSequence()
     require(keyDescription.children.size == KEY_DESCRIPTION_FIELD_COUNT) { "Invalid key description" }
     val appIdTags = keyDescription.children[SOFTWARE_ENFORCED_INDEX].asSequence().children
         .filterIsInstance<Asn1ExplicitlyTagged>()
@@ -39,7 +49,7 @@ internal fun selectAttestedApplication(
         ?: return null
     require(appId.size <= MAX_APPLICATION_ID_BYTES) { "Attestation application ID is too large" }
 
-    val fields = Asn1Element.parse(appId).asSequence().children
+    val fields = parseBounded(appId).asSequence().children
     require(fields.size == APPLICATION_ID_FIELD_COUNT) { "Invalid attestation application ID" }
     val packages = fields[0].asSet().children
     val digests = fields[1].asSet().children
@@ -52,7 +62,7 @@ internal fun selectAttestedApplication(
             if (values.size != PACKAGE_INFO_FIELD_COUNT) return@any false
             val name = values[0].asOctetString().content
             values[1].asPrimitive()
-            name.size <= MAX_PACKAGE_NAME_BYTES && String(name, UTF_8) == app.packageName
+            name.size <= MAX_PACKAGE_NAME_BYTES && name.decodeToString() == app.packageName
         }
     }
     if (packageMatches.isEmpty()) throw AttestationValueException(
@@ -72,6 +82,18 @@ internal fun selectAttestedApplication(
         expectedValue = packageMatches.flatMap { it.signerFingerprints },
         actualValue = null,
     )
+}
+
+private fun parseBounded(bytes: ByteArray): Asn1Element {
+    val root = Asn1Element.parse(bytes)
+    val pending = ArrayDeque<Pair<Asn1Element, Int>>()
+    pending.add(root to 0)
+    while (pending.isNotEmpty()) {
+        val (element, depth) = pending.removeLast()
+        require(depth <= 64) { "Attestation data is too deeply nested" }
+        if (element is Asn1Structure) element.children.forEach { pending.add(it to depth + 1) }
+    }
+    return root
 }
 
 private const val SOFTWARE_ENFORCED_INDEX = 6

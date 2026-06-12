@@ -5,8 +5,8 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.AuthorizationList.UserAuth.Type
 import at.asitplus.attestation.supreme.SortedSet
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.*
-import at.asitplus.signum.indispensable.asn1.encoding.*
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.*
 import at.asitplus.signum.indispensable.misc.BitLength
 import kotlinx.datetime.Month
 import kotlinx.datetime.YearMonth
@@ -957,7 +957,7 @@ data class AuthorizationList private constructor(
     override fun encodeToTlv() = Asn1.Sequence {
         elements.forEach { element ->
             when (element) {
-                is Element.Single -> add(element.value)
+                is Element.Single -> addTagged(element.value)
                 is Element.SetOf -> add(element.value)
                 is Element.Unknown -> +element.value
             }
@@ -1056,7 +1056,7 @@ data class AuthorizationList private constructor(
             // whole extension down instead of becoming a Failure.
             @Suppress("UNCHECKED_CAST")
             return catchingUnwrapped {
-                (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(src = element).getOrThrow()
+                (this as Asn1Decodable<Asn1Element, D>).decodeFromTlv(src = element)
             }.fold(
                 onSuccess = { AttestationValue.Success(it, this) },
                 onFailure = { AttestationValue.Failure(D::class.simpleName!!, this, element) }
@@ -1074,7 +1074,7 @@ data class AuthorizationList private constructor(
                     AttestationValue.Failure(D::class.simpleName!!, this, child)
                 } else {
                     catchingUnwrapped {
-                        (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(primitiveOrNull).getOrThrow()
+                        (this as Asn1Decodable<Asn1Element, D>).decodeFromTlv(primitiveOrNull)
                     }.fold(
                         onSuccess = { AttestationValue.Success(it, this) },
                         onFailure = { AttestationValue.Failure(D::class.simpleName!!, this, child) }
@@ -1099,7 +1099,8 @@ data class AuthorizationList private constructor(
         element?.let { +it.encode() }
     }
 
-    private fun Asn1TreeBuilder.add(element: Tagged.WithTag<*>?) {
+    // The builder's add(Asn1Encodable) would omit the explicit authorization tag.
+    private fun Asn1TreeBuilder.addTagged(element: Tagged.WithTag<*>?) {
         element?.let { +Asn1.ExplicitlyTagged(it.tagged.explicitTag) { +it.encodeToTlv() } }
     }
 
@@ -2055,7 +2056,7 @@ data class AuthorizationList private constructor(
                 }
 
                 if (signatureDigests is OrderPreservingSet<*>) {
-                    +Asn1Set.fromPresorted(signatureDigests.map { it.encodeToAsn1OctetStringPrimitive() })
+                    +Asn1Set.fromPresorted(signatureDigests.map { Asn1OctetString(it) })
                 } else {
                     +Asn1.SetOf { signatureDigests.forEach { +Asn1.OctetString(it) } }
                 }

@@ -2,10 +2,10 @@
 
 package at.asitplus.attestation.android
 
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.Asn1Set
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.parse
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.Asn1Set
+import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.awesn1.encoding.parse
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe

@@ -55,8 +55,10 @@ kotlin {
         }
 
         commonMain.dependencies {
+            api(libs.signum)
             api(libs.supreme)
             api(serialization("json"))
+            api(datetime())
         }
 
         jvmMain.dependencies {

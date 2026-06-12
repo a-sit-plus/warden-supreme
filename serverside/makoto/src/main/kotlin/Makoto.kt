@@ -1,5 +1,11 @@
 package at.asitplus.attestation
 
+
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.signum.Signum
+
+import at.asitplus.signum.indispensable.sign.*
+
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.Roboto
 import at.asitplus.attestation.android.exceptions.AttestationValueException
@@ -550,7 +556,7 @@ class Makoto
                     ).let {
                         when (it) {
                             is AttestationResult.IOS -> KeyAttestation(
-                                attestationProof.parsedClientData.publicKey.toJcaPublicKey().getOrThrow(), it
+                                attestationProof.parsedClientData.publicKey.toJcaPublicKey(), it
                             )
 
                             is AttestationResult.Error -> KeyAttestation(null, it)
@@ -569,7 +575,7 @@ class Makoto
             }
 
             is AndroidKeystoreAttestation -> verifyAttestationAndroid(
-                attestationProof.certificateChain.map { it.encodeToDer() },
+                attestationProof.certificateChain.map { it.asn1.toDer() },
                 challenge
             ).let {
                 when (it) {

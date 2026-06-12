@@ -1,7 +1,7 @@
 import at.asitplus.attestation.supreme.*
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.test.Target
 import at.asitplus.testballoon.matrix.matrixSuite

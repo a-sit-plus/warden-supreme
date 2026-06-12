@@ -2,9 +2,9 @@ import at.asitplus.attestation.android.AttestationValue
 import at.asitplus.attestation.android.AuthorizationList
 import at.asitplus.attestation.android.AuthorizationList.AttestationId
 import at.asitplus.attestation.android.AuthorizationList.PatchLevel
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.Asn1Integer
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.Asn1Integer
+import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.withClue

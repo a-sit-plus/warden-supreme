@@ -1,5 +1,6 @@
 package at.asitplus.attestation
 
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
@@ -9,7 +10,6 @@ import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.attestation.supreme.SupremeConfiguration
-import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.toKmpCertificate
@@ -378,8 +378,8 @@ private object HopliteFixtures {
 }
 
 private fun trustedRootPem(root: TrustedRoot): String = when (root) {
-    is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().getOrThrow().encodeToPEM().getOrThrow()
-    is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().getOrThrow().encodeToPEM().getOrThrow()
+    is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().asn1.toPem()
+    is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().asn1.toPem()
 }
 
 private fun JsonElement.recaseKeys(style: PropertyCaseStyle): JsonElement = when (this) {
