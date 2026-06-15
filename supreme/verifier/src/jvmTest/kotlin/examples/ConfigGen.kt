@@ -17,6 +17,7 @@ import de.infix.testBalloon.framework.core.TestCompartment
 import de.infix.testBalloon.framework.core.testSuite
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -147,8 +148,9 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
         }
     }
 
-    "Manual YAML" {
-        val minimum = """
+    "Manual YAML" - {
+
+            val minimum = """
             applications: 
               - packageName: at.asitplus.attestation_client
                 signerFingerprints: 
@@ -169,8 +171,20 @@ val ConfigurationExampleGenerator by testSuite(compartment = { TestCompartment.S
                   fallbackRevocationListValiditySeconds: 0
                   fallbackToFileSystemInfo: true
             """.trimIndent()
+        "Minimal" {
+            AndroidAttestationConfiguration.fromYamlString(minimum) shouldBe androidAttestationConfiguration
+        }
 
-        AndroidAttestationConfiguration.fromYamlString(minimum) shouldBe androidAttestationConfiguration
+        "With custom properties" {
+            val withProp = "$minimum\ncustomProperties:\n  key: 'value'\n  key2: 'value2'"
+            val parsedWithProp= AndroidAttestationConfiguration.fromYamlString(withProp)
+            parsedWithProp shouldBe androidAttestationConfiguration.copy(customProperties = mapOf("key" to "value", "key2" to "value2"))
+            parsedWithProp shouldNotBe androidAttestationConfiguration
+            parsedWithProp.hashCode() shouldNotBe androidAttestationConfiguration.hashCode()
+            parsedWithProp.toString() shouldNotBe androidAttestationConfiguration.toString()
+            parsedWithProp.customProperties["key"] shouldBe "value"
+            parsedWithProp.customProperties["key2"] shouldBe "value2"
+        }
     }
 
     val config = SupremeConfiguration(androidAttestationConfiguration, iosAttestationConfiguration)

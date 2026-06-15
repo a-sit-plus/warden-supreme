@@ -6,6 +6,8 @@ this changelog also includes the original WARDEN changelog.
 
 # NEXT
 * Add hook to explicitly perform additional verifications before issuing
+* Rename `AndroidAttestationConfiguration.AppData.Builder.signatureDigests` -> `AndroidAttestationConfiguration.AppData.Builder.signerFingerprints` for conistency
+* Add the ability to attach custom properties to AndroidAttestationConfiguration and IosAttestationConfiguration
 
 * Security hardening:
     * Bound the default `InMemoryChallengeCache` used by `AttestationVerifier` to `100_000` in-flight challenges.

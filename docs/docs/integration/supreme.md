@@ -147,27 +147,31 @@ The full details on the configuration can be found in the [API documentation](..
     6. Only remote key provisioning is considered trustworthy for this app
     7. Only the RKP trust anchor is considered trustworthy
     8. We want our app to have a dedicated HSM
-    9. By default, Android 13 with a somewhat recent patch level will be required without enforcing the most recent security patches or StrongBox to reach a wider audience.
+    9. We want to mark the hardened app. We an use a `Map<String,String>` to attach arbitrary properties to the attestation configuration.
+    10. By default, Android 13 with a somewhat recent patch level will be required without enforcing the most recent security patches or StrongBox to reach a wider audience.
        This concerns the first app, since the second one overrides these values.
-    10. Allow OEM-managed `VERIFIED` boot and one pinned `SELF_SIGNED` verified boot key for locked devices only.
+    11. Allow OEM-managed `VERIFIED` boot and one pinned `SELF_SIGNED` verified boot key for locked devices only.
         Omit `OEM` if you want to trust only explicitly pinned custom ROM keys. This has no effect once unlocked
         bootloaders are allowed.
-    11. This is rarely used in practice and shows the default
-    12. This is rather optimistic, but the majority of devices running Android 13 should handle this correctly.
-    13. Usually, you will want hardware attestation, so you'd need to explicitly disable it
-    14. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
+    12. This is rarely used in practice and shows the default
+    13. This is rather optimistic, but the majority of devices running Android 13 should handle this correctly.
+    14. Usually, you will want hardware attestation, so you'd need to explicitly disable it
+    15. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
        It is not recommended to set this value because many OEMs get this wrong.
-    15. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
-    16. Factory-provisioned Android attestation chains are checked for timely certificate validity by default. Only
+    16. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
+    17. Factory-provisioned Android attestation chains are checked for timely certificate validity by default. Only
         disable this for old devices with expired intermediate certificates after accepting the resulting risk.
-    17. A single iOS app for evaluation purposes.
-    18. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
-    19. Uses the test stage
-    20. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
-    21. This could already be a production value, in preparation for the real iOS app
-    22. This is simply Apple's recommendation plus five minutes offset
-    23. Explicitly set production trusted roots as default
-    24. Account for clock drift!
+    18. We want to attach a `Map<String, String>` with a single entry. Can be extended arbitrarily.
+    19. A single iOS app for evaluation purposes.
+    20. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
+    21. Uses the test stage
+    22. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
+    23. We want to mark the iOS app. We an use a `Map<String,String>` to attach arbitrary properties to the attestation configuration.
+    24. This could already be a production value, in preparation for the real iOS app
+    25. This is simply Apple's recommendation plus five minutes offset
+    26. Explicitly set production trusted roots as default
+    27. We want to attach a `Map<String, String>` with a single entry. Can be extended arbitrarily.
+    28. Account for clock drift!
 
     Note that revocation configuration has been revamped after 0.9.9999 (see below)!
 
@@ -180,12 +184,29 @@ The full details on the configuration can be found in the [API documentation](..
     [verified boot key hash](https://grapheneos.org/install/web#verified-boot-key-hash).
 
 
-Starting with Warden Supreme 1.0.0, it is possible to configure attestation only for iOS or only for Android by simply omitting
+It is possible to configure attestation only for iOS or only for Android by simply omitting
 either the `androidAttestationConfiguration` or the `iosAttestationConfiguration`, respectively.  
 In such cases, trying to verify an attestation statement for the not-configured platform will always return an error.
 The shorthand `AttestationVerifier` constructor that directly accepts `androidAttestationConfiguration` and `iosAttestationConfiguration` properties
 instead of a pre-configured `Makoto` instance does not support such omissions.
 
+#### Attaching Custom Configuration Properties
+Warden Supreme defines a canonical configuration format with custom loaders for Spring Boot and Hoplite (see [Externalising Configuration](config.md)).
+This effectively removes the need for any custom configuration parsing. At the same time, it might be useful to attach
+arbitrary configuration properties to an application's attestation configuration, or even globally to the configuration
+subtree dedicated to attestation configuration.
+
+To provide both - canonical configuration parsing, and the ability to extend the configuration - it is possible to attach
+mappings of string keys to string values under `customProperties` at the following layers:
+
+* `AndroidAttestationConfiguration`
+* `AndroidAttestationConfiguration.AppData`
+* `IosAttestationConfiguration`
+* `IosAttestationConfiguration.AppData`
+
+Using a map of string keys to string values is the pragmatic choice: It has well-defined parsing behaviour, can be arbitrarily extended,
+and both keys and values are flexible enough to carry anything. If complex structures are to be attached, they should be serialised to a string and
+deserialised before use.
 
 ??? note "A Note on Android Attestation"
     This library allows combining different flavours of Android attestation, ranging from full hardware attestation

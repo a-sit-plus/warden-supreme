@@ -30,46 +30,50 @@ val makoto = Makoto(
              /*(6)!*/requireRemoteKeyProvisioningOverride = true,
              /*(7)!*/trustedRootOverrides = setOf(GOOGLE_RKP_EC_ROOT),
              /*(8)!*/requireStrongBoxOverride = true,
+             /*(9)!*/customProperties = mapOf("an app flag" to "is present"),
             )
         ),
-     /*(9)!*/androidVersion = 130000, patchLevel = PatchLevel(2023, 12), requireStrongBox = false,
+     /*(10)!*/androidVersion = 130000, patchLevel = PatchLevel(2023, 12), requireStrongBox = false,
         allowBootloaderUnlock = false, //DEFAULT
-     /*(10)!*/verifiedBootKeys = linkedSetOf(
+     /*(11)!*/verifiedBootKeys = linkedSetOf(
             VerifiedBootKey.OEM,
             VerifiedBootKey.Digest(
                 "00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff".parseHex()
             )
         ),
-     /*(11)!*/requireRollbackResistance = false, //DEFAULT
-     /*(12)!*/ignoreLeafValidity = false, // defaults to true
+     /*(12)!*/requireRollbackResistance = false, //DEFAULT
+     /*(13)!*/ignoreLeafValidity = false, // defaults to true
         hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS, //DEFAULT
         softwareTrustedRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12, //DEFAULT
         verificationSecondsOffset = 0, //DEFAULT
-     /*(13)!*/disableHardwareAttestation = false,
+     /*(14)!*/disableHardwareAttestation = false,
         enableSoftwareAttestation = false, //DEFAULT
-     /*(14)!*/attestationStatementValiditySeconds = null, // DEFAULT; no validity time checks!
-     /*(15)!*/revocation = listOf(
+     /*(15)!*/attestationStatementValiditySeconds = null, // DEFAULT; no validity time checks!
+     /*(16)!*/revocation = listOf(
             AndroidRevocationList.GoogleDefaultLoaderConfig.withHttpProxy("https://192.168.178.74:8000")
         ),
         requireRemoteKeyProvisioning = false, //DEFAULT
-     /*(16)!*/enforceFactoryProvisionedChainValidity = true //DEFAULT
-
+     /*(17)!*/enforceFactoryProvisionedChainValidity = true, //DEFAULT
+     /*(18)!*/customProperties = mapOf("an Android flag" to "is present") //DEFAULT
     ),
+
     iosAttestationConfiguration = IosAttestationConfiguration(
         applications = listOf(
-         /*(17)!*/IosAttestationConfiguration.AppData(
+         /*(19)!*/IosAttestationConfiguration.AppData(
                 teamIdentifier = "9CYHJNG644",
                 bundleIdentifier = "at.asitplus.attestation-client",
-             /*(18)!*/iosVersionOverride = OsVersions("16.0", "20A10"),
-             /*(19)!*/sandbox = true, //defaults to false
-             /*(20)!*/trustedRootOverrides = myCustomRoots
+             /*(20)!*/iosVersionOverride = OsVersions("16.0", "20A10"),
+             /*(21)!*/sandbox = true, //defaults to false
+             /*(22)!*/trustedRootOverrides = myCustomRoots,
+             /*(23)!*/ customProperties = mapOf("and iOS flag" to "is present"),
             )
         ),
                 /* Same as 17.0 ↘↘ */
-     /*(21)!*/iosVersion = OsVersions("17", "21A36"), //defaults to null (= no version check)
-     /*(22)!*/attestationStatementValiditySeconds = 600, //DEFAULT
-     /*(23)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS //DEFAULT
+     /*(24)!*/iosVersion = OsVersions("17", "21A36"), //defaults to null (= no version check)
+     /*(25)!*/attestationStatementValiditySeconds = 600, //DEFAULT
+     /*(26)!*/trustedRoots = APPLE_DEFAULT_TRUSTED_ROOTS, //DEFAULT
+     /*(27)!*/customProperties = mapOf("a global iOS flag" to "is present"), //DEFAULT
     ),
     clock = Clock.System, //DEFAULT
- /*(24)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults shown
+ /*(28)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults shown
 )
