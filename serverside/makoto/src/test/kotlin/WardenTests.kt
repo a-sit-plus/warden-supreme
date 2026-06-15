@@ -7,10 +7,7 @@ import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.signum.indispensable.Attestation
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse
@@ -30,7 +27,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalStdlibApi::class)
-val WardenTest by testSuite {
+val WardenTest by matrixSuite {
 
     val theGood = androidGood + iosGood
 
@@ -150,202 +147,222 @@ val WardenTest by testSuite {
     }
 
     "The Good" - {
-        theGood.forEach { recordedAttestation ->
-            recordedAttestation.name - {
-                "OK" - {
-                    "no version check" - {
-                        attestationService(
-                            androidVersion = null,
-                            iosVersion = null,
-                            iosBundleIdentifier = recordedAttestation.packageOverride
-                                ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
-                            iosSandbox = !(recordedAttestation.isProductionOverride
-                                ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                            timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate
-                            ),
-                            androidAttestationStatementValidity = 10.hours
-                        ).apply {
-                            "Generic" {
-                                verifyAttestation(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge
-                                ).apply {
-                                    also { println(it) }
-                                    shouldNotBeInstanceOf<AttestationResult.Error>()
-                                }
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge
-                                ).serializeCompact()
-                                val replayGenericAttestation =
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayGenericAttestation()
-                                replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(
-                                    dbg
-                                )
-                                    .replay()
-                                replayGenericAttestation
-                                    .shouldNotBeInstanceOf<AttestationResult.Error>()
-                            }
-                            "Key Attestation" {
-                                (verifyKeyAttestation(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                    recordedAttestation.publicKey!!
-                                ) to verifyKeyAttestation(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                    recordedAttestation.pubKeyB64!!.decodeBase64ToArray()
-                                )).apply {
-                                    also { println(it.first) }
-                                    first.isSuccess.shouldBeTrue()
-                                    first.attestedPublicKey.shouldNotBeNull()
-                                    first.attestedPublicKey!!.encoded shouldBe recordedAttestation.publicKey?.encoded
-                                    first shouldBe second
-                                }
-
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                    recordedAttestation.publicKey!!
-                                ).serializeCompact()
-                                val replayKeyAttestationLegacy =
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayKeyAttestationLegacy()
-                                replayKeyAttestationLegacy shouldBe WardenDebugAttestationStatement.deserializeCompact(
-                                    dbg
-                                )
-                                    .replay()
-                                replayKeyAttestationLegacy
-                                    .shouldNotBeInstanceOf<AttestationResult.Error>()
-                            }
-                        }
-                    }
-
-                    "time drift" - {
-                        withData(nameFn = {
-                            "${
-                                recordedAttestation.verificationDate
-                            } + ${it.toIsoString()}"
-                        }, 3000.days, (-3000).days) { leeway ->
-                            val attestationService = attestationService(
-                                iosBundleIdentifier = recordedAttestation.packageOverride
-                                    ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
-                                iosSandbox = !(recordedAttestation.isProductionOverride
-                                    ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                                androidPatchLevel = null,
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate - leeway
-                                ),
-                                offset = leeway,
-                            )
-                            attestationService.verifyAttestation(
+        data(theGood, nameFn = { _, it -> it.name }) - { recordedAttestation ->
+            "OK" - {
+                "no version check" - {
+                    attestationService(
+                        androidVersion = null,
+                        iosVersion = null,
+                        iosBundleIdentifier = recordedAttestation.packageOverride
+                            ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
+                        iosSandbox = !(recordedAttestation.isProductionOverride
+                            ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
+                        timeSource = FixedTimeClock(
+                            recordedAttestation.verificationDate
+                        ),
+                        androidAttestationStatementValidity = 10.hours
+                    ).apply {
+                        "Generic" {
+                            verifyAttestation(
                                 recordedAttestation.attestationProof,
                                 recordedAttestation.challenge
                             ).apply {
+                                also { println(it) }
                                 shouldNotBeInstanceOf<AttestationResult.Error>()
                             }
-                            val dbg = attestationService.collectDebugInfo(
+                            val dbg = collectDebugInfo(
                                 recordedAttestation.attestationProof,
                                 recordedAttestation.challenge
                             ).serializeCompact()
                             val replayGenericAttestation =
                                 WardenDebugAttestationStatement.deserializeCompact(dbg)
                                     .replayGenericAttestation()
-                            replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(
+                                dbg
+                            )
                                 .replay()
                             replayGenericAttestation
+                                .shouldNotBeInstanceOf<AttestationResult.Error>()
+                        }
+                        "Key Attestation" {
+                            (verifyKeyAttestation(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge,
+                                recordedAttestation.publicKey!!
+                            ) to verifyKeyAttestation(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge,
+                                recordedAttestation.pubKeyB64!!.decodeBase64ToArray()
+                            )).apply {
+                                also { println(it.first) }
+                                first.isSuccess.shouldBeTrue()
+                                first.attestedPublicKey.shouldNotBeNull()
+                                first.attestedPublicKey!!.encoded shouldBe recordedAttestation.publicKey?.encoded
+                                first shouldBe second
+                            }
+
+                            val dbg = collectDebugInfo(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge,
+                                recordedAttestation.publicKey!!
+                            ).serializeCompact()
+                            val replayKeyAttestationLegacy =
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayKeyAttestationLegacy()
+                            replayKeyAttestationLegacy shouldBe WardenDebugAttestationStatement.deserializeCompact(
+                                dbg
+                            )
+                                .replay()
+                            replayKeyAttestationLegacy
                                 .shouldNotBeInstanceOf<AttestationResult.Error>()
                         }
                     }
                 }
 
-                "Fail" - {
-
-                    "time of verification" - {
-                        "too early" {
-                            val attestationService = attestationService(
-                                iosBundleIdentifier = recordedAttestation.packageOverride
-                                    ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
-                                iosSandbox = !(recordedAttestation.isProductionOverride
-                                    ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                                unlockedBootloaderAllowed = false,
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
-                                            - 3000.days
-                                ),
-                            )
-                            attestationService.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
-
-                            val dbg = attestationService.collectDebugInfo(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).serializeCompact()
-                            val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation()
-                            replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replay()
-                            replayGenericAttestation
-                                .shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
-
-                        }
-
-                        "too late" {
-                            val attestationService = attestationService(
-                                iosBundleIdentifier = recordedAttestation.packageOverride
-                                    ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
-                                iosSandbox = !(recordedAttestation.isProductionOverride
-                                    ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                                unlockedBootloaderAllowed = false,
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
-                                            + 3000.days
-                                ),
-                            )
-                            attestationService.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
-
-                            val dbg = attestationService.collectDebugInfo(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).serializeCompact()
-                            val replayGenericAttestation =
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation()
-                            replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replay()
-                            replayGenericAttestation
-                                .shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
-
-                        }
-                    }
-
-                    "package name / bundle identifier" {
+                "time drift" - {
+                    data("leeway", listOf(3000.days, (-3000).days), nameFn = { _, value ->
+                        "${
+                            recordedAttestation.verificationDate
+                        } + ${value.toIsoString()}"
+                    }) test { leeway ->
                         val attestationService = attestationService(
+                            iosBundleIdentifier = recordedAttestation.packageOverride
+                                ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
                             iosSandbox = !(recordedAttestation.isProductionOverride
                                 ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                            androidPackageName = "org.wrong.package.name",
-                            iosBundleIdentifier = "org.wrong.bundle.identifier",
+                            androidPatchLevel = null,
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate - leeway
+                            ),
+                            offset = leeway,
+                        )
+                        attestationService.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).apply {
+                            shouldNotBeInstanceOf<AttestationResult.Error>()
+                        }
+                        val dbg = attestationService.collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).serializeCompact()
+                        val replayGenericAttestation =
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation()
+                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replay()
+                        replayGenericAttestation
+                            .shouldNotBeInstanceOf<AttestationResult.Error>()
+                    }
+                }
+            }
+
+            "Fail" - {
+
+                "time of verification" - {
+                    "too early" {
+                        val attestationService = attestationService(
+                            iosBundleIdentifier = recordedAttestation.packageOverride
+                                ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
+                            iosSandbox = !(recordedAttestation.isProductionOverride
+                                ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
+                            unlockedBootloaderAllowed = false,
                             timeSource = FixedTimeClock(
                                 recordedAttestation.verificationDate
-
+                                        - 3000.days
                             ),
                         )
                         attestationService.verifyAttestation(
                             recordedAttestation.attestationProof,
                             recordedAttestation.challenge
-                        ).shouldBeInstanceOf<AttestationResult.Error>().apply {
+                        ).shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+
+                        val dbg = attestationService.collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).serializeCompact()
+                        val replayGenericAttestation =
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation()
+                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replay()
+                        replayGenericAttestation
+                            .shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+
+                    }
+
+                    "too late" {
+                        val attestationService = attestationService(
+                            iosBundleIdentifier = recordedAttestation.packageOverride
+                                ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
+                            iosSandbox = !(recordedAttestation.isProductionOverride
+                                ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
+                            unlockedBootloaderAllowed = false,
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
+                                        + 3000.days
+                            ),
+                        )
+                        attestationService.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+
+                        val dbg = attestationService.collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).serializeCompact()
+                        val replayGenericAttestation =
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation()
+                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replay()
+                        replayGenericAttestation
+                            .shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+
+                    }
+                }
+
+                "package name / bundle identifier" {
+                    val attestationService = attestationService(
+                        iosSandbox = !(recordedAttestation.isProductionOverride
+                            ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
+                        androidPackageName = "org.wrong.package.name",
+                        iosBundleIdentifier = "org.wrong.bundle.identifier",
+                        timeSource = FixedTimeClock(
+                            recordedAttestation.verificationDate
+
+                        ),
+                    )
+                    attestationService.verifyAttestation(
+                        recordedAttestation.attestationProof,
+                        recordedAttestation.challenge
+                    ).shouldBeInstanceOf<AttestationResult.Error>().apply {
+                        cause.shouldBeInstanceOf<AttestationException.Content>().also {
+                            when (it.platform) {
+                                Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.IDENTIFIER
+                                Platform.ANDROID -> it.platformSpecificCause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe AttestationValueException.Reason.PACKAGE_NAME
+                                else -> {/*irrelevant*/
+                                }
+                            }
+                        }
+                    }
+
+                    val dbg = attestationService.collectDebugInfo(
+                        recordedAttestation.attestationProof,
+                        recordedAttestation.challenge
+                    ).serializeCompact()
+                    val replayGenericAttestation =
+                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replayGenericAttestation()
+                    replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                        .replay()
+                    replayGenericAttestation
+                        .shouldBeInstanceOf<AttestationResult.Error>().apply {
                             cause.shouldBeInstanceOf<AttestationException.Content>().also {
                                 when (it.platform) {
                                     Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.IDENTIFIER
@@ -356,43 +373,42 @@ val WardenTest by testSuite {
                             }
                         }
 
-                        val dbg = attestationService.collectDebugInfo(
-                            recordedAttestation.attestationProof,
-                            recordedAttestation.challenge
-                        ).serializeCompact()
-                        val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replay()
-                        replayGenericAttestation
-                            .shouldBeInstanceOf<AttestationResult.Error>().apply {
-                                cause.shouldBeInstanceOf<AttestationException.Content>().also {
-                                    when (it.platform) {
-                                        Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.IDENTIFIER
-                                        Platform.ANDROID -> it.platformSpecificCause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe AttestationValueException.Reason.PACKAGE_NAME
-                                        else -> {/*irrelevant*/
-                                        }
-                                    }
+                }
+
+                "challenge" {
+                    val attestationService = attestationService(
+                        iosBundleIdentifier = recordedAttestation.packageOverride
+                            ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
+                        iosSandbox = !(recordedAttestation.isProductionOverride
+                            ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
+                        timeSource = FixedTimeClock(
+                            recordedAttestation.verificationDate
+                        ),
+                    )
+                    attestationService.verifyAttestation(
+                        recordedAttestation.attestationProof,
+                        recordedAttestation.challenge.reversedArray()
+                    ).shouldBeInstanceOf<AttestationResult.Error>().apply {
+                        cause.shouldBeInstanceOf<AttestationException.Content>().also {
+                            when (it.platform) {
+                                Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.CHALLENGE
+                                Platform.ANDROID -> it.platformSpecificCause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe AttestationValueException.Reason.CHALLENGE
+                                else -> {/*irrelevant*/
                                 }
                             }
-
+                        }
                     }
-
-                    "challenge" {
-                        val attestationService = attestationService(
-                            iosBundleIdentifier = recordedAttestation.packageOverride
-                                ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
-                            iosSandbox = !(recordedAttestation.isProductionOverride
-                                ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                            timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate
-                            ),
-                        )
-                        attestationService.verifyAttestation(
-                            recordedAttestation.attestationProof,
-                            recordedAttestation.challenge.reversedArray()
-                        ).shouldBeInstanceOf<AttestationResult.Error>().apply {
+                    val dbg = attestationService.collectDebugInfo(
+                        recordedAttestation.attestationProof,
+                        recordedAttestation.challenge.reversedArray()
+                    ).serializeCompact()
+                    val replayGenericAttestation =
+                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replayGenericAttestation()
+                    replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                        .replay()
+                    replayGenericAttestation
+                        .shouldBeInstanceOf<AttestationResult.Error>().apply {
                             cause.shouldBeInstanceOf<AttestationException.Content>().also {
                                 when (it.platform) {
                                     Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.CHALLENGE
@@ -402,48 +418,47 @@ val WardenTest by testSuite {
                                 }
                             }
                         }
-                        val dbg = attestationService.collectDebugInfo(
-                            recordedAttestation.attestationProof,
-                            recordedAttestation.challenge.reversedArray()
-                        ).serializeCompact()
-                        val replayGenericAttestation =
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation()
-                        replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replay()
-                        replayGenericAttestation
-                            .shouldBeInstanceOf<AttestationResult.Error>().apply {
-                                cause.shouldBeInstanceOf<AttestationException.Content>().also {
-                                    when (it.platform) {
-                                        Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.CHALLENGE
-                                        Platform.ANDROID -> it.platformSpecificCause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe AttestationValueException.Reason.CHALLENGE
-                                        else -> {/*irrelevant*/
-                                        }
+                }
+
+                "OS Version" {
+                    val attestationService = attestationService(
+                        iosBundleIdentifier = recordedAttestation.packageOverride
+                            ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
+                        iosSandbox = !(recordedAttestation.isProductionOverride
+                            ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
+                        androidVersion = 200000,
+                        iosVersion = IosAttestationConfiguration.OsVersions(
+                            semVer = "99.0",
+                            buildNumber = "999ZZ0"
+                        ),
+                        timeSource = FixedTimeClock(
+                            recordedAttestation.verificationDate
+
+                        ),
+                    )
+                    attestationService.verifyAttestation(
+                        recordedAttestation.attestationProof,
+                        recordedAttestation.challenge
+                    ).apply {
+                        shouldBeInstanceOf<AttestationResult.Error>().apply {
+                            cause.shouldBeInstanceOf<AttestationException.Content>().also {
+                                when (it.platform) {
+                                    Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.OS_VERSION
+                                    Platform.ANDROID -> it.platformSpecificCause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe AttestationValueException.Reason.OS_VERSION
+                                    else -> {/*irrelevant*/
                                     }
                                 }
                             }
+                        }
                     }
-
-                    "OS Version" {
-                        val attestationService = attestationService(
-                            iosBundleIdentifier = recordedAttestation.packageOverride
-                                ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
-                            iosSandbox = !(recordedAttestation.isProductionOverride
-                                ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                            androidVersion = 200000,
-                            iosVersion = IosAttestationConfiguration.OsVersions(
-                                semVer = "99.0",
-                                buildNumber = "999ZZ0"
-                            ),
-                            timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate
-
-                            ),
-                        )
-                        attestationService.verifyAttestation(
-                            recordedAttestation.attestationProof,
-                            recordedAttestation.challenge
-                        ).apply {
+                    val dbg = attestationService.collectDebugInfo(
+                        recordedAttestation.attestationProof,
+                        recordedAttestation.challenge
+                    ).serializeCompact()
+                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                        .replayGenericAttestation().apply {
+                            this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replay()
                             shouldBeInstanceOf<AttestationResult.Error>().apply {
                                 cause.shouldBeInstanceOf<AttestationException.Content>().also {
                                     when (it.platform) {
@@ -455,47 +470,49 @@ val WardenTest by testSuite {
                                 }
                             }
                         }
-                        val dbg = attestationService.collectDebugInfo(
-                            recordedAttestation.attestationProof,
-                            recordedAttestation.challenge
-                        ).serializeCompact()
-                        WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayGenericAttestation().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replay()
-                                shouldBeInstanceOf<AttestationResult.Error>().apply {
-                                    cause.shouldBeInstanceOf<AttestationException.Content>().also {
-                                        when (it.platform) {
-                                            Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.OS_VERSION
-                                            Platform.ANDROID -> it.platformSpecificCause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe AttestationValueException.Reason.OS_VERSION
-                                            else -> {/*irrelevant*/
-                                            }
-                                        }
+                }
+
+                "Key Attestation PubKey Mismatch" {
+                    val attestationService = attestationService(
+                        iosBundleIdentifier = recordedAttestation.packageOverride
+                            ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
+                        iosSandbox = !(recordedAttestation.isProductionOverride
+                            ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
+                        timeSource = FixedTimeClock(
+                            recordedAttestation.verificationDate
+
+                        ),
+                    )
+                    val keyToBeAttested = KeyPairGenerator.getInstance("EC")
+                        .apply {
+                            initialize(ECGenParameterSpec("secp256r1"))
+                        }.genKeyPair().public
+                    attestationService.verifyKeyAttestation(
+                        recordedAttestation.attestationProof,
+                        recordedAttestation.challenge,
+                        keyToBeAttested
+                    ).apply {
+                        isSuccess.shouldBeFalse()
+                        details.shouldBeInstanceOf<AttestationResult.Error>().also { println(it) }.apply {
+                            cause.shouldBeInstanceOf<AttestationException.Content>().also {
+                                when (it.platform) {
+                                    Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.APP_UNEXPECTED
+                                    Platform.ANDROID -> it.platformSpecificCause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe AttestationValueException.Reason.APP_UNEXPECTED
+                                    else -> {/*irrelevant*/
                                     }
                                 }
                             }
+                        }
                     }
-
-                    "Key Attestation PubKey Mismatch" {
-                        val attestationService = attestationService(
-                            iosBundleIdentifier = recordedAttestation.packageOverride
-                                ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
-                            iosSandbox = !(recordedAttestation.isProductionOverride
-                                ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                            timeSource = FixedTimeClock(
-                                recordedAttestation.verificationDate
-
-                            ),
-                        )
-                        val keyToBeAttested = KeyPairGenerator.getInstance("EC")
-                            .apply {
-                                initialize(ECGenParameterSpec("secp256r1"))
-                            }.genKeyPair().public
-                        attestationService.verifyKeyAttestation(
-                            recordedAttestation.attestationProof,
-                            recordedAttestation.challenge,
-                            keyToBeAttested
-                        ).apply {
+                    val dbg = attestationService.collectDebugInfo(
+                        recordedAttestation.attestationProof,
+                        recordedAttestation.challenge,
+                        keyToBeAttested
+                    ).serializeCompact()
+                    WardenDebugAttestationStatement.deserializeCompact(dbg)
+                        .replayKeyAttestationLegacy().apply {
+                            this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replay()
                             isSuccess.shouldBeFalse()
                             details.shouldBeInstanceOf<AttestationResult.Error>().also { println(it) }.apply {
                                 cause.shouldBeInstanceOf<AttestationException.Content>().also {
@@ -508,105 +525,81 @@ val WardenTest by testSuite {
                                 }
                             }
                         }
-                        val dbg = attestationService.collectDebugInfo(
-                            recordedAttestation.attestationProof,
-                            recordedAttestation.challenge,
-                            keyToBeAttested
-                        ).serializeCompact()
-                        WardenDebugAttestationStatement.deserializeCompact(dbg)
-                            .replayKeyAttestationLegacy().apply {
-                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replay()
-                                isSuccess.shouldBeFalse()
-                                details.shouldBeInstanceOf<AttestationResult.Error>().also { println(it) }.apply {
-                                    cause.shouldBeInstanceOf<AttestationException.Content>().also {
-                                        when (it.platform) {
-                                            Platform.IOS -> it.platformSpecificCause.shouldBeInstanceOf<IosAttestationException>().reason shouldBe IosAttestationException.Reason.APP_UNEXPECTED
-                                            Platform.ANDROID -> it.platformSpecificCause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe AttestationValueException.Reason.APP_UNEXPECTED
-                                            else -> {/*irrelevant*/
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                    }
                 }
             }
         }
 
         "iOS Specific" - {
-            iosGood.forEach { recordedAttestation ->
-                recordedAttestation.name - {
-                    "OK" - {
-                        withData("14", "15.0.1", "16", "16.0.2", "16.2", "16.2.0") { version ->
-                            val attestationService = attestationService(
-                                iosVersion = IosAttestationConfiguration.OsVersions(
-                                    semVer = version,
-                                    buildNumber = "21A36"
-                                ),
-                                iosBundleIdentifier = recordedAttestation.packageOverride
-                                    ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
-                                iosSandbox = !(recordedAttestation.isProductionOverride
-                                    ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
+            data(iosGood, nameFn = { _, it -> it.name }) - { recordedAttestation ->
+                "OK" - {
+                    data("iOS versions", listOf("14", "15.0.1", "16", "16.0.2", "16.2", "16.2.0")) test { version ->
+                        val attestationService = attestationService(
+                            iosVersion = IosAttestationConfiguration.OsVersions(
+                                semVer = version,
+                                buildNumber = "21A36"
+                            ),
+                            iosBundleIdentifier = recordedAttestation.packageOverride
+                                ?: DEFAULT_IOS_ATTESTATION_CFG.applications.first().bundleIdentifier,
+                            iosSandbox = !(recordedAttestation.isProductionOverride
+                                ?: !DEFAULT_IOS_ATTESTATION_CFG.applications.first().sandbox),
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
 
-                                ),
-                            )
-                            attestationService.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).apply {
-                                also { println(it) }
+                            ),
+                        )
+                        attestationService.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).apply {
+                            also { println(it) }
+                            shouldBeInstanceOf<AttestationResult.IOS>()
+                        }
+
+                        val dbg = attestationService.collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge,
+                        ).serializeCompact()
+                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replayGenericAttestation().apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replay()
                                 shouldBeInstanceOf<AttestationResult.IOS>()
                             }
-
-                            val dbg = attestationService.collectDebugInfo(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge,
-                            ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replay()
-                                    shouldBeInstanceOf<AttestationResult.IOS>()
-                                }
-                        }
                     }
+                }
 
-                    "Fail" - {
+                "Fail" - {
 
-                        "borked team identifier" {
-                            val attestationService = attestationService(
-                                iosTeamIdentifier = "1234567890",
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
+                    "borked team identifier" {
+                        val attestationService = attestationService(
+                            iosTeamIdentifier = "1234567890",
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
 
-                                ),
-                            )
-                            attestationService.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).apply {
+                            ),
+                        )
+                        attestationService.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).apply {
+                            shouldBeInstanceOf<AttestationResult.Error>()
+                                .cause.shouldBeInstanceOf<AttestationException.Content>()
+                                .platformSpecificCause.shouldBeInstanceOf<IosAttestationException>()
+                                .reason shouldBe IosAttestationException.Reason.IDENTIFIER
+                        }
+                        val dbg = attestationService.collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge,
+                        ).serializeCompact()
+                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replayGenericAttestation().apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replay()
                                 shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Content>()
                                     .platformSpecificCause.shouldBeInstanceOf<IosAttestationException>()
                                     .reason shouldBe IosAttestationException.Reason.IDENTIFIER
                             }
-                            val dbg = attestationService.collectDebugInfo(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge,
-                            ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replay()
-                                    shouldBeInstanceOf<AttestationResult.Error>()
-                                        .cause.shouldBeInstanceOf<AttestationException.Content>()
-                                        .platformSpecificCause.shouldBeInstanceOf<IosAttestationException>()
-                                        .reason shouldBe IosAttestationException.Reason.IDENTIFIER
-                                }
-                        }
                     }
                 }
             }
@@ -615,105 +608,217 @@ val WardenTest by testSuite {
 
 
         "Android Specific" - {
-            androidGood.forEach { recordedAttestation ->
-                recordedAttestation.name - {
-                    "OK" - {
-                        "no patch level" {
-                            val attestationService = attestationService(
-                                androidPatchLevel = null,
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
-                                ),
-                            )
-                            attestationService.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Android>()
-                            val dbg = attestationService.collectDebugInfo(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge,
-                            ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replay()
-                                    shouldBeInstanceOf<AttestationResult.Android>()
-                                }
-                        }
+            data(androidGood, nameFn = { _, it -> it.name }) - { recordedAttestation ->
+                "OK" - {
+                    "no patch level" {
+                        val attestationService = attestationService(
+                            androidPatchLevel = null,
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
+                            ),
+                        )
+                        attestationService.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Android>()
+                        val dbg = attestationService.collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge,
+                        ).serializeCompact()
+                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replayGenericAttestation().apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replay()
+                                shouldBeInstanceOf<AttestationResult.Android>()
+                            }
+                    }
 
-                        "enforce locked bootloader" {
-                            val attestationService = attestationService(
+                    "enforce locked bootloader" {
+                        val attestationService = attestationService(
+                            unlockedBootloaderAllowed = false,
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
+                            ),
+                        )
+                        attestationService.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Android>()
+                        val dbg = attestationService.collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge,
+                        ).serializeCompact()
+                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replayGenericAttestation().apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replay()
+                                shouldBeInstanceOf<AttestationResult.Android>()
+                            }
+                    }
+
+                    "allow unlocked bootloader" {
+                        val attestationService = attestationService(
+                            unlockedBootloaderAllowed = true,
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
+                            ),
+                        )
+                        attestationService.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Android>()
+                        val dbg = attestationService.collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge,
+                        ).serializeCompact()
+                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replayGenericAttestation().apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replay()
+                                shouldBeInstanceOf<AttestationResult.Android>()
+                            }
+                    }
+                }
+
+                "Wrongfully disabled HW attestation" {
+                    val clock =
+                        FixedTimeClock(recordedAttestation.verificationDate)
+                    Makoto(
+                        androidAttestationConfiguration = AndroidAttestationConfiguration(
+                            listOf(
+                                AndroidAttestationConfiguration.AppData(
+                                    ANDROID_PACKAGE_NAME,
+                                    ANDROID_SIGNATURE_DIGESTS
+                                )
+                            ),
+                            attestationStatementValiditySeconds = 300,
+                            disableHardwareAttestation = true,
+                            enableSoftwareAttestation = true,
+                            ignoreLeafValidity = true
+                        ),
+                        DEFAULT_IOS_ATTESTATION_CFG,
+                        clock = clock,
+                        verificationTimeOffset = Duration.ZERO
+                    ).apply {
+                        verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+
+                        val dbg = collectDebugInfo(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge,
+                        ).serializeCompact()
+                        WardenDebugAttestationStatement.deserializeCompact(dbg)
+                            .replayGenericAttestation().apply {
+                                this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replay()
+                                shouldBeInstanceOf<AttestationResult.Error>()
+                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                            }
+                    }
+
+                }
+
+                "Fail" - {
+                    "borked cert chain" - {
+                        data(
+                            "indexes", listOf(
+                                listOf(0, 0, 0),
+                                listOf(0, 1, 0),
+                                listOf(0, 2, 1)
+
+                            )
+                        ) test {
+                            val chain = recordedAttestation.attestationProof.slice(it)
+                            attestationService(
                                 unlockedBootloaderAllowed = false,
                                 timeSource = FixedTimeClock(
                                     recordedAttestation.verificationDate
                                 ),
-                            )
-                            attestationService.verifyAttestation(
-                                recordedAttestation.attestationProof,
+                            ).apply {
+                                val dbg = collectDebugInfo(
+                                    chain,
+                                    recordedAttestation.challenge,
+                                ).serializeCompact()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation()
+                                    .apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replay()
+                                        shouldBeInstanceOf<AttestationResult.Error>()
+                                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                                    }
+                            }.verifyAttestation(
+                                chain,
                                 recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Android>()
-                            val dbg = attestationService.collectDebugInfo(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge,
-                            ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replay()
-                                    shouldBeInstanceOf<AttestationResult.Android>()
-                                }
-                        }
+                            ).apply {//makes interactive debugging easier
+                                shouldBeInstanceOf<AttestationResult.Error>()
+                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                            }
 
-                        "allow unlocked bootloader" {
-                            val attestationService = attestationService(
-                                unlockedBootloaderAllowed = true,
+                            attestationService(
+                                unlockedBootloaderAllowed = false,
                                 timeSource = FixedTimeClock(
                                     recordedAttestation.verificationDate
                                 ),
-                            )
-                            attestationService.verifyAttestation(
-                                recordedAttestation.attestationProof,
+                            ).apply {
+                                val dbg = collectDebugInfo(
+                                    chain,
+                                    recordedAttestation.challenge,
+                                ).serializeCompact()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation()
+                                    .apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replay()
+                                        shouldBeInstanceOf<AttestationResult.Error>()
+                                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                                    }
+                            }.verifyAttestation(
+                                chain,
                                 recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Android>()
-                            val dbg = attestationService.collectDebugInfo(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge,
-                            ).serializeCompact()
-                            WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                .replayGenericAttestation().apply {
-                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replay()
-                                    shouldBeInstanceOf<AttestationResult.Android>()
-                                }
+                            ).apply {//makes interactive debugging easier
+                                shouldBeInstanceOf<AttestationResult.Error>()
+                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                            }
+
+                            attestationService(
+                                unlockedBootloaderAllowed = false,
+                                timeSource = FixedTimeClock(
+                                    recordedAttestation.verificationDate
+                                ),
+                            ).apply {
+                                val dbg = collectDebugInfo(
+                                    chain,
+                                    recordedAttestation.challenge,
+                                ).serializeCompact()
+                                WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                    .replayGenericAttestation()
+                                    .apply {
+                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                            .replay()
+                                        shouldBeInstanceOf<AttestationResult.Error>()
+                                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                                    }
+                            }.verifyAttestation(
+                                chain,
+                                recordedAttestation.challenge
+                            ).apply { //makes interactive debugging easier
+                                shouldBeInstanceOf<AttestationResult.Error>()
+                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                            }
                         }
                     }
 
-                    "Wrongfully disabled HW attestation" {
-                        val clock =
-                            FixedTimeClock(recordedAttestation.verificationDate)
-                        Makoto(
-                            androidAttestationConfiguration = AndroidAttestationConfiguration(
-                                listOf(
-                                    AndroidAttestationConfiguration.AppData(
-                                        ANDROID_PACKAGE_NAME,
-                                        ANDROID_SIGNATURE_DIGESTS
-                                    )
-                                ),
-                                attestationStatementValiditySeconds = 300,
-                                disableHardwareAttestation = true,
-                                enableSoftwareAttestation = true,
-                                ignoreLeafValidity = true
+                    "require StrongBox" {
+                        attestationService(
+                            requireStrongBox = true,
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
                             ),
-                            DEFAULT_IOS_ATTESTATION_CFG,
-                            clock = clock,
-                            verificationTimeOffset = Duration.ZERO
                         ).apply {
-                            verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-
                             val dbg = collectDebugInfo(
                                 recordedAttestation.attestationProof,
                                 recordedAttestation.challenge,
@@ -723,245 +828,133 @@ val WardenTest by testSuite {
                                     this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
                                         .replay()
                                     shouldBeInstanceOf<AttestationResult.Error>()
-                                        .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                                        .cause.shouldBeInstanceOf<AttestationException.Content>()
                                 }
+                        }.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Content>()
+                    }
+
+                    "wrong signature digests" {
+                        attestationService(
+                            androidAppSignatureDigest = setOf(
+                                byteArrayOf(0, 32, 55, 29, 120, 22, 0),
+                                /*this one's an invalid digest and must not affect the tests*/
+                                "LvfTC77F/uSecSfJDeLdxQ3gZrVLHX8+NNBp7AiUO0E=".decodeBase64ToArray()!!
+                            ),
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
+
+                            ),
+                        ).apply {
+                            val dbg = collectDebugInfo(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge,
+                            ).serializeCompact()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation().apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replay()
+                                    shouldBeInstanceOf<AttestationResult.Error>()
+                                        .cause.shouldBeInstanceOf<AttestationException.Content>()
+                                }
+                        }.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Content>()
+                    }
+
+                    //just to check whether this propagates
+                    "no signature digests, cannot instantiate" {
+                        shouldThrow<at.asitplus.attestation.android.exceptions.AndroidAttestationException> {
+                            attestationService(
+                                androidAppSignatureDigest = setOf(),
+                                timeSource = FixedTimeClock(
+                                    recordedAttestation.verificationDate
+                                ),
+                            )
                         }
+                    }
+
+                    "app version" {
+                        attestationService(
+                            androidAppVersion = 200000,
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
+                            ),
+                        ).apply {
+                            val dbg = collectDebugInfo(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge,
+                            ).serializeCompact()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation().apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replay()
+                                    shouldBeInstanceOf<AttestationResult.Error>()
+                                        .cause.shouldBeInstanceOf<AttestationException.Content>()
+                                }
+                        }.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Content>()
 
                     }
 
-                    "Fail" - {
-                        "borked cert chain" - {
-                            withData(
-                                listOf(0, 0, 0),
-                                listOf(0, 1, 0),
-                                listOf(0, 2, 1)
+                    "patch level" {
+                        attestationService(
+                            androidPatchLevel = PatchLevel(2030, 1),
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
 
-                            ) {
-                                val chain = recordedAttestation.attestationProof.slice(it)
-                                attestationService(
-                                    unlockedBootloaderAllowed = false,
-                                    timeSource = FixedTimeClock(
-                                        recordedAttestation.verificationDate
-                                    ),
-                                ).apply {
-                                    val dbg = collectDebugInfo(
-                                        chain,
-                                        recordedAttestation.challenge,
-                                    ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayGenericAttestation()
-                                        .apply {
-                                            this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                .replay()
-                                            shouldBeInstanceOf<AttestationResult.Error>()
-                                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-                                        }
-                                }.verifyAttestation(
-                                    chain,
-                                    recordedAttestation.challenge
-                                ).apply {//makes interactive debugging easier
+                            ),
+                        ).apply {
+                            val dbg = collectDebugInfo(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge,
+                            ).serializeCompact()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation().apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replay()
                                     shouldBeInstanceOf<AttestationResult.Error>()
-                                        .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                                        .cause.shouldBeInstanceOf<AttestationException.Content>()
                                 }
+                        }.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Content>()
+                    }
 
-                                attestationService(
-                                    unlockedBootloaderAllowed = false,
-                                    timeSource = FixedTimeClock(
-                                        recordedAttestation.verificationDate
-                                    ),
-                                ).apply {
-                                    val dbg = collectDebugInfo(
-                                        chain,
-                                        recordedAttestation.challenge,
-                                    ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayGenericAttestation()
-                                        .apply {
-                                            this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                .replay()
-                                            shouldBeInstanceOf<AttestationResult.Error>()
-                                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-                                        }
-                                }.verifyAttestation(
-                                    chain,
-                                    recordedAttestation.challenge
-                                ).apply {//makes interactive debugging easier
+                    "rollback resistance" {
+                        attestationService(
+                            requireRollbackResistance = true,
+                            timeSource = FixedTimeClock(
+                                recordedAttestation.verificationDate
+
+                            ),
+                        ).apply {
+                            val dbg = collectDebugInfo(
+                                recordedAttestation.attestationProof,
+                                recordedAttestation.challenge,
+                            ).serializeCompact()
+                            WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                .replayGenericAttestation().apply {
+                                    this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
+                                        .replay()
                                     shouldBeInstanceOf<AttestationResult.Error>()
-                                        .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
+                                        .cause.shouldBeInstanceOf<AttestationException.Content>()
                                 }
-
-                                attestationService(
-                                    unlockedBootloaderAllowed = false,
-                                    timeSource = FixedTimeClock(
-                                        recordedAttestation.verificationDate
-                                    ),
-                                ).apply {
-                                    val dbg = collectDebugInfo(
-                                        chain,
-                                        recordedAttestation.challenge,
-                                    ).serializeCompact()
-                                    WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                        .replayGenericAttestation()
-                                        .apply {
-                                            this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                                .replay()
-                                            shouldBeInstanceOf<AttestationResult.Error>()
-                                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-                                        }
-                                }.verifyAttestation(
-                                    chain,
-                                    recordedAttestation.challenge
-                                ).apply { //makes interactive debugging easier
-                                    shouldBeInstanceOf<AttestationResult.Error>()
-                                        .cause.shouldBeInstanceOf<AttestationException.Certificate.Trust>()
-                                }
-                            }
-                        }
-
-                        "require StrongBox" {
-                            attestationService(
-                                requireStrongBox = true,
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
-                                ),
-                            ).apply {
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replay()
-                                        shouldBeInstanceOf<AttestationResult.Error>()
-                                            .cause.shouldBeInstanceOf<AttestationException.Content>()
-                                    }
-                            }.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Content>()
-                        }
-
-                        "wrong signature digests" {
-                            attestationService(
-                                androidAppSignatureDigest = setOf(
-                                    byteArrayOf(0, 32, 55, 29, 120, 22, 0),
-                                    /*this one's an invalid digest and must not affect the tests*/
-                                    "LvfTC77F/uSecSfJDeLdxQ3gZrVLHX8+NNBp7AiUO0E=".decodeBase64ToArray()!!
-                                ),
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
-
-                                ),
-                            ).apply {
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replay()
-                                        shouldBeInstanceOf<AttestationResult.Error>()
-                                            .cause.shouldBeInstanceOf<AttestationException.Content>()
-                                    }
-                            }.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Content>()
-                        }
-
-                        //just to check whether this propagates
-                        "no signature digests, cannot instantiate" {
-                            shouldThrow<at.asitplus.attestation.android.exceptions.AndroidAttestationException> {
-                                attestationService(
-                                    androidAppSignatureDigest = setOf(),
-                                    timeSource = FixedTimeClock(
-                                        recordedAttestation.verificationDate
-                                    ),
-                                )
-                            }
-                        }
-
-                        "app version" {
-                            attestationService(
-                                androidAppVersion = 200000,
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
-                                ),
-                            ).apply {
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replay()
-                                        shouldBeInstanceOf<AttestationResult.Error>()
-                                            .cause.shouldBeInstanceOf<AttestationException.Content>()
-                                    }
-                            }.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Content>()
-
-                        }
-
-                        "patch level" {
-                            attestationService(
-                                androidPatchLevel = PatchLevel(2030, 1),
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
-
-                                ),
-                            ).apply {
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replay()
-                                        shouldBeInstanceOf<AttestationResult.Error>()
-                                            .cause.shouldBeInstanceOf<AttestationException.Content>()
-                                    }
-                            }.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Content>()
-                        }
-
-                        "rollback resistance" {
-                            attestationService(
-                                requireRollbackResistance = true,
-                                timeSource = FixedTimeClock(
-                                    recordedAttestation.verificationDate
-
-                                ),
-                            ).apply {
-                                val dbg = collectDebugInfo(
-                                    recordedAttestation.attestationProof,
-                                    recordedAttestation.challenge,
-                                ).serializeCompact()
-                                WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                    .replayGenericAttestation().apply {
-                                        this shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
-                                            .replay()
-                                        shouldBeInstanceOf<AttestationResult.Error>()
-                                            .cause.shouldBeInstanceOf<AttestationException.Content>()
-                                    }
-                            }.verifyAttestation(
-                                recordedAttestation.attestationProof,
-                                recordedAttestation.challenge
-                            ).shouldBeInstanceOf<AttestationResult.Error>()
-                                .cause.shouldBeInstanceOf<AttestationException.Content>()
-                        }
+                        }.verifyAttestation(
+                            recordedAttestation.attestationProof,
+                            recordedAttestation.challenge
+                        ).shouldBeInstanceOf<AttestationResult.Error>()
+                            .cause.shouldBeInstanceOf<AttestationException.Content>()
                     }
                 }
             }
@@ -1231,7 +1224,7 @@ val WardenTest by testSuite {
                 HexFormat.UpperCase
             )
         )
-        withData(ios, android) {
+        data("attestations", listOf(ios, android)) test {
             Makoto(
                 AndroidAttestationConfiguration.Builder(
                     AndroidAttestationConfiguration.AppData(
@@ -1512,4 +1505,3 @@ val WardenTest by testSuite {
         }
     }
 }
-

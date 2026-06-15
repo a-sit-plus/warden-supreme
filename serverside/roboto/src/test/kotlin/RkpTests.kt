@@ -3,10 +3,7 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import kotlin.time.Instant
 
@@ -83,10 +80,10 @@ val pixel6KeyMint200Good = AttestationData(
     packageOverride = "at.asitplus.attestation_client"
 )
 
-val RkpTests by testSuite {
+val RkpTests by matrixSuite {
     "RKP Ext Present" - {
-        withData(nameFn = { "Experimental Parser = $it" }, false, true) - { experimental ->
-            withData(listOf(sammy14 to null, pixel6KeyMint200Good to false)) - { (it, rkpOverride) ->
+        data("Experimental Parser", listOf(false, true), nameFn = { _, value -> "Supreme Parser = $value" }) - { experimental ->
+            data("attestations", listOf(sammy14 to null, pixel6KeyMint200Good to false)) - { (it, rkpOverride) ->
                 "OK" {
                     attestationService(
                         experimental,

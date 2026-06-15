@@ -8,11 +8,7 @@ import at.asitplus.attestation.supreme.SupremeConfiguration
 import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.toKmpCertificate
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.TestCompartment
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.WebApplicationType
@@ -55,7 +51,7 @@ data class AttestationProperties(
 
 // --8<-- [end:springboot-config]
 
-val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Sequential }) {
+val SpringBootConfigLoadingTest by matrixSuite(matrixConfig { execution = ExecutionMode.Sequential }) {
     "Load example configs from YAML" - {
         val examples = listOf(
             "../../docs/docs/examples/android.yaml" to { env: ConfigurableEnvironment ->
@@ -69,7 +65,7 @@ val SpringBootConfigLoadingTest by testSuite(compartment = { TestCompartment.Seq
             }
         )
 
-        withData(examples) { (path, loadConfig) ->
+        data("examples", examples, nameFn = { _, value -> value.first }) test { (path, loadConfig) ->
             val context = runWithYaml(path)
             val cfg = loadConfig(context.environment)
             cfg.toYamlString() shouldBe FileReader(path).use { it.readText() }

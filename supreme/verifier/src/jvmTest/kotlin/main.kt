@@ -16,11 +16,9 @@ import at.asitplus.signum.indispensable.toJcaPublicKey
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -37,7 +35,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
-val TestEnv by testSuite(testConfig = TestConfig.testScope(isEnabled = false)) {
+val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEnabled = false) }) {
     if (System.getenv("SUPREME_ENDTOENDTEST") == "true") {
         //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
         //fail at runtime

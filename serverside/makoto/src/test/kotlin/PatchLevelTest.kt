@@ -1,7 +1,5 @@
 import at.asitplus.attestation.android.PatchLevel
-import at.asitplus.testballoon.minus
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import java.time.Month
@@ -9,10 +7,10 @@ import java.time.YearMonth
 
 private data class YmTestData(val year: Int, val month: Int, val javaMonth: Month)
 
-val PatchLevelTest by testSuite {
+val PatchLevelTest by matrixSuite {
 
     "conversion" - {
-        withData(
+        data("year-months", listOf(
             YmTestData(2025, 1, Month.JANUARY),
             YmTestData(2025, 2, Month.FEBRUARY),
             YmTestData(2025, 3, Month.MARCH),
@@ -25,7 +23,7 @@ val PatchLevelTest by testSuite {
             YmTestData(2025, 10, Month.OCTOBER),
             YmTestData(2025, 11, Month.NOVEMBER),
             YmTestData(2025, 12, Month.DECEMBER),
-        ) { (year, month, javaMonth) ->
+        )) test { (year, month, javaMonth) ->
             val patchLevel = PatchLevel(year, month)
             val ym = YearMonth.of(patchLevel.year, patchLevel.month)
 
@@ -43,25 +41,25 @@ val PatchLevelTest by testSuite {
 
     "parserCheck" - {
         "illegal" - {
-            withData(
+            data("invalid patch levels", listOf(
                 0 to "0",
                 0 to "13",
                 0 to "99",
                 0 to "100",
-            ) { (y, m) ->
+            )) test { (y, m) ->
                 val singleInt = "$y$m".toInt()
                 shouldThrow<IllegalArgumentException> { PatchLevel.fromSingleInt(singleInt) }
             }
         }
 
         "legal" - {
-            withData(
+            data("valid patch levels", listOf(
                 0 to "1",
                 -0 to "1", /*same as above*/
                 -1 to "12",
                 -999 to "01",
                 9999999 to "01",
-            ) { (y, m) ->
+            )) test { (y, m) ->
                 val singleInt = "$y$m".toInt()
                 val pl = PatchLevel.fromSingleInt(singleInt)
                 pl.year shouldBe y

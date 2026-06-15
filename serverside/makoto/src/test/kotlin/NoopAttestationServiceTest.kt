@@ -1,11 +1,10 @@
 package at.asitplus.attestation
 
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 @OptIn(DisabledAttestation::class)
-val NoopAttestationServiceTest by testSuite {
+val NoopAttestationServiceTest by matrixSuite {
 
     "TestNOOP" {
         NoopAttestationService.verifyAttestation(listOf(), byteArrayOf())

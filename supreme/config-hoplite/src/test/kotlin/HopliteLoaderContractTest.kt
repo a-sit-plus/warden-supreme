@@ -18,9 +18,7 @@ import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.ExperimentalHoplite
 import com.sksamuel.hoplite.addFileSource
 import com.sksamuel.hoplite.decoder.Decoder
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.nulls.shouldBeNull
@@ -32,7 +30,7 @@ import kotlinx.serialization.json.JsonObject
 import java.io.File
 
 @OptIn(ExperimentalHoplite::class)
-val HopliteLoaderContractTest by testSuite {
+val HopliteLoaderContractTest by matrixSuite {
     "android loads through hoplite json and yaml exactly like canonical loaders" {
         assertHopliteMatchesCanonical(HopliteFixtures.androidMinimal)
         assertHopliteMatchesCanonical(HopliteFixtures.androidMaximal)

@@ -4,17 +4,15 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.WardenDebugAttestationStatement
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.text.HexFormat
 
-val AttestationVerifierE2EAttestationTest by testSuite {
-    withData( nameFn = { it.name }, *e2eCases.toTypedArray()) { case ->
+val AttestationVerifierE2EAttestationTest by matrixSuite {
+    data("e2e cases", e2eCases, nameFn = { _, value -> value.name }) test { case ->
         val nonce = case.nonceHex.hexToByteArray(HexFormat.UpperCase)
         val verifier = verifierForNonce(nonce)
         val challenge = verifier.issueChallenge(attestationEndpoint)

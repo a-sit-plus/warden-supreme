@@ -1,14 +1,13 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.wardenVersion
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import java.security.KeyPairGenerator
 import java.util.Date
 import kotlin.time.Clock
 
-val SerializationRegressionTests by testSuite {
+val SerializationRegressionTests by matrixSuite {
 
     "AndroidDebugAttestationStatement can be serialized (TrustedRootSerializer init)" {
         val keyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()

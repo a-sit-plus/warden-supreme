@@ -6,8 +6,7 @@ import at.asitplus.attestation.supreme.InstantLongSerializer
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.testballoon.withData
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.github.smiley4.schemakenerator.core.data.InitialKTypeData
 import io.github.smiley4.schemakenerator.core.data.TypeData
 import io.github.smiley4.schemakenerator.core.data.TypeId
@@ -20,9 +19,9 @@ import java.io.File
 import kotlin.reflect.full.createType
 
         private val pathname = "../../docs/docs/schemas"
-val SchemaGeneration by testSuite {
+val SchemaGeneration by matrixSuite {
 
-    withData(AttestationChallenge::class, AttestationResponse::class, Attestation::class) {
+    data("types", listOf(AttestationChallenge::class, AttestationResponse::class, Attestation::class)) test {
         val jsonSchema = InitialKTypeData(it.createType(), associatedTypes = listOf())
             // Analyze the type using reflection and extract information
             .analyzeTypeUsingKotlinxSerialization()

@@ -3,9 +3,7 @@ package at.asitplus.attestation
 import at.asitplus.attestation.android.*
 import at.asitplus.attestation.supreme.SupremeConfiguration
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -17,7 +15,7 @@ import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.StandardEnvironment
 
-val SpringLoaderContractTest by testSuite {
+val SpringLoaderContractTest by matrixSuite {
     "fromSpringMap matches canonical oracle for minimal and maximal configs" {
         assertSpringMapMatchesCanonical(SpringFixtures.androidMinimal)
         assertSpringMapMatchesCanonical(SpringFixtures.androidMaximal)

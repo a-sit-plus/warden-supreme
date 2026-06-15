@@ -8,14 +8,18 @@ this changelog also includes the original WARDEN changelog.
 * Add hook to explicitly perform additional verifications before issuing
 * Rename `AndroidAttestationConfiguration.AppData.Builder.signatureDigests` -> `AndroidAttestationConfiguration.AppData.Builder.signerFingerprints` for conistency
 * Add the ability to attach custom properties to AndroidAttestationConfiguration and IosAttestationConfiguration
-
+* Explicitly support only a single attestation certificate as leaf for now.
+* Deprecate insecure attestation extension accessor on cert chains
 * Security hardening:
     * Bound the default `InMemoryChallengeCache` used by `AttestationVerifier` to `100_000` in-flight challenges.
     * Add `InMemoryChallengeCache.ChallengeCacheFullException` for cache-overflow handling; callers should map this to back-end rate limiting / HTTP `429 Too Many Requests` as appropriate.
     * Allow duplicate nonce overwrites and prune expired entries before enforcing the in-memory challenge limit.
-
-* Explicitly support only a single attestation certificate as leaf for now.
-* Deprecate insecure attestation extension accessor on cert chains
+* Dependency updates:
+    * Bouncy Castle 1.84
+    * Ktor 3.5.0
+    * kotlinx.coroutines 1.11.0
+    * kotlinx.serialization 1.11.0
+* Matrix testing
 
 # 1.0.0-RC11
 

@@ -5,11 +5,10 @@ import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.VerifiedBootKey
-import at.asitplus.testballoon.invoke
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 
-val AndroidConfigurationBuilderTests by testSuite {
+val AndroidConfigurationBuilderTests by matrixSuite {
     "Android AppData builder applies overrides" {
         val signer = ByteArray(32) { it.toByte() }
         val patch = PatchLevel(2024, 2)

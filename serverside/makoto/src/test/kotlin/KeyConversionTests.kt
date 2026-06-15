@@ -1,12 +1,10 @@
 import at.asitplus.attestation.decodeBase64ToArray
 import at.asitplus.attestation.parseToPublicKey
 import at.asitplus.signum.indispensable.toCryptoPublicKey
-import at.asitplus.testballoon.invoke
-import at.asitplus.testballoon.minus
-import de.infix.testBalloon.framework.core.testSuite
+import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 
-val KeyConversionTests by testSuite {
+val KeyConversionTests by matrixSuite {
 
     "Given an X509-encoded key" - {
         val x509Key =
