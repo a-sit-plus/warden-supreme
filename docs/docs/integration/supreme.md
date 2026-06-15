@@ -206,7 +206,7 @@ mappings of string keys to string values under `customProperties` at the followi
 
 Using a map of string keys to string values is the pragmatic choice: It has well-defined parsing behaviour, can be arbitrarily extended,
 and both keys and values are flexible enough to carry anything. If complex structures are to be attached, they should be serialised to a string and
-deserialised before us.
+deserialised before use.
 
 ??? note "A Note on Android Attestation"
     This library allows combining different flavours of Android attestation, ranging from full hardware attestation

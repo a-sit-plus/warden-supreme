@@ -49,7 +49,7 @@ object DateTimeSerializer : KSerializer<Date> {
 object CustomPropertiesSerializer : KSerializer<Map<String, String>> {
     private val ser = MapSerializer(String.serializer(), String.serializer())
     override val descriptor: SerialDescriptor
-        get() = SerialDescriptor("at.asitplus.attestation.AdditionalProperties", ser.descriptor)
+        get() = SerialDescriptor("at.asitplus.attestation.CustomProperties", ser.descriptor)
 
     @OptIn(ExperimentalSerializationApi::class)
     override fun serialize(
