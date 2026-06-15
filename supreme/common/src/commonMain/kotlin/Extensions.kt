@@ -85,7 +85,7 @@ fun CertificateChain.withAndroidAttestationExtensions(): List<X509Certificate> =
     filter { it.androidAttestationExtension != null }
 
 /**
- * Returns the certificate matching the predicate that is closes to the root. Can be the root itself.
+ * Returns the certificate matching the predicate that is closest to the root. Can be the root itself.
  *
  * @throws Throwable if no match is found
  */
