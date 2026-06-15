@@ -5,6 +5,7 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.parseHex
+import at.asitplus.awesn1.nextPositiveAsn1Integer
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.decodeFromDer
 import at.asitplus.signum.indispensable.decodeFromPem
@@ -28,6 +29,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.TimeZone
+import org.kotlincrypto.random.CryptoRand
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -125,7 +127,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                                 }.getOrThrow().let { signer ->
                                     signer.sign(
                                         TbsCertificate(
-                                            serialNumber = Random.nextBytes(32),
+                                            serialNumber = CryptoRand.nextPositiveAsn1Integer(20),
                                             publicKey = csr.tbsCsr.publicKey,
                                             signatureAlgorithm = signer.signatureAlgorithm,
                                             validFrom = (Clock.System.now()),

@@ -1,5 +1,6 @@
 package examples.docs.service
 
+import at.asitplus.awesn1.nextPositiveAsn1Integer
 import at.asitplus.signum.indispensable.decodeFromDer
 import at.asitplus.signum.indispensable.pki.*
 import at.asitplus.signum.supreme.sign
@@ -13,6 +14,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.kotlincrypto.random.CryptoRand
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -59,8 +61,7 @@ val server = embeddedServer(Netty, port = 8080) {
             /*(7)!*/
             val leafCertificate = signer.sign(
                 /*(8)!*/TbsCertificate(
-                    //TODO: replace once we have a generator
-                    /*(9)!*/serialNumber = byteArrayOf(0.toByte(), *Random.nextBytes(32).dropWhile { it == 0.toByte() }.toByteArray()),
+                    /*(9)!*/serialNumber = CryptoRand.nextPositiveAsn1Integer(20),
                     /*(10)!*/publicKey = it.tbsCsr.publicKey,
                     signatureAlgorithm = signer.signatureAlgorithm,
                     validFrom = (Clock.System.now()),

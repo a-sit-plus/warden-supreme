@@ -7,9 +7,9 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.supreme.AttestationResponse.Failure
 import at.asitplus.attestation.supreme.AttestationResponse.Failure.Type
 import at.asitplus.attestation.supreme.PreAttestationError.ChallengeVerification
+import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
-import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
@@ -254,8 +254,7 @@ constructor(
         }
     }
 
-    private fun CertificationRequest.jcaSignature(): KmmResult<Signature> =
-        (signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance()
+    private fun CertificationRequest.jcaSignature(): KmmResult<Signature> = signatureAlgorithm.getJCASignatureInstance()
 
     private suspend fun csrReason(
         onAttestationError: suspend AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
