@@ -1,6 +1,7 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.FixedTimeClock
+import at.asitplus.catching
 import at.asitplus.testballoon.invoke
 import at.asitplus.testballoon.minus
 import at.asitplus.signum.indispensable.CryptoSignature
@@ -21,6 +22,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -43,6 +45,13 @@ private fun csrForChallenge(challenge: AttestationChallenge): Pkcs10Certificatio
 }
 
 val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabled = true, timeout = 10.minutes)) {
+
+    "maxChallenges must be positive" {
+        val clock = FixedTimeClock(Random.nextLong())
+
+        catching { InMemoryChallengeCache(clock, Duration.ZERO, 0) }.isFailure shouldBe true
+        catching { InMemoryChallengeCache(clock, Duration.ZERO, -1) }.isFailure shouldBe true
+    }
 
     "once" {
         val nonce = Random.nextBytes(16)
@@ -199,6 +208,114 @@ val ChallengeVerifierTest by testSuite(testConfig = TestConfig.testScope(isEnabl
                 result.reason.message?.lowercase() shouldContain "no challenge"
             }
         }
+    }
+
+    "capacity rejects distinct unexpired challenges" {
+        val clock = FixedTimeClock(Random.nextLong())
+        val cache = InMemoryChallengeCache(clock, Duration.ZERO, maxChallenges = 1)
+        val challenge1 = AttestationChallenge(
+            clock.now(),
+            1.seconds,
+            null,
+            Random.nextBytes(16),
+            "",
+            WardenDefaults.OIDs.ATTESTATION_PROOF
+        )
+        val challenge2 = AttestationChallenge(
+            clock.now(),
+            1.seconds,
+            null,
+            Random.nextBytes(16),
+            "",
+            WardenDefaults.OIDs.ATTESTATION_PROOF
+        )
+
+        cache.store(challenge1)
+        catching { cache.store(challenge2) }.exceptionOrNull()
+            .shouldBeInstanceOf<InMemoryChallengeCache.ChallengeCacheFullException>()
+            .maxChallenges shouldBe 1
+        cache.validate(csrForChallenge(challenge1)).shouldBeInstanceOf<ChallengeValidationResult.Success>()
+    }
+
+    "capacity allows duplicate nonce overwrite" {
+        val clock = FixedTimeClock(Random.nextLong())
+        val cache = InMemoryChallengeCache(clock, Duration.ZERO, maxChallenges = 1)
+        val challenge = AttestationChallenge(
+            clock.now(),
+            1.seconds,
+            null,
+            Random.nextBytes(16),
+            "",
+            WardenDefaults.OIDs.ATTESTATION_PROOF
+        )
+
+        cache.store(challenge)
+        cache.store(challenge)
+        cache.validate(csrForChallenge(challenge)).shouldBeInstanceOf<ChallengeValidationResult.Success>()
+        cache.validate(csrForChallenge(challenge)).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+    }
+
+    "capacity prunes expired challenges before rejecting" {
+        val clock = FixedTimeClock(Random.nextLong())
+        val cache = InMemoryChallengeCache(clock, Duration.ZERO, maxChallenges = 1)
+        val expired = AttestationChallenge(
+            clock.now(),
+            1.seconds,
+            null,
+            Random.nextBytes(16),
+            "",
+            WardenDefaults.OIDs.ATTESTATION_PROOF
+        )
+        val fresh = AttestationChallenge(
+            clock.now() + 2.seconds,
+            1.seconds,
+            null,
+            Random.nextBytes(16),
+            "",
+            WardenDefaults.OIDs.ATTESTATION_PROOF
+        )
+
+        cache.store(expired)
+        clock.offsetBy(2.seconds)
+        cache.store(fresh)
+        cache.validate(csrForChallenge(fresh)).shouldBeInstanceOf<ChallengeValidationResult.Success>()
+        cache.validate(csrForChallenge(expired)).shouldBeInstanceOf<ChallengeValidationResult.Failure>()
+    }
+
+    "concurrent overflow stays bounded" {
+        val attempts = 32
+        val maxChallenges = 5
+        val clock = FixedTimeClock(Random.nextLong())
+        val cache = InMemoryChallengeCache(clock, Duration.ZERO, maxChallenges = maxChallenges)
+        val successes = AtomicInteger(0)
+        val overflows = AtomicInteger(0)
+        val unexpected = AtomicInteger(0)
+        val jobs = Stack<Job>()
+
+        repeat(attempts) {
+            jobs += launch {
+                val challenge = AttestationChallenge(
+                    clock.now(),
+                    1.seconds,
+                    null,
+                    WardenDefaults.nonceGenerator(),
+                    "",
+                    WardenDefaults.OIDs.ATTESTATION_PROOF
+                )
+                catching { cache.store(challenge) }.fold(
+                    onSuccess = { successes.incrementAndGet() },
+                    onFailure = {
+                        if (it is InMemoryChallengeCache.ChallengeCacheFullException) overflows.incrementAndGet()
+                        else unexpected.incrementAndGet()
+                    }
+                )
+            }
+        }
+
+        jobs.joinAll()
+        successes.get() shouldBe maxChallenges
+        overflows.get() shouldBe attempts - maxChallenges
+        unexpected.get() shouldBe 0
     }
 
     "stresstest" - {

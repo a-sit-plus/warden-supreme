@@ -7,6 +7,11 @@ this changelog also includes the original WARDEN changelog.
 # NEXT
 * Add hook to explicitly perform additional verifications before issuing
 
+* Security hardening:
+    * Bound the default `InMemoryChallengeCache` used by `AttestationVerifier` to `100_000` in-flight challenges.
+    * Add `InMemoryChallengeCache.ChallengeCacheFullException` for cache-overflow handling; callers should map this to back-end rate limiting / HTTP `429 Too Many Requests` as appropriate.
+    * Allow duplicate nonce overwrites and prune expired entries before enforcing the in-memory challenge limit.
+
 # 1.0.0-RC10
 
 * Update to latest Google upstream attestation library (`a83ff03aa1c1c03ab5090bfcdc352aa8ff5eeb60`)

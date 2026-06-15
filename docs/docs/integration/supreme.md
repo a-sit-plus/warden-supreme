@@ -219,8 +219,12 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
 
 ??? info inline end "Important Nonce Info"
     Under the hood, the attestation verifier needs a source to generate attestation challenges, track them, invalidate them, and match them against incoming attestation requests.
-    Warden Supreme provides a secure nonce generation service and uses an in-memory challenge cache by default, which is fine for small to medium loads but not for larger production deployments.
-    In such scenarios, roll your own (backed by Redis, for example).
+    Warden Supreme provides a secure nonce generation service and uses a bounded in-memory challenge cache by default.
+    The default cache allows up to `100_000` unexpired in-flight challenges per verifier instance. Once full, it prunes expired entries and then throws `InMemoryChallengeCache.ChallengeCacheFullException` instead of evicting active challenges.
+    Challenge nonces are sensitive replay-protection material. Treat them as bearer values for their short lifetime: do not log them, do not expose them across sessions or callers, serve them only over protected transport, and bind/rate-limit callers in your HTTP layer when your service needs that context.
+    Map that exception at your HTTP layer to `429 Too Many Requests` and, if useful, a `Retry-After` header.
+    The cache deliberately does not implement backoff; caller-aware rate limiting needs IP, account, tenant, or device context and should live outside Warden Supreme.
+    For horizontally scaled or high-volume deployments, use a distributed TTL-backed `ChallengeValidator` instead (Redis, for example).
 
 ```kotlin
 --8<-- "Readme-Verifier-min.kt:3"
@@ -243,7 +247,7 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
         * Usable for 30 seconds without reauthentication
         * Enrolling new biometric factors will invalidate the key
     5. We want extra long nonces (default: 64 bytes; max: 128 bytes).
-    6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here; roll your own).
+    6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here; roll your own). This is the recommended approach when multiple verifier instances issue challenges.
     
 
 Instead of passing parameters programmatically, it is also possible to externalise configuration (see [Externalising Configuration](config.md)).
@@ -255,7 +259,7 @@ attestation policies, as well as everything needed on top (object identifiers, e
 ```
 
 1. Default, secure nonce generator.
-2. Default in-memory challenge validator.
+2. Default bounded in-memory challenge validator.
 
 #### Additional Verification Policy
 
@@ -298,7 +302,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 
 1. We're using JSON to transmit the challenge and the final response.
 2. Endpoint to serve challenges to clients
-3. It does nothing but issue challenges
+3. It does nothing but issue challenges. In production, catch `InMemoryChallengeCache.ChallengeCacheFullException` here and return `429 Too Many Requests`; apply caller-aware rate limiting outside the verifier.
 4. The full URL to post the attestation proof to
 5. Endpoint expecting CSRs containing attestation statement payloads
 6. Read the raw CSR from the HTTP body

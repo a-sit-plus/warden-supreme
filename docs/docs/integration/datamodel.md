@@ -29,7 +29,7 @@ to respond.
 - `issuedAt`: when the challenge was issued.
 - `validity`: how long the challenge is valid.
 - `timeZone`: optional server time zone (informational).
-- `nonce`: server-chosen nonce (≤128 bytes).
+- `nonce`: server-chosen nonce (≤128 bytes). This is sensitive replay-protection material. Treat it as a short-lived bearer value: do not log it, do not expose it across sessions or callers, and serve challenges only over protected transport.
 - `attestationEndpoint`: where the client submits the attestation proof.
 - `proofOID`: CSR attribute identifier used to carry the attestation statement payload.
 - `genericDeviceNameOID`: whether to include a generic make/model (not user-assignable name) in the CSR.

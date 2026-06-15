@@ -103,8 +103,14 @@ constructor(
      *
      * **Note that the [challengeValidator] needs to account for this inverse view! The default [InMemoryChallengeCache] already does that.**
      *
+     * The issued challenge nonce is sensitive replay-protection material. Treat it as a bearer value for the lifetime of
+     * the challenge: do not log it, do not expose it across sessions or callers, serve it only over protected transport,
+     * and keep caller/session binding and rate limiting in the surrounding HTTP layer if your service needs it.
      *
+     * @throws Throwable For example, [InMemoryChallengeCache.ChallengeCacheFullException] is thrown if the default in-memory cache is full. Custom
+     * [ChallengeValidator] implementations may throw their own operational exceptions from [ChallengeValidator.store].
      */
+    @Throws(Throwable::class)
     suspend fun issueChallenge(
         postEndpoint: String,
         timeZone: TimeZone? = null,
@@ -351,6 +357,9 @@ constructor(
  * Most probably, this will check against a nonce cache and evict any matched nonce from the cache.
  * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
  * matching, ensuring freshness!
+ * Challenge nonces are sensitive replay-protection material: implementations and operators should avoid logging them,
+ * avoid exposing them across sessions or callers, and rely on protected transport plus caller-aware controls outside the
+ * nonce cache when needed.
  *
  * **BEWARE OF CLOCK DRIFT AND CONFIGURED OFFSETS WRT. VALIDITY DURATION!**
  *
@@ -360,7 +369,11 @@ interface ChallengeValidator {
     /**
      * The contract of this function is that it stores challenges regardless of their contents and performs no sanity checks.
      * Reason: Strong cryptographic nonces are assumed, making collisions unrealistic
+     *
+     * Implementations may throw if they cannot store the challenge. For example, [InMemoryChallengeCache] throws
+     * [InMemoryChallengeCache.ChallengeCacheFullException] when its bounded in-memory capacity is exhausted.
      */
+    @Throws(InMemoryChallengeCache.ChallengeCacheFullException::class)
     suspend fun store(challenge: AttestationChallenge)
 
     /**
@@ -417,9 +430,36 @@ sealed class PreAttestationError {
  * Caches issued challenges in memory in a coroutine-safe way. Requires a [clock] and an [offset].
  * The [AttestationVerifier] passes [Makoto]'s clock and the inverse of [Makoto.verificationTimeOffset], since these two values
  * are also encoded into issues challenges.
+ *
+ * The cache is bounded by [maxChallenges] and throws [InMemoryChallengeCache.ChallengeCacheFullException] from [store]
+ * when that many unexpired challenges are already in flight. Expired entries are pruned before the capacity check and a
+ * duplicate nonce overwrites the existing entry even at capacity.
+ *
+ * Production deployments should apply caller-aware rate limiting outside this cache and may prefer a distributed
+ * TTL-backed [ChallengeValidator] when multiple verifier instances are used. The cache deliberately owns no backoff
+ * state, because backoff needs caller identity, IP, account, or device context.
+ *
+ * @throws IllegalArgumentException if [maxChallenges] is not positive.
  */
 //internal props for testing
-class InMemoryChallengeCache(internal val clock: Clock, internal val offset: Duration) : ChallengeValidator {
+class InMemoryChallengeCache
+@Throws(IllegalArgumentException::class)
+constructor(
+    internal val clock: Clock,
+    internal val offset: Duration,
+    val maxChallenges: Int = DEFAULT_MAX_IN_MEMORY_CHALLENGES,
+) : ChallengeValidator {
+
+    companion object {
+        const val DEFAULT_MAX_IN_MEMORY_CHALLENGES: Int = 100_000
+    }
+
+    class ChallengeCacheFullException(val maxChallenges: Int) :
+        IllegalStateException("In-memory challenge cache full: $maxChallenges challenges in flight")
+
+    init {
+        require(maxChallenges > 0) { "maxChallenges must be positive" }
+    }
 
     private val mutex = Mutex()
 
@@ -437,11 +477,16 @@ class InMemoryChallengeCache(internal val clock: Clock, internal val offset: Dur
 
     private val challengesByNonce = mutableMapOf<NonceKey, AttestationChallenge>()
 
+    @Throws(ChallengeCacheFullException::class)
     override suspend fun store(challenge: AttestationChallenge) {
         mutex.withLock {
             pruneExpiredEntries()
+            val key = NonceKey(challenge.nonce)
             // Strong cryptographic nonces make collisions unrealistic, so we simply overwrite
-            challengesByNonce[NonceKey(challenge.nonce)] = challenge
+            if (!challengesByNonce.containsKey(key) && challengesByNonce.size >= maxChallenges) {
+                throw ChallengeCacheFullException(maxChallenges)
+            }
+            challengesByNonce[key] = challenge
         }
     }
 
