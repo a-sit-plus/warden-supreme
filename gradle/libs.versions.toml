@@ -1,7 +1,7 @@
 [versions]
 
 ## do not track latest and greatest for better downstream compat
-kotlin = "2.3.0"
+kotlin = "2.4.0"
 
 guava = "33.5.0-jre"
 autovalue = "1.11.0"
@@ -26,9 +26,9 @@ semver = "1.2.0"
 serialization ="1.10.0"
 
 slf4j = "1.7.36"
-testballoon = "1.0.0-K2.3.0"
-testballoonAddons = "0.14.0"
-asp = "20260609"
+testballoon = "1.0.0-K2.4.0"
+#testballoonAddons = "0.14.0"
+asp = "20260610"
 sbombastic ="0.0.3"
 pitest = "1.19.0-rc.3"
 pitest-junit5 = "1.2.2"
