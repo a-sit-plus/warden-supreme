@@ -18,7 +18,6 @@ import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import ch.veehait.devicecheck.appattest.common.App
 import ch.veehait.devicecheck.appattest.common.AppleAppAttestEnvironment
-import ch.veehait.devicecheck.appattest.common.AuthenticatorData
 import ch.veehait.devicecheck.appattest.receipt.ReceiptException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory
@@ -309,7 +308,8 @@ class Makoto
                         expectedChallenge
                     ).also { assertion ->
                         if (assertion.authenticatorData.signCount - 1 > validCounters.last) {
-                            val msg = "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
+                            val msg =
+                                "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
                             throw AttestationException.Content.iOS(
                                 msg,
                                 IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
@@ -455,15 +455,19 @@ class Makoto
             IllegalArgumentException().encapsulateToUnknown("Attestation proof is empty")
         else if (attestationProof.size > 2) verifyAttestationAndroid(attestationProof, challenge).let {
             if (it is AttestationResult.Android) clientData?.let { encodedKey ->
-                if (!it.attestationCertificate.publicKey.encoded.contentEquals(encodedKey)) {
-                    "Attestation certificate public key does not match provided public key".let { msg ->
+                val attestedLeafKey = it.requireLeafAttestationCertificateForKeyBinding().fold(
+                    onSuccess = { leaf -> leaf.publicKey.encoded },
+                    onFailure = { return it.toAttestationResultError() }
+                )
+                if (!attestedLeafKey.contentEquals(encodedKey)) {
+                    "Attested public key does not match provided public key".let { msg ->
                         AttestationResult.Error(
                             msg, AttestationException.Content.Android(
                                 msg,
                                 AttestationValueException(
                                     msg, reason = AttestationValueException.Reason.APP_UNEXPECTED,
                                     expectedValue = encodedKey,
-                                    actualValue = it.attestationCertificate.publicKey.encoded
+                                    actualValue = attestedLeafKey
                                 )
                             )
                         )
@@ -543,9 +547,9 @@ class Makoto
                 challenge
             ).let {
                 when (it) {
-                    is AttestationResult.Android -> KeyAttestation(
-                        attestationProof.certificateChain.first().decodedPublicKey.getOrThrow().toJcaPublicKey()
-                            .getOrThrow(), it
+                    is AttestationResult.Android -> it.requireLeafAttestationCertificateForKeyBinding().fold(
+                        onSuccess = { leaf -> KeyAttestation(leaf.publicKey, it) },
+                        onFailure = { error -> KeyAttestation(null, error.toAttestationResultError()) }
                     )
 
                     is AttestationResult.Error -> KeyAttestation(null, it)
@@ -580,6 +584,12 @@ class Makoto
      * Verifies [Android Key Attestation](https://developer.android.com/training/articles/security-key-attestation) based
      * the provided certificate chain (the leaf ist the attestation certificate, the root must be one of the
      * [Google Hardware Attestation Root certificates](https://developer.android.com/training/articles/security-key-attestation#root_certificate)).
+     *
+     * Warden Supreme intentionally does not support chains based on Android's `ATTEST_KEY` purpose, where an
+     * attested key creates certificates or subordinate keys below itself. Supporting that safely would make
+     * certificate-chain validation more complex and requires thorough investigation to ensure length-extension-style
+     * attacks remain prohibited. Hence, key binding only works when the leaf certificate is itself the attestation
+     * certificate.
      *
      * @param attestationCerts certificate chain from the attestation certificate up to a Google Hardware Attestation Root certificate
      * @param expectedChallenge the challenge to be verified against
@@ -1020,6 +1030,31 @@ class Makoto
         val iosVersion: IosAttestationConfiguration.OsVersions? = iosAttestationConfiguration.iosVersion
     }
 
+}
+
+internal fun AttestationResult.Android.requireLeafAttestationCertificateForKeyBinding(): Result<X509Certificate> =
+    catchingUnwrapped {
+        if (!isLeafAttestationCertificate) {
+            val msg = "Android key binding requires the leaf certificate to carry the attestation extension"
+            throw AttestationException.Content.Android(
+                msg,
+                AttestationValueException(
+                    msg,
+                    reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                    expectedValue = "Attestation extension on leaf certificate",
+                    actualValue = "Attestation extension on non-leaf certificate"
+                )
+            )
+        }
+        leafCertificate
+    }
+
+private fun Throwable.toAttestationResultError(): AttestationResult.Error = when (this) {
+    is AttestationException -> AttestationResult.Error(message ?: javaClass.simpleName, this)
+    else -> AttestationResult.Error(
+        message ?: javaClass.simpleName,
+        AttestationException.Content.Unknown(message, this)
+    )
 }
 
 

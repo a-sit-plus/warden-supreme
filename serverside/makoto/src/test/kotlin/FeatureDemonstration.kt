@@ -63,7 +63,7 @@ val FeatureDemonstration by testSuite {
             service.verifyAttestation(nokiaX10KeyMasterGood.attestationProof, nokiaX10KeyMasterGood.challenge)
                 .apply {
                     shouldBeInstanceOf<AttestationResult.Android>().apply {
-                        attestationCertificate.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
+                        attestationCertificateClosestToRoot.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
                         androidAttestationExtension.attestationChallenge shouldBe nokiaX10KeyMasterGood.challenge
                         androidAttestationExtension.attestationSecurityLevel shouldBeIn listOf(
                             AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT,
@@ -86,7 +86,7 @@ val FeatureDemonstration by testSuite {
                         isSuccess.shouldBeTrue()
                         attestedPublicKey!!.encoded shouldBe nokiaX10KeyMasterGood.publicKey!!.encoded
                         details.shouldBeInstanceOf<AttestationResult.Android>().apply {
-                            attestationCertificate.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
+                            attestationCertificateClosestToRoot.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
                             androidAttestationExtension.attestationChallenge shouldBe nokiaX10KeyMasterGood.challenge
                             androidAttestationExtension.attestationSecurityLevel shouldBeIn listOf(
                                 AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT,
@@ -106,7 +106,7 @@ val FeatureDemonstration by testSuite {
                         isSuccess.shouldBeTrue()
                         attestedPublicKey!!.encoded shouldBe nokiaX10KeyMasterGood.publicKey!!.encoded
                         details.shouldBeInstanceOf<AttestationResult.Android>().apply {
-                            attestationCertificate.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
+                            attestationCertificateClosestToRoot.encoded shouldBe nokiaX10KeyMasterGood.attestationProof.first()
                             androidAttestationExtension.attestationChallenge shouldBe nokiaX10KeyMasterGood.challenge
                             androidAttestationExtension.attestationSecurityLevel shouldBeIn listOf(
                                 AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT,

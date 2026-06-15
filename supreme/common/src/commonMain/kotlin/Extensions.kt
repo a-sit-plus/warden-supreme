@@ -1,8 +1,12 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.attestation.android.androidAttestationExtension
+import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.misc.BitLength
+import at.asitplus.signum.indispensable.pki.CertificateChain
+import at.asitplus.signum.indispensable.pki.X509Certificate
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -70,3 +74,25 @@ object BitLengthSerializer : KSerializer<BitLength> {
         encoder.encodeInt(value.bits.toInt())
     }
 }
+
+/**
+ * Returns a list of certificates that contain an attestation extension; in-order.
+ *
+ * @throws Throwable In case a certificate in the chain is malformed
+ */
+@Throws(Throwable::class)
+fun CertificateChain.withAndroidAttestationExtensions(): List<X509Certificate> =
+    filter { it.androidAttestationExtension != null }
+
+/**
+ * Returns the certificate matching the predicate that is closest to the root. Can be the root itself.
+ *
+ * @throws Throwable if no match is found
+ */
+fun List<X509Certificate>.closestToRoot(predicate: (X509Certificate) -> Boolean) = last(predicate)
+
+/**
+ * Returns the certificate matching the predicate that is closes to the root. Can be the root itself.
+ */
+fun List<X509Certificate>.closestToRootOrNull(predicate: (X509Certificate) -> Boolean) =
+    catchingUnwrapped { closestToRoot(predicate) }.getOrNull()

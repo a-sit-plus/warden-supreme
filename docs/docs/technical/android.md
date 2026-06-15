@@ -111,6 +111,10 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
 
 - Expect a chain terminating in a **Google Hardware Attestation Root** for hardware-backed attestation.
 - Always validate **full chain**: signatures, validity, path length, EKU (if present).
+- Warden Supreme intentionally does **not** support Android keys with purpose `ATTEST_KEY` creating subordinate
+  certificates or attested keys below themselves. Supporting that safely would make certificate-chain validation more
+  complex and Warden will only consider it after thorough investigation to ensure length-extension attacks remain
+  prohibited.
 - Reject **software/hybrid** attestation unless explicitly allowed for test scenarios; keep a separate trust store for
   emulators.
 - Keep the **attestation root set** and **revocation lists** up to date on your server; retrieve and cache periodically.
@@ -125,6 +129,9 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
   See [Android-specific quirks](quirks.md#android).
 - **Time Drift**: Out-of-sync clocks between clients and server can cause the PKIX validation part to fail.
   See also [Clock Drifts and Temporal Validity](quirks.md#clock-drifts-and-temporal-validity).
+- **Assuming attested intermediate CAs are supported automatically**: they are not. If you need an attested
+  intermediate CA, first attest the key through Warden's regular flow, then manually issue a certificate for that key
+  with the appropriate CA-related extensions and key-usage flags.
 
 ## References and Libraries
 

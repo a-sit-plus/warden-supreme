@@ -336,6 +336,22 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
     * On success, the certificate chain produced above will be returned.
     * On failure, an explanation about what failed will be returned.
 
+!!! warning "Android `ATTEST_KEY` Is Intentionally Unsupported"
+    Warden Supreme currently only supports Android key binding when the **leaf certificate is itself the attestation
+    certificate**.
+
+    Using Android's `ATTEST_KEY` purpose to create subordinate keys or certificates below an attested key is
+    intentionally unsupported for now. Supporting that safely would make certificate-chain validation more complex, and
+    Warden will only consider it after thorough investigation to ensure length-extension attacks remain prohibited.
+
+    If you need that use case, the supported approach is:
+
+    1. create and attest the would-be issuing key through Warden's regular flow
+    2. issue a certificate for that key on your CA infrastructure
+    3. manually set the appropriate CA-related extensions and key-usage flags so it becomes a legitimate intermediate CA certificate allowed to sign subordinate certificates
+
+    In other words: manual issuance work is currently required for attested intermediate CAs.
+
 ### Client Integration
 
 !!! warning inline end "Key Management"

@@ -22,7 +22,7 @@ sealed class SupremeAttestationEngine(
     override val certChainValidator = JvmCertChainValidator(attestationConfiguration)
 
     override val List<X509Certificate>.attestationRecord: AttestationKeyDescription?
-        get() = androidAttestationExtension
+        get() = closestToRootOrNull { it.hasAndroidKeystoreAttestation }?.androidAttestationExtension
 
     override val AttestationKeyDescription.attestationSecLevel: GeneralizedSecurityLevel
         get() = when (attestationSecurityLevel) {

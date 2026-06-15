@@ -2,7 +2,8 @@
 
 package at.asitplus.attestation.supreme
 
-import at.asitplus.testballoon.invoke
+import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.testballoon.withData
 import at.asitplus.testballoon.withFixtureGenerator
 import de.infix.testBalloon.framework.core.TestConfig
@@ -12,10 +13,8 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.security.MessageDigest
-import java.util.Date
+import java.util.*
 import kotlin.random.Random
-import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 
 val AttestationVerifierFakeAndroidTest by testSuite(
     testConfig = TestConfig.invocation(TestConfig.Invocation.Sequential)
@@ -291,6 +290,32 @@ val AttestationVerifierFakeAndroidTest by testSuite(
 
             response.shouldBeInstanceOf<AttestationResponse.Success>()
             seenPayload shouldBe listOf("tenant-a")
+        }
+
+        test("forged leaf above attestation leaf is rejected") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig())
+            val forged = fixture.fake.prependForgedLeaf()
+            val csr = fixture.issueCsr(
+                verifier = verifier,
+                attestationJson = forged.attestationJson(),
+                keyPair = forged.leafKeyPair,
+            )
+
+            val response = verifier.verifyAttestation(csr, certificateIssuer = { emptyList() })
+            response.shouldBeInstanceOf<AttestationResponse.Failure>()
+        }
+
+        test("forged leaf with copied attestation extension is rejected") { fixture ->
+            val verifier = fixture.verifier(fixture.trustedConfig())
+            val forged = fixture.fake.prependForgedLeaf(copyAttestationExtension = true)
+            val csr = fixture.issueCsr(
+                verifier = verifier,
+                attestationJson = forged.attestationJson(),
+                keyPair = forged.leafKeyPair,
+            )
+
+            val response = verifier.verifyAttestation(csr, certificateIssuer = { emptyList() })
+            response.shouldBeInstanceOf<AttestationResponse.Failure>()
         }
     }
 

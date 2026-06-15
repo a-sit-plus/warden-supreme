@@ -10,6 +10,8 @@ import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.DERSet
 import org.bouncycastle.asn1.DERTaggedObject
 import org.bouncycastle.asn1.x500.X500Name
+import org.bouncycastle.asn1.x509.BasicConstraints
+import org.bouncycastle.asn1.x509.KeyUsage
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.X509v3CertificateBuilder
@@ -42,7 +44,36 @@ object AttestationCreator {
         verifiedBootState: BootState = BootState.VERIFIED,
         verifiedBootHash: ByteArray = Random.nextBytes(32),
         creationTime: Date = Date(),
-    ): List<X509Certificate> = create(
+    ): List<X509Certificate> = createAttestationWithKeys(
+        challenge,
+        packageName,
+        signatureDigest,
+        appVersion,
+        androidVersion,
+        androidPatchLevel,
+        vendorPatchLevel,
+        verifiedBootKey,
+        deviceLocked,
+        verifiedBootState,
+        verifiedBootHash,
+        creationTime,
+    ).certificateChain
+
+    fun createAttestationWithKeys(
+        challenge: ByteArray,
+        packageName: String,
+        signatureDigest: ByteArray,
+        appVersion: Int = 1,
+        androidVersion: Int = 11,
+        androidPatchLevel: Int = 202108,
+        vendorPatchLevel: Int? = null,
+        verifiedBootKey: ByteArray = Random.nextBytes(32),
+        deviceLocked: Boolean = true,
+        verifiedBootState: BootState = BootState.VERIFIED,
+        verifiedBootHash: ByteArray = Random.nextBytes(32),
+        creationTime: Date = Date(),
+        attestationLeafCanSignCertificates: Boolean = false,
+    ): CreatedAttestation = create(
         KeyAttestationDefs(
             attestationVersion = 4,
             attestationSecurityLevel = SecurityLevel.TEE,
@@ -72,9 +103,14 @@ object AttestationCreator {
             )
         ),
         certificateCreation = creationTime,
+        attestationLeafCanSignCertificates = attestationLeafCanSignCertificates,
     )
 
-    private fun create(keyAttestation: KeyAttestationDefs, certificateCreation: Date): List<X509Certificate> {
+    private fun create(
+        keyAttestation: KeyAttestationDefs,
+        certificateCreation: Date,
+        attestationLeafCanSignCertificates: Boolean,
+    ): CreatedAttestation {
         val rootKeyPair = KeyPairGenerator.getInstance("EC").also {
             it.initialize(256)
         }.genKeyPair()
@@ -102,7 +138,7 @@ object AttestationCreator {
         val leafKeyPair = KeyPairGenerator.getInstance("EC").also {
             it.initialize(256)
         }.genKeyPair()
-        val leafCert = X509v3CertificateBuilder(
+        val leafBuilder = X509v3CertificateBuilder(
             /* issuer = */ X500Name("CN=Intermediate"),
             /* serial = */ BigInteger.valueOf(Random.nextLong()),
             /* notBefore = */ certificateCreation,
@@ -113,11 +149,28 @@ object AttestationCreator {
             ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17"),
             false,
             keyAttestation.toSequence()
-        ).build(intermediateKeyPair.contentSigner()).toX509Certificate()
+        )
+        if (attestationLeafCanSignCertificates) {
+            leafBuilder.addExtension(ASN1ObjectIdentifier("2.5.29.19"), true, BasicConstraints(true))
+            leafBuilder.addExtension(ASN1ObjectIdentifier("2.5.29.15"), true, KeyUsage(KeyUsage.keyCertSign))
+        }
+        val leafCert = leafBuilder.build(intermediateKeyPair.contentSigner()).toX509Certificate()
 
-        return listOf(leafCert, intermediateCert, rootCert)
+        return CreatedAttestation(
+            certificateChain = listOf(leafCert, intermediateCert, rootCert),
+            leafKeyPair = leafKeyPair,
+            intermediateKeyPair = intermediateKeyPair,
+            rootKeyPair = rootKeyPair,
+        )
     }
 }
+
+data class CreatedAttestation(
+    val certificateChain: List<X509Certificate>,
+    val leafKeyPair: KeyPair,
+    val intermediateKeyPair: KeyPair,
+    val rootKeyPair: KeyPair,
+)
 
 private fun X509CertificateHolder.toX509Certificate(): X509Certificate =
     CertificateFactory.getInstance("X.509").generateCertificate(this.encoded.inputStream()) as X509Certificate

@@ -1,5 +1,7 @@
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.androidAttestationExtension
+import at.asitplus.attestation.android.closestToRoot
+import at.asitplus.attestation.android.hasAndroidKeystoreAttestation
 import at.asitplus.attestation.android.prettyPrint
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.toKmpCertificate
@@ -84,7 +86,7 @@ val CustomParserTests by testSuite {
 
         "Chain vs. leaf" {
             withClue(androidAttestationExtension?.prettyPrint()) {
-                attestationCertChain.androidAttestationExtension shouldBe androidAttestationExtension
+                attestationCertChain.closestToRoot {  it.hasAndroidKeystoreAttestation }.androidAttestationExtension shouldBe androidAttestationExtension
             }
         }
         "convert" - {

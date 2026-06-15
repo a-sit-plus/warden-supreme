@@ -110,7 +110,7 @@ val DebugStatementParserTest by testSuite {
 
             val androidAttestationExtension = attestationCertChain.first().androidAttestationExtension
             "from chain should be same as from leaf" {
-                androidAttestationExtension shouldBe attestationCertChain.androidAttestationExtension
+                androidAttestationExtension shouldBe attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }?.androidAttestationExtension
             }
             "convert" - {
                 withData(nameFn = { it.subjectX500Principal.toString() }, attestationCertChain) {
@@ -137,11 +137,11 @@ val DebugStatementParserTest by testSuite {
                     }.getOrNull()
                 }.filterNotNull()
 
-                if (prev.isNotEmpty() && ((androidAttestationExtension != null) && prev.androidAttestationExtension != null)) {
+                if (prev.isNotEmpty() && ((androidAttestationExtension != null) && prev.closestToRootOrNull { it.hasAndroidKeystoreAttestation }?.androidAttestationExtension != null)) {
                     "concatenating two chains (current = $index) should get the same exnt as just from the current chain" {
                         //leaf = fist in chain, root = last in chain. so we went the closest to CURRENT root. hence we need to prepent
                         //s.t. the chain gets extended below the leaf and not above the root
-                        (prev + attestationCertChain).androidAttestationExtension shouldBe attestationCertChain.androidAttestationExtension
+                        (prev + attestationCertChain).closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension shouldBe attestationCertChain.closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension
                     }
                 }
             }
@@ -154,11 +154,12 @@ val DebugStatementParserTest by testSuite {
                     System.err.println("Old Google parser glitched out")
                     val newParser = catchingUnwrapped { KeyDescription.parseFrom(attestationCertChain.first()) }
 
-                    attestationCertChain.androidAttestationExtension.shouldBeNull()
+                    attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }.shouldBeNull()
                     return@invoke//well, well, well…}
                 }
                 androidAttestationExtension.shouldNotBeNull()
-                attestationCertChain.androidAttestationExtension shouldBe androidAttestationExtension
+                attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
+                    .shouldNotBeNull().androidAttestationExtension shouldBe androidAttestationExtension
                 catchingUnwrapped {
 
                     val reencoded = androidAttestationExtension.encodeToDer()

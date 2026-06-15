@@ -25,6 +25,7 @@ import org.bouncycastle.asn1.ASN1Boolean
 import org.bouncycastle.asn1.ASN1Enumerated
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
@@ -247,6 +248,37 @@ internal data class FakeAndroidAttestation(
 
 internal fun FakeAndroidAttestation.attestationJson(): String =
     AndroidKeystoreAttestation(certificateChain.toSignumChain()).jsonEncoded
+
+internal fun FakeAndroidAttestation.prependForgedLeaf(
+    creationTime: Date = Date(fixedClock.now().toEpochMilliseconds()),
+    copyAttestationExtension: Boolean = false,
+): FakeAndroidAttestation {
+    val forgedLeafKeyPair = KeyPairGenerator.getInstance("EC").also { it.initialize(256) }.genKeyPair()
+    val attestationLeaf = certificateChain.first()
+    val builder = X509v3CertificateBuilder(
+        X500Name(attestationLeaf.subjectX500Principal.name),
+        BigInteger.valueOf(Random.nextLong()),
+        creationTime,
+        Date(creationTime.time + 1000L * 60L * 60L),
+        X500Name("CN=Forged Subject"),
+        forgedLeafKeyPair.subjectPublicKeyInfo()
+    )
+    if (copyAttestationExtension) {
+        builder.addExtension(
+            ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17"),
+            false,
+            ASN1OctetString.getInstance(
+                attestationLeaf.getExtensionValue("1.3.6.1.4.1.11129.2.1.17")
+            ).octets
+        )
+    }
+    val forgedLeaf = builder.build(leafKeyPair.contentSigner()).toX509Certificate()
+
+    return copy(
+        certificateChain = listOf(forgedLeaf) + certificateChain,
+        leafKeyPair = forgedLeafKeyPair,
+    )
+}
 
 internal fun List<JcaX509Certificate>.toSignumChain(): List<SignumX509Certificate> =
     map { SignumX509Certificate.decodeFromDer(it.encoded) }

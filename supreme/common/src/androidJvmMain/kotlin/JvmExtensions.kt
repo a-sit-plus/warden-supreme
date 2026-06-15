@@ -15,6 +15,7 @@ val java.security.cert.X509Certificate.androidAttestationExtension: AttestationK
         null
     }
 
+@Deprecated("Unsafe behaviour", replaceWith = ReplaceWith("withAndroidAttestationExtensions()"), DeprecationLevel.ERROR)
 val List<java.security.cert.X509Certificate>.androidAttestationExtension: AttestationKeyDescription?
     get() = catchingUnwrapped {
         mapNotNull { it.toKmpCertificate().getOrNull() }.let {
@@ -23,3 +24,28 @@ val List<java.security.cert.X509Certificate>.androidAttestationExtension: Attest
     }.getOrElse {
         null
     }
+
+val java.security.cert.X509Certificate.hasAndroidKeystoreAttestation get() = androidAttestationExtension!=null
+
+/**
+ * Returns a list of certificates that contain an attestation extension; in-order.
+ *
+ * @throws Throwable In case a certificate in the chain is malformed
+ */
+@Throws(Throwable::class)
+fun List<java.security.cert.X509Certificate>.withAndroidAttestationExtensions(): List<java.security.cert.X509Certificate> =
+    filter { it.toKmpCertificate().getOrThrow().androidAttestationExtension != null }
+
+/**
+ * Returns the certificate matching the predicate that is closes to the root. Can be the root itself.
+ *
+ * @throws Throwable if no match is found
+ */
+fun List<java.security.cert.X509Certificate>.closestToRoot(predicate: (java.security.cert.X509Certificate) -> Boolean) =
+    last(predicate)
+
+/**
+ * Returns the certificate matching the predicate that is closes to the root. Can be the root itself
+ */
+fun List<java.security.cert.X509Certificate>.closestToRootOrNull(predicate: (java.security.cert.X509Certificate) -> Boolean) =
+    catchingUnwrapped { closestToRoot(predicate) }.getOrNull()
