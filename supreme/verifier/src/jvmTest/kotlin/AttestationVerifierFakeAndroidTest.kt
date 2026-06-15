@@ -2,7 +2,8 @@
 
 package at.asitplus.attestation.supreme
 
-import at.asitplus.testballoon.invoke
+import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.testballoon.withData
 import at.asitplus.testballoon.withFixtureGenerator
 import de.infix.testBalloon.framework.core.TestConfig
@@ -12,10 +13,8 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.security.MessageDigest
-import java.util.Date
+import java.util.*
 import kotlin.random.Random
-import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 
 val AttestationVerifierFakeAndroidTest by testSuite(
     testConfig = TestConfig.invocation(TestConfig.Invocation.Sequential)

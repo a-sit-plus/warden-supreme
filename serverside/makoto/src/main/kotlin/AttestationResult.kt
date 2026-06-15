@@ -66,6 +66,10 @@ sealed class AttestationResult {
                 ?: throw IllegalStateException("No Android attestation extension present in certificate chain")
         }
 
+        @Deprecated("Use attestationCertificateClosestToRoot", replaceWith = ReplaceWith("attestationCertificateClosestToRoot"), level = DeprecationLevel.ERROR)
+        val attestationCertificate by lazy { attestationCertificateChain.first() }
+
+
         /**
          * The certificate from [attestationCertificateChain] whose attestation extension was used for
          * verification. This is the certificate closest to the root that still carries the Android
