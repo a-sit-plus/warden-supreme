@@ -2,11 +2,8 @@ package at.asitplus.attestation.android
 
 import at.asitplus.KmmResult
 import at.asitplus.KmmResult.Companion.wrap
-import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.Asn1Encodable
-import at.asitplus.signum.indispensable.asn1.Asn1Exception
-import at.asitplus.signum.indispensable.asn1.encoding.parse
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.parse
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

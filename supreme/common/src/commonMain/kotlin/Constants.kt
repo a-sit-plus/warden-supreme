@@ -1,10 +1,8 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
+import at.asitplus.awesn1.ObjectIdentifier
 import org.kotlincrypto.random.CryptoRand
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

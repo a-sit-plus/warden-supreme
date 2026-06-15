@@ -1,7 +1,9 @@
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.androidAttestationExtension
 import at.asitplus.attestation.android.prettyPrint
+import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.toKmpCertificate
 import com.google.android.attestation.ParsedAttestationRecord
 import at.asitplus.testballoon.matrix.*

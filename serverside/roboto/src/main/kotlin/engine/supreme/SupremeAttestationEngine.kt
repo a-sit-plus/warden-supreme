@@ -1,10 +1,9 @@
 package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.*
-import at.asitplus.signum.indispensable.asn1.toBigInteger
+import at.asitplus.awesn1.toBigInteger
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.datetime.YearMonth
-import kotlinx.datetime.number
 import java.security.cert.X509Certificate
 import kotlin.time.Instant
 

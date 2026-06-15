@@ -4,8 +4,9 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.AuthorizationList.UserAuth.Type
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.*
-import at.asitplus.signum.indispensable.asn1.encoding.*
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.*
+import at.asitplus.signum.indispensable.asn1.decodeFromTlvSafe
 import at.asitplus.signum.indispensable.misc.BitLength
 import kotlinx.datetime.Month
 import kotlinx.datetime.YearMonth

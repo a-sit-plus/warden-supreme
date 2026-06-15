@@ -1,7 +1,6 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.signum.indispensable.*
-import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.io.TransformingSerializerTemplate
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
@@ -12,15 +11,15 @@ import java.util.*
 
 object PubKeyBasePemSerializer : TransformingSerializerTemplate<java.security.PublicKey, String>(
     parent = String.serializer(),
-    encodeAs = { it.toCryptoPublicKey().getOrThrow().encodeToPEM().getOrThrow() },
-    decodeAs = { CryptoPublicKey.decodeFromPem(it).getOrThrow().toJcaPublicKey().getOrThrow() }
+    encodeAs = { it.toCryptoPublicKey().getOrThrow().encodeToPem() },
+    decodeAs = { CryptoPublicKey.decodeFromPem(it).toJcaPublicKey().getOrThrow() }
 )
 
 object CertPemSerializer : TransformingSerializerTemplate<java.security.cert.X509Certificate, String>(
     parent = String.serializer(),
-    encodeAs = { it.toKmpCertificate().getOrThrow().encodeToPEM().getOrThrow() },
+    encodeAs = { it.toKmpCertificate().getOrThrow().encodeToPem() },
     decodeAs = {
-        at.asitplus.signum.indispensable.pki.X509Certificate.decodeFromPem(it).getOrThrow().toJcaCertificateBlocking()
+        at.asitplus.signum.indispensable.pki.Certificate.decodeFromPem(it).toJcaCertificateBlocking()
             .getOrThrow()
     }
 )

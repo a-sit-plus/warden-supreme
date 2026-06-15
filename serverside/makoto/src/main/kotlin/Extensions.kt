@@ -3,13 +3,8 @@
 package at.asitplus.attestation
 
 import at.asitplus.signum.indispensable.*
-import at.asitplus.signum.indispensable.asn1.Asn1Decodable
-import at.asitplus.signum.indispensable.asn1.Asn1Encodable
-import at.asitplus.signum.indispensable.asn1.Asn1Sequence
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.decodeToUtf8String
-import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1OctetStringPrimitive
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.*
 import at.asitplus.signum.indispensable.io.ByteArrayBase64Serializer
 import at.asitplus.signum.indispensable.io.X509CertificateBase64Serializer
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
@@ -127,7 +122,7 @@ data class CanonicalIosAttestation(val cert: X509Certificate, val receipt: Recei
     fun toValidatedAttestation(): ValidatedAttestation = ValidatedAttestation(cert, receipt, iosVersion)
 
     override fun encodeToTlv() = Asn1.Sequence {
-        +cert.toKmpCertificate().getOrThrow()
+        +cert.toKmpCertificate().getOrThrow().encodeToTlv()
         +receipt.p7.encodeToAsn1OctetStringPrimitive()
         iosVersion?.let { +Asn1String.UTF8(it) }
     }
@@ -168,7 +163,7 @@ data class CanonicalIosAttestation(val cert: X509Certificate, val receipt: Recei
 
     companion object : Asn1Decodable<Asn1Sequence, CanonicalIosAttestation> {
         override fun doDecode(src: Asn1Sequence): CanonicalIosAttestation = src.decodeAs {
-            val cert = at.asitplus.signum.indispensable.pki.X509Certificate.decodeFromTlv(next() as Asn1Sequence)
+            val cert = at.asitplus.signum.indispensable.pki.Certificate.decodeFromTlv(next() as Asn1Sequence)
 
             val receipt = next().asOctetString().content.let {
                 Receipt(Receipt.Payload.parse((it.readAsSignedData())), it)

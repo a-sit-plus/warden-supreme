@@ -57,6 +57,7 @@ kotlin {
 
         commonMain.dependencies {
             api(libs.signum)
+            api(datetime())
         }
 
         jvmMain.dependencies {

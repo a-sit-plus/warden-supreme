@@ -12,7 +12,7 @@ import java.security.MessageDigest
 import java.util.Date
 import kotlin.random.Random
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 
 val AttestationVerifierFakeAndroidTest by matrixSuite(
     matrixConfig { execution = ExecutionMode.Sequential }
@@ -20,7 +20,7 @@ val AttestationVerifierFakeAndroidTest by matrixSuite(
     data class FailureCase(
         val name: String,
         val config: AndroidFixture.() -> AndroidAttestationConfiguration,
-        val csr: suspend AndroidFixture.(AttestationVerifier) -> Pkcs10CertificationRequest = { verifier ->
+        val csr: suspend AndroidFixture.(AttestationVerifier) -> CertificationRequest = { verifier ->
             issueCsr(verifier)
         },
         val expected: AttestationResponse.Failure.Type,

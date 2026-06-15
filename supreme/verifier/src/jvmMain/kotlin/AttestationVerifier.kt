@@ -7,11 +7,11 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.supreme.AttestationResponse.Failure
 import at.asitplus.attestation.supreme.AttestationResponse.Failure.Type
 import at.asitplus.attestation.supreme.PreAttestationError.ChallengeVerification
+import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -161,12 +161,12 @@ constructor(
      */
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun verifyAttestation(
-        csr: Pkcs10CertificationRequest,
-        onChallengeValidated: suspend AttestationChallenge.(Pkcs10CertificationRequest) -> Unit = { },
+        csr: CertificationRequest,
+        onChallengeValidated: suspend AttestationChallenge.(CertificationRequest) -> Unit = { },
         onPreAttestationError: suspend PreAttestationError.() -> String? = { null },
         onAttestationError: suspend AttestationResult.Error.(debugInfo: WardenDebugAttestationStatement) -> String? = { null },
         onAttestationSuccess: suspend AttestationResult.Verified.(CryptoPublicKey) -> Unit = { },
-        additionalVerifications: suspend AttestationChallenge.(Pkcs10CertificationRequest, AttestationResult.Verified) -> AttestationResponse.Failure? = { _, _ -> null },
+        additionalVerifications: suspend AttestationChallenge.(CertificationRequest, AttestationResult.Verified) -> AttestationResponse.Failure? = { _, _ -> null },
         certificateIssuer: CertificateIssuer,
     ): AttestationResponse {
 
@@ -222,7 +222,7 @@ constructor(
                         csr.jcaSignature().getOrThrow().apply {
                             initVerify(pubKey)
                             update(csr.tbsCsr.encodeToDer())
-                            if (!verify(csr.decodedSignature.getOrThrow().jcaSignatureBytes)) {
+                            if (!verify(csr.signature.jcaSignatureBytes)) {
                                 return Failure(
                                     Type.TRUST,
                                     csrReason(onAttestationError, attestationStatement, validatedChallenge.nonce)
@@ -254,8 +254,7 @@ constructor(
         }
     }
 
-    private fun Pkcs10CertificationRequest.jcaSignature(): KmmResult<Signature> =
-        (signatureAlgorithm as SpecializedSignatureAlgorithm).getJCASignatureInstance()
+    private fun CertificationRequest.jcaSignature(): KmmResult<Signature> = signatureAlgorithm.getJCASignatureInstance()
 
     private suspend fun csrReason(
         onAttestationError: suspend AttestationResult.Error.(WardenDebugAttestationStatement) -> String?,
@@ -296,7 +295,7 @@ constructor(
     }.getOrNull()
 
     private suspend fun Throwable.extractionReason(
-        csr: Pkcs10CertificationRequest,
+        csr: CertificationRequest,
         onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): String? = catchingUnwrapped {
         PreAttestationError.AttestationStatementExtraction(this, csr).onPreAttestationError()
@@ -371,7 +370,7 @@ interface ChallengeValidator {
      * * It must return a [ChallengeValidationResult.Failure.Other] if other validation errors occur, such as no valid challenge matching the passed  [csr].
      * In addition, it **should** also remove all expired challenges, to keep stale challenges from inflating memory/storage.
      */
-    suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult
+    suspend fun validate(csr: CertificationRequest): ChallengeValidationResult
 }
 
 
@@ -395,7 +394,7 @@ sealed class ChallengeValidationResult {
  * Hence, a certificate can be issued and the whole certificate chain (from newly issued certificate up to the CA)
  * shall be returned.
  */
-typealias CertificateIssuer = suspend AttestationResult.Verified.(Pkcs10CertificationRequest) -> CertificateChain
+typealias CertificateIssuer = suspend AttestationResult.Verified.(CertificationRequest) -> CertificateChain
 
 sealed class PreAttestationError {
     abstract val throwable: Throwable?
@@ -406,7 +405,7 @@ sealed class PreAttestationError {
         val receivedTbsCsr: TbsCertificationRequest,
     ) : PreAttestationError()
 
-    class AttestationStatementExtraction(override val throwable: Throwable, val csr: Pkcs10CertificationRequest) :
+    class AttestationStatementExtraction(override val throwable: Throwable, val csr: CertificationRequest) :
         PreAttestationError()
 
     class OperationalError(override val throwable: Throwable) : PreAttestationError()
@@ -445,7 +444,7 @@ class InMemoryChallengeCache(internal val clock: Clock, internal val offset: Dur
         }
     }
 
-    override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult {
+    override suspend fun validate(csr: CertificationRequest): ChallengeValidationResult {
         mutex.withLock {
             val nonce = csr.tbsCsr.nonce.getOrElse {
                 return ChallengeValidationResult.Failure.NonceExtraction(it)

@@ -1,4 +1,6 @@
 import at.asitplus.attestation.*
+import at.asitplus.awesn1.encoding.decodeFromDer
+import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe

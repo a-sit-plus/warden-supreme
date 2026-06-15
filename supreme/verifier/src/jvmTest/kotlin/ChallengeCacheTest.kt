@@ -2,8 +2,8 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.signum.indispensable.CryptoSignature
-import at.asitplus.signum.indispensable.X509SignatureAlgorithm
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.SignatureAlgorithm
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.toCryptoPublicKey
@@ -27,15 +27,15 @@ import kotlin.time.Duration.Companion.seconds
 
 private val csrKeyPair by lazy { generateRsaKeyPair(1024) }
 
-private fun csrForChallenge(challenge: AttestationChallenge): Pkcs10CertificationRequest {
+private fun csrForChallenge(challenge: AttestationChallenge): CertificationRequest {
     val tbsCsr = TbsCertificationRequest(
         subjectName = listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber())),
         publicKey = csrKeyPair.public.toCryptoPublicKey().getOrThrow(),
         attributes = emptyList(),
     )
-    return Pkcs10CertificationRequest(
+    return CertificationRequest(
         tbsCsr = tbsCsr,
-        signatureAlgorithm = X509SignatureAlgorithm.RS256,
+        signatureAlgorithm = SignatureAlgorithm.RSAwithSHA256andPSSPadding,
         signature = CryptoSignature.RSA(byteArrayOf(0x01)),
     )
 }
