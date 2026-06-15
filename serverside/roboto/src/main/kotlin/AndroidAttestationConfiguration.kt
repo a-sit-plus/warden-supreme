@@ -962,7 +962,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         override fun toString(): String {
             return "AppData(" +
                     "packageName='$packageName', " +
-                    "signatureDigests=${signerFingerprints.joinToString { it.toHexString() }}, " +
+                    "signerFingerprints=${signerFingerprints.joinToString { it.toHexString() }}, " +
                     "appVersion=$appVersion, " +
                     "androidVersionOverride=$androidVersionOverride, " +
                     "patchLevelOverride=$patchLevelOverride, " +

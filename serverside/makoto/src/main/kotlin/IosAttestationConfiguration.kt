@@ -66,8 +66,7 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
         singleApp: AppData,
         iosVersion: OsVersions? = null,
         attestationStatementValiditySeconds: Long = (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET).inWholeSeconds,
-        trustedRoots: Set<TrustedRootPair>
-        = APPLE_DEFAULT_TRUSTED_ROOTS,
+        trustedRoots: Set<TrustedRootPair> = APPLE_DEFAULT_TRUSTED_ROOTS,
         customProperties: Map<String, String> = emptyMap()
     ) : this(
         listOf(singleApp),
