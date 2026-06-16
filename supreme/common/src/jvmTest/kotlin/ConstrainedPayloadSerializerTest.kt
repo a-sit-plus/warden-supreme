@@ -20,7 +20,7 @@ val ConstrainedPayloadSerializerTest by matrixSuite {
             issuedAt = Instant.fromEpochMilliseconds(0),
             validity = 5.seconds,
             timeZone = null,
-            nonce = byteArrayOf(0x01),
+            nonce = byteArrayOf(0x01, 0x02, 0x03, 0x04),
             attestationEndpoint = "https://example.invalid/attest",
             proofOID = WardenDefaults.OIDs.ATTESTATION_PROOF,
             additionalPayload = mapOf(
@@ -64,7 +64,7 @@ val ConstrainedPayloadSerializerTest by matrixSuite {
             issuedAt = Instant.fromEpochMilliseconds(0),
             validity = 5.seconds,
             timeZone = null,
-            nonce = byteArrayOf(0x01),
+            nonce = byteArrayOf(0x01, 0x02, 0x03, 0x04),
             attestationEndpoint = "https://example.invalid/attest",
             proofOID = WardenDefaults.OIDs.ATTESTATION_PROOF,
             additionalPayload = mapOf("zero" to 0),
@@ -81,7 +81,7 @@ val ConstrainedPayloadSerializerTest by matrixSuite {
             issuedAt = Instant.fromEpochMilliseconds(0),
             validity = 5.seconds,
             timeZone = null,
-            nonce = byteArrayOf(0x01),
+            nonce = byteArrayOf(0x01, 0x02, 0x03, 0x04),
             attestationEndpoint = "https://example.invalid/attest",
             proofOID = WardenDefaults.OIDs.ATTESTATION_PROOF,
             additionalPayload = mapOf(
