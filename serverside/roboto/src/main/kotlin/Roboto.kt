@@ -171,7 +171,6 @@ constructor(
         certificates: List<X509Certificate>,
         verificationDate: Instant = Clock.System.now(),
         expectedChallenge: ByteArray
-        //todo full chain inside a result and replaceWith to chain.parsedAttestationRecord or chain.AttestationKeyExn
     ): KmmResult<List<X509Certificate>> = catching {
         val results = engines.map {
             catchingUnwrapped {
