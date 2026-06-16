@@ -10,6 +10,7 @@ this changelog also includes the original WARDEN changelog.
 * Add the ability to attach custom properties to AndroidAttestationConfiguration and IosAttestationConfiguration
 * Explicitly support only a single attestation certificate as leaf for now.
 * Deprecate insecure attestation extension accessor on cert chains
+* Enforce at least 4 bytes for nonces
 * Security hardening:
     * Bound the default `InMemoryChallengeCache` used by `AttestationVerifier` to `100_000` in-flight challenges.
     * Add `InMemoryChallengeCache.ChallengeCacheFullException` for cache-overflow handling; callers should map this to back-end rate limiting / HTTP `429 Too Many Requests` as appropriate.

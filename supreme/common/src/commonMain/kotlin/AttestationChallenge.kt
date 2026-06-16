@@ -46,7 +46,7 @@ import kotlin.time.Instant
  * where nested maps or primitives are strictly controlled for cross-format consistency.
  * @property transientData Optional runtime-only attachment. Not serialized and excluded from equality/hashing.
  *
- * @throws IllegalArgumentException If the [nonce] exceeds 128 bytes.
+ * @throws IllegalArgumentException If the [nonce] exceeds 128 bytes or is shorter than 4 bytes
  */
 @ConsistentCopyVisibility
 @Serializable
@@ -138,7 +138,9 @@ private constructor(
 
     ) {
     init {
-        if (nonce.size > 128) throw IllegalArgumentException("nonce too large! must be at most 128 bytes.")
+        require(nonce.size <= 128) { "nonce too large! must be at most 128 bytes." }
+        require(nonce.size >= 4) { "nonce too small! must be at least 4 bytes." }
+
     }
 
     /**
@@ -157,7 +159,7 @@ private constructor(
      *  @param additionalPayload Optional user-defined payload. See [additionalPayload] for serialization requirements.
      *  @param transientData Optional runtime-only attachment. Not serialized and excluded from equality/hashing.
      *
-     * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes
+     * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes or shorter than 4 bytes
      */
     @Throws(IllegalArgumentException::class)
     constructor(
