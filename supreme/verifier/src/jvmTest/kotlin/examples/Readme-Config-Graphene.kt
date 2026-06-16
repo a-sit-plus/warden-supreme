@@ -5,7 +5,15 @@ import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.attestation.supreme.SupremeConfiguration
 
-val grapheneOsVerifiedBootKeys = listOf(
+val appSignerFingerprint = "34b9762c4d6c90d48431940c57bde7314258b26420efe16ac7f7274f0d330ad5".parseHex()
+const val androidAppPackage = "at.asitplus.atttest"
+
+
+
+
+
+
+val grapheneOsVerifiedBootKeys = setOf(
     "d8f879d10419eddc9fcda6280718be763f6bf12299e1f72df3ea8ad8a8eb7f80",
     "55a2d44103e56d5ec65496399c417987ba77730e6488fc60ba058d09fc3caee3",
     "141d7fc32af7958a416f2661b37cf6f27bfb376fb5ce616aeaa27a82c7a04f74",
@@ -27,21 +35,17 @@ val grapheneOsVerifiedBootKeys = listOf(
     "08c860350a9600692d10c8512f7b8e80707757468e8fbfeea2a870c0a83d6031",
     "439b76524d94c40652ce1bf0d8243773c634d2f99ba3160d8d02aa5e29ff925c",
     "f0a890375d1405e62ebfd87e8d3f475f948ef031bbf9ddd516d5f600a23677e8"
-).map { VerifiedBootKey.Digest(it.parseHex()) }.toTypedArray()
+).map { VerifiedBootKey.Digest(it.parseHex()) }.toSet() /*(1)!*/
 
 val grapheneOsConfig = SupremeConfiguration(
     AndroidAttestationConfiguration(
         AndroidAttestationConfiguration.AppData(
-            packageName = "at.asitplus.atttest",
-            signerFingerprints = setOf(
-                "34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ef e1 6a c7 f7 27 4f 0d 33 0a d5".parseHex()
-            )
+            packageName = androidAppPackage,
+            signerFingerprints = setOf(appSignerFingerprint)
         ),
-        verifiedBootKeys = linkedSetOf(
-            VerifiedBootKey.OEM,
-            *grapheneOsVerifiedBootKeys
-        ),
-        allowBootloaderUnlock = false,
-        attestationStatementValiditySeconds = 300
+        verifiedBootKeys = grapheneOsVerifiedBootKeys
+                         + VerifiedBootKey.OEM /*(2)!*/
+        ,
+        allowBootloaderUnlock = false /*(3)!*/
     )
 )
