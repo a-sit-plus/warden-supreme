@@ -72,14 +72,14 @@ val CustomParserTests by matrixSuite {
         buildString {
             append(name)
             append(": ")
-            if(value.containsKey("device")) {
+            if (value.containsKey("device")) {
                 append(value.getValue("device"))
             }
-            if(value.containsKey("osVersion")) {
+            if (value.containsKey("osVersion")) {
                 append(" ")
                 append(value.getValue("osVersion"))
             }
-            if(value.containsKey("date")) {
+            if (value.containsKey("date")) {
                 append(" ")
                 append(value.getValue("date"))
             }
@@ -103,7 +103,7 @@ val CustomParserTests by matrixSuite {
             data(
                 "certificates",
                 attestationCertChain,
-                nameFn = { _, value -> value.subjectX500Principal.toString() + " ("+ value.sigAlgName+")" }) test {
+                nameFn = { _, value -> value.subjectX500Principal.toString() + " (" + value.sigAlgName + ")" }) test {
                 it.toKmpCertificate().isSuccess shouldBe true
                 it.toKmpCertificate().getOrThrow().encodeToDer() shouldBe it.encoded
             }

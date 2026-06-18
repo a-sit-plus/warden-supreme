@@ -1,9 +1,9 @@
 import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.testballoon.matrix.matrixSuite
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -19,17 +19,11 @@ val AttestationChallengeNonceTest by matrixSuite {
     }
 
     "nonce length rejects values smaller than 4 bytes" {
-        val failure = runCatching { challengeWithNonce(ByteArray(3)) }.exceptionOrNull()
-
-        failure.shouldBeInstanceOf<IllegalArgumentException>()
-        failure.message shouldContain "at least 4 bytes"
+        shouldThrow<IllegalArgumentException> { challengeWithNonce(ByteArray(3)) }.message shouldContain "at least 4 bytes"
     }
 
     "nonce length rejects values larger than 128 bytes" {
-        val failure = runCatching { challengeWithNonce(ByteArray(129)) }.exceptionOrNull()
-
-        failure.shouldBeInstanceOf<IllegalArgumentException>()
-        failure.message shouldContain "at most 128 bytes"
+        shouldThrow<IllegalArgumentException> { challengeWithNonce(ByteArray(129)) }.message shouldContain "at most 128 bytes"
     }
 
     "nonce length is enforced when decoding wire data" {
@@ -42,12 +36,9 @@ val AttestationChallengeNonceTest by matrixSuite {
             "\"nonce\":\"AQID\""
         )
 
-        val failure = runCatching {
+        shouldThrow<IllegalArgumentException> {
             challengeJson.decodeFromString(AttestationChallenge.serializer(), encodedWithShortNonce)
-        }.exceptionOrNull()
-
-        failure.shouldBeInstanceOf<IllegalArgumentException>()
-        failure.message shouldContain "at least 4 bytes"
+        }.message shouldContain "at least 4 bytes"
     }
 }
 
