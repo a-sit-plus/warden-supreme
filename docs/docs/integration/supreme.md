@@ -175,20 +175,37 @@ The full details on the configuration can be found in the [API documentation](..
 
     Note that revocation configuration has been revamped after 0.9.9999 (see below)!
 
-!!! tip "Pinned SELF_SIGNED Android boot keys"
+
+!!! tip "Pinned `SELF_SIGNED` Android boot keys"
     If you need to trust a known-good custom Android build, configure `verifiedBootKeys`. The default `[OEM]` accepts
     vendor-managed `VERIFIED` boot, `[OEM, "<hex>"]` accepts either vendor-managed `VERIFIED` boot or an explicitly
     whitelisted `SELF_SIGNED` key, and `["<hex>"]` accepts only explicitly whitelisted `SELF_SIGNED` keys. Keep
     `allowBootloaderUnlock = false`, otherwise bootloader-lock, verified boot state, and verified boot key checks are
-    skipped entirely. A practical example is GrapheneOS, which publishes its
-    [verified boot key hash](https://grapheneos.org/install/web#verified-boot-key-hash).
-
+    skipped entirely.
 
 It is possible to configure attestation only for iOS or only for Android by simply omitting
 either the `androidAttestationConfiguration` or the `iosAttestationConfiguration`, respectively.  
 In such cases, trying to verify an attestation statement for the not-configured platform will always return an error.
 The shorthand `AttestationVerifier` constructor that directly accepts `androidAttestationConfiguration` and `iosAttestationConfiguration` properties
 instead of a pre-configured `Makoto` instance does not support such omissions.
+
+#### Trusting GrapheneOS
+A practical example of pinning `SELF_SIGNED` verified boot keys is trusting GrapheneOS, as shown below.  
+To obtain current GrapheneOS verified boot key hashes, use GrapheneOS's
+[`attestation.json`](https://grapheneos.org/attestation.json) and verify it against the detached signature at
+[`attestation.json.sig`](https://grapheneos.org/attestation.json.sig).
+
+```kotlin
+--8<-- "Readme-Config-Graphene.kt:15"
+```
+
+1. Order is irrelevant, and Warden Supreme makes this explicit by forcing a `Set` of verified boot key hashes
+2. Also keep `OEM` so stock/vendor Android trusted, while pinning all GrapheneOS verified boot keys.
+3. Keep `allowBootloaderUnlock = false` (which is the default). Otherwise, bootloader-lock, verified boot state, and verified
+boot key checks are skipped entirely.
+
+The concrete digests pinned in the example above were retrieved on 2026-06-15. Do fetch and verify them yourself, if you
+want to trust GrapheneOS
 
 #### Attaching Custom Configuration Properties
 Warden Supreme defines a canonical configuration format with custom loaders for Spring Boot and Hoplite (see [Externalising Configuration](config.md)).

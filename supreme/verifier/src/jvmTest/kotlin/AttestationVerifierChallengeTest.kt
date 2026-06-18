@@ -25,7 +25,7 @@ val AttestationVerifierChallengeTest by matrixSuite {
     "issueChallenge stores nonce once (property)" {
         val random = Random(1337)
         repeat(25) {
-            val nonce = random.nextBytes(random.nextInt(1, 129))
+            val nonce = random.nextBytes(random.nextInt(4, 129))
 
             val attestationJson = loadResourceText(e2eCases.first().attestationResource)
             val verifier = verifierForNonce(nonce)

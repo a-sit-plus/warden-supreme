@@ -247,7 +247,7 @@ constructor(
                     catchingUnwrapped { details.certificateIssuer(csr) }.fold(
                         onSuccess = {
                             catchingUnwrapped {
-                                details.onAttestationSuccess(pubKey.toCryptoPublicKey().getOrThrow()/*TODO*/)
+                                details.onAttestationSuccess(pubKey.toCryptoPublicKey().getOrThrow()/*TODO mlDSA once Signum supports it*/)
                             }
                             AttestationResponse.Success(it)
                         },

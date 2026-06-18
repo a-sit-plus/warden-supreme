@@ -4,17 +4,19 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-# NEXT
+# 1.0.0
 * Add hook to explicitly perform additional verifications before issuing
 * Rename `AndroidAttestationConfiguration.AppData.Builder.signatureDigests` -> `AndroidAttestationConfiguration.AppData.Builder.signerFingerprints` for conistency
 * Add the ability to attach custom properties to AndroidAttestationConfiguration and IosAttestationConfiguration
 * Explicitly support only a single attestation certificate as leaf for now.
 * Deprecate insecure attestation extension accessor on cert chains
+* Enforce at least 4 bytes for nonces
 * Security hardening:
     * Bound the default `InMemoryChallengeCache` used by `AttestationVerifier` to `100_000` in-flight challenges.
     * Add `InMemoryChallengeCache.ChallengeCacheFullException` for cache-overflow handling; callers should map this to back-end rate limiting / HTTP `429 Too Many Requests` as appropriate.
     * Allow duplicate nonce overwrites and prune expired entries before enforcing the in-memory challenge limit.
 * Dependency updates:
+    * Kotlin 2.4.0 [with 18 Months of support](https://blog.jetbrains.com/kotlin/2026/05/security-support-policy-for-the-kotlin-standard-library/#introducing-a-security-support-policy-for-kotlin)
     * Bouncy Castle 1.84
     * Ktor 3.5.0
     * kotlinx.coroutines 1.11.0

@@ -1,12 +1,8 @@
-import at.asitplus.attestation.android.AttestationKeyDescription
-import at.asitplus.attestation.android.androidAttestationExtension
-import at.asitplus.attestation.android.closestToRoot
-import at.asitplus.attestation.android.hasAndroidKeystoreAttestation
-import at.asitplus.attestation.android.prettyPrint
+import at.asitplus.attestation.android.*
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.toKmpCertificate
+import at.asitplus.testballoon.matrix.matrixSuite
 import com.google.android.attestation.ParsedAttestationRecord
-import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -72,7 +68,24 @@ val CustomParserTests by matrixSuite {
         chain.forEach { (_, json) -> json.isNotEmpty() shouldBe true }
     }
 
-    data("chains", chain.values) - {
+    val nameFn: (Long, Pair<String, JsonObject>) -> String = { _, (name, value) ->
+        buildString {
+            append(name)
+            append(": ")
+            if (value.containsKey("device")) {
+                append(value.getValue("device"))
+            }
+            if (value.containsKey("osVersion")) {
+                append(" ")
+                append(value.getValue("osVersion"))
+            }
+            if (value.containsKey("date")) {
+                append(" ")
+                append(value.getValue("date"))
+            }
+        }
+    }
+    data("chains", chain, nameFn = nameFn) - { (_, it) ->
         val challenge = it.getValue("challenge").jsonPrimitive.content
         val chain = it.getValue("attestationProof").jsonArray.map {
             Base64.getMimeDecoder().decode(it.jsonPrimitive.content.replace("\n", ""))
@@ -83,11 +96,14 @@ val CustomParserTests by matrixSuite {
 
         "Chain vs. leaf" {
             withClue(androidAttestationExtension?.prettyPrint()) {
-                attestationCertChain.closestToRoot {  it.hasAndroidKeystoreAttestation }.androidAttestationExtension shouldBe androidAttestationExtension
+                attestationCertChain.closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension shouldBe androidAttestationExtension
             }
         }
         "convert" - {
-            data("certificates", attestationCertChain, nameFn = { _, value -> value.subjectX500Principal.toString() }) test {
+            data(
+                "certificates",
+                attestationCertChain,
+                nameFn = { _, value -> value.subjectX500Principal.toString() + " (" + value.sigAlgName + ")" }) test {
                 it.toKmpCertificate().isSuccess shouldBe true
                 it.toKmpCertificate().getOrThrow().encodeToDer() shouldBe it.encoded
             }
