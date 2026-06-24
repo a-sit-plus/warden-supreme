@@ -30,15 +30,5 @@ Approach: Introduce a test app identity that is cryptographically distinct from 
 
 This preserves strict production posture while enabling full‑fidelity testing, including binding, boot state enforcement, and app identity checks. Often Android‑only testing suffices because iOS devices behave consistently.
 
-## Debugging, Replay, and Diagnostics
-
-!!! tip inline end
+!!! tip
     See the dedicated [Debugging](integration/debugging.md) page for practical details on diagnosing attestation errors.
-
-- Use Warden Supreme’s `collectDebugInfo(...)` on attestation errors to capture inputs, parsed fields, decisions, and failure reasons.
-- Persist artefacts via `serialize()` / `serializeCompact()` to logs.
-- Aggregate captures for offline analyses using smart replay to reproduce failures outside production.  
-  Ideal for triaging field issues, validating fixes, and building CI regression suites.
-- Enrich logs with device make/model, OS and patch levels, and boot state so OEM‑specific quirks can be correlated over time.
-
-This approach yields predictable, auditable tests; clear stage boundaries; and realistic coverage of attestation flows across development, T/Q, and production.

@@ -4,6 +4,11 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
+# 1.0.1
+* Defence-in-depth
+* Actually use kotlinx.serialization 1.11.0
+* Update to Signum 3.24.0 / Supreme 0.15.0
+
 # 1.0.0
 * Add hook to explicitly perform additional verifications before issuing
 * Rename `AndroidAttestationConfiguration.AppData.Builder.signatureDigests` -> `AndroidAttestationConfiguration.AppData.Builder.signerFingerprints` for conistency
