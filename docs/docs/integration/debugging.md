@@ -1,18 +1,46 @@
 # Debugging, Recording,<br>and Replaying Attestation Checks
+
+Attestation errors are hard to debug. Warden Supreme therefore lets you snapshot the inputs, configuration, and
+revocation information of an attestation attempt, then replay and analyse a failed check offline.
+
+The approach is the same whether you use Warden Supreme's integrated attestation flow or the raw _makoto_ or _roboto_
+attestation checkers (see [Usage without Integrated Clients](raw.md)):
+- Use Warden Supreme’s `collectDebugInfo(...)` on attestation errors to capture inputs, parsed fields, decisions, and failure reasons.
+- Persist the debug info object via `serialize()` / `serializeCompact()` to logs.
+- Enrich logs with device make/model, OS and patch levels, so OEM‑specific quirks can be correlated over time.
+- Replay collected debug statements offline to analyse attestation failures by invoking `replay()` on a collected debug statement
+  (see [Debugging Integrated Attestation](#debugging-integrated-attestation)).
+
+!!! warning "Privacy Risks and Risk of Chasing Phantoms"
+    We are happy to help you with debugging, but there are three things to keep in mind.
+    
+    * Attestation information is personally identifying data if the contained public key is associated with a person.
+    * If you publicly paste a debug statement, it will contain your whole configuration, and it will leak information about your service, apps,
+      and the environment of your backend that performs the attestation checks.
+    * For actual debugging, only ever share debug statements in `serializeCompact()` format, not the human-readable `serialize()` output.
+        * The `serializeCompact()` format uses a self-describing, forward-compatible multibase encoding.
+        * This encoding is transport-safe. It survives Microsoft Outlook's sometimes creative way of "improving" message formatting,
+          as well as "helpful" IDEs and editors being extra-smart when pasting.
+        * We once lost a full day of debugging to encoding errors in transit. This is exactly why `serializeCompact()` is the way to record
+          and share debug statements for analysis, while `serialize()` is for a human-readable representation.
+
+## Collecting Debug Info
+Warden Supreme's integrated flow already offers a hook to collect debug statements:
 Whenever the actual attestation check fails (i.e., whenever `onAttestationError()` is called), a ready-made `WardenDebugAttestationStatement` is created and passed to this function.
 Hence, two pieces of information are available to aid debugging:
 
 1. The attestation error (as the receiver of this lambda)
 2. The debug statement, which can be exported for offline analysis
 
+Warden _roboto_ and _makoto_ offer a `collectDebugInfo()` function to the same effect, creating a serializable debug statement.
+The difference is that you call it manually, and the right place and time to call it depends on how _roboto_ or _makoto_ are integrated.
+_makoto_ produces a `WardenDebugAttestationStatement` directly, while _roboto_'s `collectDebugInfo()` returns an `AndroidDebugAttestationStatement`.
+Both expose the same replay function and carry everything needed to replay the attestation check offline.
+
 ## Debugging Integrated Attestation
-
-The `WardenDebugAttestationStatement` can be serialised to JSON by invoking `.serialize()` (or `serializeCompact()`) on it.
-It can later be deserialised by calling `deserialize()` (or `deserializeCompact()`) on its companion.
-By finally calling `replay()` on such a deserialised debug info object, the whole attestation verification process is replayed.
-
-Attaching a debugger allows for step-by-step debugging of any attestation errors encountered.
-For the most straightforward debugging experience:
+Warden Supreme already contains code to load `WardenDebugAttestationStatement`s and `replay()` them.
+The idea is to debug in an IDE: step through the attestation workflow and explore stack traces that carry detailed information about why a check failed.  
+For the smoothest debugging experience:
 
 * Import this project into IntelliJ IDEA
 * Add a breakpoint [here (line 19)](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt#L19)
@@ -21,25 +49,26 @@ For the most straightforward debugging experience:
 Just be sure to add a single argument pointing to a file as described in [Diag.kt](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt)!
 
 ## Debugging Raw Android Attestations
-A similar utility exists for printing the contents of an Android attestation statement, located in [/utils/roboto-diag](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/roboto-diag).
-More specifically, it pretty-prints the contents of the leaf certificate's Android attestation extension and expects either:
+
+!!! tip inline end "Stand-Alone Attestation Parser"
+    To use `androidAttestation`&shy;`Extension` on all platforms (e.g., to implement client-side checks on Android),
+    include `:supreme-common` in your project, and you are ready to go!
+
+A similar utility for printing the contents of an Android attestation statement lives in [/utils/roboto-diag](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/roboto-diag).
+It pretty-prints the leaf certificate's Android attestation extension and expects either:
 
 * `-f path/to/leaf/certificate.pem`
 * a base64-encoded certificate as the sole argument
 
 It will then pretty-print the attestation extension's contents.
 
-!!! tip inline end "Stand-Alone Attestation Parser"
-    To use `androidAttestationExtension` on all platforms (e.g., to implement client-side checks on Android),
-    include `at.asitplus.warden:supreme-common` in your project, and you are ready to go!
-
-As an added bonus, there is a nullable `androidAttestationExtension` extension property on the Java `X509Certificate`
-and on Signum's `X509Certificate` class (and certificate chains), which exposes the `prettyPrint()` function so you can peek into Android attestation extensions at any time.
-It will even parse malformed values and print those malformed values' DER-encoded hex representation.
-The underlying parser and the renderer are still experimental, so your mileage may vary.
-However, it has been tested against literally thousands of attestation proofs captured from real devices and
-_seems to be_ more robust than Google's parsers, old and new.
-Plus, its `prettyPrint` is a huge improvement over relying solely on `ParsedAttestationRecord` for debugging.
+There is also a nullable `androidAttestationExtension` extension property on the Java `X509Certificate`
+and on Signum's `X509Certificate` class (and certificate chains). It exposes `prettyPrint()`, so you can peek into Android attestation extensions at any time.
+It even parses malformed values and prints their DER-encoded hex representation.
+The parser and the renderer are still experimental, so your mileage may vary.
+That said, we have tested it against thousands of attestation proofs captured from real devices, and it _seems to be_ more
+robust than Google's parsers, old and new.
+In addition, its `prettyPrint` beats relying on `ParsedAttestationRecord` alone for debugging.
 
 !!! example "Example of a Pretty-Printed Attestation Record from an Emulator"
     ```properties

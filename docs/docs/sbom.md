@@ -53,7 +53,7 @@ The documentation publishes a lightweight machine-readable index:
 
 - [SBOM index JSON]({{ config.site_url }}/sbom/index.json)
 
-This index lists each module/publication pair together with absolute Maven Central URLs for the corresponding JSON,
+The index lists each module/publication pair together with absolute Maven Central URLs for the corresponding JSON,
 XML, and detached signature files.
 
 Examples:
@@ -62,8 +62,6 @@ Examples:
 - `supreme-common` JVM: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-jvm/1.0.0-RC8/supreme-common-jvm-1.0.0-RC8-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-jvm/1.0.0-RC8/supreme-common-jvm-1.0.0-RC8-cyclonedx.xml)
 - `supreme-common` Android: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-android/1.0.0-RC8/supreme-common-android-1.0.0-RC8-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/supreme-common-android/1.0.0-RC8/supreme-common-android-1.0.0-RC8-cyclonedx.xml)
 - `makoto` JVM: [JSON](https://repo1.maven.org/maven2/at/asitplus/warden/makoto/1.0.0-RC8/makoto-1.0.0-RC8-cyclonedx.json), [XML](https://repo1.maven.org/maven2/at/asitplus/warden/makoto/1.0.0-RC8/makoto-1.0.0-RC8-cyclonedx.xml)
-
-The index is a lightweight discovery document for Maven Central SBOM locations.
 
 The per-module pages in the navigation are generated from that index and a shared Markdown template. Each generated
 module page contains one row per published Maven publication, including artifact metadata and links to the corresponding

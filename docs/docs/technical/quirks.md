@@ -47,13 +47,13 @@ precedence, and `spring.config.import` composition. A few Spring-specific caveat
   Spring-supported config source, and then load via `fromSpringEnvironment(...)` from the resolved prefix.**
 
 ## General Hints
-Using attestation to strongly enforce policies and to remotely establish trust in mobile clients is rooted in cryptographic
+Enforcing policies and remotely establishing trust in mobile clients through attestation rests on cryptographic
 mechanisms and PKI procedures.
 Hence, timeliness is of the essence; freshness windows and temporal checks are crucial.
 As a logical consequence, the clocks between a service and the clients being attested need to be in sync.
 
-Given that the service owner is not the device owner, clock drift and even time-zone differences of hours
-offset are not uncommon.
+Since the service owner is not the device owner, clock drift and even time-zone offsets of several hours
+are not uncommon.
 Warden Supreme allows for sending server time zone (and even clock drift information) to clients along with a cryptographic nonce
 at the start of an attestation procedure.
 However, cryptographic operations are performed in hardware and are thus not controlled by the application that receives
@@ -131,7 +131,7 @@ Communicating this information to clients has the inherent benefit that large cl
     
     Whether a **GMS-certified device that was later modified** (bootloader unlock, custom ROM, rooted system, etc.) is “untrusted” is a **policy decision**: the attestation evidence exposes boot state and related signals, and your verifier decides what to accept.
 
-Even though the previous section dealt with a crucial Android-specific issue, there's (sadly) more, and
+The previous section dealt with one major Android-specific issue, but there's (sadly) more.
 Android bugs fall into three categories:
 
 1. Encoding flaws affecting the byte representation of attestation information
@@ -227,7 +227,8 @@ This bug manifests itself by listing `UnknownApplication` instead of a proper ap
 
 #### Revocation
 The certificate chains created by Android use neither CRL nor OCSP, but a custom scheme. Hence, back-end services must be able to reach Google's servers hosting the revocation information.
-Warden Supreme allows for specifying an HTTP proxy URL, to facilitate setups behind a proxy.
+Warden Supreme allows specifying an HTTP proxy URL for setups behind a proxy.
+In addition, custom sources of revocation information are supported.
 
 #### Temporally Invalid Leaf Certificates
 As mentioned in [Clock Drifts and Temporal Validity](#clock-drifts-and-temporal-validity), many older Android devices do not encode a sensible validity into the leaf certificate carrying

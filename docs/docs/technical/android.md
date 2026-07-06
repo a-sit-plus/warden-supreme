@@ -1,10 +1,10 @@
 # Android Attestation Deep Dive
 
-This page explains how trust is established from boot through app installation and how that state is proven to a back-end
-service via Android hardware attestation. It expands on certificate chains, the `KeyDescription` schema, verification
-steps, and edge cases, and ties these to Android Verified Boot (AVB) and APK signing.
+This page traces how trust is established from boot through app installation, and how that state is proven to a back-end
+service via Android hardware attestation. It covers certificate chains, the `KeyDescription` schema, verification
+steps, and edge cases, tying these back to Android Verified Boot (AVB) and APK signing.
 
-Android requires no special setup procedure for attestation compared to iOS. See also [iOS App Attest Deep Dive](ios.md).
+Unlike iOS, Android needs no special setup procedure for attestation. See also [iOS App Attest Deep Dive](ios.md).
 
 <figure>
 <picture>

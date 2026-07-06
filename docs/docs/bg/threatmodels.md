@@ -7,8 +7,8 @@
 
 Attestation is not a panacea—nothing ever is.
 However, attestation is a powerful mechanism that significantly raises the security bar for clients that would
-otherwise be untrusted.  
-This page outlines common threats and how attestation helps mitigate them, with practical, easy‑to‑apply policies.
+otherwise be untrusted. 
+This page walks through common threats and the concrete policies that mitigate them.
 
 ## Threat Model A — Everyday Tampering and Rooted Devices
 
@@ -34,9 +34,9 @@ To keep such devices and apps out, require strong, cryptographic platform guaran
     - Require a complete App Attest certificate chain, validate the challenge/nonce, and ensure the device counter
     increases monotonically.
 
-Since software‑only Android attestation can be forged on rooted devices, the policy decision is simple:  
-**Accept hardware‑backed attestation only; reject software attestation.** This preserves access for honest users while
-filtering out cheap, commoditised attacks.
+Software‑only Android attestation can be forged on rooted devices, so the policy decision is simple:  
+**Accept hardware‑backed attestation only; reject software attestation.** Honest users keep access; cheap, commoditised
+attacks are filtered out.
 
 !!! tip "No Google Play Certification? No Problem!"
     Need to support secure custom ROMs without weakening your attestation policy? Warden Supreme can treat
@@ -86,10 +86,9 @@ which explores patching attempts against the Austrian _Digitales Amt_ app.
 
 - It documents techniques commonly discussed in reverse‑engineering communities: extracting the APK, modifying bytecode
   or hooks to disable checks (e.g., root detection, SSL pinning), rebuilding, and re‑signing with a non‑official key.
-- It showcases that client‑side defenses alone (root checks, anti‑debug, obfuscation) can be removed or bypassed once an
-  attacker controls the binary, reinforcing the need for server‑side verification based on cryptography rather than
-  heuristics.
-- It serves as a real‑world illustration that repackaging is feasible but strategically futile against
+- It shows that client‑side defences alone (root checks, anti‑debug, obfuscation) can be removed or bypassed once an
+  attacker controls the binary — which is exactly why server‑side verification must rest on cryptography, not heuristics.
+- It is a real‑world illustration that repackaging is feasible but strategically futile against
   services that enforce hardware‑backed attestation and app‑identity binding.
 
 **Why this fails under proper attestation:**
@@ -123,7 +122,7 @@ In addition, bot operators often modify or instrument Android builds on physical
 engineering/rooting ROMs, or repackaging apps to expose hooks and bypass certificate
 pinning).
 
-Defence therefore focuses on distinguishing real, unique devices and making horizontal scaling expensive, while selectively excluding low‑cost hardware classes:
+Defence therefore focuses on telling real, unique devices apart, making horizontal scaling expensive, and selectively excluding low‑cost hardware classes:
 
 - **Attestation requirements:**
     - Demand hardware‑backed attestation. For sensitive workflows on known device fleets, consider requiring StrongBox on Android 9+ if your user base supports it (this excludes most budget and many older devices).
@@ -140,11 +139,11 @@ Defence therefore focuses on distinguishing real, unique devices and making hori
 !!! warning inline end
     Consider your target audience! If you target a wide user base, you cannot demand fully updated, top-of-the-line devices.
 
-The goal is to ensure real hardware, block modified apps, systematically remove the cheapest device classes from
+The goal is to require real hardware, block modified apps, remove the cheapest device classes from
 eligibility, and enforce remote key provisioning.
-Even the simple fact of requiring real hardware raises the cost of Sybil attacks astronomically compared to using emulators.
-Enforcing modern hardware with up‑to‑date security greatly increases the
-operating cost of a bot farm and reduces feasibility of such operations.
+Requiring real hardware alone raises the cost of Sybil attacks astronomically compared to using emulators.
+Demanding modern hardware with up‑to‑date security drives up the operating cost of a bot farm and makes such
+operations far less feasible.
 
 ## Threat Model C — Targeted Attackers with Physical Device Access
 

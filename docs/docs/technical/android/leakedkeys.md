@@ -26,8 +26,8 @@ In the end, whether leaked keyboxes pose a real-world threat must be evaluated o
 
 ## Background
 
-This section explains how keyboxes fit into Android attestation key provisioning, and why certain provisioning choices
-can turn filesystem leaks into reusable attestation keys. It also highlights why revocation is the practical control that
+This section covers how keyboxes fit into Android attestation key provisioning, and why certain provisioning choices
+can turn filesystem leaks into reusable attestation keys. It also explains why revocation is the practical control that
 service operators can reliably enforce, regardless of how a given OEM implemented provisioning.
 
 
@@ -186,8 +186,8 @@ Operationally, two patterns matter for threat modelling:
 
 ## What Service Operators Should Do
 
-From an operator perspective, the goal is not to “detect keyboxes” directly, but to make attestation decisions resilient
-against compromised provisioning material. That typically means treating Google’s revocation feeds as mandatory input,
+The goal is not to “detect keyboxes” directly, but to make attestation decisions resilient
+against compromised provisioning material. In practice this means treating Google’s revocation feeds as mandatory input,
 and layering policy constraints (including, where appropriate, RKP preference/requirements) to match your service’s
 assurance needs.
 

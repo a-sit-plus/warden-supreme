@@ -12,11 +12,11 @@
     
     **If you do not handle freshness explicitly, you can accidentally accept stale attestations.**
 
-Warden Supreme enforces unified flows and a unified data model. Migration primarily means:
+Warden Supreme enforces unified flows and a unified data model. Migration mostly means:
 
-- Adopt the unified request/response envelopes and binding semantics described in the Integration Guide.
-- Use the consolidated back‑end configuration (trust anchors, identities, policies).
-- Retain functionality via the integrated modules (_Warden makoto_ / _Warden roboto_); legacy artefacts exist under new names — see [Project Structure](structure.md).
+- Adopt the unified request/response envelopes and binding semantics from the Integration Guide.
+- Move to the consolidated back‑end configuration (trust anchors, identities, policies).
+- Keep your functionality via the integrated modules (_Warden makoto_ / _Warden roboto_); the legacy artefacts live under new names &mdash; see [Project Structure](structure.md).
 
 
 !!! tip "TL;DR: What do I use now?"
@@ -40,7 +40,7 @@ This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, w
     - Legacy `HardwareAttestationVerifier` / `SoftwareAttestationVerifier` remain as deprecated compatibility factories that return a `Roboto` instance.
 - Makoto can be configured for Android‑only or iOS‑only verification; attestations received from non‑configured platforms are treated as configuration errors. See [Error Handling](errorhandling.md).
 - Roboto exposes a `KmmResult`-based verification API:
-    - use `verify(...)` (suspending) or `verifyBlocking(...)` (blocking) and optioanlly chain it with `getOrThrow()`. The legacy `verifyAttestation(...)` API (returning `ParsedAttestationRecord`) is deprecated.
+    - use `verify(...)` (suspending) or `verifyBlocking(...)` (blocking), and optionally chain `getOrThrow()`. The legacy `verifyAttestation(...)` API (returning `ParsedAttestationRecord`) is deprecated.
     - On success the result will contain the full certificate chain, on failure, it will contain an  `AndroidAttestationException`.
     - **Be sure to deal with the result. This function does not throw!!!**
 - The parameters `iosAttestationConfigurationJ` and `androidAttestationConfigurationJ` in `Makoto`'s Java-oriented constructor have been swapped to disambiguate it from the Kotlin constructors.
@@ -83,35 +83,32 @@ See also the [data model](datamodel.md), [Error Handling](errorhandling.md), and
     See [Externalising Configuration](config.md) for an up-to-date list of all configuration properties.
 
 
-Migrating code from WARDEN / WARDEN-roboto is rather smooth because the compiler and the IDE will scream at you
+Migrating code from WARDEN / WARDEN-roboto is smooth, because the compiler and the IDE will scream at you
 if you don't adapt to the changes.
-Far more tricky is correct migration of externalised configuration.
+Migrating externalised configuration is trickier.
 
-Warden Supreme 1.0 introduces canonical serialised representations of Android- and iOS-specific attestation configurations.
-Previously, Spring Boot and Hoplite could be used to load configurations directly.
-However, the introduced flexibility of Warden Supreme with respect to Android revocation checks, in particular, means that
-verifying and sanity-checking externalised configuration is only possible through code paths that are part of Warden
-Supreme.
-Hence, loading configurations must only be done through one of the following functions (or via Hoplite with the decoder from `config-hoplite`, or via the `config-spring` module):
+Warden Supreme 1.0 introduces canonical serialised representations of the Android- and iOS-specific attestation configurations.
+Previously, Spring Boot and Hoplite could load configurations directly.
+The new flexibility around Android revocation checks means that verifying and sanity-checking externalised configuration
+now only works through code paths that are part of Warden Supreme.
+So load configurations only through one of the following functions (or via Hoplite with the decoder from `config-hoplite`, or via the `config-spring` module):
 
 * `fromJsonString()`
 * `fromYamlString()`
 * `fromJsonObject()`
 * `fromJsonFile(...)` / `fromYamlFile(...)` (JVM convenience helpers)
 
-As a consequence, any Spring Boot configurations should contain a string pointing to Warden Supreme configurations, with
-those configuration files being read and their contents being fed into `fromYamlString()`. Alternatively, Spring Boot
-users can use the `config-spring` module to enable native spring config loading.
-(On a technical level, this pushes an `Environment` into the same `fromJsonObject()`
-codepath, which avoids direct binding while still allowing native Spring configuration sources.)  
-For Hoplite, register
-`hopliteDecoder()` (from the `config-hoplite` module) and load from your chosen sources, which will delegate into
-`fromJsonObject()`.
+So a Spring Boot configuration should hold a string pointing to your Warden Supreme configuration files; read those files
+and feed their contents into `fromYamlString()`. Alternatively, Spring Boot users can use the `config-spring` module for
+native Spring config loading. (Under the hood, this pushes an `Environment` into the same `fromJsonObject()` codepath,
+which avoids direct binding while still allowing native Spring configuration sources.)  
+For Hoplite, register `hopliteDecoder()` (from the `config-hoplite` module) and load from your chosen sources; it delegates
+into `fromJsonObject()`.
 
 
 ### Configuration Differences
-Aside from changes to config loading, the actual configuration parameters and some defaults have changed between the last
-stable WARDEN / WARDEN-roboto releases and Warden Supreme 1.0.0.
+Aside from config loading, some configuration parameters and defaults changed between the last stable WARDEN /
+WARDEN-roboto releases and Warden Supreme 1.0.0.
 
 - **Android:**
     * Trust anchors are now `TrustedRoot`s and are split into `hardwareTrustedRoots` / `softwareTrustedRoots`. See [Externalising Configuration](config.md) and [Android technical notes](../technical/android.md).

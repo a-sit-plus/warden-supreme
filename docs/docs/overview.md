@@ -12,18 +12,18 @@ ensuring only authentic, untampered apps can access your service in three simple
 2. 🔌 Plug the Warden Supreme verifier into two HTTPS endpoints
 3. ✨ Create attested keys **and** have a certificate issued in two lines of code
 
-This project consolidates
+Warden Supreme consolidates
 [WARDEN](https://github.com/a-sit-plus/warden) and [WARDEN‑roboto](https://github.com/a-sit-plus/warden-roboto),
-integrating them with [Signum](https://a-sit-plus.github.io/signum/), a Kotlin Multiplatform crypto/PKI library,
-to deliver a streamlined attestation format and developer experience.
-**It condenses the creation of an attestable, hardware-backed key to a single line of client code.**
+and integrates them with [Signum](https://a-sit-plus.github.io/signum/), our Kotlin Multiplatform crypto/PKI library,
+into one attestation format and a single client and server API.
+**Creating an attestable, hardware-backed key comes down to a single line of client code.**
 
 !!! tip inline end "Familiar with attestation?"
     **[Jump to the integration guide!](integration/supreme.md)**  
     **Need a platform choice guide?**  
     &rarr;&nbsp;See [Why Warden Supreme](why-supreme.md).  
 
-This documentation goes beyond Warden Supreme specifics.
+This documentation covers more than Warden Supreme itself.
 It is a living documentation hub covering all things attestation, and it is continuously expanded.
 It already provides a structured overview of remote attestation,
 from concepts to hands‑on integration:
@@ -86,7 +86,7 @@ from concepts to hands‑on integration:
     </span>
     <strong>Integrating Warden Supreme</strong>
     <p>
-      Warden Supreme includes the battle-tested, formerly stand-alone WARDEN library that has attested millions of devices in production.
+      Warden Supreme includes the battle-tested, formerly stand-alone WARDEN library, which has attested millions of devices in production.
     </p>
     <p>
       Using Warden Supreme reduces integration pitfalls and complexity, enabling you to:
@@ -131,7 +131,7 @@ from concepts to hands‑on integration:
   <li>
     <span class="bullet">📖</span>
     <strong>Glossary</strong><br>
-    A comprehensive glossary covering terminology across the attestation domain.<br>
+    The terminology used across these docs and the attestation domain in general, in one place.<br>
     &rarr; See the <a href="../glossary/">Glossary</a>.
   </li>
 </ul>

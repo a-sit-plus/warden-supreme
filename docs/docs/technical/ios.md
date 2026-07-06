@@ -117,14 +117,14 @@ App Attest natively attests **the app instance** (App ID) and the Apple‑manage
 4. This binds Apple’s attestation to your application key, yielding **verifiable linkage** similar to Android key
    attestation.
 
-Warden Supreme provides emulated key attestation out of the box, automating this whole process and streamlining back-end
+Warden Supreme provides emulated key attestation out of the box, automating this whole process and cutting down back-end
 checks by relying on Vincent Haupert's excellent [DeviceCheck / AppAttest library](https://github.com/veehaitch/devicecheck-appattest).
 Hence, no custom logic is required on clients or on the back-end.
 
 ## Assertions and Usage Model
 
-As touched, Apple platforms allow _asserting_ an app and device state after an initial attestation has been performed
-and recorded. This section subsumes the intended usage model as postulated by Apple.
+As mentioned, Apple platforms allow _asserting_ an app and device state after an initial attestation has been performed
+and recorded. This section covers the usage model Apple intends.
 
 ### Assertion Contents
 An assertion from `generateAssertion(keyId, clientDataHash)` yields:
@@ -181,8 +181,8 @@ Using assertions as “re-attestation” has two notable downsides:
       identifiers, and separating environments reduces—but does not eliminate—these privacy risks.
 
 For these reasons, Warden Supreme does not natively support it, but rather relies on attestation with emulated key attestation
-to mimic the simple, but powerful model Android uses. In the end, re-attestation using fresh attestations rather than asserting
-a state before a critical section is much more decoupled from specific user actions.
+to mimic the simple, effective model Android uses. Re-attesting with a fresh attestation, rather than asserting
+a state before a critical section, is far more decoupled from specific user actions.
 
 ### Receipts and Risk Assessment
 A third concept not discussed so far is the _receipt_ and its dual purpose. On the one hand, it is an integral part of the attestation

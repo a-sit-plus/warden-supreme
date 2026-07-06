@@ -1,6 +1,6 @@
 # Platform Specifics
 
-iOS and Android tackle remote attestation differently. This page provides a high-level overview of each platform’s concepts and how they differ.
+iOS and Android tackle remote attestation differently. This page provides a high-level overview of each platform’s concepts and how they diverge.
 
 ## Android (Key & App/ID Attestation)
 
@@ -8,15 +8,17 @@ iOS and Android tackle remote attestation differently. This page provides a high
     For a formal treatment of Android’s security model, see the [**Android Platform Security Model** paper by Mayrhofer et al.]({{ links.android_platform_security_model_paper }}). It explains **Verified Boot**, **TEE/StrongBox**, and the OS trust chain your policies rely on.
 
 An Android attestation statement is an X.509 certificate chain. The leaf certificate contains:
+
 - the public part of the newly generated key
 - information about the OS state
 - the application that initiated key creation
 - whether user authentication is required (fingerprint/password) to use the key
 - various other information about the device and OS state (e.g., bootloader lock state, verified boot state)
 
-Privacy note: Verification happens entirely on your back-end; devices do not contact Google per attestation.
-Your back-end validates the certificate chain to Google’s Hardware Attestation Root and evaluates attestation fields. You must periodically fetch Google’s revocation information on the server.
-See [Background → Privacy](./privacy.md) for detailed data flows and trade-offs.
+!!! note "Privacy Note"
+    Verification happens entirely on your back-end; devices do not contact Google per attestation.
+    Your back-end validates the certificate chain to Google’s Hardware Attestation Root and evaluates attestation fields. You must periodically fetch Google’s revocation information on the server.
+    See [Background → Privacy](./privacy.md) for detailed data flows and trade-offs.
 
 ### Device Certification Terminology
 
@@ -39,6 +41,10 @@ You will also see these terms used (inconsistently) across vendor docs and commu
 - **Google-certified**, **Android-certified**, **OEM-certified** — Informal/ambiguous shorthands; in practice they often mean “GMS-certified”, but sometimes they merely mean “ships Android” or “ships OEM firmware”.
 - **CTS-passed**, **CDD-compliant**, **Android compatible**, **GTS/VTS passed** — Compatibility and test-suite terms; often prerequisites for certification, but not reliable synonyms for a GMS license.
 - **AOSP-only**, **non-GMS**, “without Google Play services” — Devices without a GMS license (no Play Store / Play services); many such devices cannot produce a Google-rooted hardware attestation chain.
+- Chain of trust: **Leaf (app key)** → **Device‑embedded attestation key** → **Manufacturer/Google intermediates** → **Google Hardware Attestation Root**. Verify against **Google trust anchors**. (see [Android Key Attestation]({{ links.android_key_attestation }})).
+- Attestation extension (*KeyDescription*): OS version & patch level, verified boot state, deviceLocked, bootloaderUnlocked, app package/signature digest, key purpose/alg, userAuth authorisations, rollbackResistant, security level (TEE vs StrongBox). (see [AOSP schema]({{ links.android_key_id_attestation }})).
+- **Auth & Presence**: Require biometric/PIN per use by setting authorisations when generating the key; verification confirms the requirement. (see [Android Keystore]({{ links.android_keystore_overview }})).
+- **Key invalidation events**: Changing device auth (adding/removing fingerprints or PIN reset) can **invalidate keys requiring user auth**; **bootloader unlock** or verified‑boot failures invalidate trust; **factory reset** deletes keys. (see [Android Keystore]({{ links.android_keystore_overview }})).
 
 This terminology is **not** the same as Google’s verdict service APIs. Do not confuse “GMS-certified” with **Google Play Integrity** (see [Google Play Integrity](./privacy.md#google-play-integrity-google-hosted-verdict-service)).
 
@@ -46,17 +52,12 @@ This terminology is **not** the same as Google’s verdict service APIs. Do not 
     **Never** use a custom trust anchor or Google's software root of trust in production! Doing so renders all attestation checks moot.
 
 Attestation can also be used in pure test setups, including automated tests, by either:
+
 - overriding the trust anchor with a custom one used only for testing and issuing test certificates with custom-made attestation information
 - setting one of Google's software root trust anchors and using an Android emulator, since emulators are capable of producing attestation statements structurally and semantically identical to real devices
 
 !!! info
     Enrolling new fingerprints (or, in general, changing user authentication), factory-resetting a device, uninstalling an app, unlocking, or relocking a device's bootloader will invalidate keys, requiring the creation of fresh keys and attesting them all over again.
-
-
-- Chain of trust: **Leaf (app key)** → **Device‑embedded attestation key** → **Manufacturer/Google intermediates** → **Google Hardware Attestation Root**. Verify against **Google trust anchors**. (see [Android Key Attestation]({{ links.android_key_attestation }})).
-- Attestation extension (*KeyDescription*): OS version & patch level, verified boot state, deviceLocked, bootloaderUnlocked, app package/signature digest, key purpose/alg, userAuth authorisations, rollbackResistant, security level (TEE vs StrongBox). (see [AOSP schema]({{ links.android_key_id_attestation }})).
-- **Auth & Presence**: Require biometric/PIN per use by setting authorisations when generating the key; verification confirms the requirement. (see [Android Keystore]({{ links.android_keystore_overview }})).
-- **Key invalidation events**: Changing device auth (adding/removing fingerprints or PIN reset) can **invalidate keys requiring user auth**; **bootloader unlock** or verified‑boot failures invalidate trust; **factory reset** deletes keys. (see [Android Keystore]({{ links.android_keystore_overview }})).
 
 ## iOS (App Attest, Emulating Key Attestation)
 !!! tip inline end

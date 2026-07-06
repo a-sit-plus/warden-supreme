@@ -56,4 +56,4 @@ This group houses the debugging/examination utils described in [Debugging](debug
 Google released reference Android attestation parsers (not full attestation checkers for remotely establishing trust in Android devices) and PKIX certificate path validators to complement parsing.
 They did not, however, publish those artefacts to Maven Central. Warden Supreme therefore integrates them as Git submodules and compiles them into _Warden roboto_.
 
-In addition, an HTTP proxy is present to facilitate testing. It is not, however, shipped with any artefacts.
+In addition, an HTTP proxy is present for testing. It is not, however, shipped with any release artefacts.

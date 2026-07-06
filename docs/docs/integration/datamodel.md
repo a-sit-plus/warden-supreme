@@ -2,11 +2,11 @@
 
 Warden Supreme standardises how attestation challenges, proofs, and outcomes are represented across platforms, based on
 [Signum's multiplatform attestation data model](https://a-sit-plus.github.io/signum/dokka/indispensable/at.asitplus.signum.indispensable/-attestation/index.html).
-The chosen data model achieves the following:
+The data model gives you:
 
-- Uniform parsing/validation for Android and iOS.
-- Comprehensible transport of challenges and proofs.
-- Explicit, auditable responses for success/failure.
+- One parsing and validation path for both Android and iOS.
+- A single transport for challenges and proofs.
+- Explicit, auditable success/failure responses.
 
 !!! tip inline end "JSON Schemas"
     * [AttestationChallenge](../schemas/AttestationChallenge.json)
@@ -14,10 +14,9 @@ The chosen data model achieves the following:
     * [AttestationResponse](../schemas/AttestationResponse.json)
 
 
-Warden Supreme does not specify an encoding for its wire format. However, JSON has become the de facto standard for many
-HTTP-based APIs. We therefore provide **experimental**, auto-generated schemas for Warden Supreme's data types.
-These can be helpful for integrating third-party clients.  
-Please note that these schemas really are experimental as of now.
+Warden Supreme does not enforce a specific encoding for its wire format. However, JSON has become the de facto standard for HTTP-based
+APIs, so we provide ready-to-use JSON representation and **experimental**, auto-generated schemas for Warden Supreme's data types. They are meant to help you
+wire up third-party clients. Treat them as experimental for now, as the integrated clients will interopertate seamlessly with Warden Supreme's back-end verifier out of the box.
 
 ## Core Artefacts
 
@@ -35,21 +34,21 @@ to respond.
 - `genericDeviceNameOID`: whether to include a generic make/model (not user-assignable name) in the CSR.
 - `version`: data format version.
 - `keyConstraints`: desired key parameters and protection policy for the client.
-- `additionalPayload`: optional, service-defined key/value payload to piggy-back along with the challenge (see below).
 - `additionalPayload`: optional, service-defined key/value payload to piggyback along with the challenge (see below).
 - `transientData`: optional runtime-only attachment; not serialized and not part of the wire format.
 
 #### `additionalPayload`
-Some deployments want to carry additional service context with the challenge (e.g., a session id, tenant id, UI flow hints,
-or other metadata that should potentially be echoed back by the client when submitting the CSR).
+Some deployments carry extra service context with the challenge: a session id, tenant id, UI flow hints, or other
+metadata the client should echo back when submitting the CSR.
 
 `additionalPayload` is a nested map structure:
 - Keys are `String`.
 - Values are constrained to primitives (`Boolean`, `String`, numeric types, `Char`), nested maps, or `null`.
 
-To avoid ambiguities with serialisation formats that may omit default scalar values on the wire (e.g. encoding `0` as "field absent"),
-each value is encoded internally as a small "typed envelope" that always includes a non-default discriminator. This makes the payload
-format-agnostic and resilient across JSON/CBOR/Protobuf-style encodings even when they apply default-elision optimisations.
+Some serialisation formats omit default scalar values on the wire (e.g. they encode `0` as "field absent"). To avoid
+such ambiguity, each value is encoded internally as a small "typed envelope" that always carries a non-default
+discriminator. The payload therefore survives JSON, CBOR, and Protobuf-style encodings even when they apply
+default-elision optimisations.
 
 #### `transientData`
 `transientData` exists for server-side convenience (e.g., attaching a database ID or request context to a challenge instance).
@@ -58,20 +57,20 @@ You may set it when constructing an `AttestationChallenge` on the server, to kee
 
 ### Proof Transport (Client → Server)
 The platform-specific attestation payload (Android Key/ID Attestation, iOS App Attest) is embedded into a PKCS#10
-Certificate Signing Request (CSR) attribute identified by the provided `proofOID`. It is represented as a JSON-encoded UTF-8
-string inside the extension.
+Certificate Signing Request (CSR) attribute identified by the provided `proofOID`, as a JSON-encoded UTF-8 string inside
+the extension.
 
-The CSR subject encodes the challenge nonce in a `serialNumber` RDN. This yields a single, signed container that carries
-both the device/app attestation and linkage to the server’s challenge. In this documentation, "attestation statement"
+The CSR subject encodes the challenge nonce in a `serialNumber` RDN. The result is a single signed container that carries
+both the device/app attestation and its link to the server’s challenge. In this documentation, "attestation statement"
 means the platform payload, "attestation proof" means the transport container (CSR), and "attestation object" refers
 specifically to iOS App Attest.
 
 ### Server Response (Server → Client)
-The response is an either type:
+The response is an `either` type:
 
 #### Success
-`Success` contains a single property: a `certificateChain` (X.509). This enables immediate consumption by arbitrary applications
-(mTLS, signed requests), regardless of platform specifics.
+`Success` contains a single property: a `certificateChain` (X.509). Any application can consume it directly (mTLS, signed
+requests), regardless of platform specifics.
 
 - The leaf is a binding certificate issued for the attested key by the back-end.
 - The root is intended to be the root CA for the binding PKI configured at the back-end. However, the semantics can be adapted as desired.

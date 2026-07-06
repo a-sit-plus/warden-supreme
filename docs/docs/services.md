@@ -1,17 +1,20 @@
 # 💎 Attestation Expertise & Professional Service
 
-Proving the integrity of mobile clients is essential for systems built around trusted apps, including mobile banking and digital identity solutions such as the EU Digital Identity Wallet.
-Integrating libraries and APIs is usually straightforward; designing an attestation system that is meaningful, robust, and sustainable requires considerably more than writing code.
+Proving the integrity of mobile clients is essential for systems built around trusted apps, including mobile banking
+and digital identity solutions such as the EU Digital Identity Wallet.
+Wiring up a library is usually the easy part. Designing an attestation system that actually means something&hairsp;&mdash&hairsp;one that
+still makes sense to operate years later, takes more than writing code.
 
-**This is where we come in.** We support teams in making informed decisions about the application of mobile client attestation,
-policy design, and the construction of robust trust and key management concepts, with a focus on solutions that remain understandable and sustainable in long-term operation.
+**This is where we come in.** We help teams reason about where mobile client attestation belongs, how to design policy,
+and how to build trust and key-management concepts that stay understandable and maintainable in long-term operation.
 
 
 ## 📌 What we offer
 
 We support teams at different levels of involvement, depending on experience, internal capacity, and long-term goals.
 
-We have rolled out mobile client attestation solutions in multiple large-scale production services, including deployments in public-sector environments, serving millions of users.
+We have rolled out mobile client attestation in several large-scale production services, including public-sector
+deployments serving millions of users.
 
 This experience informs our work: not just what is theoretically correct, but what is operable, maintainable, and practical for users in real-world systems.
 
@@ -26,15 +29,16 @@ We help you make the right architectural and security decisions. Typical topics 
 
 ### 🔧 Implementation Support
 
-Your team still does most of the implementation work, and you get to own all the code and gather the expertise you need, avoiding costly mistakes.
-We support you with targeted expertise during design, integration, rollout, and hands-on implementation support.
+Your team does most of the implementation, owns all the code, and builds up the expertise it needs, while avoiding the
+costly mistakes.
+We bring in targeted expertise during design, integration, rollout, and hands-on implementation.
 
 
 ### 🚀 Turnkey Integration
 
-We implement ready-to-use custom solutions if you don't have the capacity to do all the heavy lifting in-house.
-However, long-term cost and risk are lowest when teams retain architectural insight and operational understanding.
-This is why we still involve your team when it comes to integrating custom components developed by us.
+If you do not have the capacity to do the heavy lifting in-house, we build ready-to-use custom solutions.
+Long-term cost and risk are still lowest when your team has architectural insight and operational understanding,
+which is why we always involve your team when integrating components we develop.
 
 ## 🔮 What's Next
 

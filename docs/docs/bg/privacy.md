@@ -1,16 +1,15 @@
 # Data Protection and Privacy in Mobile Attestation
 
-This page discusses privacy and data protection aspects of attestation.
-It outlines "pure" Android hardware attestation, iOS App Attest, and Google Play
-Integrity.  
-It explains
+This page covers the privacy and data protection aspects of attestation across three mechanisms: "pure" Android
+hardware attestation, iOS App Attest, and Google Play Integrity.  
+For each, it spells out:
 
-* what each mechanism is
+* what the mechanism is
 * the exact data flows (who learns what)
 * where policies live
-* implications for custom ROMs
+* what it means for custom ROMs
 * availability and operational trade-offs
-* how to combine these approaches in privacy-respecting deployments
+* how to combine the approaches in privacy-respecting deployments
 
 ## Different Attestation Approaches = Different Privacy Postures
 
@@ -155,10 +154,10 @@ more** than trust the embedded labels and apply hard-coded gating logic.
 
 ### Operational Characteristics
 
-Relying on Play Integrity means surrendering control over your security policy to a third party whose incentives may not
+Relying on Play Integrity means handing control over your security policy to a third party whose incentives may not
 match yours.  
 If your threat model or regulatory environment demands deterministic, auditable evidence, or if you need to accept
-sovereign firmware builds, use pure hardware attestation instead of (or in addition to) Google’s
+sovereign firmware builds, use pure hardware attestation instead of (or alongside) Google’s
 black-box verdict service.
 
 ### Why Pure Attestation Gives You Stronger Guarantees
@@ -182,21 +181,21 @@ Moreover, the service runs in Google’s hot path **for every request**:
 
 ## Comparative Privacy and Control
 
-| Dimension                        | Android “pure” attestation               | iOS App Attest                                 | Google Play Integrity                         |
-|----------------------------------|------------------------------------------|------------------------------------------------|-----------------------------------------------|
-| Per-request third-party contact  | None                                     | Apple required                                 | Google required                               |
-| Who learns per-request events    | Only you                                 | Apple and you                                  | Google and you                                |
-| Return type                      | Evidence (X.509 plus attestation fields) | Evidence (Apple-signed artefacts)              | Verdict (labels or tiers)                     |
-| Policy ownership                 | You (field-level rules)                  | You (verify evidence; service is Apple-hosted) | Google (definitions behind labels)            |
+| Dimension                        | Android “pure” attestation               | iOS App Attest                                 | Google Play Integrity                             |
+|----------------------------------|------------------------------------------|------------------------------------------------|---------------------------------------------------|
+| Per-request third-party contact  | None                                     | Apple required                                 | Google required                                   |
+| Who learns per-request events    | Only you                                 | Apple and you                                  | Google and you                                    |
+| Return type                      | Evidence (X.509 plus attestation fields) | Evidence (Apple-signed artefacts)              | Verdict (labels or tiers)                         |
+| Policy ownership                 | You (field-level rules)                  | You (verify evidence; service is Apple-hosted) | Google (definitions behind labels)                |
 | Custom AVB roots or trusted ROMs | Allowed (you can admit your keys)        | Not applicable                                 | Not allowed (GMS-certified OEM firmware required) |
-| Distribution coupling            | None                                     | None (service dependency on Apple)             | Tight to Play ecosystem or licensing          |
-| Availability and quotas          | Your back-end; cacheable roots and CRLs   | Apple in the hot path                          | Google in the hot path; quotas                |
-| Data minimisation                | Maximal                                  | Moderate                                       | Least                                         |
+| Distribution coupling            | None                                     | None (service dependency on Apple)             | Tight to Play ecosystem or licensing              |
+| Availability and quotas          | Your back-end; cacheable roots and CRLs  | Apple in the hot path                          | Google in the hot path; quotas                    |
+| Data minimisation                | Maximal                                  | Moderate                                       | Least                                             |
 
 ### Data-Flow Sketches (At a Glance)
 
-| System         | Channel                          | Data / Action                                 |
-|----------------|----------------------------------|-----------------------------------------------|
+| System         | Channel                           | Data / Action                                 |
+|----------------|-----------------------------------|-----------------------------------------------|
 | Android “pure” | App → Your back-end               | Hardware-backed attestation evidence          |
 |                | Your back-end → Android endpoints | Periodic download of public roots and CRLs    |
 | iOS App Attest | App ↔ Apple                       | Attestation creation and assertion refresh    |
@@ -243,8 +242,8 @@ Moreover, the service runs in Google’s hot path **for every request**:
 
 ## Conclusion
 
-If your priorities include data minimisation, explainability, local policy control, and the option to trust devices that
-boot images signed under your own verified-boot keys, ground your mobile trust in Android “pure” attestation and
-use iOS App Attest (given that there are no alternatives on Apple platforms).
-Forego Play Integrity. This keeps per-request telemetry with providers to the minimum required, preserves
-governance over acceptance criteria, and yields an auditable, privacy-respecting foundation for secure mobile services.
+If you care about data minimisation, explainability, local policy control, and the option to trust devices that
+boot images signed under your own verified-boot keys, ground your mobile trust in Android “pure” attestation, and
+use iOS App Attest (there is no alternative on Apple platforms).
+Forego Play Integrity. This keeps per-request telemetry with providers to the minimum, leaves acceptance criteria
+in your hands, and gives you an auditable, privacy-respecting foundation.

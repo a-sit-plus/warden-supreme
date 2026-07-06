@@ -2,7 +2,7 @@
 
 
 !!! tip "Configuration Reference"
-    For a comprehensive configuration reference, see [Attestation Policy Configuration](supreme.md#attestation-policy-configuration).
+    For the full configuration reference, see [Attestation Policy Configuration](supreme.md#attestation-policy-configuration).
 
 Warden Supreme configuration consists of two parts:
 
@@ -18,7 +18,7 @@ single, canonical way to serialise and load configurations across Android, iOS, 
 
 
 !!! note "Changed Fingerprint Format"
-    Android signer fingerprints were previously BAse64-URL encoded. This is still supported, but the preferred representation is hex-encoded (with or without whitespace and/or `:` seprators).  
+    Android signer fingerprints were previously Base64-URL encoded. This is still supported, but the preferred representation is hex-encoded (with or without whitespace and/or `:` separators).  
     **Starting with release 1.1, only hex-encoded fingerprints will be supported.**
 
 !!! note inline end "Changed YAML Format"
@@ -61,9 +61,9 @@ In addition, approaches based on reflection that do not invoke the configuration
     --8<-- "Readme-Config-Hoplite.kt:15:25"
     ```
     
-    **It is necessary to use these decoders because Warden Supreme's configurations heavily rely on kotlinx.serialization
-    for the sanitization, normalization and parsing of various properties. Only throuhg these decoders is it possible to still
-    involve these critical codepaths and guarantee correct config loading.**
+    **These decoders are necessary because Warden Supreme's configurations rely on kotlinx.serialization
+    for the sanitisation, normalisation, and parsing of various properties. Only through them do these critical
+    code paths run, which is what guarantees correct config loading.**
 
 ??? tip "Spring Boot Loading (JVM)"
     Spring Boot loading is available through the `at.asitplus.warden:config-spring` module. It binds a
@@ -81,7 +81,7 @@ In addition, approaches based on reflection that do not invoke the configuration
 
         If you need precise `null` semantics, load canonical configuration directly via
         `fromYamlString(...)`, `fromJsonString(...)`, `fromYamlFile(...)`, or `fromJsonFile(...)`.
-        If you want seamless Spring integration, use `fromSpringEnvironment(...)` on a prefix inside the Spring
+        If you want Spring integration, use `fromSpringEnvironment(...)` on a prefix inside the Spring
         `Environment`, but treat explicit `null` overrides as unsupported.
     
     The module pulls Spring boot as a `compileOnly` dependency to avoid version conflicts. You bring your own Spring Boot

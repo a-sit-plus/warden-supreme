@@ -8,13 +8,13 @@ that statement against **trusted roots** and **policy**.
 **Key Outcomes**:
 
 - **Stronger client trust** than “just TLS + user auth” — you know *which* app and device you’re talking to.
-- **Guarantees on hardware-backed key storage**: When done right, clients can prove to a service that sensitive
-  cryptographic material is securely stored in hardware, such that it cannot be extracted.
+- **Guarantees on hardware-backed key storage**: done right, a client can prove that sensitive cryptographic material
+  lives in hardware and cannot be extracted.
 - **Lower fraud risk** and **tight policy enforcement** (e.g., “only unmodified devices with the latest security updates
   applied may access resource _X_”).
 - **Privacy aspects**: On Android, verification uses Google roots but **doesn’t require the device to talk to Google
-  during attestation**; only *your* server sees the data. While your back-end must check Google’s revocation list, this
-  doesn't expose user-traceable data to third-party services or Google's infrastructure.
+  during attestation**; only *your* server sees the data. Your back-end must check Google’s revocation list, but that
+  exposes no user-traceable data to Google or any third party.
   (see [Android Key Attestation]({{ links.android_key_attestation }})).<br>
   On iOS, the story is a bit different, and, sadly, client devices will need to contact Apple servers to create an
   attestation statement.

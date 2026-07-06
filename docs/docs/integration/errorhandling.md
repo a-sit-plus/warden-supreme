@@ -5,7 +5,7 @@
 
 Attestation can fail for a variety of (expected) reasons.
 Makoto (the unified server-side Android and iOS attestation library at the core of Warden Supreme) buckets errors
-across iOS and Android attestation checks into semantic categories to streamline handling.
+across iOS and Android attestation checks into semantic categories, so you can handle them by category.
 
 When opting for fully integrated attestation flows (Supreme Verifier and Supreme Client), attestation statements received
 from clients may not even come this far and might be rejected before being fed into Makoto for verification.

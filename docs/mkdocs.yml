@@ -138,7 +138,7 @@ nav:
         - Technical Deep Dive:
             - Android:
                 - Attestation Model: technical/android.md
-                - Leaked KeyBoxes: technical/android/leakedkeys.md
+                - Leaked Keyboxes: technical/android/leakedkeys.md
             - iOS DeviceCheck &amp; App&nbsp;Attest: technical/ios.md
             - Quirks and Hints: technical/quirks.md
         - Testing: testing.md

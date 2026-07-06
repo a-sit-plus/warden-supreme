@@ -17,8 +17,8 @@ _Warden Supreme_ is a fully integrated key and app attestation suite consisting 
     Several devices and OS versions in the field come with bugs and quirks. Warden Supreme's docs hub discusses them [here](../technical/quirks.md).
     Be sure to read up on them **before** integrating attestation into your services.
 
-Put differently, Warden Supreme is the evolution of the battle-tested [WARDEN](https://github.com/a-sit-plus/warden) server-side key and app attestation library,
-augmented by Signum's [_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/) for a consistent UX across Android and iOS.
+Put differently, Warden Supreme is the evolution of the [WARDEN](https://github.com/a-sit-plus/warden) server-side key and app attestation library,
+paired with Signum's [_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/) for a consistent UX across Android and iOS.
 The original server-side-only key and app attestation library is still available and actively maintained, as it is one
 of the pillars supporting Warden Supreme.
 It now lives on as [Warden makoto](https://github.com/a-sit-plus/warden-supreme/tree/main/serverside/makoto) and continues to be published to Maven Central.
@@ -192,11 +192,13 @@ instead of a pre-configured `Makoto` instance does not support such omissions.
 
 #### Accepting Expired Non-RKP Certificate Chains
 As of May 2026, the intermediate certificates and roots of some **old** non-RKP devices — that is, devices no longer receiving security updates — have expired.
-Since these devices no longer receive updates, Warden Supreme considers them insecure by default, which aligns with
-Warden Supreme properly checking timely certificate validity by default.
-Note that for some devices, there is no way to update these certificate chains to fix the validity issue, while for others, the OEMs simply don't care.
-Still, Warden Supreme keeps you in control: if you must support these devices, you can completely disable timely certificate validity checks **for non-RKP devices only**.
-To do so, set `enforceFactoryProvisionedChainValidity = false` in the `AndroidAttestationConfiguration`. See the [`comprehensive example of Makoto config options`](#config-options-example) for details.
+Warden Supreme considers such devices insecure by default, which is consistent with its checking timely certificate validity by default.
+For some devices there is no way to update these certificate chains to fix the validity issue; for others, the OEMs simply don't care.
+If you must support these devices, you can disable timely certificate validity checks **for non-RKP devices only**.
+To do so, set `enforceFactoryProvisionedChainValidity = false` in the `AndroidAttestationConfiguration`. See the [`full example of Makoto config options`](#config-options-example) for details.
+
+!!! note "Google Pixel 6 Series"
+    As of July 2026, the Google Pixel 6 series still received security updates, but still ships with an expired certificate chain.
 
 
 #### Trusting GrapheneOS
@@ -219,11 +221,11 @@ want to trust GrapheneOS
 
 #### Attaching Custom Configuration Properties
 Warden Supreme defines a canonical configuration format with custom loaders for Spring Boot and Hoplite (see [Externalising Configuration](config.md)).
-This effectively removes the need for any custom configuration parsing. At the same time, it might be useful to attach
-arbitrary configuration properties to an application's attestation configuration, or even globally to the configuration
+This removes the need for any custom configuration parsing. Still, you may want to attach
+arbitrary configuration properties to an application's attestation configuration, or globally to the configuration
 subtree dedicated to attestation configuration.
 
-To provide both - canonical configuration parsing, and the ability to extend the configuration - it is possible to attach
+To keep canonical parsing while still allowing such extensions, you can attach
 mappings of string keys to string values under `customProperties` at the following layers:
 
 * `AndroidAttestationConfiguration`
@@ -231,9 +233,8 @@ mappings of string keys to string values under `customProperties` at the followi
 * `IosAttestationConfiguration`
 * `IosAttestationConfiguration.AppData`
 
-Using a map of string keys to string values is the pragmatic choice: It has well-defined parsing behaviour, can be arbitrarily extended,
-and both keys and values are flexible enough to carry anything. If complex structures are to be attached, they should be serialised to a string and
-deserialised before use.
+A map of string keys to string values has well-defined parsing behaviour and can be extended at will. If you need to attach complex structures, serialise them to a string and
+deserialise them before use.
 
 ??? note "A Note on Android Attestation"
     This library allows combining different flavours of Android attestation, ranging from full hardware attestation
@@ -444,7 +445,7 @@ This also allows for customising the explanations sent to clients.
 
 
 !!! tip inline end "Error Handling and Debugging"
-    Head over to the dedicated [debugging page](debugging.md) to learn how to debug attestation issues. For a comprehensive guide on how to handle and interpret
+    Head over to the dedicated [debugging page](debugging.md) to learn how to debug attestation issues. For how to handle and interpret
     Warden Supreme's attestation errors, see the [error handling page](errorhandling.md).
     
 
@@ -465,7 +466,7 @@ four callbacks to analyse challenge validation, attestation errors, and success 
 4. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).
 5. `onAttestationError` is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
    See [the dedicated error handling guide](errorhandling.md) for more details!
-6. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!** See [debugging and replaying diagnostics](../testing.md#debugging-replay-and-diagnostics).
+6. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!** See the [Debugging](debugging.md) page.
 7. Again, a custom error message can be sent to the client
 8. `onAttestationSuccess` is called right before an `AttestationResponse.Success` is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
    This can be useful for statistical analyses, for example.
