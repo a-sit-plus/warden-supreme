@@ -5,6 +5,8 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 # NEXT
+* Ktor 3.5.1
+* kotlinx.datetime 0.8.0
 
 # 1.0.0
 * Add hook to explicitly perform additional verifications before issuing
