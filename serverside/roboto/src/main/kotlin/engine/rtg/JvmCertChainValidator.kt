@@ -5,6 +5,7 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
+import com.android.keyattestation.verifier.SecurityLevel
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.android.keyattestation.verifier.provider.KeyAttestationProvider
 import kotlinx.coroutines.sync.Mutex
@@ -16,7 +17,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.toKotlinInstant
 
 class JvmCertChainValidator(private val attestationConfiguration: AndroidAttestationConfiguration) :
-    CertChainValidator<X509Certificate> {
+    CertChainValidator<X509Certificate, KeyAttestationCertPath> {
 
     companion object {
         init {
@@ -43,9 +44,10 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         verificationDate: Date,
         actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
-    ) {
+    ): KeyAttestationCertPath {
 
-        val verifyTimelyValidity = isRemoteKeyProvisioned() || attestationConfiguration.enforceFactoryProvisionedChainValidity
+        val verifyTimelyValidity =
+            isRemoteKeyProvisioned() || attestationConfiguration.enforceFactoryProvisionedChainValidity
 
         val trustedRoot =
             catchingUnwrapped { verifyRootCertificate(verificationDate, actualTrustAnchors, verifyTimelyValidity) }
@@ -103,6 +105,8 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                 reason = AttestationValueException.Reason.SEC_LEVEL, expectedValue = true, actualValue = false
             )
         }
+
+        return KeyAttestationCertPath(this)
     }
 
     @OptIn(ExperimentalTime::class)
@@ -197,4 +201,13 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
             else it
         }
     }
+
+    override val KeyAttestationCertPath.generalizedSecurityLevel: GeneralizedSecurityLevel
+        get() = securityLevel().toGeneralizedSecurityLevel()
+}
+
+fun SecurityLevel.toGeneralizedSecurityLevel(): GeneralizedSecurityLevel = when (this) {
+    SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+    SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
+    SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
 }

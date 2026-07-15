@@ -9,6 +9,7 @@ import at.asitplus.attestation.android.closestToRootOrNull
 import at.asitplus.attestation.android.hasAndroidKeystoreAttestation
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.attestation.data.CreatedAttestation
+import at.asitplus.attestation.data.SecurityLevel
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
@@ -44,6 +45,7 @@ val GeneratedAttestationTests by matrixSuite {
         signatureDigest,
         appVersion,
         androidVersion,
+        securityLevel = SecurityLevel.STRONGBOX,
         attestationLeafCanSignCertificates = true
     )
     val attestationProof = createdAttestation.certificateChain
@@ -108,7 +110,7 @@ val GeneratedAttestationTests by matrixSuite {
             ),
             androidVersion = androidVersion,
             patchLevel = PatchLevel(2021, 8),
-            requireStrongBox = false,
+            requireStrongBox = true,
             allowBootloaderUnlock = false,
             ignoreLeafValidity = false,
             hardwareTrustedRoots = setOf(TrustedRoot( attestationProof.last()))

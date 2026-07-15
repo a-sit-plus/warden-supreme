@@ -2,6 +2,7 @@ package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.*
 import at.asitplus.signum.indispensable.asn1.toBigInteger
+import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
@@ -15,7 +16,7 @@ import kotlin.time.Instant
 sealed class SupremeAttestationEngine(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
-) : AndroidAttestationEngine<AttestationKeyDescription, AuthorizationList, X509Certificate>(
+) : AndroidAttestationEngine<AttestationKeyDescription, AuthorizationList, X509Certificate, KeyAttestationCertPath>(
     attestationConfiguration,
     verifyChallenge
 ) {

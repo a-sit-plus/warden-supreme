@@ -9,6 +9,8 @@ import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.DERSet
 import org.bouncycastle.asn1.DERTaggedObject
+import org.bouncycastle.asn1.DERUTF8String
+import org.bouncycastle.asn1.x500.RDN
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x509.BasicConstraints
 import org.bouncycastle.asn1.x509.KeyUsage
@@ -44,6 +46,7 @@ object AttestationCreator {
         verifiedBootState: BootState = BootState.VERIFIED,
         verifiedBootHash: ByteArray = Random.nextBytes(32),
         creationTime: Date = Date(),
+        securityLevel: SecurityLevel = SecurityLevel.TEE,
     ): List<X509Certificate> = createAttestationWithKeys(
         challenge,
         packageName,
@@ -57,6 +60,7 @@ object AttestationCreator {
         verifiedBootState,
         verifiedBootHash,
         creationTime,
+        securityLevel = securityLevel,
     ).certificateChain
 
     fun createAttestationWithKeys(
@@ -72,13 +76,18 @@ object AttestationCreator {
         verifiedBootState: BootState = BootState.VERIFIED,
         verifiedBootHash: ByteArray = Random.nextBytes(32),
         creationTime: Date = Date(),
+        securityLevel: SecurityLevel = SecurityLevel.TEE,
         attestationLeafCanSignCertificates: Boolean = false,
+        reuse: ProvisioningAuthority? = null,
     ): CreatedAttestation = create(
         KeyAttestationDefs(
             attestationVersion = 4,
-            attestationSecurityLevel = SecurityLevel.TEE,
+            // The security level advertised in the extension must match the one the verifier infers
+            // from the certificate chain (see create()), otherwise verification fails with a
+            // "security level does not match" error.
+            attestationSecurityLevel = securityLevel,
             keymasterVersion = 4,
-            keymasterSecurityLevel = SecurityLevel.TEE,
+            keymasterSecurityLevel = securityLevel,
             attestationChallenge = challenge,
             uniqueId = byteArrayOf(),
             softwareEnforced = SecurityProperties(
@@ -103,64 +112,139 @@ object AttestationCreator {
             )
         ),
         certificateCreation = creationTime,
+        securityLevel = securityLevel,
         attestationLeafCanSignCertificates = attestationLeafCanSignCertificates,
+        reuse = reuse,
     )
 
+    /**
+     * Builds a certificate chain whose shape and subject DNs match the [securityLevel], so that the
+     * verifier infers the same level from the chain that the attestation extension advertises.
+     *
+     * - [SecurityLevel.SOFTWARE] produces `ROOT -> ATTESTATION -> TARGET` (3 certs). The attestation
+     *   certificate carries no distinguishing subject, so the chain parses as software-backed.
+     * - [SecurityLevel.TEE] / [SecurityLevel.STRONGBOX] produce a factory-provisioned chain
+     *   `ROOT -> FACTORY_INTERMEDIATE -> ATTESTATION -> TARGET` (4 certs). The factory intermediate's
+     *   subject encodes the level via a serialNumber (OID 2.5.4.5) plus a title (OID 2.5.4.12) of
+     *   exactly `"TEE"` or `"StrongBox"`, which is what `KeyAttestationCertPath.securityLevel()` reads.
+     *
+     * When [reuse] is supplied, the root and factory intermediate are taken as-is instead of being
+     * generated, so multiple attestations can share (and chain up to) the same trusted root — useful
+     * for negative tests that must stay under a trusted anchor while varying the attestation content.
+     */
     private fun create(
         keyAttestation: KeyAttestationDefs,
         certificateCreation: Date,
+        securityLevel: SecurityLevel,
         attestationLeafCanSignCertificates: Boolean,
+        reuse: ProvisioningAuthority? = null,
     ): CreatedAttestation {
-        val rootKeyPair = KeyPairGenerator.getInstance("EC").also {
-            it.initialize(256)
-        }.genKeyPair()
-        val rootCert = X509v3CertificateBuilder(
-            /* issuer = */ X500Name("CN=Root"),
-            /* serial = */ BigInteger.valueOf(Random.nextLong()),
-            /* notBefore = */ certificateCreation,
-            /* notAfter = */ Date(certificateCreation.time + 1000L * 60L * 60L /* = 60 minutes */),
-            /* subject = */ X500Name("CN=Root"),
-            /* publicKeyInfo = */ rootKeyPair.subjectPublicKeyInfo()
-        ).build(rootKeyPair.contentSigner()).toX509Certificate()
+        val notAfter = Date(certificateCreation.time + 1000L * 60L * 60L /* = 60 minutes */)
 
-        val intermediateKeyPair = KeyPairGenerator.getInstance("EC").also {
-            it.initialize(256)
-        }.genKeyPair()
-        val intermediateCert = X509v3CertificateBuilder(
-            /* issuer = */ X500Name("CN=Root"),
-            /* serial = */ BigInteger.valueOf(Random.nextLong()),
-            /* notBefore = */ certificateCreation,
-            /* notAfter = */ Date(certificateCreation.time + 1000L * 60L * 60L /* = 60 minutes */),
-            /* subject = */ X500Name("CN=Intermediate"),
-            /* publicKeyInfo = */ intermediateKeyPair.subjectPublicKeyInfo()
-        ).build(rootKeyPair.contentSigner()).toX509Certificate()
+        fun ecKeyPair() = KeyPairGenerator.getInstance("EC").also { it.initialize(256) }.genKeyPair()
 
-        val leafKeyPair = KeyPairGenerator.getInstance("EC").also {
-            it.initialize(256)
-        }.genKeyPair()
-        val leafBuilder = X509v3CertificateBuilder(
-            /* issuer = */ X500Name("CN=Intermediate"),
+        fun issue(
+            issuer: X500Name,
+            subject: X500Name,
+            subjectKeyPair: KeyPair,
+            signingKeyPair: KeyPair,
+            configure: (X509v3CertificateBuilder.() -> Unit)? = null,
+        ): X509Certificate = X509v3CertificateBuilder(
+            /* issuer = */ issuer,
             /* serial = */ BigInteger.valueOf(Random.nextLong()),
             /* notBefore = */ certificateCreation,
-            /* notAfter = */ Date(certificateCreation.time + 1000L * 60L * 60L /* = 60 minutes */),
-            /* subject = */ X500Name("CN=Subject"),
-            /* publicKeyInfo = */ leafKeyPair.subjectPublicKeyInfo()
-        ).addExtension(
-            ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17"),
-            false,
-            keyAttestation.toSequence()
-        )
-        if (attestationLeafCanSignCertificates) {
-            leafBuilder.addExtension(ASN1ObjectIdentifier("2.5.29.19"), true, BasicConstraints(true))
-            leafBuilder.addExtension(ASN1ObjectIdentifier("2.5.29.15"), true, KeyUsage(KeyUsage.keyCertSign))
+            /* notAfter = */ notAfter,
+            /* subject = */ subject,
+            /* publicKeyInfo = */ subjectKeyPair.subjectPublicKeyInfo()
+        ).apply { configure?.invoke(this) }
+            .build(signingKeyPair.contentSigner()).toX509Certificate()
+
+        // The factory-provisioned title the verifier matches against; null means software-backed.
+        val factoryTitle = when (securityLevel) {
+            SecurityLevel.TEE -> "TEE"
+            SecurityLevel.STRONGBOX -> "StrongBox"
+            else -> null
         }
-        val leafCert = leafBuilder.build(intermediateKeyPair.contentSigner()).toX509Certificate()
+
+        val rootKeyPair: KeyPair
+        val rootCert: X509Certificate
+        // For factory-provisioned chains, a FACTORY_INTERMEDIATE sits between root and the attestation
+        // certificate; its subject encodes the security level. Software-backed chains have no such
+        // certificate and the attestation cert is issued directly by the root.
+        val intermediateKeyPair: KeyPair
+        val factoryIntermediateCert: X509Certificate?
+        val attestationIssuerName: X500Name
+        val attestationSigningKeyPair: KeyPair
+        if (reuse != null) {
+            // Reused authorities are always factory-provisioned (they carry a FACTORY_INTERMEDIATE).
+            rootKeyPair = reuse.rootKeyPair
+            rootCert = reuse.rootCertificate
+            intermediateKeyPair = reuse.intermediateKeyPair
+            factoryIntermediateCert = reuse.intermediateCertificate
+            attestationIssuerName = X500Name.getInstance(reuse.intermediateCertificate.subjectX500Principal.encoded)
+            attestationSigningKeyPair = reuse.intermediateKeyPair
+        } else {
+            rootKeyPair = ecKeyPair()
+            val rootName = X500Name("CN=Root")
+            rootCert = issue(rootName, rootName, rootKeyPair, rootKeyPair)
+            intermediateKeyPair = ecKeyPair()
+            if (factoryTitle != null) {
+                val factoryIntermediateSubject = X500Name(
+                    arrayOf(
+                        RDN(ASN1ObjectIdentifier("2.5.4.5"), DERUTF8String(BigInteger.valueOf(Random.nextLong()).toString(16))),
+                        RDN(ASN1ObjectIdentifier("2.5.4.12"), DERUTF8String(factoryTitle))
+                    )
+                )
+                factoryIntermediateCert =
+                    issue(rootName, factoryIntermediateSubject, intermediateKeyPair, rootKeyPair)
+                attestationIssuerName = factoryIntermediateSubject
+                attestationSigningKeyPair = intermediateKeyPair
+            } else {
+                factoryIntermediateCert = null
+                attestationIssuerName = rootName
+                attestationSigningKeyPair = rootKeyPair
+            }
+        }
+
+        val attestationKeyPair = ecKeyPair()
+        val attestationSubject = X500Name("CN=Attestation")
+        val attestationCert =
+            issue(attestationIssuerName, attestationSubject, attestationKeyPair, attestationSigningKeyPair)
+
+        val leafKeyPair = ecKeyPair()
+        val leafCert = issue(
+            issuer = attestationSubject,
+            subject = X500Name("CN=Subject"),
+            subjectKeyPair = leafKeyPair,
+            signingKeyPair = attestationKeyPair,
+        ) {
+            addExtension(
+                ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17"),
+                false,
+                keyAttestation.toSequence()
+            )
+            if (attestationLeafCanSignCertificates) {
+                addExtension(ASN1ObjectIdentifier("2.5.29.19"), true, BasicConstraints(true))
+                addExtension(ASN1ObjectIdentifier("2.5.29.15"), true, KeyUsage(KeyUsage.keyCertSign))
+            }
+        }
+
+        val certificateChain = buildList {
+            add(leafCert)
+            add(attestationCert)
+            factoryIntermediateCert?.let { add(it) }
+            add(rootCert)
+        }
 
         return CreatedAttestation(
-            certificateChain = listOf(leafCert, intermediateCert, rootCert),
+            certificateChain = certificateChain,
             leafKeyPair = leafKeyPair,
-            intermediateKeyPair = intermediateKeyPair,
+            // For factory chains this is the FACTORY_INTERMEDIATE key; for software chains there is no
+            // dedicated intermediate, so we surface the attestation certificate's key.
+            intermediateKeyPair = if (factoryIntermediateCert != null) intermediateKeyPair else attestationKeyPair,
             rootKeyPair = rootKeyPair,
+            rootCertificate = rootCert,
+            factoryIntermediateCertificate = factoryIntermediateCert,
         )
     }
 }
@@ -170,6 +254,27 @@ data class CreatedAttestation(
     val leafKeyPair: KeyPair,
     val intermediateKeyPair: KeyPair,
     val rootKeyPair: KeyPair,
+    val rootCertificate: X509Certificate,
+    /** The FACTORY_INTERMEDIATE certificate for TEE/StrongBox chains; `null` for software-backed chains. */
+    val factoryIntermediateCertificate: X509Certificate? = null,
+) {
+    /**
+     * The root + factory intermediate of this (factory-provisioned) chain, for issuing further
+     * attestations under the same trust anchor via [AttestationCreator.createAttestationWithKeys]'s
+     * `reuse` parameter. `null` for software-backed chains, which have no factory intermediate.
+     */
+    val provisioningAuthority: ProvisioningAuthority?
+        get() = factoryIntermediateCertificate?.let {
+            ProvisioningAuthority(rootKeyPair, rootCertificate, intermediateKeyPair, it)
+        }
+}
+
+/** Reusable root + factory intermediate material for chaining multiple attestations to one anchor. */
+data class ProvisioningAuthority(
+    val rootKeyPair: KeyPair,
+    val rootCertificate: X509Certificate,
+    val intermediateKeyPair: KeyPair,
+    val intermediateCertificate: X509Certificate,
 )
 
 private fun X509CertificateHolder.toX509Certificate(): X509Certificate =

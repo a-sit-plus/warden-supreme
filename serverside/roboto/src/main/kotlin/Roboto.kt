@@ -12,6 +12,7 @@ import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
+import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.coroutines.runBlocking
 import java.security.cert.X509Certificate
@@ -45,7 +46,7 @@ constructor(
         engines.first().certChainValidator.revocationListsFromLastCall()
 
 
-    private val engines = mutableListOf<AndroidAttestationEngine<*, *, X509Certificate>>().apply {
+    private val engines = mutableListOf<AndroidAttestationEngine<*, *, X509Certificate, KeyAttestationCertPath>>().apply {
         if (!attestationConfiguration.disableHardwareAttestation) add(
             if (attestationConfiguration.supremeParser)
                 SupremeAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)

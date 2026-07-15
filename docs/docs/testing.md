@@ -15,14 +15,14 @@ In practice this splits into two layers &mdash; automated tests that run offline
 
 Load tests and monitors need to exercise attestation end to end without diluting production guarantees.
 This can be achieved with minimum effort by using a test app whose identity that is cryptographically distinct from the production app and admitted under its own trust anchor.
-
+[testing.md](testing.md)
 - Configure a second app entry (e.g., `AndroidAttestationConfiguration.AppData`) with:
     - A different `packageName`
     - A deliberately obvious, non‑production signing certificate digest
     - An `androidVersionOverride` that is clearly out of band (e.g., very high) for easy detection
 - Set up a test PKI:
     - A root whose public key is registered as a `trustAnchorOverride`
-    - An intermediate that issues short‑lived leaves (because the attestation certificate chain used by Android is always at least three certificates long)
+    - An intermediate that issues short‑lived leaves (the attestation certificate chain used by Android is always at least three certificates long, and its exact shape must match the claimed security level &mdash; see the warning under [Automated Attestation Tests](#attestation-security-level))
     - A leaf certificate generated on the fly by the test client so validity is always fresh
 - Admit exactly two identities at the service:
     - The production app under the normal policy and roots
@@ -49,6 +49,18 @@ Test code generates faux attestation chains on demand by mutating those properti
 Since the test trust anchor is trusted only on T and Q, these generated proofs never validate on P.
 
 This is the [Test Clients and Staging Pattern](#test-clients-and-staging-pattern) applied exhaustively: one generated proof per property (or combination) you care about, valid and invalid variants alike.
+
+<span id="attestation-security-level"></span>
+!!! warning "Generated chains must match the claimed security level"
+    Starting with Warden Supreme 1.0.2, the verifier now **derives the attestation security level from the certificate chain when asserting `SecurityLevel.STRONGBOX`**  and requires it to match the level advertised in the attestation extension (`keymasterSecurityLevel`).
+    Chain generators must therefore shape their output to match the claimed level:
+    
+    - **StrongBox** (factory-provisioned): `ROOT → FACTORY_INTERMEDIATE → ATTESTATION → TARGET` (four certificates).
+        - The factory intermediate's subject must carry a serialNumber (OID `2.5.4.5`) **and** a title (OID `2.5.4.12`) of exactly or `StrongBox`.
+        - The same is true for `TEE` Security level, but this is not hard-asserted, since the root will already indicate a proper hardware-backed attestation.
+        - RPK chains are also asserted as strictly, but cannot currently be generated, due to hard checks against the actual production certificate chain.
+    - **Software-backed**: `ROOT → ATTESTATION → TARGET` (three certificates), with no such title on the intermediate.
+        - This is not enforced by the verifier.
 
 ## Tagging Apps via Custom Configuration Properties
 

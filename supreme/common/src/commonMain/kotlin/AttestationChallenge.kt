@@ -15,6 +15,7 @@ import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Transient
 import kotlin.time.Duration
 import kotlin.time.Instant
@@ -255,10 +256,47 @@ fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): K
         attributes.find { it.oid == oid }?.value?.singleOrNull()
             ?.let {
                 it.asPrimitive()
-                Attestation.fromJSON(Asn1String.decodeFromTlv(it.asPrimitive()).value)
+                val json = Asn1String.decodeFromTlv(it.asPrimitive()).value
+                requireBoundedArrayNesting(json)
+                Attestation.fromJSON(json)
             }
             ?: throw Asn1StructuralException("Attestation statement not present")
     }
+
+/** Max JSON array-nesting depth accepted before parsing. kotlinx.serialization (1.10.0)
+ *  recurses on nested arrays without a depth limit, so deeply nested arrays overflow the
+ *  stack. Object nesting is already guarded by the library. */
+internal const val MAX_JSON_ARRAY_DEPTH = 64
+
+/** Scans [json] for excessive array nesting without parsing it. Brackets inside string
+ *  literals (keys/values) are ignored. Throws [SerializationException] if depth exceeds
+ *  [MAX_JSON_ARRAY_DEPTH]. Cheap, single linear pass, no allocation. */
+internal fun requireBoundedArrayNesting(json: String) {
+    var depth = 0
+    var inString = false
+    var escaped = false
+    for (c in json) {
+        if (inString) {
+            when {
+                escaped   -> escaped = false
+                c == '\\' -> escaped = true
+                c == '"'  -> inString = false
+            }
+            continue
+        }
+        when (c) {
+            '"' -> inString = true
+            '[' -> {
+                depth++
+                if (depth > MAX_JSON_ARRAY_DEPTH)
+                    throw SerializationException(
+                        "JSON array nesting exceeds $MAX_JSON_ARRAY_DEPTH"
+                    )
+            }
+            ']' -> if (depth > 0) depth--
+        }
+    }
+}
 
 @Deprecated("Misnomer. To be removed in 1.1", replaceWith = ReplaceWith("nonce"))
 val TbsCertificationRequest.challenge get() = nonce

@@ -39,11 +39,16 @@ kotlin {
             implementation(libs.yamltk)
         }
 
-        jvmTest.dependencies {
-            implementation(project(":config-hoplite"))
-            implementation(libs.hoplite.core)
-            implementation(libs.hoplite.yaml)
-            implementation(libs.hoplite.json)
+        jvmTest {
+            // Share roboto's test-only attestation chain generator (AttestationCreator) so the fake
+            // attestation chains used here stay in lock-step with the ones roboto/makoto verify.
+            kotlin.srcDir("../../serverside/roboto/src/test/kotlin/data")
+            dependencies {
+                implementation(project(":config-hoplite"))
+                implementation(libs.hoplite.core)
+                implementation(libs.hoplite.yaml)
+                implementation(libs.hoplite.json)
+            }
         }
     }
 }

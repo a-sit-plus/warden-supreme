@@ -28,14 +28,15 @@ import java.util.Date
 import kotlin.time.ExperimentalTime
 import kotlin.time.toKotlinInstant
 
-interface CertChainValidator<T> {
+interface CertChainValidator<T, Path> {
     @Throws(CertificateInvalidException::class, RevocationException::class)
     suspend fun List<T>.verifyCertificateChain(
         verificationDate: Date,
         actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
-    )
+    ): Path
     val revocationCheckers: List<Pair<AndroidRevocationList.Loader.Configuration<*>, AndroidRevocationList.Loader>>
     suspend fun revocationListsFromLastCall():  List<ConfigWithList>
-}
 
+    val Path.generalizedSecurityLevel: GeneralizedSecurityLevel
+}

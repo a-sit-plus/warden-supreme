@@ -7,6 +7,10 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
+import at.asitplus.attestation.data.AttestationCreator
+import at.asitplus.attestation.data.CreatedAttestation
+import at.asitplus.attestation.data.ProvisioningAuthority
+import at.asitplus.attestation.data.SecurityLevel
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.CryptoPublicKey
@@ -21,16 +25,9 @@ import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
 import at.asitplus.signum.indispensable.toCryptoPublicKey
-import org.bouncycastle.asn1.ASN1Boolean
-import org.bouncycastle.asn1.ASN1Enumerated
-import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Sequence
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERSequence
-import org.bouncycastle.asn1.DERSet
-import org.bouncycastle.asn1.DERTaggedObject
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509CertificateHolder
@@ -47,7 +44,6 @@ import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.RSAPrivateKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.RSAKeyGenParameterSpec
-import java.time.Instant
 import java.util.Date
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
@@ -333,6 +329,22 @@ internal fun generateAndroidFixture(): AndroidFixture {
     return AndroidFixture(nonce, fake)
 }
 
+/**
+ * Adapts the shared [CreatedAttestation] (see roboto's `AttestationCreator`) to the
+ * [FakeAndroidAttestation] shape used across the verifier tests. Fake Android attestations are
+ * always factory-provisioned (TEE), so a factory intermediate is expected to be present.
+ */
+private fun CreatedAttestation.toFakeAndroidAttestation(): FakeAndroidAttestation = FakeAndroidAttestation(
+    certificateChain = certificateChain,
+    leafKeyPair = leafKeyPair,
+    rootCertificate = rootCertificate,
+    rootKeyPair = rootKeyPair,
+    intermediateCertificate = requireNotNull(factoryIntermediateCertificate) {
+        "Fake Android attestations are factory-provisioned and must carry a factory intermediate"
+    },
+    intermediateKeyPair = intermediateKeyPair,
+)
+
 internal fun createFakeAndroidAttestation(
     challenge: ByteArray,
     packageName: String,
@@ -340,77 +352,17 @@ internal fun createFakeAndroidAttestation(
     creationTime: Date = Date(fixedClock.now().toEpochMilliseconds()),
     deviceLocked: Boolean = true,
     verifiedBootState: BootState = BootState.VERIFIED,
-): FakeAndroidAttestation {
-    val keyAttestation = KeyAttestationDefs(
-        attestationVersion = 4,
-        attestationSecurityLevel = SecurityLevel.TEE,
-        keymasterVersion = 4,
-        keymasterSecurityLevel = SecurityLevel.TEE,
-        attestationChallenge = challenge,
-        uniqueId = byteArrayOf(),
-        softwareEnforced = SecurityProperties(
-            creationDateTime = Instant.ofEpochMilli(creationTime.time),
-            applicationInfo = KeyAttestationApplicationInfo(
-                packageName = packageName,
-                version = 1,
-                signatureDigests = listOf(signatureDigest)
-            )
-        ),
-        teeEnforced = SecurityProperties(
-            keySize = 256,
-            rootOfTrust = RootOfTrust(
-                verifiedBootKey = Random.nextBytes(32),
-                deviceLocked = deviceLocked,
-                verifiedBootState = verifiedBootState,
-                verifiedBootHash = Random.nextBytes(32),
-            ),
-            androidVersion = 11,
-            androidPatchLevel = 202108,
-        )
-    )
-    val rootKeyPair = KeyPairGenerator.getInstance("EC").also { it.initialize(256) }.genKeyPair()
-    val rootCert = X509v3CertificateBuilder(
-        X500Name("CN=Root"),
-        BigInteger.valueOf(Random.nextLong()),
-        creationTime,
-        Date(creationTime.time + 1000L * 60L * 60L),
-        X500Name("CN=Root"),
-        rootKeyPair.subjectPublicKeyInfo()
-    ).build(rootKeyPair.contentSigner()).toX509Certificate()
-
-    val intermediateKeyPair = KeyPairGenerator.getInstance("EC").also { it.initialize(256) }.genKeyPair()
-    val intermediateCert = X509v3CertificateBuilder(
-        X500Name("CN=Root"),
-        BigInteger.valueOf(Random.nextLong()),
-        creationTime,
-        Date(creationTime.time + 1000L * 60L * 60L),
-        X500Name("CN=Intermediate"),
-        intermediateKeyPair.subjectPublicKeyInfo()
-    ).build(rootKeyPair.contentSigner()).toX509Certificate()
-
-    val leafKeyPair = KeyPairGenerator.getInstance("EC").also { it.initialize(256) }.genKeyPair()
-    val leafCert = X509v3CertificateBuilder(
-        X500Name("CN=Intermediate"),
-        BigInteger.valueOf(Random.nextLong()),
-        creationTime,
-        Date(creationTime.time + 1000L * 60L * 60L),
-        X500Name("CN=Subject"),
-        leafKeyPair.subjectPublicKeyInfo()
-    ).addExtension(
-        ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17"),
-        false,
-        keyAttestation.toSequence()
-    ).build(intermediateKeyPair.contentSigner()).toX509Certificate()
-
-    return FakeAndroidAttestation(
-        listOf(leafCert, intermediateCert, rootCert),
-        leafKeyPair,
-        rootCert,
-        rootKeyPair,
-        intermediateCert,
-        intermediateKeyPair,
-    )
-}
+): FakeAndroidAttestation = AttestationCreator.createAttestationWithKeys(
+    challenge = challenge,
+    packageName = packageName,
+    signatureDigest = signatureDigest,
+    androidVersion = 11,
+    androidPatchLevel = 202108,
+    deviceLocked = deviceLocked,
+    verifiedBootState = verifiedBootState,
+    creationTime = creationTime,
+    securityLevel = SecurityLevel.TEE,
+).toFakeAndroidAttestation()
 
 internal fun createFakeAndroidAttestationWithRoots(
     challenge: ByteArray,
@@ -423,57 +375,20 @@ internal fun createFakeAndroidAttestationWithRoots(
     rootCertificate: JcaX509Certificate,
     intermediateKeyPair: KeyPair,
     intermediateCertificate: JcaX509Certificate,
-): FakeAndroidAttestation {
-    val keyAttestation = KeyAttestationDefs(
-        attestationVersion = 4,
-        attestationSecurityLevel = SecurityLevel.TEE,
-        keymasterVersion = 4,
-        keymasterSecurityLevel = SecurityLevel.TEE,
-        attestationChallenge = challenge,
-        uniqueId = byteArrayOf(),
-        softwareEnforced = SecurityProperties(
-            creationDateTime = Instant.ofEpochMilli(creationTime.time),
-            applicationInfo = KeyAttestationApplicationInfo(
-                packageName = packageName,
-                version = 1,
-                signatureDigests = listOf(signatureDigest)
-            )
-        ),
-        teeEnforced = SecurityProperties(
-            keySize = 256,
-            rootOfTrust = RootOfTrust(
-                verifiedBootKey = Random.nextBytes(32),
-                deviceLocked = deviceLocked,
-                verifiedBootState = verifiedBootState,
-                verifiedBootHash = Random.nextBytes(32),
-            ),
-            androidVersion = 11,
-            androidPatchLevel = 202108,
-        )
-    )
-    val leafKeyPair = KeyPairGenerator.getInstance("EC").also { it.initialize(256) }.genKeyPair()
-    val leafCert = X509v3CertificateBuilder(
-        X500Name("CN=Intermediate"),
-        BigInteger.valueOf(Random.nextLong()),
-        creationTime,
-        Date(creationTime.time + 1000L * 60L * 60L),
-        X500Name("CN=Subject"),
-        leafKeyPair.subjectPublicKeyInfo()
-    ).addExtension(
-        ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17"),
-        false,
-        keyAttestation.toSequence()
-    ).build(intermediateKeyPair.contentSigner()).toX509Certificate()
-
-    return FakeAndroidAttestation(
-        listOf(leafCert, intermediateCertificate, rootCertificate),
-        leafKeyPair,
-        rootCertificate,
-        rootKeyPair,
-        intermediateCertificate,
-        intermediateKeyPair,
-    )
-}
+): FakeAndroidAttestation = AttestationCreator.createAttestationWithKeys(
+    challenge = challenge,
+    packageName = packageName,
+    signatureDigest = signatureDigest,
+    androidVersion = 11,
+    androidPatchLevel = 202108,
+    deviceLocked = deviceLocked,
+    verifiedBootState = verifiedBootState,
+    creationTime = creationTime,
+    securityLevel = SecurityLevel.TEE,
+    // Issue this attestation under the caller's existing root + factory intermediate so it stays
+    // anchored to the same trusted root while varying the attestation content.
+    reuse = ProvisioningAuthority(rootKeyPair, rootCertificate, intermediateKeyPair, intermediateCertificate),
+).toFakeAndroidAttestation()
 
 internal fun X509CertificateHolder.toX509Certificate(): JcaX509Certificate =
     java.security.cert.CertificateFactory.getInstance("X.509")
@@ -485,103 +400,10 @@ internal fun KeyPair.contentSigner(): ContentSigner =
 internal fun KeyPair.subjectPublicKeyInfo(): SubjectPublicKeyInfo =
     SubjectPublicKeyInfo.getInstance(ASN1Sequence.getInstance(public.encoded))
 
-internal data class KeyAttestationDefs(
-    val attestationVersion: Long,
-    val attestationSecurityLevel: SecurityLevel,
-    val keymasterVersion: Long,
-    val keymasterSecurityLevel: SecurityLevel,
-    val attestationChallenge: ByteArray,
-    val uniqueId: ByteArray,
-    val softwareEnforced: SecurityProperties,
-    val teeEnforced: SecurityProperties,
-) {
-    fun toSequence(): DERSequence = DERSequence(
-        arrayOf(
-            ASN1Integer(attestationVersion),
-            ASN1Enumerated(attestationSecurityLevel.value),
-            ASN1Integer(keymasterVersion),
-            ASN1Enumerated(keymasterSecurityLevel.value),
-            DEROctetString(attestationChallenge),
-            DEROctetString(uniqueId),
-            softwareEnforced.toSequence(),
-            teeEnforced.toSequence()
-        )
-    )
-}
-
-internal data class SecurityProperties(
-    val creationDateTime: Instant? = null,
-    val keySize: Int? = null,
-    val applicationInfo: KeyAttestationApplicationInfo? = null,
-    val androidVersion: Int? = null,
-    val androidPatchLevel: Int? = null,
-    val rootOfTrust: RootOfTrust? = null,
-) {
-    fun toSequence(): DERSequence =
-        DERSequence(
-            arrayOf(
-                creationDateTime?.let { DERTaggedObject(701, ASN1Integer(it.toEpochMilli())) },
-                keySize?.let { DERTaggedObject(3, ASN1Integer(it.toLong())) },
-                rootOfTrust?.let { DERTaggedObject(704, it.encoded()) },
-                androidVersion?.let { DERTaggedObject(705, ASN1Integer(it.toLong())) },
-                androidPatchLevel?.let { DERTaggedObject(706, ASN1Integer(it.toLong())) },
-                applicationInfo?.let { DERTaggedObject(709, DEROctetString(it.encoded())) },
-            ).filterNotNull().toTypedArray()
-        )
-}
-
-internal data class KeyAttestationApplicationInfo(
-    val packageName: String,
-    val version: Int,
-    val signatureDigests: Collection<ByteArray>
-) {
-    fun encoded(): ByteArray = DERSequence(
-        arrayOf(
-            DERSet(
-                DERSequence(
-                    arrayOf(
-                        DEROctetString(packageName.encodeToByteArray()),
-                        ASN1Integer(version.toLong())
-                    )
-                )
-            ),
-            DERSet(
-                signatureDigests.map { DEROctetString(it) }.toTypedArray()
-            )
-        )
-    ).encoded
-}
-
-internal data class RootOfTrust(
-    val verifiedBootKey: ByteArray,
-    val deviceLocked: Boolean,
-    val verifiedBootState: BootState,
-    val verifiedBootHash: ByteArray
-) {
-    fun encoded(): DERSequence = DERSequence(
-        arrayOf(
-            DEROctetString(verifiedBootKey),
-            ASN1Boolean.getInstance(deviceLocked),
-            ASN1Enumerated(verifiedBootState.value),
-            DEROctetString(verifiedBootHash)
-        )
-    )
-}
-
-internal enum class SecurityLevel(val value: Int) {
-    NULL(-1),
-    SOFTWARE(0),
-    TEE(1),
-    STRONGBOX(2);
-}
-
-internal enum class BootState(val value: Int) {
-    NULL(-1),
-    VERIFIED(0),
-    SELF_SIGNED(1),
-    UNVERIFIED(2),
-    FAILED(3);
-}
+// The attestation record, chain generator and their enums now live in roboto's shared test source
+// (at.asitplus.attestation.data, wired into this module's jvmTest via build.gradle.kts). BootState is
+// re-exported here so the other verifier tests in this package can keep referring to it unqualified.
+internal typealias BootState = at.asitplus.attestation.data.BootState
 
 internal fun androidConfigForFake(
     packageName: String,

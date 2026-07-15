@@ -2,6 +2,7 @@ package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.catchingUnwrapped
+import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.google.android.attestation.AttestationApplicationId
 import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
@@ -19,7 +20,7 @@ import kotlin.time.toKotlinInstant
 sealed class RtgAttestationEngine(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
-) : AndroidAttestationEngine<ParsedAttestationRecord, AuthorizationList, X509Certificate>(
+) : AndroidAttestationEngine<ParsedAttestationRecord, AuthorizationList, X509Certificate, KeyAttestationCertPath>(
     attestationConfiguration,
     verifyChallenge
 ) {

@@ -15,3 +15,12 @@ local.properties
 /serverside/roboto/src/generated/
 /docs/docs/examples/
 /supreme/common/src/jvmTest/resources/DebugStatements.csv
+*/*/.classpath
+*/*/.project
+*/*/.settings/
+*/*/bin/
+.settings/
+.kotlin/
+.classpath
+.project
+/supreme/common/src/jvmTest/resources/security-level-regressions.csv
