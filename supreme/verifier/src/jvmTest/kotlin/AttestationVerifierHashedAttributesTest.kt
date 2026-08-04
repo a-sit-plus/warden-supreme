@@ -10,7 +10,6 @@ import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.encoding.Asn1
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
-import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.supreme.hash.digest
 import at.asitplus.testballoon.matrix.matrixSuite
@@ -18,11 +17,11 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
 
-private val hashedAttributeRequest = AttestationChallenge.AttestableAttributes(
+private val hashedAttributeRequest = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
     ObjectIdentifier("1.3.6.1.4.1.60387.2"),
     listOf(
-        AttestationChallenge.ToBeAttestedAttribute("required", PrimitiveType.STRING),
-        AttestationChallenge.ToBeAttestedAttribute("optional", PrimitiveType.INT, required = false),
+        AttestationChallenge.AttributeAttestationDescriptor("required", PrimitiveType.STRING),
+        AttestationChallenge.AttributeAttestationDescriptor("optional", PrimitiveType.INT, required = false),
     ),
 )
 

@@ -123,7 +123,7 @@ suspend fun AttestationClient.performAttestationFlow(
     authPromptCancelText: String? = null,
     additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
     additionalCsrAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
-    toBeAttestedAttributes: (List<AttestationChallenge.ToBeAttestedAttribute>) -> List<Primitive>,
+    toBeAttestedAttributes: (List<AttestationChallenge.AttributeAttestationDescriptor>) -> List<Primitive>,
 ): AttestationResponse {
     val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
     val proof = challenge.createAttestationProof(
@@ -202,7 +202,7 @@ suspend fun AttestationChallenge.createAttestationProof(
     authPromptCancelText: String? = null,
     additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
     additionalCsrAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
-    attestAttributes: (List<AttestationChallenge.ToBeAttestedAttribute>) -> List<Primitive>,
+    attestAttributes: (List<AttestationChallenge.AttributeAttestationDescriptor>) -> List<Primitive>,
 ): KmmResult<AttestationProof> {
 
     val constraints = keyConstraints
@@ -284,7 +284,7 @@ suspend fun AttestationChallenge.createAttestationProof(
     val tbsCsr = signer.createTbsCsr(this, hashInput).getOrThrow()
 
     return catching {
-        when (val authentication = dataAuth) {
+        when (dataAuth) {
             DataAuthentication.Signature ->
                 AttestationProof.Signed(signer.sign(tbsCsr).getOrThrow())
 

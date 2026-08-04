@@ -14,7 +14,6 @@ import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
-import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
@@ -55,11 +54,11 @@ private val authenticationScenarios = mapOf(
     "hashed-all-omitted" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf(null, null)),
 )
 
-private val requestedAttributes = AttestationChallenge.AttestableAttributes(
+private val requestedAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
     ObjectIdentifier("1.3.6.1.4.1.60387.1"),
     listOf(
-        AttestationChallenge.ToBeAttestedAttribute("required", PrimitiveType.STRING),
-        AttestationChallenge.ToBeAttestedAttribute("optional", PrimitiveType.INT, required = false),
+        AttestationChallenge.AttributeAttestationDescriptor("required", PrimitiveType.STRING),
+        AttestationChallenge.AttributeAttestationDescriptor("optional", PrimitiveType.INT, required = false),
     ),
 )
 

@@ -10,8 +10,8 @@ import io.kotest.matchers.shouldBe
 val AttestedAttributesTest by matrixSuite {
     "optional attributes may be absent" {
         val requested = listOf(
-            AttestationChallenge.ToBeAttestedAttribute("required", PrimitiveType.STRING),
-            AttestationChallenge.ToBeAttestedAttribute("optional", PrimitiveType.INT, required = false),
+            AttestationChallenge.AttributeAttestationDescriptor("required", PrimitiveType.STRING),
+            AttestationChallenge.AttributeAttestationDescriptor("optional", PrimitiveType.INT, required = false),
         )
 
         AttestedAttributes(listOf<Primitive>("value", null).toSequence())
@@ -20,7 +20,7 @@ val AttestedAttributesTest by matrixSuite {
 
     "required attributes may not be absent" {
         val requested = listOf(
-            AttestationChallenge.ToBeAttestedAttribute("required", PrimitiveType.STRING),
+            AttestationChallenge.AttributeAttestationDescriptor("required", PrimitiveType.STRING),
         )
 
         shouldThrow<IllegalArgumentException> {
@@ -33,7 +33,7 @@ val AttestedAttributesTest by matrixSuite {
     "requested attribute sequence must be present" {
         shouldThrow<IllegalArgumentException> {
             AttestedAttributes(null).parsedAttributesBy(
-                listOf(AttestationChallenge.ToBeAttestedAttribute("required", PrimitiveType.STRING))
+                listOf(AttestationChallenge.AttributeAttestationDescriptor("required", PrimitiveType.STRING))
             )
         }
     }

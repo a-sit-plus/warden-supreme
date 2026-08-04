@@ -57,7 +57,7 @@ private constructor(
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
     val dataAuthentication: DataAuthentication = DataAuthentication.Signature,
     @Serializable(with = ConfigurationAttestableAttributesSerializer::class)
-    val attestableAttributes: AttestationChallenge.AttestableAttributes? = null,
+    val attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
 ) : AttestationConfiguration {
 
     @Throws(AttestationException.Configuration::class, IllegalArgumentException::class)
@@ -70,7 +70,7 @@ private constructor(
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
-        attestableAttributes: AttestationChallenge.AttestableAttributes? = null,
+        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
     ) : this(
         ios,
         android,
@@ -95,7 +95,7 @@ private constructor(
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
-        attestableAttributes: AttestationChallenge.AttestableAttributes? = null,
+        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
     ) : this(
         ios,
         null,
@@ -120,7 +120,7 @@ private constructor(
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
-        attestableAttributes: AttestationChallenge.AttestableAttributes? = null,
+        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
     ) : this(
         null,
         android,
@@ -250,22 +250,22 @@ private constructor(
 }
 
 private object ConfigurationAttestableAttributesSerializer :
-    KSerializer<AttestationChallenge.AttestableAttributes> {
+    KSerializer<AttestationChallenge.CertificationRequestAttributeAttestationDescriptor> {
 
-    override val descriptor: SerialDescriptor = AttestationChallenge.AttestableAttributes.serializer().descriptor
+    override val descriptor: SerialDescriptor = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor.serializer().descriptor
     private val attributesSerializer = ListSerializer(ConfigurationAttestedAttributeSerializer)
 
-    override fun serialize(encoder: Encoder, value: AttestationChallenge.AttestableAttributes) {
+    override fun serialize(encoder: Encoder, value: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor) {
         encoder.encodeStructure(descriptor) {
             encodeSerializableElement(descriptor, 0, ObjectIdentifierStringSerializer, value.oid)
             encodeSerializableElement(descriptor, 1, attributesSerializer, value.attributes)
         }
     }
 
-    override fun deserialize(decoder: Decoder): AttestationChallenge.AttestableAttributes =
+    override fun deserialize(decoder: Decoder): AttestationChallenge.CertificationRequestAttributeAttestationDescriptor =
         decoder.decodeStructure(descriptor) {
             var oid: ObjectIdentifier? = null
-            var attributes: List<AttestationChallenge.ToBeAttestedAttribute>? = null
+            var attributes: List<AttestationChallenge.AttributeAttestationDescriptor>? = null
             while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     CompositeDecoder.DECODE_DONE -> break
@@ -274,7 +274,7 @@ private object ConfigurationAttestableAttributesSerializer :
                     else -> throw SerializationException("Unknown AttestableAttributes element index: $index")
                 }
             }
-            AttestationChallenge.AttestableAttributes(
+            AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
                 requireNotNull(oid) { "Missing AttestableAttributes.oid" },
                 requireNotNull(attributes) { "Missing AttestableAttributes.attributes" },
             )
@@ -282,11 +282,11 @@ private object ConfigurationAttestableAttributesSerializer :
 }
 
 private object ConfigurationAttestedAttributeSerializer :
-    KSerializer<AttestationChallenge.ToBeAttestedAttribute> {
+    KSerializer<AttestationChallenge.AttributeAttestationDescriptor> {
 
-    override val descriptor: SerialDescriptor = AttestationChallenge.ToBeAttestedAttribute.serializer().descriptor
+    override val descriptor: SerialDescriptor = AttestationChallenge.AttributeAttestationDescriptor.serializer().descriptor
 
-    override fun serialize(encoder: Encoder, value: AttestationChallenge.ToBeAttestedAttribute) {
+    override fun serialize(encoder: Encoder, value: AttestationChallenge.AttributeAttestationDescriptor) {
         encoder.encodeStructure(descriptor) {
             encodeStringElement(descriptor, 0, value.name)
             encodeSerializableElement(descriptor, 1, PrimitiveType.NameSerializer, value.type)
@@ -296,7 +296,7 @@ private object ConfigurationAttestedAttributeSerializer :
         }
     }
 
-    override fun deserialize(decoder: Decoder): AttestationChallenge.ToBeAttestedAttribute =
+    override fun deserialize(decoder: Decoder): AttestationChallenge.AttributeAttestationDescriptor =
         decoder.decodeStructure(descriptor) {
             var name: String? = null
             var type: PrimitiveType? = null
@@ -310,7 +310,7 @@ private object ConfigurationAttestedAttributeSerializer :
                     else -> throw SerializationException("Unknown ToBeAttestedAttribute element index: $index")
                 }
             }
-            AttestationChallenge.ToBeAttestedAttribute(
+            AttestationChallenge.AttributeAttestationDescriptor(
                 requireNotNull(name) { "Missing ToBeAttestedAttribute.name" },
                 requireNotNull(type) { "Missing ToBeAttestedAttribute.type" },
                 required,

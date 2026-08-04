@@ -138,11 +138,11 @@ val CertificationRequestAttestationTest by matrixSuite {
 
     "attested attributes are exposed by configured name for both transports" {
         val attributeOid = ObjectIdentifier("2.25.304198582559398858370235454530489176240")
-        val requested = AttestationChallenge.AttestableAttributes(
+        val requested = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
             attributeOid,
             listOf(
-                AttestationChallenge.ToBeAttestedAttribute("accountId", PrimitiveType.STRING),
-                AttestationChallenge.ToBeAttestedAttribute("riskScore", PrimitiveType.INT, required = false),
+                AttestationChallenge.AttributeAttestationDescriptor("accountId", PrimitiveType.STRING),
+                AttestationChallenge.AttributeAttestationDescriptor("riskScore", PrimitiveType.INT, required = false),
             ),
         )
         val challenge = AttestationChallenge(

@@ -65,7 +65,7 @@ constructor(
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
     val nonceValidity: Duration = makoto.longestValidityDuration
         ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds,
-    val attestableAttributes: AttestationChallenge.AttestableAttributes? = null,
+    val attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
     val dataAuth: DataAuthentication = DataAuthentication.Signature,
     private val nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
     /*internal for testing*/
@@ -93,7 +93,7 @@ constructor(
             iosAttestationConfiguration.attestationStatementValiditySeconds,
             androidAttestationConfiguration.attestationStatementValiditySeconds
         ),
-        attestableAttributes: AttestationChallenge.AttestableAttributes? = null,
+        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
         nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
         challengeValidator: ChallengeValidator = InMemoryChallengeCache(clock, -verificationTimeOffset),
@@ -136,7 +136,7 @@ constructor(
         postEndpoint: String,
         timeZone: TimeZone? = null,
         keyConstraints: KeyConstraints? = defaultKeyConstraints,
-        attestableAttributes: AttestationChallenge.AttestableAttributes? = this.attestableAttributes,
+        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = this.attestableAttributes,
         dataAuth: DataAuthentication = this.dataAuth,
     ) = AttestationChallenge(
         issuedAt = makoto.clock.now() - makoto.verificationTimeOffset,
@@ -304,12 +304,12 @@ constructor(
         if (!authenticationMatches) {
             return Preparation.Failure(
                 clientDataValidationFailure(
-                    Type.TRUST,
-                    PreAttestationError.ClientDataValidation.Reason.AUTHENTICATION_METHOD_MISMATCH,
-                    this,
-                    validatedChallenge,
-                    callbacks.onPreAttestationError,
-                    "Authentication method does not match challenge",
+                    type = Type.TRUST,
+                    reason = PreAttestationError.ClientDataValidation.Reason.AUTHENTICATION_METHOD_MISMATCH,
+                    clientData = this,
+                    challenge = validatedChallenge,
+                    onPreAttestationError = callbacks.onPreAttestationError,
+                    fallbackExplanation = "Authentication method does not match challenge",
                 )
             )
         }
@@ -340,13 +340,13 @@ constructor(
                 }.getOrElse {
                     return Preparation.Failure(
                         clientDataValidationFailure(
-                            Type.CONTENT,
-                            PreAttestationError.ClientDataValidation.Reason.ATTESTATION_BINDING,
-                            this,
-                            validatedChallenge,
-                            callbacks.onPreAttestationError,
-                            "TBS CSR does not use the canonical attestation binding",
-                            it,
+                            type = Type.CONTENT,
+                            reason = PreAttestationError.ClientDataValidation.Reason.ATTESTATION_BINDING,
+                            clientData = this,
+                            challenge = validatedChallenge,
+                            onPreAttestationError = callbacks.onPreAttestationError,
+                            fallbackExplanation = "TBS CSR does not use the canonical attestation binding",
+                            throwable = it,
                         )
                     )
                 }
@@ -366,12 +366,12 @@ constructor(
     ): Failure? {
         if (attributes.map { it.oid }.toSet().size != attributes.size) {
             return clientDataValidationFailure(
-                Type.CONTENT,
-                PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_ATTRIBUTE_OID,
-                clientData,
-                challenge,
-                onPreAttestationError,
-                "CSR attribute OIDs must be distinct",
+                type = Type.CONTENT,
+                reason = PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_ATTRIBUTE_OID,
+                clientData = clientData,
+                challenge = challenge,
+                onPreAttestationError = onPreAttestationError,
+                fallbackExplanation = "CSR attribute OIDs must be distinct",
             )
         }
         attributes.singleOrNull { it.oid == extensionRequestOid }?.let { extensionRequest ->
@@ -381,34 +381,34 @@ constructor(
                 }
             }.getOrElse {
                 return clientDataValidationFailure(
-                    Type.CONTENT,
-                    PreAttestationError.ClientDataValidation.Reason.MALFORMED_CSR_EXTENSION_REQUEST,
-                    clientData,
-                    challenge,
-                    onPreAttestationError,
-                    "Malformed CSR extension request",
-                    it,
+                    type = Type.CONTENT,
+                    reason = PreAttestationError.ClientDataValidation.Reason.MALFORMED_CSR_EXTENSION_REQUEST,
+                    clientData = clientData,
+                    challenge = challenge,
+                    onPreAttestationError = onPreAttestationError,
+                    fallbackExplanation = "Malformed CSR extension request",
+                    throwable = it,
                 )
             }
             if (extensions.map { it.oid }.toSet().size != extensions.size) {
                 return clientDataValidationFailure(
-                    Type.CONTENT,
-                    PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_EXTENSION_OID,
-                    clientData,
-                    challenge,
-                    onPreAttestationError,
-                    "CSR extension OIDs must be distinct",
+                    type = Type.CONTENT,
+                    reason = PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_EXTENSION_OID,
+                    clientData = clientData,
+                    challenge = challenge,
+                    onPreAttestationError = onPreAttestationError,
+                    fallbackExplanation = "CSR extension OIDs must be distinct",
                 )
             }
         }
         return if (attributes.map { it.encodeToTlv() } != Asn1.SetOf { attributes.forEach { +it } }.toList()) {
             clientDataValidationFailure(
-                Type.CONTENT,
-                PreAttestationError.ClientDataValidation.Reason.NON_CANONICAL_CSR_ATTRIBUTE_ORDER,
-                clientData,
-                challenge,
-                onPreAttestationError,
-                "CSR attributes are not in canonical DER order",
+                type = Type.CONTENT,
+                reason = PreAttestationError.ClientDataValidation.Reason.NON_CANONICAL_CSR_ATTRIBUTE_ORDER,
+                clientData = clientData,
+                challenge = challenge,
+                onPreAttestationError = onPreAttestationError,
+                fallbackExplanation = "CSR attributes are not in canonical DER order",
             )
         } else null
     }
@@ -452,12 +452,12 @@ constructor(
                 )
                 else KeyVerification.Failure(
                     clientDataValidationFailure(
-                        Type.TRUST,
-                        PreAttestationError.ClientDataValidation.Reason.ATTESTED_PUBLIC_KEY_MISMATCH,
-                        attestationProof,
-                        challenge,
-                        callbacks.onPreAttestationError,
-                        "Claimed public key does not match attested public key",
+                        type = Type.TRUST,
+                        reason = PreAttestationError.ClientDataValidation.Reason.ATTESTED_PUBLIC_KEY_MISMATCH,
+                        clientData = attestationProof,
+                        challenge = challenge,
+                        onPreAttestationError = callbacks.onPreAttestationError,
+                        fallbackExplanation = "Claimed public key does not match attested public key",
                     )
                 )
             },
@@ -497,24 +497,24 @@ constructor(
     private suspend fun PreparedAttestation.verifyAttributeAttestations(callbacks: VerificationCallbacks): Failure? {
         val attributes = catchingUnwrapped { with(challenge) { tbsCsr.attestedAttributes() } }.getOrElse {
             return clientDataValidationFailure(
-                Type.CONTENT,
-                PreAttestationError.ClientDataValidation.Reason.REQUESTED_ATTRIBUTES_EXTRACTION,
-                attestationProof,
-                challenge,
-                callbacks.onPreAttestationError,
-                "Requested attributes could not be extracted",
-                it,
+                type = Type.CONTENT,
+                reason = PreAttestationError.ClientDataValidation.Reason.REQUESTED_ATTRIBUTES_EXTRACTION,
+                clientData = attestationProof,
+                challenge = challenge,
+                onPreAttestationError = callbacks.onPreAttestationError,
+                fallbackExplanation = "Requested attributes could not be extracted",
+                throwable = it,
             )
         }
         catchingUnwrapped { attributes.parsedAttributesBy(challenge) }.exceptionOrNull()?.let {
             return clientDataValidationFailure(
-                Type.CONTENT,
-                PreAttestationError.ClientDataValidation.Reason.REQUESTED_ATTRIBUTES_MISMATCH,
-                attestationProof,
-                challenge,
-                callbacks.onPreAttestationError,
-                "Requested Attributes are not all attested",
-                it,
+                type = Type.CONTENT,
+                reason = PreAttestationError.ClientDataValidation.Reason.REQUESTED_ATTRIBUTES_MISMATCH,
+                clientData = attestationProof,
+                challenge = challenge,
+                onPreAttestationError = callbacks.onPreAttestationError,
+                fallbackExplanation = "Requested Attributes are not all attested",
+                throwable = it,
             )
         }
         return null
@@ -706,18 +706,13 @@ constructor(
 }
 
 /**
- * Invoked from [AttestationVerifier.verifyAttestation]. Useful to match against in-transit attestation processes.
- * Most probably, this will check against a nonce cache and evict any matched nonce from the cache.
- * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
- * matching, ensuring freshness!
- * Challenge nonces are sensitive replay-protection material: implementations and operators should avoid logging them,
- * avoid exposing them across sessions or callers, and rely on protected transport plus caller-aware controls outside the
- * nonce cache when needed.
- *
- * **BEWARE OF CLOCK DRIFT AND CONFIGURED OFFSETS WRT. VALIDITY DURATION!**
- *
- * @see InMemoryChallengeCache for a sane default logic to account for clock drift
+ * Invoked from [AttestationVerifier.verifyAttestation]. Required to match against in-transit attestation processes.
+ * @see AttestationChallengeValidator
  */
+@Deprecated(
+    "To be folded into AttestationChallengeValidator with Warden Supreme 1.5",
+    replaceWith = ReplaceWith("AttestationChallengeValidator")
+)
 interface ChallengeValidator {
     /**
      * The contract of this function is that it stores challenges regardless of their contents and performs no sanity checks.
@@ -731,22 +726,52 @@ interface ChallengeValidator {
 
     /**
      * The contract of this function is that it returns a [ChallengeValidationResult.Success] iff a valid
-     * challenge matching the passed signed CSR or TBS CSR from the client is found.
+     * challenge matching the passed signed CSR from the client is found.
      * In all other cases, it must return a [ChallengeValidationResult.Failure]:
      * * It must return a [ChallengeValidationResult.Failure.NonceExtraction] if nonce extraction fails (relevant for nonce-cache based implementations)
      * * It must return a [ChallengeValidationResult.Failure.Other] if other validation errors occur, such as no valid challenge matching the request.
      * In addition, it **should** also remove all expired challenges, to keep stale challenges from inflating memory/storage.
      */
     suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult
-    suspend fun validate(certificationRequestInfo: TbsCertificationRequest): ChallengeValidationResult
 }
 
-/** Dispatches challenge validation to the signed-CSR or TBS-CSR overload matching [attestationProof]. */
-suspend fun ChallengeValidator.validate(attestationProof: AttestationProof): ChallengeValidationResult =
-    when (attestationProof) {
-        is AttestationProof.Signed -> this.validate(attestationProof.data)
-        is AttestationProof.Hashed -> this.validate(attestationProof.data)
+//this is for compatibility reasons
+@Suppress("DEPRECATION")
+private suspend fun ChallengeValidator.validate(attestationProof: AttestationProof) =
+    if (this is AttestationChallengeValidator) validate(attestationProof) else when (attestationProof) {
+        is AttestationProof.Hashed -> ChallengeValidationResult.Failure.Other(IllegalArgumentException("Legacy ChallengeValidator does not support hash-based attestation proofs"))
+        is AttestationProof.Signed -> validate(csr = attestationProof.data)
     }
+
+/**
+ * Invoked from [AttestationVerifier.verifyAttestation]. Useful to match against in-transit attestation processes.
+ * Most probably, this will check against a nonce cache and evict any matched nonce from the cache.
+ * **Implementing this function in a meaningful manner is absolutely crucial**, since this is the actual challenge
+ * matching, ensuring freshness!
+ * Challenge nonces are sensitive replay-protection material: implementations and operators should avoid logging them,
+ * avoid exposing them across sessions or callers, and rely on protected transport plus caller-aware controls outside the
+ * nonce cache when needed.
+ *
+ * **BEWARE OF CLOCK DRIFT AND CONFIGURED OFFSETS WRT. VALIDITY DURATION!**
+ *
+ * @see InMemoryChallengeCache for a sane default logic to account for clock drift
+ */
+@Suppress("DEPRECATION")
+interface AttestationChallengeValidator : ChallengeValidator {
+    /**
+     * The contract of this function is that it returns a [ChallengeValidationResult.Success] iff a valid
+     * challenge matching the [attestationProof] from the client is found.
+     * In all other cases, it must return a [ChallengeValidationResult.Failure]:
+     * * It must return a [ChallengeValidationResult.Failure.NonceExtraction] if nonce extraction fails (relevant for nonce-cache based implementations)
+     * * It must return a [ChallengeValidationResult.Failure.Other] if other validation errors occur, such as no valid challenge matching the request.
+     * In addition, it **should** also remove all expired challenges, to keep stale challenges from inflating memory/storage.
+     */
+    suspend fun validate(attestationProof: AttestationProof): ChallengeValidationResult
+
+    override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult =
+        validate(AttestationProof.Signed(csr))
+}
+
 
 /** Generates a fresh challenge nonce. */
 typealias NonceGenerator = suspend () -> ByteArray
@@ -755,10 +780,12 @@ typealias NonceGenerator = suspend () -> ByteArray
 sealed class ChallengeValidationResult {
     /** Contains the exact previously issued challenge matched by the validator. */
     class Success(val validatedChallenge: AttestationChallenge) : ChallengeValidationResult()
+
     /** Challenge matching failed for [reason]. */
     sealed class Failure(val reason: Throwable) : ChallengeValidationResult() {
         /** The nonce could not be extracted from the received TBS CSR. */
         class NonceExtraction(reason: Throwable) : Failure(reason)
+
         /** The nonce was extracted, but no acceptable issued challenge was found or consumed. */
         class Other(reason: Throwable) : Failure(reason)
     }
@@ -852,7 +879,7 @@ constructor(
     internal val clock: Clock,
     internal val offset: Duration,
     val maxChallenges: Int = DEFAULT_MAX_IN_MEMORY_CHALLENGES,
-) : ChallengeValidator {
+) : AttestationChallengeValidator {
 
     companion object {
         const val DEFAULT_MAX_IN_MEMORY_CHALLENGES: Int = 100_000
@@ -894,11 +921,10 @@ constructor(
         }
     }
 
-    override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult = validate(csr.tbsCsr)
 
-    override suspend fun validate(certificationRequestInfo: TbsCertificationRequest): ChallengeValidationResult {
+    override suspend fun validate(attestationProof: AttestationProof): ChallengeValidationResult {
         mutex.withLock {
-            val nonce = certificationRequestInfo.nonce.getOrElse {
+            val nonce = attestationProof.tbsCsr.nonce.getOrElse {
                 return ChallengeValidationResult.Failure.NonceExtraction(it)
             }
             pruneExpiredEntries()

@@ -21,9 +21,9 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
     ) test { kind ->
         val fixture = generateAndroidFixture()
         val verifier = fixture.verifier(fixture.trustedConfig())
-        val requested = if (kind == "requested") AttestationChallenge.AttestableAttributes(
+        val requested = if (kind == "requested") AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
             duplicateOid,
-            listOf(AttestationChallenge.ToBeAttestedAttribute("value", PrimitiveType.STRING)),
+            listOf(AttestationChallenge.AttributeAttestationDescriptor("value", PrimitiveType.STRING)),
         ) else null
         val challenge = verifier.issueChallenge(
             attestationEndpoint,

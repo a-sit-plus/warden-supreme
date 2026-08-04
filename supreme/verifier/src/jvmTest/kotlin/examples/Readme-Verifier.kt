@@ -48,11 +48,11 @@ val verifier = AttestationVerifier(
     nonceValidity = 5.minutes, //DEFAULT
     nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(5)!*/128)) },
  /*(6)!*/challengeValidator = redisBacked,
- /*(7)!*/attestableAttributes = AttestationChallenge.AttestableAttributes(
+ /*(7)!*/attestableAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
         customerAttributesOID,
         listOf(
-            AttestationChallenge.ToBeAttestedAttribute("accountId", PrimitiveType.STRING),
-            AttestationChallenge.ToBeAttestedAttribute("riskScore", PrimitiveType.INT, required = false),
+            AttestationChallenge.AttributeAttestationDescriptor("accountId", PrimitiveType.STRING),
+            AttestationChallenge.AttributeAttestationDescriptor("riskScore", PrimitiveType.INT, required = false),
         ),
     ),
  /*(8)!*/dataAuth = DataAuthentication.Hash(Digest.SHA256),

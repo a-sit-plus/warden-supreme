@@ -13,24 +13,23 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
 import io.ktor.http.headersOf
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
 private val clientTestInstant = Instant.parse("2025-01-10T00:00:00Z")
-private val clientRequestedAttributes = AttestationChallenge.AttestableAttributes(
+private val clientRequestedAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
     ObjectIdentifier("1.3.6.1.4.1.60387.3"),
     listOf(
-        AttestationChallenge.ToBeAttestedAttribute("required", PrimitiveType.STRING),
-        AttestationChallenge.ToBeAttestedAttribute("optional", PrimitiveType.INT, required = false),
+        AttestationChallenge.AttributeAttestationDescriptor("required", PrimitiveType.STRING),
+        AttestationChallenge.AttributeAttestationDescriptor("optional", PrimitiveType.INT, required = false),
     ),
 )
 
 private fun clientChallenge(
     authentication: DataAuthentication,
-    attributes: AttestationChallenge.AttestableAttributes? = null,
+    attributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
 ) = AttestationChallenge(
     issuedAt = clientTestInstant,
     validity = 1.hours,

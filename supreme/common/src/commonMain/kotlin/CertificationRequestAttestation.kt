@@ -30,10 +30,11 @@ data class AttestationHashInput internal constructor(
     ) : this(
         version,
         subjectName,
-        attributes + Pkcs10CertificationRequestAttribute(
-            KnownOIDs.extensionRequest,
-            Asn1.Sequence { extensions.forEach { +it } },
-        ),
+        extensions.ifEmpty { null }?.let { extns ->
+            attributes + Pkcs10CertificationRequestAttribute(
+                KnownOIDs.extensionRequest,
+                Asn1.Sequence { extns.forEach { +it } })
+        } ?: attributes,
     )
 
     override fun encodeToTlv() = Asn1.Sequence {

@@ -195,11 +195,11 @@ val ConfigurationExampleGenerator by matrixSuite(matrixConfig { execution = Exec
         androidAttestationConfiguration,
         iosAttestationConfiguration,
         dataAuth = DataAuthentication.Hash(Digest.SHA256),
-        attestableAttributes = AttestationChallenge.AttestableAttributes(
+        attestableAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
             oid = ObjectIdentifier("2.25.304198582559398858370235454530489176240"),
             attributes = listOf(
-                AttestationChallenge.ToBeAttestedAttribute("accountId", PrimitiveType.STRING),
-                AttestationChallenge.ToBeAttestedAttribute("riskScore", PrimitiveType.INT, required = false),
+                AttestationChallenge.AttributeAttestationDescriptor("accountId", PrimitiveType.STRING),
+                AttestationChallenge.AttributeAttestationDescriptor("riskScore", PrimitiveType.INT, required = false),
             ),
         ),
     )

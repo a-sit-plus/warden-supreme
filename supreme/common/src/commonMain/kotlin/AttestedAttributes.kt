@@ -14,7 +14,7 @@ class AttestedAttributes(val otherAttributesEncoded: Asn1Sequence?) {
      * Decodes values by their requested position and [PrimitiveType]. Missing optional values decode to `null`;
      * missing required values, unexpected values, and malformed encodings are rejected.
      */
-    fun parsedAttributesBy(requestedAttributes: List<AttestationChallenge.ToBeAttestedAttribute>?): List<Primitive>? {
+    fun parsedAttributesBy(requestedAttributes: List<AttestationChallenge.AttributeAttestationDescriptor>?): List<Primitive>? {
         if (requestedAttributes.isNullOrEmpty()) {
             if (otherAttributesEncoded != null) throw IllegalArgumentException("Unexpected Attributes found!")
             return null

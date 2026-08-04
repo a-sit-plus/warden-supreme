@@ -141,10 +141,10 @@ private constructor(
     val transientData: Any? = null,
 
     /**
-     * Ordered client-provided values to bind to the attestation. The values are stored under [AttestableAttributes.oid]
-     * and decoded according to [AttestableAttributes.attributes].
+     * Ordered client-provided values to bind to the attestation. The values are stored under [CertificationRequestAttributeAttestationDescriptor.oid]
+     * and decoded according to [CertificationRequestAttributeAttestationDescriptor.attributes].
      */
-    val toBeAttestedAttributes: AttestableAttributes? = null,
+    val toBeAttestedAttributes: CertificationRequestAttributeAttestationDescriptor? = null,
 
     /**
      * How the client authenticates the TBS CSR contents. [DataAuthentication.Signature] also proves possession of the
@@ -192,7 +192,7 @@ private constructor(
         keyConstraints: KeyConstraints? = null,
         additionalPayload: Map<String, Constrained>? = null,
         transientData: Any? = null,
-        attestableAttributes: AttestableAttributes? = null,
+        attestableAttributes: CertificationRequestAttributeAttestationDescriptor? = null,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
     ) : this(
         issuedAt = issuedAt,
@@ -263,15 +263,15 @@ private constructor(
     }
 
     /**
-     * Describes an ordered list of client-provided values carried in one dedicated TBS CSR attribute.
+     * Lets the verifier describe an ordered list of client-provided values carried in one dedicated CertificationRequestInfo attribute.
      *
-     * [oid] identifies that attribute. Each value is encoded by position using the corresponding entry in [attributes].
+     * [oid] identifies the CertificationRequestInfo attribute. Each value is encoded by position using the corresponding entry in [attributes].
      */
     @Serializable
-    data class AttestableAttributes(
+    data class CertificationRequestAttributeAttestationDescriptor(
         @Serializable(with = ObjectIdentifierStringSerializer::class)
         val oid: ObjectIdentifier,
-        val attributes: List<ToBeAttestedAttribute>
+        val attributes: List<AttributeAttestationDescriptor>
     ) {
         init {
             if(attributes.isEmpty()) throw IllegalArgumentException("attributes can't be empty!")
@@ -285,7 +285,7 @@ private constructor(
      * encoded ASN.1 `NULL` is accepted for this position.
      */
     @Serializable
-    data class ToBeAttestedAttribute(val name: String, val type: PrimitiveType, val required: Boolean = true)
+    data class AttributeAttestationDescriptor(val name: String, val type: PrimitiveType, val required: Boolean = true)
 
     companion object {
         const val CURRENT_VERSION: Int = 2

@@ -78,8 +78,8 @@ val EndToEndTest by matrixSuite {
 
                 val proof = challenge.createAttestationProof(alias) { requested ->
                     requested shouldBe listOf(
-                        AttestationChallenge.ToBeAttestedAttribute("required", PrimitiveType.STRING),
-                        AttestationChallenge.ToBeAttestedAttribute("optional", PrimitiveType.INT, required = false),
+                        AttestationChallenge.AttributeAttestationDescriptor("required", PrimitiveType.STRING),
+                        AttestationChallenge.AttributeAttestationDescriptor("optional", PrimitiveType.INT, required = false),
                     )
                     requireNotNull(scenario.attributes)
                 }.getOrThrow()

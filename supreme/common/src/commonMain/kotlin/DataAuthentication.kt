@@ -36,7 +36,17 @@ sealed interface DataAuthentication {
 
     /** Authenticate the TBS CSR hash input through the platform attestation nonce, without proving possession. */
     @Serializable(with = DataAuthentication.Serializer::class)
-    data class Hash(val algorithm: Digest) : DataAuthentication
+    data class Hash
+    /**
+     * [Digest.SHA1] is considered insecure and prohibited
+     * @throws IllegalArgumentException if SHA-1 is used
+     */
+    @Throws(IllegalArgumentException::class)
+    constructor(val algorithm: Digest) : DataAuthentication {
+        init {
+            require(algorithm != Digest.SHA1) {"SHA-1 is insecure"}
+        }
+    }
 
     object Serializer : KSerializer<DataAuthentication> {
         private val delegate = SerializedDataAuthentication.serializer()
@@ -45,15 +55,15 @@ sealed interface DataAuthentication {
         override fun serialize(encoder: Encoder, value: DataAuthentication) = delegate.serialize(
             encoder,
             when (value) {
-                Signature -> SerializedDataAuthentication("Signature")
-                is Hash -> SerializedDataAuthentication("hash", value.algorithm)
+                Signature -> SerializedDataAuthentication(SerializedDataAuthentication.Type.SIGNATURE)
+                is Hash -> SerializedDataAuthentication(SerializedDataAuthentication.Type.HASH, value.algorithm)
             },
         )
 
         override fun deserialize(decoder: Decoder): DataAuthentication = delegate.deserialize(decoder).let {
             when (it.type) {
-                "Signature" -> Signature
-                "hash" -> Hash(requireNotNull(it.algorithm) { "Missing DataAuthentication.algorithm" })
+                SerializedDataAuthentication.Type.SIGNATURE-> Signature
+                SerializedDataAuthentication.Type.HASH -> Hash(requireNotNull(it.algorithm) { "Missing DataAuthentication.algorithm" })
                 else -> error("Unknown DataAuthentication type: ${it.type}")
             }
         }
@@ -63,7 +73,13 @@ sealed interface DataAuthentication {
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 private data class SerializedDataAuthentication(
-    val type: String,
+    val type: Type,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val algorithm: Digest? = null,
-)
+) {
+    @Serializable
+    enum class Type {
+        SIGNATURE,
+        HASH
+    }
+}
