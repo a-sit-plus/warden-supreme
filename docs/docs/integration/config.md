@@ -136,8 +136,8 @@ It includes both the platform-specific configurations and the properties related
 
 Two integrated-flow properties control proof authentication and client-provided attested values:
 
-* `dataAuthentication` defaults to signature mode. Use `{ "type": "Signature" }` for a signed CSR with proof of
-  possession, or `{ "type": "hash", "algorithm": "SHA256" }` for an unsigned TBS CSR whose canonical hash input is
+* `dataAuthentication` defaults to signature mode. Use `{ "type": "SIGNATURE" }` for a signed CSR with proof of
+  possession, or `{ "type": "HASH", "algorithm": "SHA256" }` for an unsigned TBS CSR whose canonical hash input is
   bound through the platform attestation nonce.
 * `attestableAttributes` is optional. It defines the dedicated CSR attribute OID and an ordered list of values. `type`
   uses readable `PrimitiveType` names (`STRING`, `INT`, `BOOLEAN`, `BYTEARRAY`, etc.); `required` defaults to `true`.

@@ -78,9 +78,9 @@ signature challenge.
 
 ### Requesting Client-Provided Attributes
 
-The verifier can place an `AttestableAttributes` schema in a challenge. It contains a dedicated attribute OID and an
-ordered list of `ToBeAttestedAttribute(name, type, required)` entries. The client callback receives that list and returns
-one `Primitive` per entry. Required values must be present; optional values can be `null`.
+The verifier can place a `CertificationRequestAttributeAttestationDescriptor` in a challenge. It contains a dedicated
+attribute OID and an ordered list of `AttributeAttestationDescriptor(name, type, required)` entries. The client callback
+receives that list and returns one `Primitive` per entry. Required values must be present; optional values can be `null`.
 
 These values are produced by the app, not independently certified by Android or Apple. Successful verification means the
 expected app supplied them and the selected authentication mode bound them into this ceremony.
@@ -303,7 +303,9 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
     Challenge nonces are sensitive replay-protection material. Treat them as bearer values for their short lifetime: do not log them, do not expose them across sessions or callers, serve them only over protected transport, and bind/rate-limit callers in your HTTP layer when your service needs that context.
     Map that exception at your HTTP layer to `429 Too Many Requests` and, if useful, a `Retry-After` header.
     The cache deliberately does not implement backoff; caller-aware rate limiting needs IP, account, tenant, or device context and should live outside Warden Supreme.
-    For horizontally scaled or high-volume deployments, use a distributed TTL-backed `ChallengeValidator` instead (Redis, for example).
+    For horizontally scaled or high-volume deployments, provide a distributed TTL-backed `AttestationChallengeValidator`
+    instead (Redis, for example). Its `validate(AttestationProof)` method handles both signed and hash-based proofs;
+    the deprecated `ChallengeValidator` supports signed CSRs only.
 
 ```kotlin
 --8<-- "Readme-Verifier-min.kt:3"
