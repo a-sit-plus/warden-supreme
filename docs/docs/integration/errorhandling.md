@@ -3,36 +3,30 @@
 !!! tip inline end "Project Structure"
     See [project structure details](structure.md) for info on components, their names, functionality, and interdependencies.
 
-Attestation can fail for a variety of (expected) reasons.
-Makoto (the unified server-side Android and iOS attestation library at the core of Warden Supreme) buckets errors
-across iOS and Android attestation checks into semantic categories, so you can handle them by category.
+Attestation has many expected failure modes. Makoto, the unified server-side Android and iOS verifier at the core of
+Warden Supreme, groups them into semantic categories that can be handled consistently across platforms.
 
-When opting for fully integrated attestation flows (Supreme Verifier and Supreme Client), attestation statements received
-from clients may not even come this far and might be rejected before being fed into Makoto for verification.
+In the integrated flow, malformed proofs and invalid challenges may be rejected before Makoto receives the platform
+attestation statement.
 
-An in-depth understanding of the details (i.e. when, how, and why attestation may fail) is important
-for anyone integrating attestation checks on the back-end.
-This is true **even when using the fully integrated Supreme verifier and client** solution, 
-because it makes sense to define and communicate (opaque) error codes to help debug issues in the field.
+Back-end integrators should understand where failures occur even when using the integrated verifier and client. This is
+necessary to define opaque client-facing error codes and diagnose failures observed in the field.
 
-This page first covers server-side errors and their causes. Afterwards, once the context is established, it explains the error categories communicated to clients.
+This page first describes server-side errors and then maps them to the categories communicated to clients.
 
 ## Server-Side (Low-Level Errors)
-This section first discusses the low-level attestation error hierarchy.
-Details on pre-attestation checks performed by the Supreme attestation verifier before Makoto is tasked with the actual attestation
-verification are laid out afterwards.
+The low-level hierarchy covers failures from platform verification. Pre-attestation errors cover checks performed by the
+Supreme verifier before Makoto receives the platform evidence.
 
 ### Attestation Error Hierarchy
 
-Proper exceptions, not domain-specific result classes, are used because exceptions come with a killer feature for debugging:
-stack traces that can be navigated.
-However, the root of all attestation errors is a sealed `AttestationException` class, whose subclasses correspond to the aforementioned
-semantic bucketing.
+Makoto uses exceptions because navigable stack traces are valuable during diagnosis. All attestation failures derive
+from the sealed `AttestationException` class, whose subclasses provide the semantic categories.
 
 Every such exception features:
 
 - **a `platform` property** indicating whether an iOS or Android attestation failed to verify
-- **a nullable `message`** providing human-readable context aimed at a smooth debugging experience (not at the end-user)
+- **a nullable `message`** providing human-readable debugging context rather than an end-user message
 - **a `cause`** carrying the underlying platform-specific exception
 
 
@@ -54,8 +48,7 @@ and Android:
    * Most of the time containing platform specifics
    * Also thrown for nonsensical/invalid inputs
 
-The snippet below shows all possible attestation exceptions that might be thrown.
-For details, just click on the annotations inside the code below.
+The snippet below shows the attestation exceptions that may be thrown. Its annotations explain each case.
 Note that the `onAttestationError` callback is side-effect-free except that it allows for returning a (nullable) string
 to customise the error message/error code conveyed to the client.
 
@@ -69,7 +62,7 @@ to customise the error message/error code conveyed to the client.
 4. Thrown when an attestation statement is received for a platform that is not configured.
 5. The client OS is too old (with respect to the configured minimum OS version)
 6. The attestation statement creation timestamp (not the certificate validity!) is too far in the past or absent.  
-   Note that Warden Supreme's sane defaults prevent this from happening.
+   Warden Supreme's defaults account for ordinary clock drift.
 7. The challenge encoded into the attestation statement payload does not match the expected challenge.
 8. The app's package name does not match the expected package name.  
    I.e., an unauthorised app is trying to attest to the back-end.
@@ -91,14 +84,14 @@ to customise the error message/error code conveyed to the client.
 18. The team ID and/or bundle identifier and/or stage (sandbox vs. production) of the client app do not match.
 19. The signature counter encoded into the assertion is too high. See [iOS technical deep dive](../technical/ios.md).
 20. This usually indicates a structural error in the attestation statement and therefore requires manual debugging to make sense of.
-21. This is usually triggered by structurally invalid input (empty attestation proof/CSR, misencoded certificates, …) and is also a hot take for a manual debugging session.  
-    Experience shows, however, that this never happens in production when a legit client app is used.
+21. This is usually triggered by structurally invalid input, such as an empty proof or CSR or misencoded certificates,
+    and requires manual debugging. It has not occurred in production with a legitimate client app.
 
 !!! tip inline end "Debugging"
     Refer to [Debugging](debugging.md) for detailed information and guidance on debugging.
 
-As can be seen, all platform-specific exceptions are contained in the `AttestationException.Content` hierarchy.
-Most of the time, however, you do not need this level of detail to react to attestation errors, but it is extremely helpful for debugging.
+All platform-specific exceptions are contained in the `AttestationException.Content` hierarchy. Applications rarely
+need this detail when reacting to an error, but it is essential for diagnosis.
 In particular, the call in line&nbsp;4 will produce a log entry with a self-contained, replayable attestation call for
 offline analysis.
 
@@ -106,9 +99,7 @@ offline analysis.
 When using fully integrated attestation, preprocessing steps are automatically performed to extract, check, and invalidate
 the received challenge, parse the signed CSR or unsigned TBS CSR, extract the attestation statement, validate the selected
 authentication mode and canonical CSR structure, match the attested public key, and decode requested attributes.
-Naturally, this does not always work as arbitrary data can be sent to the verifier, which means pre-attestation
-errors can occur.  
-The following snippet shows how to react to such errors.
+Arbitrary input can fail any of these steps. The following snippet shows how to handle pre-attestation errors.
 Note that the `onPreAttestationError` callback is side-effect-free except that it allows for returning a (nullable) string
 to customise the error message/error code conveyed to the client.
 

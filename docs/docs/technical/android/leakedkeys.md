@@ -19,10 +19,10 @@ Warden Supreme incorporates such a check by default.
 !!! tip inline end
     If you are concerned about how this affects your service in particular, check out our [&nbsp;💎&nbsp;Services](../../services.md).
 
-This page summarises the resulting security implications and highlights what service operators should consider. In most
-deployments, **compromising attestation through leaked keyboxes will have surprisingly little security impact**;
-the primary impact is on *services* that use attestation as an integrity gate.
-In the end, whether leaked keyboxes pose a real-world threat must be evaluated on a **case-by-case basis**.
+This page explains the resulting security implications for service operators. In many deployments, leaked keyboxes have
+less impact than their name suggests: they affect services that use attestation as an integrity gate, and their value to
+an attacker depends heavily on the surrounding threat model. Each service must therefore assess the risk against its
+actual users, assets, and attacker capabilities.
 
 ## Background
 
@@ -44,7 +44,8 @@ example Android 14:
 
 #### Blast Radius of Leaked Keyboxes
 
-Because keys are intentionally shared, a *single* compromised attestation signing key can affect **an entire manufacturing batch / SKU slice**. In practice this means:
+Because keys are intentionally shared, a *single* compromised attestation signing key can affect **an entire
+manufacturing batch or SKU slice**:
 
 - If a shared key is revoked, **many otherwise legitimate devices** that rely on that key will fail revocation checks.
 - The “blast radius” is not one device — it is potentially the entire cohort that shares the key.
@@ -75,7 +76,7 @@ Historically, many OEMs implemented this with file-based provisioning:
 - The resulting security level is comparable to “keys injected directly into hardware”, because a copied provisioning
   file is useless without the specific target device it was provisioned for.
 
-_So how do “leaked keyboxes” show up in the first place?_
+Plaintext keyboxes usually escape through development and provisioning paths:
 
 - AOSP reference/provisioning code and vendor test tooling commonly include **test modes** that allow importing
   **plaintext** private keys for development and bring-up.
@@ -88,8 +89,8 @@ _So how do “leaked keyboxes” show up in the first place?_
 
 ### Remote Key Provisioning (RKP)
 
-Android has been moving away from long-lived, factory-provisioned attestation keys towards **Remote Key Provisioning (RKP)** to
-tackle the issue of leaked keys:
+Android is moving from long-lived, factory-provisioned attestation keys towards **Remote Key Provisioning (RKP)** to
+reduce the impact of leaked keys:
 
 - Android **12** introduced RKP; Android **15** requires devices to implement it (see
   [Remote Key Provisioning]({{ links.android_rkp_source }})).
@@ -99,7 +100,7 @@ tackle the issue of leaked keys:
   (`com.android.rkpd`, the `rkpd` daemon) to improve updateability (see
   [Remote Key Provisioning]({{ links.android_rkp_source }})).
 
-**Security consequence (relevant to leaked keyboxes)**
+**Security Consequence for Leaked Keyboxes**
 
 RKP reduces the value of “static” leaked provisioning artefacts because it shifts attestation certificate issuance towards
 a fresher, online-managed model with improved recoverability.  
@@ -116,9 +117,9 @@ intelligence and anecdotal reporting, not as authoritative platform guarantees.
 
 ## Security Implications
 
-Leaked keyboxes are best understood as a *reliability* problem for attestation-based gating: they can let some devices
-produce attestations that look valid, until revocation catches up. The actual impact depends on the attacker’s ability to
-control the device environment and manage key reuse.
+Leaked keyboxes are primarily a *reliability* problem for attestation-based gating. They can let a controlled device
+produce evidence that appears valid until revocation catches up. The impact depends on the attacker's control over the
+device environment and ability to manage key reuse.
 
 ### Who Benefits from Leaked Key Material?
 
@@ -135,7 +136,7 @@ There are typically three groups with interest in bypassing attestation-based ch
 3. **Targeted attackers (high-touch compromise)** may treat leaked keys as one ingredient in a broader operation, but
    attestation was never meant to single-handedly stop a determined adversary with the capability to compromise devices.
 
-!!! info "Key Takeaway"
+!!! info "Practical Impact"
     Leaked attestation keys are *not* a universal bypass for everyone. They matter most where the attacker controls the
     device or environment and can carefully manage reuse; they are much less suitable for broad, scalable campaigns.
 
@@ -186,10 +187,9 @@ Operationally, two patterns matter for threat modelling:
 
 ## What Service Operators Should Do
 
-The goal is not to “detect keyboxes” directly, but to make attestation decisions resilient
-against compromised provisioning material. In practice this means treating Google’s revocation feeds as mandatory input,
-and layering policy constraints (including, where appropriate, RKP preference/requirements) to match your service’s
-assurance needs.
+Services should make attestation decisions resilient to compromised provisioning material rather than trying to detect
+keyboxes directly. Google's revocation feeds are mandatory input; additional policy constraints, including an RKP
+requirement where appropriate, should follow the service's assurance needs.
 
 ### Minimum Recommended Controls
 

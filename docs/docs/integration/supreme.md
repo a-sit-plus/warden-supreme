@@ -7,7 +7,7 @@
 
 
 
-_Warden Supreme_ is a fully integrated key and app attestation suite consisting of:
+_Warden Supreme_ is a fully integrated key and app attestation suite with three components:
 
 1. A mobile client library (iOS and Android) to generate attestation statements
 2. A unified server-side key and app attestation verification library
@@ -17,18 +17,19 @@ _Warden Supreme_ is a fully integrated key and app attestation suite consisting 
     Several devices and OS versions in the field come with bugs and quirks. Warden Supreme's docs hub discusses them [here](../technical/quirks.md).
     Be sure to read up on them **before** integrating attestation into your services.
 
-Put differently, Warden Supreme is the evolution of the [WARDEN](https://github.com/a-sit-plus/warden) server-side key and app attestation library,
-paired with Signum's [_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/) for a consistent UX across Android and iOS.
+Warden Supreme combines the server-side lineage of [WARDEN](https://github.com/a-sit-plus/warden) with Signum's
+[_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/) to provide the same client API on Android
+and iOS.
 The original server-side-only key and app attestation library is still available and actively maintained, as it is one
 of the pillars supporting Warden Supreme.
 It now lives on as [Warden makoto](https://github.com/a-sit-plus/warden-supreme/tree/main/serverside/makoto) and continues to be published to Maven Central.
 
 
-## Using Warden Supreme in your Projects
+## Using Warden Supreme in Your Projects
 
 Warden Supreme targets Android and iOS clients and JVM-based back-ends.
-Warden Supreme currently supports HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
-The back-end, however, can also use [Spring](https://spring.io/) or any other HTTP framework of your choice.
+Warden Supreme currently uses HTTP for communication and [Ktor](https://ktor.io/) on mobile clients. The back-end can
+use [Spring](https://spring.io/), Ktor, or another HTTP framework.
 
 * On the back-end, add the `verifier` dependency:
   ```kotlin
@@ -42,7 +43,7 @@ The back-end, however, can also use [Spring](https://spring.io/) or any other HT
 
 ## High-Level Attestation Flow
 
-An attestation flow works as follows, in accordance with Figure&nbsp;1:
+Figure&nbsp;1 shows the attestation flow:
 
 1. The client fetches a challenge from the back-end.
 2. The client prepares the TBS CSR data and feeds either the server nonce or a hash of that data into hardware-backed key
@@ -101,9 +102,8 @@ Both signature and hash mode bind the same attribute sequence.
 
 
 
-As shown in Figure&nbsp;1, the back-end needs to be configured before being able to assert the trustworthiness of a client.
-While the actual API is unified for Android and iOS (both for verifying attestation statements and on the mobile clients creating
-attestation statements), configuration needs to deal with each platform separately.
+The server must be configured before it can evaluate a client. Android and iOS use the same client and verifier APIs,
+while their policy configuration remains separate because the platforms expose different evidence.
 
 ## Warden Supreme Step-by-Step Guide
 !!! note
@@ -111,8 +111,8 @@ attestation statements), configuration needs to deal with each platform separate
 
 Warden Supreme integrates server-side and client-side logic into a lean interface.
 
-This section illustrates a complete end-to-end setup assuming a Ktor server on the back-end and a KMP client app.
-To get going, the following steps are required:
+This interface covers the ceremony from challenge issuance through verification and certificate issuance. The following
+setup uses a Ktor back-end and a KMP client; the verifier itself is not tied to either choice.
 
 * Decide on HTTPS endpoints to issue challenges and verify attestation statements, and record the app identifiers and signer digests (Android) / team ID (iOS).
 * Back-end:
@@ -142,15 +142,15 @@ The following snippet shows an MWE that also accounts for five minutes of clock 
    This combination makes it possible to attest its authenticity.
 
 !!! warning "With great power comes great responsibility!"
-    The above really is a minimum working example! 
-    Many more configuration properties exist, and it is recommended to explicitly set **all those that are relevant to your specific scenario**,
-    as the value of every single one should very much be the result of careful consideration.
-    In the end, a strongly informed decision about every property is required to reflect the intended audience and the required security properties.
+    The example above is deliberately minimal.
+    Many more configuration properties exist. Explicitly set **all properties relevant to your scenario** after
+    considering the intended audience and required security properties.
     
     **Warden Supreme, by definition, cannot take these decisions from you!**
 
 
-The full details on the configuration can be found in the [API documentation](../dokka/makoto/at.asitplus.attestation/-makoto/index.html) and a comprehensive example can be expanded below.
+The [API documentation](../dokka/makoto/at.asitplus.attestation/-makoto/index.html) describes every configuration
+property; the expandable example below shows them together.
 **Be sure to read up on [Clock drift issues](../technical/quirks.md#clock-drifts-and-temporal-validity) before tweaking properties!**
 
 <div id="config-options-example"></div>
@@ -213,9 +213,8 @@ The full details on the configuration can be found in the [API documentation](..
     `allowBootloaderUnlock = false`, otherwise bootloader-lock, verified boot state, and verified boot key checks are
     skipped entirely.
 
-It is possible to configure attestation only for iOS or only for Android by simply omitting
-either the `androidAttestationConfiguration` or the `iosAttestationConfiguration`, respectively.  
-In such cases, trying to verify an attestation statement for the not-configured platform will always return an error.
+For an iOS-only or Android-only deployment, omit `androidAttestationConfiguration` or
+`iosAttestationConfiguration`, respectively. Verification for an unconfigured platform always returns an error.
 The shorthand `AttestationVerifier` constructor that directly accepts `androidAttestationConfiguration` and `iosAttestationConfiguration` properties
 instead of a pre-configured `Makoto` instance does not support such omissions.
 
@@ -232,8 +231,8 @@ To do so, set `enforceFactoryProvisionedChainValidity = false` in the `AndroidAt
 
 
 #### Trusting GrapheneOS
-A practical example of pinning `SELF_SIGNED` verified boot keys is trusting GrapheneOS, as shown below.  
-To obtain current GrapheneOS verified boot key hashes, use GrapheneOS's
+A practical example of pinning `SELF_SIGNED` verified boot keys is GrapheneOS. To obtain current GrapheneOS verified
+boot key hashes, use GrapheneOS's
 [`attestation.json`](https://grapheneos.org/attestation.json) and verify it against the detached signature at
 [`attestation.json.sig`](https://grapheneos.org/attestation.json.sig).
 
@@ -314,8 +313,8 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
 --8<-- "Readme-Verifier-min.kt:3"
 ```
 
-1. Yes, it really is that simple 99% of the time! Sane defaults are set, including instructions (`KeyConstraints`) for the client
-   to create a hardware-backed P-256 key.
+1. This minimal setup covers most deployments. Defaults include instructions (`KeyConstraints`) for the client to create
+   a hardware-backed P-256 key.
 
 ??? example "Comprehensive list of Verifier options"
     ```kotlin
@@ -407,7 +406,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
    mismatch.
 7. Here, inside the `verifyAttestation` lambda, we already have a verified attestation according to the configured `makoto` instance.
 8. Signing a `TbsCertificate` automatically creates an X.509 certificate
-9. The contents of your leaf certificate are up to you! What follows is just an example.
+9. The contents of the leaf certificate are service-specific; the code below is an example.
 10. The certificate issuer receives `AttestationProof`. Its TBS CSR public key has already been matched to the
     attested key, regardless of authentication mode.
 11. Build the full certificate chain
@@ -429,7 +428,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
     2. issue a certificate for that key on your CA infrastructure
     3. manually set the appropriate CA-related extensions and key-usage flags so it becomes a legitimate intermediate CA certificate allowed to sign subordinate certificates
 
-    In other words: manual issuance work is currently required for attested intermediate CAs.
+    Attested intermediate CAs therefore require manual issuance work.
 
 ### Client Integration
 
@@ -437,7 +436,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
     Trying to create a key for an existing alias will cause an error! Key management is your responsibility!
 
 
-On the client, Warden Supreme is even easier to integrate. In contrast to the verifier, it is tailored around Ktor for its KMP goodness.
+The Warden Supreme client is built around Ktor and its Kotlin Multiplatform support.
 Doing so allows for obtaining a certificate chain for an attested key in literally three short lines of code, if the challenge already
 specifies key constraints:
 
@@ -496,7 +495,7 @@ The `AttestationClient` doesn't even come with any configuration options.
     2. Fetch the challenge
     3. Assert that this manual implementation supports the received challenge, then create and configure a signer using
        Signum Supreme based on your demands
-       This means that you can also override any client hints from the received challenge
+       This also allows client hints from the received challenge to be overridden
     4. Don't forget to pass the nonce to enable attestation!
     5. Create and sign the CSR as desired
     6. Wrap it as `AttestationProof.Signed` and send it to the verifier endpoint contained in the challenge
@@ -509,10 +508,9 @@ The `AttestationClient` doesn't even come with any configuration options.
 
 ## Beyond the Basics
 
-The step-by-step guide above illustrates the intended ways of using Warden Supreme, bolting down as many moving parts as possible.
-Reality, though, is a complex beast and sometimes a little more control is needed. In particular, logging is often not only desirable, but essential.
-Hence, the verifier allows for hooking into every possible outcome of an attestation verification.
-This also allows for customising the explanations sent to clients.
+The step-by-step guide covers the intended integration and fixes most moving parts in place. Deployments that require
+more control can hook into every outcome of attestation verification. These hooks support operational logging and custom
+explanations returned to clients.
 
 
 !!! tip inline end "Error Handling and Debugging"
@@ -521,10 +519,10 @@ This also allows for customising the explanations sent to clients.
     
 
 The Supreme attestation verifier only returns an enum indicating the reason for an error, with the option to attach a custom explanatory string.
-This is by design, as it is generally undesirable to expose the internals of a back-end to clients.
+This avoids exposing back-end internals to clients.
 
-On the back-end, however, attestation issues typically need to be analysed. Hence, the Supreme attestation verifier provides
-four callbacks to analyse challenge validation, attestation errors, and success (without side effects):
+The back-end still needs enough information to analyse failures. The Supreme attestation verifier therefore provides
+four side-effect-free callbacks for challenge validation, attestation errors, and successful verification:
 
 ```kotlin
 --8<-- "Readme-Backend-callbacks.kt:18:56"
@@ -551,13 +549,14 @@ four callbacks to analyse challenge validation, attestation errors, and success 
    signed or hashed subtype as needed.
 
 
-The step-by-step guide [above](#warden-supreme-step-by-step-guide) will cover most use cases perfectly well.
-While extensive configurations were also included alongside the basic ones, Warden Supreme is, in fact, more flexible:
+The step-by-step guide [above](#warden-supreme-step-by-step-guide) covers most use cases. Warden Supreme also permits
+more direct control where required:
 
 * Instead of always using the defaults, it is possible to specify challenge properties manually for each challenge issued
 * Key constraints need not be specified. In that case, it is up to the client to create a suitable key and construct the
   authentication mode requested by the challenge manually.
-  (This is still very smooth, as can be seen in the [API docs](../dokka/supreme-client/at.asitplus.attestation.supreme/index.html#110236803%2FFunctions%2F-1347999820).)
+  See the [API docs](../dokka/supreme-client/at.asitplus.attestation.supreme/index.html#110236803%2FFunctions%2F-1347999820)
+  for the manual client flow.
 * By default, a generic device name is encoded into the TBS CSR on a best-effort basis; this can be toggled.
 
 For more details, refer to the API docs on the [verifier](../dokka/supreme-verifier/at.asitplus.attestation.supreme/-attestation-verifier/) and on the [client](../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/)!

@@ -1,6 +1,6 @@
 # Project Structure
 
-Warden Supreme is structured into four groups:
+The repository contains four module groups:
 
 1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2.
 2. `/serverside` contains the server-side foundations with all the low-level logic to verify attestations.
@@ -37,7 +37,7 @@ See also [Externalising Configuration](config.md).
 
 ## /serverside
 
-The modules located here can be used on their own, in case the Supreme integrated attestation suite is not desired.
+These modules can be used without the integrated Supreme attestation suite.
 
 If you come from the legacy projects:
 **WARDEN → _Warden makoto_** (`at.asitplus.warden:makoto`, entry point `Makoto`) and
@@ -50,10 +50,11 @@ If you come from the legacy projects:
 | **Maven:** `at.asitplus.warden:roboto`                                                                                                    | **Maven:** `at.asitplus.warden:makoto`                                                                                                                                                                                                                                                                                           |
 
 ## /utils
-This group houses the debugging/examination utils described in [Debugging](debugging.md).
+This group contains the diagnostic utilities described in [Debugging](debugging.md).
 
 ## /dependencies
-Google released reference Android attestation parsers (not full attestation checkers for remotely establishing trust in Android devices) and PKIX certificate path validators to complement parsing.
-They did not, however, publish those artefacts to Maven Central. Warden Supreme therefore integrates them as Git submodules and compiles them into _Warden roboto_.
+Google released reference Android attestation parsers and PKIX certificate-path validators, but not complete verifiers
+for remotely establishing trust in Android devices. These artefacts are unavailable from Maven Central, so Warden
+Supreme includes them as Git submodules and compiles them into _Warden roboto_.
 
-In addition, an HTTP proxy is present for testing. It is not, however, shipped with any release artefacts.
+The group also contains an HTTP proxy used for testing. It is not included in release artefacts.

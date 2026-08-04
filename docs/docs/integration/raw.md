@@ -1,4 +1,4 @@
-# Using _Warden makoto_ / _Warden roboto_<br>without Integrated Clients
+# Using _Warden makoto_ / _Warden roboto_<br>Without Integrated Clients
 
 !!! danger "Warden Supreme 0.9.99: Changed Defaults"
     
@@ -16,21 +16,21 @@
     live on as modules inside Warden Supreme. These projects are now integrated into Warden Supreme and continue to be
     maintained and published to Maven Central. See [Project Structure](structure.md) and [Migration](migration.md).
 
-Warden Supreme aims to make remote attestation across Android and iOS as smooth and consistent as possible via
-Kotlin Multiplatform. At the same time, it is clear that not every iOS app will be written in Kotlin, and not every Android application
-will want to pull in Signum as a dependency.
+The integrated client provides one Kotlin Multiplatform attestation flow for Android and iOS. Applications written in
+another language, and Android applications that do not want to depend on Signum, can use the server-side modules
+directly.
 
 If you are evaluating whether to use Warden Supreme at all for a single platform, see
 [Why Warden Supreme?](../why-supreme.md).
 
-In addition, legacy deployments that cannot yet transition to the new integrated Warden Supreme attestation flows are
-still operational and will remain so. Until a migration is possible (see [migration notes](migration.md)), this page serves
-as documentation for _Warden makoto_ (previously WARDEN) and _Warden roboto_ (previously WARDEN-roboto).
+This page also documents _Warden makoto_ (previously WARDEN) and _Warden roboto_ (previously WARDEN-roboto) for legacy
+deployments that have not yet adopted the integrated flow. See the [migration notes](migration.md) when moving between
+the APIs.
 
 !!! tip "Hybrid Integration"
     It is possible to use Warden Supreme's verifier with custom clients by adhering to the [same flows](supreme.md#high-level-attestation-flow) and [data model](datamodel.md).
 
-## When to use _makoto_ vs. _roboto_
+## When to Use _makoto_ vs. _roboto_
 
 | <img alt="Warden roboto" src="../../assets/images/roboto.png" width="249" style="height:auto;"> | <picture><img alt="Warden makoto" src="../../assets/images/makoto-w.png" width="232" height="36" style="height:auto;"></picture> |
 |-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -73,8 +73,7 @@ Your server must:
 
 ## Common Data Model (Wire Format Responsibilities)
 
-When not using the integrated clients, you define the wire format.
-Hence, you need to come up with a format that conveys at least the following recommended properties:
+Without the integrated clients, the application owns the wire format. It should carry at least the following properties:
 
 - Challenge: Base64URL-encoded bytes issued by the server.
 - Platform: iOS / Android; either implicitly using legacy WARDEN endpoints (intentionally not documented here). See [legacy API docs](https://a-sit-plus.github.io/warden/warden/at.asitplus.attestation/-warden/index.html#-1296395129%2FFunctions%2F-2065255732).

@@ -1,10 +1,11 @@
 # Android Attestation Deep Dive
 
-This page traces how trust is established from boot through app installation, and how that state is proven to a back-end
-service via Android hardware attestation. It covers certificate chains, the `KeyDescription` schema, verification
-steps, and edge cases, tying these back to Android Verified Boot (AVB) and APK signing.
+Android hardware attestation links a generated key to the boot state, operating system, and installing application. This
+page follows this chain from boot through APK installation to server-side verification, including the certificate
+structure and failure modes encountered in production.
 
-Unlike iOS, Android needs no special setup procedure for attestation. See also [iOS App Attest Deep Dive](ios.md).
+Android requires no special attestation setup comparable to App Attest on iOS. See also
+[iOS App Attest Deep Dive](ios.md).
 
 <figure>
 <picture>
@@ -19,7 +20,7 @@ Unlike iOS, Android needs no special setup procedure for attestation. See also [
 </figure>
 
 !!! tip
-    Keep Figure&nbsp;1 at the ready while digging through this page, as it will be referenced throughout!
+    Figure&nbsp;1 is referenced throughout this page and is worth keeping nearby.
 
 ## Terminology
 
@@ -44,9 +45,9 @@ The **`RootOfTrust`** structure in the attestation extension contains:
 - `verifiedBootState`: one of `VERIFIED`, `SELF_SIGNED`, `UNVERIFIED`, `FAILED`.
 - Patch claims: `osVersion`, `osPatchLevel`, and (on newer devices) `bootPatchLevel`/`vendorPatchLevel`.
 
-**Policy implication:** Your server can require `deviceLocked=true`, `verifiedBootState=VERIFIED`, and minimum patch
-levels; optionally pin the **expected `verifiedBootKey`** (accept OEM keys only, or accept **your** enterprise/sovereign
-AVB key(s) if you operate a trusted ROM programme).
+**Policy implication:** The server can require `deviceLocked=true`, `verifiedBootState=VERIFIED`, and minimum patch
+levels. It can also pin the expected `verifiedBootKey`, either restricting access to OEM firmware or admitting selected
+enterprise or sovereign AVB keys.
 
 
 ## App Identity at Install Time
@@ -63,8 +64,9 @@ The **`AttestedApplicationId`** section contains:
 - `signature_digests`: values (SHA-256 digests of the signing certificate(s)) pulled
   from the Package Manager at attestation time.
 
-**Policy implication:** Your server must check against the package name and **signer digest(s)** of your **release**
-build(s). If you use key rotation, store and accept **all legitimate digests**. Re-attest while enforcing application versions to enforce updates.
+**Policy implication:** The server must match the package name and signer digests of accepted release builds. Under key
+rotation, retain every legitimate signer digest. Re-attestation combined with minimum application versions can enforce
+updates.
 
 ## Attestation Flow (Device and Server)
 
@@ -103,8 +105,8 @@ build(s). If you use key rotation, store and accept **all legitimate digests**. 
     - **Bootloader unlock** or verified-boot failure → keys wiped/unusable; subsequent attestations show
       `deviceLocked=false` or degraded `verifiedBootState`.
     - **Factory reset** → keys deleted.
-- **Best practice**: bind critical operations (e.g., credential issuance, high-value transactions) to **auth-required
-  keys** whose attestation you already validated.
+- Bind critical operations, such as credential issuance or high-value transactions, to authentication-protected keys
+  whose attestation has already been validated.
 
 
 ## Certificate Chains and Trust Anchors

@@ -1,6 +1,7 @@
 # Platform Specifics
 
-iOS and Android tackle remote attestation differently. This page provides a high-level overview of each platform’s concepts and how they diverge.
+Android and iOS expose different attestation models. This page introduces the evidence each platform provides and the
+consequences for verification and policy.
 
 ## Android (Key & App/ID Attestation)
 
@@ -22,7 +23,9 @@ An Android attestation statement is an X.509 certificate chain. The leaf certifi
 
 ### Device Certification Terminology
 
-Android “certification” is unfortunately overloaded terminology. Throughout these docs, **GMS-certified** refers to Android devices that **launched** with a Google license to ship **Google Mobile Services (GMS)** (e.g., Google Play services and the Play Store) and passed Google’s device compatibility/certification process for that device build.
+Android “certification” is overloaded terminology. Throughout these docs, **GMS-certified** refers to Android devices
+that **launched** with a Google licence to ship **Google Mobile Services (GMS)**, including Google Play services and the
+Play Store, and passed Google's compatibility and certification process for this device build.
 
 Devices that did **not** launch as GMS-certified generally cannot produce an attestation certificate chain that validates against Google’s attestation trust anchors. Examples commonly include:
 
@@ -63,27 +66,29 @@ Attestation can also be used in pure test setups, including automated tests, by 
 !!! tip inline end
     Apple devices require an active internet connection and need to be able to reach an Apple service during attestation. This service is subject to rate limiting!
 
-Apple devices all ship with a dedicated secure element. As a result, iOS does not have different attestation “levels” like Android (software vs. hardware attestation).
-Hence, there is only a single validation path for App Attest statements.  
-The actual device, OS, and software-integrity checks are performed by an Apple‑operated service. The device communicates with Apple infrastructure, and a proprietary service evaluates device state (with the help of the Secure Enclave) using undocumented heuristics.
-This matters in data protection and privacy discussions.
-On the back-end, no contact with Apple services is required because no revocation checks are possible and the attestation is freshly provided by Apple.
+Apple devices ship with a dedicated secure element, so iOS does not expose separate software and hardware attestation
+levels. App Attest consequently has one validation path. An Apple-operated service evaluates the device, OS, and
+application state with support from the Secure Enclave. Its heuristics are proprietary, which matters for privacy and
+governance. The back-end does not contact Apple during verification: Apple has just issued the attestation, and no
+revocation check is available.
 
-Moreover, the hardware-bound key used to create an attestation statement cannot be used by the app for general-purpose cryptographic operations outside App Attest assertions.
-There is no native key attestation on iOS, but it can be emulated by creating a fresh key pair inside the Secure Enclave and feeding its public key into the data sent to Apple for attestation.
-If a valid attestation statement is received that is bound to the key in this manner, the key can also be trusted to be created inside the Secure Enclave if the attestation statement indicates:
+The hardware-bound App Attest key is unavailable for general-purpose cryptographic operations. iOS provides no native
+attestation for arbitrary keys, but Warden Supreme emulates it by creating a fresh key pair in the Secure Enclave and
+including its public key in the data sent to Apple. A valid attestation bound in this manner establishes that the key was
+created inside the Secure Enclave when the statement also establishes:
 
 - an untampered device
 - an authentic OS
 - an unmodified app published by the app's legitimate developer
 
-Warden Supreme supports this procedure out of the box.
-
 !!! warning inline end
     Since iOS only supports hardware attestation, it is impossible to use attestation on a simulator. Trying to do so will cause exceptions or even app hangs or crashes. The same is true for biometric auth.
 
-Without attestation support in device simulators, automated testing becomes a bit more involved. The only way to support automated tests is to override the default Apple trust anchor with a custom one that is only valid for testing.
-The lack of simulator support also means that an attestation statement needs to be created manually. Warden Supreme currently does not support this out of the box, as Apple devices are very homogeneous. As a result, testing with one real device is usually representative of all Apple devices.
+Warden Supreme implements this complete binding procedure.
+
+Automated simulator tests therefore require a test-only trust anchor and a manually generated attestation statement.
+Warden Supreme does not generate these statements. Apple hardware is sufficiently homogeneous that testing with one
+real device is usually representative of the supported fleet.
 
 !!! info
     Neither enrolling new fingerprints (or, in general, changing user authentication), factory-resetting a device, nor uninstalling an app will invalidate keys on iOS. Hence, app developers must take measures to explicitly delete keys and check for remnants of old

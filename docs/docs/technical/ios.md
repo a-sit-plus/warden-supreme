@@ -1,12 +1,12 @@
 # iOS DeviceCheck / App Attest Deep Dive
 
-This page explains how trust is established for an iOS app instance using App Attest, from key creation in the
-Secure Enclave to attestation and ongoing assertions, and how a service verifies those artefacts. It links to
-Apple’s canonical sequence diagrams and focuses on how App Attest works, not on client library configuration.
+App Attest establishes trust in an iOS app instance through an Apple-managed key in the Secure Enclave. This page
+follows the process from key creation through attestation and subsequent assertions, then describes the checks performed
+by the service. Client-library configuration is covered elsewhere.
 
 
 ## Setup
-Apple requires a small amount of upfront configuration. In particular, the following requirements must be met:
+The setup assumes:
 
 * Active Apple Developer Program membership
 * An iOS device (not Simulator) as target, running iOS 14+
@@ -29,13 +29,12 @@ Apple requires a small amount of upfront configuration. In particular, the follo
         * Your server must verify this!
         * Warden Supreme exposes this via the iOS-specific `sandbox` configuration parameter
 
-Once everything is set up, App Attest can be used in your app.
+Once configured, the app can use App Attest.
 
 ## High-Level Flow
 
-Apple platforms support _attestation_ and _assertion_, aimed at different use cases.
-Attestation is the initial step to establish a device's and an app's integrity, while assertion can be used to
-(re-)assert integrity prior to executing critical actions.
+Apple distinguishes _attestation_ from _assertion_. Attestation initially establishes the app instance; assertions
+subsequently demonstrate continuity before selected operations.
 
 1. **Attestation**
     - App calls `generateKey()` to create a **Secure Enclave** key for App Attest.
@@ -51,7 +50,7 @@ Attestation is the initial step to establish a device's and an app's integrity, 
     - Server verifies the assertion using the **stored public key** (from registration) and ensures the **counter
       increases**, proving continuity.
 
-From a high-level point of view, both flows involve the same entities, as shown in Figure&nbsp;1.
+Figure&nbsp;1 shows the entities involved in both flows.
 
 <figure>
 <picture>
@@ -71,8 +70,8 @@ Since App Attest does not provide native key attestation for arbitrary keys, thi
 (see [Emulating Key Attestation](#emulating-key-attestation)).
 If you are deciding between direct App Attest tooling and Warden Supreme, see [Why Warden Supreme?](../why-supreme.md).
 
-Warden Supreme does not natively support assertions in the fully integrated flow (for reasons explained [below](#assertion-wrap-up))
-and relies on attestation and emulated key attestation to replicate Android's behaviour for a consistent UX across both platforms.
+The fully integrated Warden Supreme flow uses attestation and emulated key attestation to provide the same model on
+Android and iOS. It does not natively support assertions for the reasons explained [below](#assertion-wrap-up).
 
 ## Server-Side Validation
 
@@ -117,14 +116,13 @@ App Attest natively attests **the app instance** (App ID) and the Apple‑manage
 4. This binds Apple’s attestation to your application key, yielding **verifiable linkage** similar to Android key
    attestation.
 
-Warden Supreme provides emulated key attestation out of the box, automating this whole process and cutting down back-end
-checks by relying on Vincent Haupert's excellent [DeviceCheck / AppAttest library](https://github.com/veehaitch/devicecheck-appattest).
-Hence, no custom logic is required on clients or on the back-end.
+Warden Supreme implements this process and delegates the platform-specific verification to Vincent Haupert's
+[DeviceCheck / AppAttest library](https://github.com/veehaitch/devicecheck-appattest). No custom binding logic is
+required on the client or back-end.
 
 ## Assertions and Usage Model
 
-As mentioned, Apple platforms allow _asserting_ an app and device state after an initial attestation has been performed
-and recorded. This section covers the usage model Apple intends.
+After recording an initial attestation, a service can use assertions to check continuity of the app instance.
 
 ### Assertion Contents
 An assertion from `generateAssertion(keyId, clientDataHash)` yields:
@@ -180,34 +178,28 @@ Using assertions as “re-attestation” has two notable downsides:
       identifiers and histories, which can increase linkability of user behaviour. Minimising assertion cadence, scoping
       identifiers, and separating environments reduces—but does not eliminate—these privacy risks.
 
-For these reasons, Warden Supreme does not natively support it, but rather relies on attestation with emulated key attestation
-to mimic the simple, effective model Android uses. Re-attesting with a fresh attestation, rather than asserting
-a state before a critical section, is far more decoupled from specific user actions.
+Warden Supreme therefore relies on fresh attestations with emulated key attestation rather than assertions in its
+integrated flow. This model is independent of individual user actions and matches the Android ceremony more closely.
 
 ### Receipts and Risk Assessment
-A third concept not discussed so far is the _receipt_ and its dual purpose. On the one hand, it is an integral part of the attestation
-structure sent from an iOS device to the back-end. It contains, for example, the bundle identifier, the attestation certificate and
-a validity period.
+A _receipt_ is part of the attestation structure sent from an iOS device to the back-end. It contains the bundle
+identifier, attestation certificate, validity period, and other information used by Apple.
 
-On the other hand, it is possible to save this receipt on the back-end after a successful attestation and send it to Apple's
-servers at a later point in time, for additional risk assessment. In return, you'll receive a new receipt with a risk metric.
-This is where things get somewhat fuzzy. [According to Apple]({{ links.ios_assessing_fraud_risk }}),
+After successful attestation, the back-end can retain this receipt and later send it to Apple for an additional risk
+assessment. Apple returns a new receipt containing a risk metric. [According to Apple]({{ links.ios_assessing_fraud_risk }}),
 it _indicates the number of attested keys associated with a given device over the past 30 days_ and one should
 _look for this value to be a low number_ (for whatever that means).
 
-The main issue with sending receipts to Apple servers has less to do with vague claims about an opaque service, but rather
-with privacy: While Apple already learns quite a bit through App Attest, it is only possible to send receipts to Apple's
-servers after registering to receive an authentication token and in the end, your back-end will directly communicate with
-infrastructure operated by Apple.
+The more important concern is privacy. Apple already observes App Attest requests; receipt exchange additionally creates
+direct communication between the back-end and Apple after the service registers for an authentication token.
 
 !!! note inline end
     For critical services and a real risk of a single rogue device being used to create hundreds or thousands of attestations
     by proxy, it **can** be viable to utilise Apple's service to assess fraud risk. Use at your own discretion.
 
-In summary, Apple is able to provide a risk metric that is highly dependent on user behaviour with no clear guidance
-on how to interpret the metric at a substantial privacy cost. For these reasons, Warden Supreme considers this out of scope.
-However, Warden Supreme provides a `ValidatedAttestation` object at the end of a successful attestation verification and this
-object contains the receipt that can be extracted, stored, and sent to Apple for risk assessment, if desired.
+Apple thus provides a behaviour-dependent risk metric without clear interpretation guidance and at an additional privacy
+cost. Warden Supreme considers the exchange out of scope, but exposes the receipt through `ValidatedAttestation` after
+successful verification. A service can extract, store, and submit it independently if its threat model justifies this.
 
 
 ## Operational Guidance
@@ -223,8 +215,7 @@ object contains the receipt that can be extracted, stored, and sent to Apple for
 
 ## Verification Pitfalls to Avoid
 
-These mostly apply when rolling your own, since Warden Supreme takes care of most of these. Still, for the sake of
-completeness, this section lists general common pitfalls.
+Warden Supreme handles these checks in its integrated flow. Custom implementations must account for them explicitly.
 
 - **Wrong nonce computation**: Use `nonce = SHA256( authenticatorData || SHA256(challengeBytes) )`. Do not swap order or
   hash the whole CBOR.
