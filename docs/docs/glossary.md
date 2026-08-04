@@ -1,6 +1,6 @@
 # Glossary
 
-This glossary centralises terms used across the documentation. Each entry is concise and self‑contained; where useful, links to authoritative sources are included.
+This glossary defines the terminology used throughout the documentation and links to primary sources where useful.
 
 ## Core Concepts
 - **TEE (Trusted Execution Environment)** — Hardware‑isolated environment inside the CPU/SoC (e.g., ARM TrustZone) that securely stores unextractable keys and performs cryptographic operations (see [Extraction Prevention]({{ links.android_keystore_extraction_prevention }})).
@@ -15,7 +15,7 @@ This glossary centralises terms used across the documentation. Each entry is con
 - **Attestation Proof** — The authenticated transport sent to the server: either a signed CSR or a hash-bound unsigned TBS CSR carrying the attestation statement payload.
 - **Proof of Possession** — Evidence that the client can use the private key corresponding to a public key. Warden Supreme
   obtains this from the CSR signature in `DataAuthentication.Signature` mode. Hash mode deliberately omits it.
-- **Data Authentication** — *(In the context of Warden Supreme!)* The challenge-selected mechanism binding TBS CSR contents to the ceremony: a CSR signature,
+- **Data Authentication** — In Warden Supreme, the challenge-selected mechanism binding TBS CSR contents to the ceremony: a CSR signature,
   or a digest incorporated into the platform attestation nonce.
 - **Challenge / Nonce** — A server‑generated, unpredictable byte string used exactly once to guarantee freshness and prevent replay. Android embeds it in the attestation extension; iOS mixes it into the attestation nonce via `clientDataHash` (see [Android Key Attestation]({{ links.android_key_attestation }}), [Attestation Object Validation Guide]({{ links.ios_attestation_validation }})).
 - **Binding** — Cryptographically tying data (e.g., public key bytes + challenge) into an attested statement so the verifier can trust their association.

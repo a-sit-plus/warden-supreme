@@ -13,8 +13,8 @@ Warden Supreme configuration consists of two parts:
 
 ## Unified, Canonical Configuration Formats
 
-All externalised configuration classes implement `AttestationConfiguration`. This provides a
-single, canonical way to serialise and load configurations across Android, iOS, and integrated setups.
+All externalised configuration classes implement `AttestationConfiguration`, providing one serialisation and loading
+path across Android, iOS, and integrated setups.
 
 !!! tip "Configuration Property Semantics"
     Canonical camel-case property names mirror the Kotlin properties. Their semantics are explained by the
@@ -51,14 +51,13 @@ Each configuration type exposes:
     * `fromJsonFile(...)` / `fromYamlFile(...)`
 
 
-These well-defined serialisation paths are required for externalising configurations, because external logic, such as Spring Boot's internal config loader,
-tends to have [issues with handling nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json)
-when using direct binding.
-In addition, approaches based on reflection that do not invoke the configuration classes' primary constructors may bypass sanity-checks.
+External configuration must use these paths. Direct Spring Boot binding has
+[problems with nullable properties](https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.application-json),
+while reflection-based approaches that bypass primary constructors can also bypass validation.
 
 ??? tip "Loading with Hoplite (JVM)"
-    Add the `at.asitplus.warden:config-hoplite` dependency to access `hopliteDecoder()`. This way you can directly load any `AttestationConfiguration` by
-    registering the provided decoder and letting Hoplite load from your preferred sources (files, env, etc.).  
+    Add the `at.asitplus.warden:config-hoplite` dependency to access `hopliteDecoder()`. Registering this decoder lets
+    Hoplite load any `AttestationConfiguration` from its supported sources.
     The `hopliteDecoder()` function ensures that all config loading happens through well-defined serialisation paths.
     Loading like this accepts canonical camelCase, snake_case, UPPER_SNAKE_CASE, and kebap-case property names.
     
@@ -66,9 +65,8 @@ In addition, approaches based on reflection that do not invoke the configuration
     --8<-- "Readme-Config-Hoplite.kt:15:25"
     ```
     
-    **These decoders are necessary because Warden Supreme's configurations rely on kotlinx.serialization
-    for the sanitisation, normalisation, and parsing of various properties. Only through them do these critical
-    code paths run, which is what guarantees correct config loading.**
+    **The decoder is required because Warden Supreme relies on kotlinx.serialization to sanitise, normalise, and parse
+    configuration properties. Bypassing it also bypasses these code paths.**
 
 ??? tip "Spring Boot Loading (JVM)"
     Spring Boot loading is available through the `at.asitplus.warden:config-spring` module. It binds a
@@ -80,9 +78,8 @@ In addition, approaches based on reflection that do not invoke the configuration
         This affects `fromSpringEnvironment(...)` and, in practice, also `fromSpringMap(...)` when that map originates
         from Spring's own config binding.
 
-        Concretely, this means you should **not** rely on Spring-backed loading to override a non-null default with an
-        explicit `null`. By the time Warden Supreme sees the data, Spring will often already have normalised explicit
-        `null` away as if the property had simply been absent.
+        Do **not** rely on Spring-backed loading to override a non-null default with an explicit `null`. Spring often
+        normalises this value to an absent property before Warden Supreme receives it.
 
         If you need precise `null` semantics, load canonical configuration directly via
         `fromYamlString(...)`, `fromJsonString(...)`, `fromYamlFile(...)`, or `fromJsonFile(...)`.
@@ -114,7 +111,7 @@ In addition, approaches based on reflection that do not invoke the configuration
     --8<-- "Config-Spring-Boot-App.kt:springboot-env"
     ```
       
-    Automagically loading Android and iOS configuration through composition as part of configuration properties:
+    Loading Android and iOS configuration through composition as part of configuration properties:
     
     ```kotlin
     --8<-- "Config-Spring-Boot-App.kt:springboot-config"
@@ -130,13 +127,12 @@ In addition, approaches based on reflection that do not invoke the configuration
     --8<-- "at/asitplus/attestation/JavaSpringInteropAssertions.java:java-spring-map"
     ```
     
-    Both ways of loading are the intended ways to load a config that lives inside a larger Spring Boot config.  
-    **It is necessary to enforce this way of loading because Warden Supreme's configurations heavily rely on kotlinx.serialization
-    for the sanitisation, normalisation and parsing of various properties. Only through these loaders is it possible to
-    guarantee correct config loading.**
+    Both variants are intended for configuration embedded in a larger Spring Boot setup.
+    **These loaders are required because Warden Supreme relies on kotlinx.serialization to sanitise, normalise, and parse
+    configuration properties.**
 
 ## Supreme (Fully Integrated) Configuration
-To externalise configuration for fully integrated attestation flows conveniently, use the umbrella `SupremeConfiguration`.
+Use the umbrella `SupremeConfiguration` to externalise a fully integrated attestation flow.
 It includes both the platform-specific configurations and the properties related to fully integrated attestation itself.
 
 Two integrated-flow properties control proof authentication and client-provided attested values:

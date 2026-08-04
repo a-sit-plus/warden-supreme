@@ -4,14 +4,15 @@ If you only ever target one platform, you might be wondering:
 why not use [`android/keyattestation`](https://github.com/android/keyattestation) or
 [`veehaitch/devicecheck-appattest`](https://github.com/veehaitch/devicecheck-appattest) directly?
 
-Those libraries are deliberately focused verification engines. Warden Supreme builds on them, but its scope is much
-larger: it provides the client ceremony, wire protocol, challenge lifecycle, cross-platform policy, key binding, optional
-proof of possession, application-data authentication, certificate issuance hooks, configuration, error semantics, and
-operational safeguards needed to turn platform attestation primitives into a deployable system.
+These libraries verify platform evidence. A deployable attestation service also needs to issue and consume challenges,
+bind keys and application data to a ceremony, apply policy consistently, transport results, manage configuration, and
+report failures safely. Warden Supreme provides this surrounding system, including the client-side implementation
+required to participate in it.
 
 ## Quick Decision Guide
 
-- Use **Warden Supreme** if you want a single verifier contract, shared policy semantics, and an easy path to Android+iOS without re-architecting later.
+- Use **Warden Supreme** for a single verifier contract, shared policy semantics, and Android and iOS support without
+  maintaining two separate integrations.
 - Use **Warden makoto** if you need server-side verification only and custom/non-KMP clients.
 - Use **Warden roboto** if you are truly Android-only and deliberately want minimal scope.
 - Use platform-specific libraries directly if you explicitly want to own all protocol wiring, data model design, and long-term maintenance.
@@ -19,10 +20,10 @@ operational safeguards needed to turn platform attestation primitives into a dep
 ## What Warden Supreme Adds
 
 !!! tip
-    See the [full comparison matrix](#comparison-matrix) to see how much added value Warden Supreme brings.
+    See the [full comparison matrix](#comparison-matrix) for a capability-by-capability comparison.
 
-The platform libraries deliberately stop at verification primitives. Warden Supreme adds the layer on top of them that
-you would otherwise write yourself:
+The platform libraries stop at verification primitives. Warden Supreme supplies the service and client integration
+around them:
 
 - Unified Back-end API and decision model shared across Android and iOS
 - Unified Client API shared across Android and iOS
@@ -31,25 +32,24 @@ you would otherwise write yourself:
   client-provided attributes
 - Built-in iOS key-attestation emulation to mirror Android-style key-binding semantics
 - One error and policy model instead of two independent verification stacks
-- Sane defaults and maintained workarounds for platform quirks, informed by years of production operation
+- Defaults and maintained workarounds informed by years of operating attestation services in production
 - Externalised configuration for attestation policy and verifier setup
 
 ## Operational Maturity
 
-The defaults and workarounds shipped with Warden Supreme come out of running attestation in production, not out of a
-specification. Both Android and iOS don't always behave according to spec.
-Warden Supreme has already encountered those edge cases &mdash; device models that report attestation slightly
-differently, OS versions with known bugs, timing quirks &mdash; and it accounts for them, shipping pre-baked
-workarounds that are known to work in production without degrading security.
+Warden Supreme's defaults and workarounds come from operating attestation services in production. Android and iOS do not
+always conform to their own specifications, and the failures are often specific to a device, vendor, or OS release.
+Warden Supreme accounts for known certificate-encoding defects, incorrect timestamps, broken validity periods, and other
+platform behaviour encountered in real deployments without relaxing the security properties that remain enforceable.
 
-The concrete payoff: you start from defaults that have survived real device diversity, and you avoid rediscovering the
-integration and validation pitfalls that tend to surface only once a service is live. These defaults were shaped by
-production cohorts of over one million end-user devices across several services, not just by lab or emulator runs.
+These defaults were shaped by production deployments covering more than one million end-user devices across several
+services. They provide a starting point that has already met the device diversity, timing problems, and implementation
+defects that tend to appear only after an attestation service goes live.
 
 ## Configuration Externalisation
 
-Warden Supreme already supports externalising attestation configuration and wiring.
-Hence, policy can be managed outside independently of code and maintained deployment/environment specific.
+Warden Supreme supports external attestation configuration, allowing policy to be maintained independently of
+application code and varied between deployments and environments.
 
 The platform libraries intentionally hard-code little policy. When using them directly, you still need to define,
 maintain, and evolve:
@@ -59,25 +59,24 @@ maintain, and evolve:
 - validation and error handling for malformed or incomplete configuration, and
 - framework-specific loader behaviour and environment-specific config quirks.
 
-Warden Supreme ships this already, including direct integration with Spring Boot and Hoplite config loading,
-so policy changes stay predictable across environments.
+Warden Supreme includes this layer, together with Spring Boot and Hoplite configuration loading, so the same policy
+model can be used across environments.
 See [Externalising Configuration](integration/config.md).
 
 ## High-Assurance Android Policies
 
-One place where Warden Supreme goes beyond "just wire the platform library" is Android verified-boot policy.
+Warden Supreme also exposes Android verified-boot state as an explicit policy decision.
 
-Modern Android attestation does not force a choice between "accept only OEM Android" and "allow any unlocked or
-modified device". You can express the policy you actually want:
+Android attestation does not force a choice between accepting only OEM firmware and admitting any modified device.
+Warden Supreme supports three useful policies:
 
 - Accept OEM-verified Android only
 - Accept OEM Android and explicitly trusted hardened custom ROMs
 - Accept only explicitly trusted hardened custom ROMs for high-security deployments
 
-This works by treating locked-bootloader `SELF_SIGNED` verified boot keys as first-class policy inputs rather than as an
-automatic failure case. Consequently, a secure custom-ROM deployment such as GrapheneOS can be accepted without weakening integrity
-checks or falling back to heuristics.  
-Concretely, this matters when:
+Locked-bootloader `SELF_SIGNED` verified boot keys are first-class policy inputs rather than automatic failures. A
+custom-ROM deployment such as GrapheneOS can therefore be accepted without weakening integrity checks or falling back
+to heuristics. This matters when:
 
 - you want to admit users who rely on privacy- or hardening-focused Android distributions,
 - you want to exclude generic OEM firmware in a high-security environment and admit only a curated hardened ROM fleet, or
@@ -88,8 +87,8 @@ See [Externalising Configuration](integration/config.md) for the actual policy f
 
 ## Comparison Matrix
 
-The below table compares library scope, not the quality of the underlying cryptographic verification. Warden Supreme delegates
-the platform-specific work to these libraries and adds the end-to-end system around it.
+The table compares library scope rather than the quality of the underlying cryptographic verification. Warden Supreme
+delegates platform-specific verification to these libraries and supplies the end-to-end system around it.
 
 | Capability                                        | `android/keyattestation`                                       | `devicecheck-appattest`                              | Warden Supreme                                                                        |
 |---------------------------------------------------|----------------------------------------------------------------|------------------------------------------------------|---------------------------------------------------------------------------------------|
@@ -130,40 +129,42 @@ the platform-specific work to these libraries and adds the end-to-end system aro
 | End-to-end emulator coverage                      | ❌                                                             | ❌                                                   | Client-to-verifier Android emulator scenarios across auth and attribute combinations  |
 | Escape hatch for custom flows                     | Direct verifier API                                            | Direct verifier API                                  | Integrated Supreme API or lower-level makoto/roboto APIs                              |
 
-The difference is architectural: the upstream libraries answer “is this platform artefact valid?” Warden Supreme also
-answers “how is it requested, transported, bound to a key and application data, evaluated consistently across platforms,
-turned into a certificate, configured in production, and reported safely when anything fails?”
+The architectural difference is scope. The upstream libraries determine whether a platform artefact is valid. Warden
+Supreme also defines how this artefact is requested, transported, bound to a key and application data, evaluated across
+platforms, turned into a certificate, configured in production, and reported when verification fails.
 
 The above table is more than just a marketing skit.
-It effectively means if you want to use vanilla DeviceCheck/App Attest or `android/keyattestation`, you'd end up implementing a good chunk of what Warden Supreme gives you from scratch.
-It won't work as well, and you'll hit the same walls we did, while developing Warden Supreme, and you'll end up re-doing much of the work that went into Warden Supreme.  
-How do we know? Warden Supreme is the culmination of doing precisely that multiple times.
+The differences become material as soon as attestation has to operate as part of a service rather than as an isolated
+certificate check. Using the platform libraries directly leaves the ceremony, data model, policy layer, configuration,
+and operational handling to the integrating service.
 
-In the end, we had three slightly different, slightly incompatible implementations with subtle rough edges in different places and incompatible wire formats and configuration
-mechanisms&hairsp;&mdash;&hairsp;even when already using Warden Supreme's predecessors, WARDEN and WARDEN-roboto.
+We know this because Warden Supreme grew out of years spent designing, building, and operating attestation services. Its
+predecessors eventually left us with three similar but incompatible implementations, each with its own rough edges, wire
+format, and configuration model. Warden Supreme consolidates and evolves this experience into one reusable system
+designed to serve different deployments and services, filling the gaps we encountered along the way.
 
 
 ## FAQ
 
-### Is Warden Supreme "wrapping everything and hiding details"?
+### Is Warden Supreme "Wrapping Everything and Hiding Details"?
 
-No. Warden Supreme standardises the integration layer while keeping platform-specific policy controls explicit.
-You still decide what "trusted" means.
+No. Warden Supreme standardises the integration layer while keeping platform-specific policy controls explicit. The
+integrating service still decides what "trusted" means.
 
-### Can I use only one platform in Warden Supreme?
+### Can I Use Only One Platform in Warden Supreme?
 
 Yes. As of 1.0.0, verifier configuration can be Android-only or iOS-only by omitting the other platform's config.
 
-### Do I lose flexibility if I adopt Warden Supreme?
+### Do I Lose Flexibility if I Adopt Warden Supreme?
 
-No. If you need custom clients or custom flows, use the verifier modules directly
+No. Custom clients and flows can use the verifier modules directly
 (see [Usage without Integrated Clients](integration/raw.md)).
 
-### Does this only work on Google Play certified Android?
+### Does This Only Work on Google Play Certified Android?
 
-No. If the device presents a locked-bootloader attestation with a verified boot key you trust, Warden Supreme can
-accept it even when the OS is not OEM-certified. That is exactly how you support hardened custom ROMs such as
-GrapheneOS without weakening your server-side integrity policy.
+No. Warden Supreme can accept a locked-bootloader attestation rooted in an explicitly trusted verified boot key even
+when the OS is not OEM-certified. This is how hardened custom ROMs such as GrapheneOS can be supported without weakening
+the server-side integrity policy.
 
 ## Related Reading
 

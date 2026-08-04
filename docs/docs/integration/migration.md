@@ -1,6 +1,7 @@
 # Migration from WARDEN / WARDEN‑roboto
 
-**The most obvious change coming from WARDEN / WARDEN-roboto is dropped support for Nougat hybrid attestation on Android. It is simply not relevant any more.**
+**The most visible change from WARDEN and WARDEN-roboto is the removal of Android Nougat hybrid attestation, which is no
+longer relevant to supported deployments.**
 
 !!! danger "Read This First: Footguns"
     The biggest upgrade hazards are about configuration loading and time checks:
@@ -32,7 +33,7 @@ Warden Supreme enforces unified flows and a unified data model. Migration mostly
 ## Migrating to Warden Supreme 1.1+
 
 !!! note 
-    This section is targets integrators coming from Warden Supreme 1.0.x.
+    This section targets integrators coming from Warden Supreme 1.0.x.
 
 The integrated transport is no longer unconditionally a signed CSR. New code uses `AttestationProof` end to end:
 
@@ -105,9 +106,8 @@ See also the [data model](datamodel.md), [Error Handling](errorhandling.md), and
     See [Externalising Configuration](config.md) for an up-to-date list of all configuration properties.
 
 
-Migrating code from WARDEN / WARDEN-roboto is smooth, because the compiler and the IDE will scream at you
-if you don't adapt to the changes.
-Migrating externalised configuration is trickier.
+The compiler and IDE identify most source changes required when migrating from WARDEN or WARDEN-roboto. Externalised
+configuration requires more care.
 
 Warden Supreme 1.0 introduces canonical serialised representations of the Android- and iOS-specific attestation configurations.
 Previously, Spring Boot and Hoplite could load configurations directly.

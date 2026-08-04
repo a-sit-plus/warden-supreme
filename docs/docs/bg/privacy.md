@@ -1,8 +1,7 @@
 # Data Protection and Privacy in Mobile Attestation
 
-This page covers the privacy and data protection aspects of attestation across three mechanisms: "pure" Android
-hardware attestation, iOS App Attest, and Google Play Integrity.  
-For each, it spells out:
+This page compares the privacy and data-protection properties of direct Android hardware attestation, iOS App Attest,
+and Google Play Integrity. For each mechanism, it identifies:
 
 * what the mechanism is
 * the exact data flows (who learns what)
@@ -13,11 +12,10 @@ For each, it spells out:
 
 ## Different Attestation Approaches = Different Privacy Postures
 
-Mobile attestation systems fall into two categories:
+Mobile attestation systems fall into two broad categories:
 
-* **Evidence-based** attestation returns cryptographic statements you verify yourself. This favours data minimisation,
-  explainability, and local policy control because your back-end decides based on attested fields rather than third-party
-  verdicts.
+* **Evidence-based** attestation returns cryptographic statements the service verifies itself. This favours data
+  minimisation, explainability, and local policy control because the back-end decides from attested fields.
 * **Verdict-based** services return labels (for example, “meets device integrity”) computed by a provider from telemetry you
   send them. This is convenient for anti-abuse but introduces per-request data flows to that provider, couples access
   decisions to their definitions, and adds dependency on their availability and quotas.
@@ -41,10 +39,9 @@ Android attestation extension. This extension encodes, among other fields:
   presence or auth-per-use)
 * A server-provided challenge to guarantee freshness and prevent replay
 
-Your server validates the chain to recognised Android attestation roots, parses the extension, and evaluates your
-acceptance policy. The policy can be strict (e.g., require StrongBox, recent patch levels)
-or flexible (e.g., allow some legacy devices and don’t require strict app integrity), but the decision is yours and is explainable from attested
-fields.
+The server validates the chain to recognised Android attestation roots, parses the extension, and applies its acceptance
+policy. This policy may require StrongBox and recent patch levels or admit selected legacy devices. In either case, the
+decision belongs to the service and can be explained from the attested fields.
 
 ### Data Flow (Who Learns What)
 
@@ -162,17 +159,15 @@ black-box verdict service.
 
 ### Why Pure Attestation Gives You Stronger Guarantees
 
-With remote attestation you receive a *cryptographically verifiable* statement that you can parse, audit, and store
-independently of the platform vendor.  
-You decide which boot state, patch level, or package signature is acceptable—and you can prove that decision later.
+Direct Android attestation gives the service cryptographic evidence it can parse, audit, and retain independently. The
+service chooses the accepted boot states, verified-boot keys, patch levels, package names, and signer certificates. A
+decision can therefore be explained later using the evidence and policy that produced it.
 
-Play Integrity, by contrast, offers **no raw evidence**. Google’s back-end hides the actual attestation chain, performs
-the
-evaluation on its own servers, and sends back a single token that merely says *pass* or *fail* according to **Google’s
-undocumented and changeable policy**.  
-If Google tightens or loosens its criteria—or simply makes a mistake—you have no recourse and no visibility.
+Google Play Integrity returns Google's verdict instead of this evidence. Its criteria are controlled by Google, cannot
+express service-specific trust in custom firmware, and may change independently of the service's policy. This is a
+meaningful loss of transparency and control, particularly for public-sector, regulated, or sovereign deployments.
 
-Moreover, the service runs in Google’s hot path **for every request**:
+The service also places Google in the hot path **for every request**:
 
 * You inherit Google’s latency, availability, and regional outages.
 * Daily quotas and rate limits can throttle your traffic.
@@ -231,9 +226,9 @@ Moreover, the service runs in Google’s hot path **for every request**:
 
 ## Practical Coexistence Patterns
 
-* Evidence-first: make Android “pure” attestation and iOS App Attest your root of trust. This keeps decisions
-  explainable and privacy-minimal (Android) while acknowledging iOS’s provider contact.
-* Forego Play Integrity, but if you insist, use it only as a second signal for specific flows (for example,
+* Evidence-first: use direct Android attestation and iOS App Attest as the root of trust. This keeps decisions
+  explainable and minimises third-party data flows on Android while accounting for Apple's role on iOS.
+* If Play Integrity is required, use it as a second signal for specific flows (for example,
   account recovery), with a narrow scope and explicit documentation of additional data sharing.
 * Sovereign builds: if you operate controlled firmware with your own verified-boot keys, use Android “pure” attestation
   to admit those devices; this is incompatible with Play Integrity’s device or strong integrity criteria.
