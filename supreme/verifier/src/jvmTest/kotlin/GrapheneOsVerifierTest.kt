@@ -8,6 +8,7 @@ import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
 import at.asitplus.testballoon.matrix.matrixSuite
 import examples.docs.config.grapheneos.grapheneOsConfig
@@ -111,7 +112,11 @@ private class FixedChallengeValidator : ChallengeValidator {
     }
 
     override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult {
-        val nonce = csr.tbsCsr.nonce.getOrElse {
+        return validate(csr.tbsCsr)
+    }
+
+    override suspend fun validate(certificationRequestInfo: TbsCertificationRequest): ChallengeValidationResult {
+        val nonce = certificationRequestInfo.nonce.getOrElse {
             return ChallengeValidationResult.Failure.NonceExtraction(it)
         }
         val challenge = storedChallenge.shouldNotBeNull()

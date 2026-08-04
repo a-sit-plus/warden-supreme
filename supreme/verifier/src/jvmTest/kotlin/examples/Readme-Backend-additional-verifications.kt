@@ -1,34 +1,35 @@
 package examples.docs.service.additionalverifications
 
 import at.asitplus.attestation.supreme.AttestationResponse
+import at.asitplus.attestation.supreme.AttestationProof
+import at.asitplus.attestation.supreme.attestedAttributes
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import examples.docs.config.minimal.verifier
 
-private val csr: Pkcs10CertificationRequest = TODO()
-private val expectedTenant = "tenant-a"
+private val proof: AttestationProof = TODO()
+private val expectedAccountId = "account-123"
 
-private suspend fun issueCertificateChain(csr: Pkcs10CertificationRequest): CertificateChain = TODO()
+private suspend fun issueCertificateChain(proof: AttestationProof): CertificateChain = TODO()
 
 private suspend fun foo() {
 
 
 
 val response = verifier.verifyAttestation(
- /*(1)!*/csr = csr,
- /*(2)!*/additionalVerifications = { receivedCsr, verifiedAttestation ->
-        val tenant = /*(3)!*/additionalPayload?.get("tenant")?.toString()
-        if (tenant != expectedTenant) {
+ /*(1)!*/attestationProof = proof,
+ /*(2)!*/additionalVerifications = { receivedProof, _ ->
+        val accountId = /*(3)!*/receivedProof.attestedAttributes["accountId"] as? String
+        if (accountId != expectedAccountId) {
          /*(4)!*/AttestationResponse.Failure(
                 AttestationResponse.Failure.Type.CONTENT,
-                "Attestation challenge does not match tenant policy"
+                "Attested account does not match account policy"
             )
         } else {
          /*(5)!*/null
         }
     },
- /*(6)!*/certificateIssuer = { verifiedCsr ->
-        issueCertificateChain(verifiedCsr)
+ /*(6)!*/certificateIssuer = { verifiedProof ->
+        issueCertificateChain(verifiedProof)
     }
 )
 

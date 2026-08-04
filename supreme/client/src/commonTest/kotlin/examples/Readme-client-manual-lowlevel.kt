@@ -4,6 +4,8 @@ import ALIAS
 import ENDPOINT_CHALLENGE
 import at.asitplus.attestation.supreme.AttestationClient
 import at.asitplus.attestation.supreme.AttestationResponse
+import at.asitplus.attestation.supreme.DataAuthentication
+import at.asitplus.attestation.supreme.AttestationProof
 import at.asitplus.attestation.supreme.attestationEndpointUrl
 import at.asitplus.attestation.supreme.createCsr
 import at.asitplus.signum.indispensable.ECCurve
@@ -28,6 +30,12 @@ suspend fun lowlevel() {
 
  /*(1)!*/val client = AttestationClient(ktorClient)
  /*(2)!*/val serverChallenge = client.getChallenge(Url(ENDPOINT_CHALLENGE)).getOrThrow()
+    require(serverChallenge.dataAuth == DataAuthentication.Signature) {
+        "This manual path implements signature authentication only"
+    }
+    require(serverChallenge.toBeAttestedAttributes == null) {
+        "Use createAttestationProof when the verifier requests attributes"
+    }
 
  /*(3)!*/val signer = PlatformSigningProvider.createSigningKey(ALIAS) {
         ec {
@@ -55,7 +63,10 @@ suspend fun lowlevel() {
      /*optional SubjectName, extns, attributes go here*/
      ).getOrThrow()
 
- /*(6)!*/when (val result = client.attest(csr, serverChallenge.attestationEndpointUrl)) {
+ /*(6)!*/when (val result = client.attest(
+        AttestationProof.Signed(csr),
+        serverChallenge.attestationEndpointUrl,
+    )) {
         is AttestationResponse.Success -> {
          /*(7)!*/myCertStore.store(result.certificateChain) //<-- You're golden!
         }
@@ -73,4 +84,3 @@ suspend fun lowlevel() {
 
 
 }
-

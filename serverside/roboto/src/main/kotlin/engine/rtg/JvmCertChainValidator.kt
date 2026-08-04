@@ -206,8 +206,8 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         get() = securityLevel().toGeneralizedSecurityLevel()
 }
 
-fun SecurityLevel.toGeneralizedSecurityLevel(): GeneralizedSecurityLevel = when (this) {
-    SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
+fun SecurityLevel?.toGeneralizedSecurityLevel(): GeneralizedSecurityLevel = when (this) {
+    null, SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
     SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
     SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
 }

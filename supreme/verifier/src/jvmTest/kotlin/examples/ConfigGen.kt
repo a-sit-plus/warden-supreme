@@ -6,7 +6,12 @@ import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.attestation.hopliteDecoder
+import at.asitplus.attestation.supreme.AttestationChallenge
+import at.asitplus.attestation.supreme.DataAuthentication
+import at.asitplus.attestation.supreme.PrimitiveType
 import at.asitplus.attestation.supreme.SupremeConfiguration
+import at.asitplus.signum.indispensable.Digest
+import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.ExperimentalHoplite
 import com.sksamuel.hoplite.addFileSource
@@ -186,7 +191,18 @@ val ConfigurationExampleGenerator by matrixSuite(matrixConfig { execution = Exec
         }
     }
 
-    val config = SupremeConfiguration(androidAttestationConfiguration, iosAttestationConfiguration)
+    val config = SupremeConfiguration(
+        androidAttestationConfiguration,
+        iosAttestationConfiguration,
+        dataAuth = DataAuthentication.Hash(Digest.SHA256),
+        attestableAttributes = AttestationChallenge.AttestableAttributes(
+            oid = ObjectIdentifier("2.25.304198582559398858370235454530489176240"),
+            attributes = listOf(
+                AttestationChallenge.ToBeAttestedAttribute("accountId", PrimitiveType.STRING),
+                AttestationChallenge.ToBeAttestedAttribute("riskScore", PrimitiveType.INT, required = false),
+            ),
+        ),
+    )
 
     "Writing Supreme" {
         withClue("JSON") {
@@ -226,7 +242,7 @@ val ConfigurationExampleGenerator by matrixSuite(matrixConfig { execution = Exec
         "YAML (legacy)" {
             val legacyYaml = readResource("examples/legacy/supreme.yaml")
             val loaded = SupremeConfiguration.fromYamlString(legacyYaml)
-            loaded shouldBe config
+            loaded shouldBe SupremeConfiguration(androidAttestationConfiguration, iosAttestationConfiguration)
         }
         "YAML (Hoplite)" {
             val loader = ConfigLoaderBuilder.default()
