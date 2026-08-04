@@ -104,19 +104,15 @@ private suspend fun graphCsr(verifier: AttestationVerifier) =
         generateRsaKeyPair(2048)
     )
 
-private class FixedChallengeValidator : ChallengeValidator {
+private class FixedChallengeValidator : AttestationChallengeValidator {
     private var storedChallenge: AttestationChallenge? = null
 
     override suspend fun store(challenge: AttestationChallenge) {
         storedChallenge = challenge
     }
 
-    override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult {
-        return validate(csr.tbsCsr)
-    }
-
-    override suspend fun validate(certificationRequestInfo: TbsCertificationRequest): ChallengeValidationResult {
-        val nonce = certificationRequestInfo.nonce.getOrElse {
+    override suspend fun validate(attestationProof: AttestationProof): ChallengeValidationResult {
+        val nonce = attestationProof.tbsCsr.nonce.getOrElse {
             return ChallengeValidationResult.Failure.NonceExtraction(it)
         }
         val challenge = storedChallenge.shouldNotBeNull()
