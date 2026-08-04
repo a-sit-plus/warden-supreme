@@ -39,6 +39,9 @@ plugins:
   - open-in-new-tab
 
 extra:
+  version:
+    provider: mike
+    default: latest
   links:
     android_key_attestation: https://developer.android.com/privacy-and-security/security-key-attestation
     android_key_id_attestation: https://source.android.com/docs/security/features/keystore/attestation
