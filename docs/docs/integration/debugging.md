@@ -1,7 +1,7 @@
 # Debugging, Recording,<br>and Replaying Attestation Checks
 
-Attestation errors are hard to debug. Warden Supreme therefore lets you snapshot the inputs, configuration, and
-revocation information of an attestation attempt, then replay and analyse a failed check offline.
+Attestation failures often depend on the exact certificate chain, configuration, and revocation state present during
+verification. Warden Supreme can capture these inputs and replay the failed check offline.
 
 The approach is the same whether you use Warden Supreme's integrated attestation flow or the raw _makoto_ or _roboto_
 attestation checkers (see [Usage without Integrated Clients](raw.md)):
@@ -12,7 +12,7 @@ attestation checkers (see [Usage without Integrated Clients](raw.md)):
   (see [Debugging Integrated Attestation](#debugging-integrated-attestation)).
 
 !!! warning "Privacy Risks and Risk of Chasing Phantoms"
-    We are happy to help you with debugging, but there are three things to keep in mind.
+    Three restrictions apply when recording or sharing debug statements.
     
     * Attestation information is personally identifying data if the contained public key is associated with a person.
     * If you publicly paste a debug statement, it will contain your whole configuration, and it will leak information about your service, apps,
@@ -27,7 +27,7 @@ attestation checkers (see [Usage without Integrated Clients](raw.md)):
 ## Collecting Debug Info
 Warden Supreme's integrated flow already offers a hook to collect debug statements:
 Whenever the actual attestation check fails (i.e., whenever `onAttestationError()` is called), a ready-made `WardenDebugAttestationStatement` is created and passed to this function.
-Hence, two pieces of information are available to aid debugging:
+The callback provides two pieces of diagnostic information:
 
 1. The attestation error (as the receiver of this lambda)
 2. The debug statement, which can be exported for offline analysis
@@ -39,14 +39,14 @@ Both expose the same replay function and carry everything needed to replay the a
 
 ## Debugging Integrated Attestation
 Warden Supreme already contains code to load `WardenDebugAttestationStatement`s and `replay()` them.
-The idea is to debug in an IDE: step through the attestation workflow and explore stack traces that carry detailed information about why a check failed.  
-For the smoothest debugging experience:
+Run the replay utility in an IDE to step through the attestation workflow and inspect the stack trace behind a failure:
 
 * Import this project into IntelliJ IDEA
 * Add a breakpoint [here (line 19)](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt#L19)
 * Run it in debug mode
 
-Just be sure to add a single argument pointing to a file as described in [Diag.kt](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt)!
+Pass the debug-statement file as the single argument described in
+[Diag.kt](https://github.com/a-sit-plus/warden-supreme/tree/main/utils/makoto-diag/src/main/kotlin/Diag.kt).
 
 ## Debugging Raw Android Attestations
 
@@ -65,10 +65,10 @@ It will then pretty-print the attestation extension's contents.
 There is also a nullable `androidAttestationExtension` extension property on the Java `X509Certificate`
 and on Signum's `X509Certificate` class (and certificate chains). It exposes `prettyPrint()`, so you can peek into Android attestation extensions at any time.
 It even parses malformed values and prints their DER-encoded hex representation.
-The parser and the renderer are still experimental, so your mileage may vary.
-That said, we have tested it against thousands of attestation proofs captured from real devices, and it _seems to be_ more
-robust than Google's parsers, old and new.
-In addition, its `prettyPrint` beats relying on `ParsedAttestationRecord` alone for debugging.
+The parser and renderer remain experimental, but they have been tested against thousands of attestation proofs captured
+from real devices. This corpus includes malformed values that Google's old and current parsers reject. Warden's parser
+retains these values and renders their DER representation where necessary, making it considerably more useful for
+investigating certificates encountered in production.
 
 !!! example "Example of a Pretty-Printed Attestation Record from an Emulator"
     ```properties

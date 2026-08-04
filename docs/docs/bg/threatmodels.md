@@ -5,10 +5,12 @@
     See [Leaked Keyboxes](../technical/android/leakedkeys.md).
     Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., [Android Security Bulletin]({{ links.android_security_bulletin }})).
 
-Attestation is not a panacea—nothing ever is.
-However, attestation is a powerful mechanism that significantly raises the security bar for clients that would
-otherwise be untrusted. 
-This page walks through common threats and the concrete policies that mitigate them.
+Attestation cannot make a client invulnerable. It can, however, replace heuristic guesses about client integrity with
+evidence rooted in platform hardware. This raises the cost of tampering considerably and, for several common attacks,
+gives the server a property it can reject deterministically: an unlocked bootloader, an untrusted system image, the
+wrong application signer, or software-backed key material.
+
+The following threat models distinguish attacks that attestation can prevent from those whose cost it can only increase.
 
 ## Threat Model A — Everyday Tampering and Rooted Devices
 
@@ -21,7 +23,7 @@ This scenario covers mainstream, widely available tampering done at scale using 
 Attackers here are opportunistic. They apply whatever guide or exploit is currently popular to a stock phone and try to
 use your service.
 
-To keep such devices and apps out, require strong, cryptographic platform guarantees:
+The corresponding policy relies on cryptographic platform guarantees:
 
 - Android  
     - Accept only a locked bootloader and trusted verified boot state.
@@ -34,13 +36,12 @@ To keep such devices and apps out, require strong, cryptographic platform guaran
     - Require a complete App Attest certificate chain, validate the challenge/nonce, and ensure the device counter
     increases monotonically.
 
-Software‑only Android attestation can be forged on rooted devices, so the policy decision is simple:  
-**Accept hardware‑backed attestation only; reject software attestation.** Honest users keep access; cheap, commoditised
-attacks are filtered out.
+Software-only Android attestation can be forged on rooted devices. Production policy should therefore accept
+hardware-backed attestation only. This filters out inexpensive, widely automated attacks without affecting clients that
+meet the declared policy.
 
-!!! tip "No Google Play Certification? No Problem!"
-    Need to support secure custom ROMs without weakening your attestation policy? Warden Supreme can treat
-    trusted `SELF_SIGNED` verified boot keys just like OEM-verified Android while still requiring a locked
+!!! tip "Supporting Secure Custom ROMs"
+    Warden Supreme can treat trusted `SELF_SIGNED` verified boot keys like OEM-verified Android while still requiring a locked
     bootloader and current patches.
     You can accept OEM Android, hardened custom ROMs such as GrapheneOS, or only those hardened custom ROMs for
     high-security deployments.
@@ -59,7 +60,7 @@ attacks are filtered out.
     In each case, the app identity (package name + signer digest) and the hardware‑backed attestation prevent a repackaged or resigned app from being accepted.
 
 ### Attack Goals
-The goals of using off-the-shelf methods to tamper with apps are twofold:
+Off-the-shelf application tampering serves two common goals:
 
 1. Circumvent root checks and modify app logic on a device the attacker controls
 2. Distribute malware inside repackaged apps through unofficial app stores
@@ -71,9 +72,9 @@ to circumvent attestation (see [Threat Model&nbsp;C](#threat-model-c-targeted-at
 
 The second class of attackers has malicious intent and tries to harm legitimate users at scale. They do not have access
 to their victims' devices and thus cannot modify the operating system.
-Hence, these attackers are limited to modifying the actual application they distribute, and any invasive changes to a device
-or the operating system are irrelevant for such scenarios. **If your back-end enforces and properly checks attestation, your users are safe**,
-because sophisticated means to circumvent attestation require physical access to a victim's device
+These attackers are therefore limited to modifying the application they distribute; invasive changes to a victim's
+device or operating system are unavailable. A back-end that enforces hardware-backed attestation and application
+identity rejects these repackaged clients. More sophisticated attacks require physical access to a victim's device
 (see [Threat Model&nbsp;C](#threat-model-c-targeted-attackers-with-physical-device-access)).
 
 ### Concrete Example: Repackaging ID Austria
@@ -82,7 +83,7 @@ Public demonstrations have shown attempts to repackage apps to bypass client‑s
 detection, pinning) and then re‑sign the modified APK with a different key. A documented community example is
 [github.com/eGovPatchesAT/id-austria]({{ links.digitales_amt_repackaging_repo }}),
 which explores patching attempts against the Austrian _Digitales Amt_ app.
-**What the repository proposes and why it’s relevant:**
+**What the Repository Proposes and Why It Is Relevant:**
 
 - It documents techniques commonly discussed in reverse‑engineering communities: extracting the APK, modifying bytecode
   or hooks to disable checks (e.g., root detection, SSL pinning), rebuilding, and re‑signing with a non‑official key.
@@ -91,7 +92,7 @@ which explores patching attempts against the Austrian _Digitales Amt_ app.
 - It is a real‑world illustration that repackaging is feasible but strategically futile against
   services that enforce hardware‑backed attestation and app‑identity binding.
 
-**Why this fails under proper attestation:**
+**Why This Fails under Proper Attestation:**
 
 - App identity binding (Android): The attestation record includes the package name and signing‑certificate digest(s).
   Any repackaged build must be signed with a different key; its signer digest won’t match the back-end allowlist and is
@@ -139,11 +140,9 @@ Defence therefore focuses on telling real, unique devices apart, making horizont
 !!! warning inline end
     Consider your target audience! If you target a wide user base, you cannot demand fully updated, top-of-the-line devices.
 
-The goal is to require real hardware, block modified apps, remove the cheapest device classes from
-eligibility, and enforce remote key provisioning.
-Requiring real hardware alone raises the cost of Sybil attacks astronomically compared to using emulators.
-Demanding modern hardware with up‑to‑date security drives up the operating cost of a bot farm and makes such
-operations far less feasible.
+This policy requires real hardware, rejects modified apps, removes the cheapest device classes from eligibility, and can
+enforce Remote Key Provisioning. Requiring physical hardware already makes a Sybil attack far more expensive than an
+emulator fleet. Requiring current hardware and security updates raises the acquisition and maintenance cost further.
 
 ## Threat Model C — Targeted Attackers with Physical Device Access
 
@@ -163,17 +162,18 @@ However, you can raise the cost and reduce exposure—primarily on Android, wher
 - **User Presence / Authentication**
     - Tie sensitive operations (e.g., transaction signing) to fresh biometric authentication so keys cannot be used without the legitimate user.
 
-These controls will exclude older or lower‑end devices. The policy trade‑off is explicit: choose assurance over coverage when stakes are high!
+These controls exclude older and lower-end devices. High-assurance services must make this reduction in coverage an
+explicit policy decision.
 
-For Android specifically, this is also where verified-boot policy becomes strategically interesting:
+Android verified-boot policy allows this decision to be expressed directly:
 
 - Broad, consumer-facing deployments often accept OEM-verified Android with current patches.
 - Mixed deployments can accept OEM Android plus explicitly trusted hardened custom ROMs.
 - High-security deployments can choose to admit only explicitly trusted hardened custom ROMs with locked bootloaders,
   recent patches, and additional requirements such as StrongBox or rollback resistance.
 
-This is not a theoretical distinction. It is a practical way to support privacy- and hardening-focused device fleets
-without weakening the integrity model. See [Why Warden Supreme](../why-supreme.md) for the product view and
+This supports privacy- and hardening-focused device fleets without weakening the integrity model. See
+[Why Warden Supreme](../why-supreme.md) for the product view and
 [Externalising Configuration](../integration/config.md) for the actual policy shape.
 
 !!! example "Choosing a Policy That Matches Your Risk"

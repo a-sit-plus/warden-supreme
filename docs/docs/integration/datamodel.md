@@ -1,8 +1,8 @@
 # Data Model and Wire Format
 
-Warden Supreme standardises how attestation challenges, proofs, and outcomes are represented across platforms, based on
+Warden Supreme uses one representation for attestation challenges, proofs, and outcomes across platforms, based on
 [Signum's multiplatform attestation data model](https://a-sit-plus.github.io/signum/dokka/indispensable/at.asitplus.signum.indispensable/-attestation/index.html).
-The data model gives you:
+This data model provides:
 
 - One parsing and validation path for both Android and iOS.
 - A single transport for challenges and proofs.
@@ -14,9 +14,9 @@ The data model gives you:
     * [AttestationResponse](../schemas/AttestationResponse.json)
 
 
-Warden Supreme does not enforce a specific encoding for its wire format. However, JSON has become the de facto standard for HTTP-based
-APIs, so we provide ready-to-use JSON representation and **experimental**, auto-generated schemas for Warden Supreme's data types. They are meant to help you
-wire up third-party clients. Treat them as experimental for now, as the integrated clients will interopertate seamlessly with Warden Supreme's back-end verifier out of the box.
+Warden Supreme does not prescribe a wire encoding. It provides a JSON representation for HTTP APIs and experimental,
+automatically generated schemas for third-party clients. The integrated clients and back-end verifier already share the
+same data types and require no schema-based integration.
 
 ## Core Artefacts
 
@@ -85,7 +85,7 @@ signed/unsigned shape mismatch.
 In this documentation, "attestation statement" means the platform payload, "attestation proof" means either authenticated
 transport, and "attestation object" refers specifically to iOS App Attest.
 
-#### Requested attested attributes
+#### Requested Attested Attributes
 
 `toBeAttestedAttributes` defines one dedicated CSR attribute OID and an ordered schema. Each value is encoded at its list
 position using `PrimitiveType`; optional missing values are represented as ASN.1 `NULL`. The client callback receives the

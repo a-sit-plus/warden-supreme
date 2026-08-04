@@ -1,40 +1,40 @@
 # What Remote Attestation Is (and Isn’t)
 
-Remote attestation lets your server verify **what** generated a cryptographic proof on a device (e.g., an app running on
-a verified OS on a genuine device) — not just **who** is at the other end. In practice, the client creates a key in
-secure hardware and obtains a **verifiable statement** about the key and the device/app state. Your server validates
-that statement against **trusted roots** and **policy**.
+Remote attestation lets a server verify the app, device, and system state behind a cryptographic proof. It complements
+ordinary client authentication: knowing which account signed a request does not establish which application produced
+it or whether the device was in an acceptable state. The client creates a key in secure hardware and obtains a
+verifiable statement about this key and the relevant device and application state. The server validates this statement
+against trusted roots and its own policy.
 
-**Key Outcomes**:
+**What It Establishes**:
 
-- **Stronger client trust** than “just TLS + user auth” — you know *which* app and device you’re talking to.
-- **Guarantees on hardware-backed key storage**: done right, a client can prove that sensitive cryptographic material
-  lives in hardware and cannot be extracted.
-- **Lower fraud risk** and **tight policy enforcement** (e.g., “only unmodified devices with the latest security updates
-  applied may access resource _X_”).
-- **Privacy aspects**: On Android, verification uses Google roots but **doesn’t require the device to talk to Google
-  during attestation**; only *your* server sees the data. Your back-end must check Google’s revocation list, but that
-  exposes no user-traceable data to Google or any third party.
+- **Client integrity** beyond TLS and user authentication: the service can establish which app and device produced a
+  proof.
+- **Hardware-backed key storage**: a client can prove that sensitive cryptographic material was created in protected
+  hardware and cannot be exported.
+- **Enforceable access policy**, such as admitting only unmodified devices with sufficiently recent security updates.
+- **Privacy on Android**: Android key attestation is generated locally. The server still needs current revocation
+  information from Google, but fetches it independently of individual attestations. This neither identifies users nor
+  tells Google which clients, applications, or services the server is attesting.
   (see [Android Key Attestation]({{ links.android_key_attestation }})).<br>
-  On iOS, the story is a bit different, and, sadly, client devices will need to contact Apple servers to create an
-  attestation statement.
-- **Limits**: Attestation **can’t** stop a legitimate user from later abusing an account; it **won’t** prevent
-  credential theft outside the app; and it **doesn’t** identify a person — it authenticates an **app-and-device instance**,
-  and it **cannot** detect zero-day exploits.
+  On iOS, the device must contact Apple’s App Attest service whenever it creates an attestation statement.
+- **Defined limits**: Attestation does not identify a person, stop an authenticated user from abusing an account,
+  prevent credential theft outside the app, or detect unknown vulnerabilities. It authenticates an app-and-device
+  instance and its reported state.
 
 !!! warning inline end "Performance Impact"
     * **iOS** requires live communication with Apple’s App Attest servers each time an attestation is generated. If network
-      conditions are poor, this round-trip can add noticeable latency.  
+      conditions are poor, this round-trip can add noticeable latency.
     * **Android** produces the attestation statement entirely offline; only your back-end needs to fetch Google’s public
       revocation list asynchronously. Therefore, attestation adds virtually **no runtime performance impact** for the user.
 
-**Platform Differences** (high level):
+**Platform Differences** (High Level):
 
-- **Android**: provides **Key Attestation** (attests a key and device state) and **App/ID attestation** fields in the
+- **Android** provides **Key Attestation** for a key and device state, plus **App/ID attestation** fields in the
   attestation extension (see [Android Key & ID Attestation]({{ links.android_key_id_attestation }})).
-- **iOS**: provides **App Attest** (attests an app instance and device integrity via Apple's servers). It’s conceptually
-  **app attestation**, providing no out-of-the-box guarantees about any cryptographic material used by an app.
-  **Key attestation can be emulated** by binding a hardware-backed public key into the Apple‑signed `clientDataHash`
+- **iOS** provides **App Attest**, which attests an app instance and device integrity through Apple's servers. It does
+  not directly attest arbitrary cryptographic keys used by an app. **Key attestation can be emulated** by binding a
+  hardware-backed public key into the Apple‑signed `clientDataHash`
   attestation field (see [Apple App Attest]({{ links.ios_devicecheck }})).  
   Warden Supreme natively supports this as described
   [here]({{ links.signum_attestation_docs }}).
@@ -42,28 +42,26 @@ that statement against **trusted roots** and **policy**.
 ## High-Level Attestation Flow
 
 1. **Initial Trust Establishment (Initial Attestation)**  
-   The very first time an app starts, it performs an attestation ceremony with your back-end:
+   When an app first establishes trust, it performs an attestation ceremony with your back-end:
     * The client generates a key inside secure hardware.
     * The platform signs an **attestation statement** that binds this key to reliable device- & app-state data.
-    * Your back-end validates the statement against trusted roots and stores the resulting device-key identity as
-      “trusted”.
+    * Your back-end validates the statement against trusted roots and records the resulting device-key identity.
 
 2. **Normal Operation**  
-   After trust is established, the app uses the previously attested hardware-backed key for day-to-day authenticated API
-   calls (e.g., by signing requests or establishing mTLS). No further attestation is needed during this period, so
-   performance is on par with ordinary cryptographic operations.
+   After trust is established, the app uses the attested hardware-backed key for authenticated API calls, for example
+   by signing requests or establishing mTLS. No additional attestation is required until the service decides to renew
+   its assessment.
 
 3. **Re-attestation (Periodic or Risk-Based)**  
-   On a schedule, after an OS update, or when risk signals rise, the server can ask the client to
-   re-attest:
-    * The client restarts the attestation ceremony. This incurs the same overhead as the initial attestation.
+   The server can request a new attestation on a schedule, after an OS update, or in response to increased risk:
+    * The client repeats the attestation ceremony, incurring the same overhead as the initial attestation.
     * The server verifies that the device/app state is still compliant with policy and updates its trust record.
 
 
 ## Concepts and Terms Used Often
 
 !!! tip
-    Refer to the [full glossary](../glossary.md) for a more comprehensive list of relevant terms.
+    Refer to the [full glossary](../glossary.md) for additional terms.
 
 - **Verified Boot** — Android’s secure boot chain that verifies each boot stage and enforces **locked bootloader**
   policies. An attestation statement exposes the `verifiedBootState`.  

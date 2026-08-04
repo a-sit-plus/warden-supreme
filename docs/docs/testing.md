@@ -2,7 +2,8 @@
 
 A good attestation test strategy exercises the full pipeline without weakening production policy.
 Three things make that work: strict separation of trust, realistic artefacts for automation, and staged environments that mirror production behaviour.
-In practice this splits into two layers &mdash; automated tests that run offline in CI against faux identities, and end-to-end tests on real devices across staging environments.
+This splits into two layers: automated tests that run offline in CI against test identities, and end-to-end tests on
+real devices across staging environments.
 
 ## Principles
 
@@ -13,8 +14,8 @@ In practice this splits into two layers &mdash; automated tests that run offline
 
 ## Test Clients and Staging Pattern
 
-Load tests and monitors need to exercise attestation end to end without diluting production guarantees.
-This can be achieved with minimum effort by using a test app whose identity that is cryptographically distinct from the production app and admitted under its own trust anchor.
+Load tests and monitors must exercise attestation end to end without weakening production policy. Use a test app whose
+cryptographic identity is distinct from the production app and admit it under a dedicated trust anchor.
 [testing.md](testing.md)
 - Configure a second app entry (e.g., `AndroidAttestationConfiguration.AppData`) with:
     - A different `packageName`
@@ -29,11 +30,13 @@ This can be achieved with minimum effort by using a test app whose identity that
     - The test app under the test root and explicit allowlist
 - Protect the test root private key rigorously; never issue test binding certificates that could be confused with production artefacts or grant production access.
 
-This preserves strict production posture while enabling full‑fidelity testing, including binding, boot state enforcement, and app identity checks. Often Android‑only testing suffices because iOS devices behave consistently.
+This preserves production policy while enabling full-fidelity tests of binding, boot-state enforcement, and application
+identity. Android-only fleet testing is often sufficient because iOS hardware behaves consistently.
 
 ## Staging Environments
 
-Most deployments typically run one or two non‑production stages in front of production. For the sake of clarity, this section assumes the following stages: **T** (test), **Q** (staging), and **P** (production).
+Most deployments run one or two non-production stages before production. This section uses **T** (test), **Q**
+(staging), and **P** (production).
 
 - **P** admits only real production apps under production trust anchors. Nothing else validates there except for monitoring and the occasional load tests (see above).
 - **T** and **Q** additionally configure faux apps (see [Test Clients and Staging Pattern](#test-clients-and-staging-pattern)), each with its own custom trust anchors and signer digests.
@@ -44,9 +47,9 @@ Since the custom trust anchors live only on T and Q, any attestation proof minte
 
 ## Automated Attestation Tests
 
-On top of replaying recorded inputs, T and Q typically carry automated tests that cover every property in an attestation proof that the attestation policy actually checks.
-Test code generates faux attestation chains on demand by mutating those properties, signs them properly, and wraps them in a valid certificate chain rooted at the test trust anchor.
-Since the test trust anchor is trusted only on T and Q, these generated proofs never validate on P.
+In addition to replaying recorded inputs, T and Q should test every proof property enforced by policy. Test code mutates
+these properties, signs the resulting evidence, and wraps it in a valid chain rooted at the test trust anchor. Since P
+does not trust this root, generated proofs cannot validate there.
 
 This is the [Test Clients and Staging Pattern](#test-clients-and-staging-pattern) applied exhaustively: one generated proof per property (or combination) you care about, valid and invalid variants alike.
 
@@ -65,32 +68,31 @@ This is the [Test Clients and Staging Pattern](#test-clients-and-staging-pattern
 ## Tagging Apps via Custom Configuration Properties
 
 Warden Supreme lets you attach `customProperties` &mdash; string key/value maps &mdash; to an app's attestation configuration (see [Attaching Custom Configuration Properties](integration/supreme.md#attaching-custom-configuration-properties)).
-This tiny configuration addon allows the attestation configuration to become your source of truth for how trustworthy a given app is, and expose this to your business logic by carrying a custom tag.
-Tag an app `test-only`, for example, and downstream logic can treat it differently from a production app, or single out any other app that deserves special handling.
-While this should not influence core business logic to remain accurate, it can be used to increase loggin verbosity, tap into perf monitors, or to do all sorts of other things you do not want to involve real user data in.
+This makes the attestation configuration a source of application classification for downstream logic. An app tagged
+`test-only`, for example, can receive more verbose logging or feed performance monitors without involving production
+user data. These tags should not alter the core trust decision.
 
 ## End-to-End Tests on Real Devices
 
-End-to-end tests typically start once the unit and integration suites are green.
-Warden Supreme already contains a comprehensive test suite based on data captured from real devices and generated test data.
-Once unit and integration tests on the service-level are green, the next step is to run end-to-end tests on real devices.
-At this point it makes sense to deploy what are meant to be the final release builds on physical phones that can connect to a deployed service.
+End-to-end testing starts after the unit and integration suites pass. Warden Supreme already tests captured evidence from
+real devices alongside generated cases. Service integrators should then deploy release-candidate builds to physical
+phones that can reach the staged service.
 
-Early on, this means using the app on as many phones as possible. For example, handed the app to everyone on the team and pull in partner (and their real devices) as well to get a diverse device pool.
-Unless you are operating in a region where Warden Supreme was never used before, expect to only come across already documented [quirks](technical/quirks.md) (which Warden Supreme handles out of the box).
-However, testing with a wide array of devices may already reveal some misconceptions and false assumptions about your target audience.
-Most prominently, expect to see more devices not receiving any software updates than you initially anticipated.
+Early testing benefits from the broadest available device pool: team devices, partner devices, and the devices already
+used for compatibility testing. Most failures should match documented [quirks](technical/quirks.md), but the fleet may
+still challenge assumptions about the target audience. In particular, expect more devices with discontinued security
+updates than initial estimates suggest.
 
-Once everything is up and running, and you have reached your target user base, the attestation path should be pretty much settled.
-If everything is chugging along nicely in production, and you have all the insights about your target audience, testing changes to attestation policies can usually be done with just a handful of in-house devices.
+Once the service has reached its target audience, the attestation path usually stabilises. Policy changes can then be
+checked against recorded evidence and a small representative in-house fleet before staged rollout.
 
 ### Rolling Out an App Update
 
-One of the simplest ways to roll out an app update for release builds to ship with a hidden switch that flips the app to the Q stage.
+One practical rollout pattern is a release build with a hidden switch that points the app at Q.
 Typically, such a switch swaps endpoint URLs, trust anchors, and the like, but it should never change the app's behaviour.
 It also makes sense that Q is configured to accept additional signing keys that P does not.
 This way, a local release build is accepted on Q even though it was never distributed through official channels.
-With this setup, testing becomes straight-forward:
+With this setup, the rollout is:
 
 1. Deploy a release build to physical devices.
 2. Flip the hidden switch to Q.
@@ -109,7 +111,8 @@ Simpler, because nothing has to be rebuilt:
 
 ## Sharing Recorded Failures
 
-What ultimately let us work around essentially every known quirk from real-world devices was that some downstream integrators shared batches of recorded, failed attestation attempts with us.
+Downstream integrators made many of Warden Supreme's production workarounds possible by sharing batches of recorded,
+failed attestation attempts.
 
 !!! Tip inline end "Sharing Recorded Failures"
     We offer downstream integrators to share collected failures with us: Send `serializeCompact()`-ed debug statements (see [Debugging](integration/debugging.md)) to [support.attestation@a-sit.at](mailto:support.attestation@a-sit.at),

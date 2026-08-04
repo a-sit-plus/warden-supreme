@@ -1,11 +1,11 @@
 # Quirks, Bugs, Workarounds, and Hints
 
-Warden Supreme's unified Android and iOS attestation core, _Makoto_ (formerly _WARDEN_), has been used in production for years and attested millions of clients.
-Naturally, this caused hiccups and also helped identify their causes.
-Due to the diversity of its device landscape, Android is most affected. iOS, however, is also not without flaws.
+_Makoto_, Warden Supreme's unified Android and iOS attestation core, has attested millions of clients over several years
+of production use. This exposed the edge cases documented here. Android accounts for most of them because its device
+ecosystem is considerably more varied; iOS contributes a smaller but still noteworthy collection of constraints and
+implementation defects.
 
-This page lists known quirks and bugs and discusses how to deal with them.
-It starts with general guidance that applies across platforms.
+This page lists known quirks and bugs, starting with guidance that applies across platforms.
 
 ## Configuration Loading
 
@@ -47,19 +47,14 @@ precedence, and `spring.config.import` composition. A few Spring-specific caveat
   Spring-supported config source, and then load via `fromSpringEnvironment(...)` from the resolved prefix.**
 
 ## General Hints
-Enforcing policies and remotely establishing trust in mobile clients through attestation rests on cryptographic
-mechanisms and PKI procedures.
-Hence, timeliness is of the essence; freshness windows and temporal checks are crucial.
-As a logical consequence, the clocks between a service and the clients being attested need to be in sync.
+Attestation depends on certificate validity, attestation timestamps, challenge freshness, and the clocks used to
+evaluate them. The server and client keep independent clocks, so drift must be accommodated without weakening replay
+protection.
 
-Since the service owner is not the device owner, clock drift and even time-zone offsets of several hours
-are not uncommon.
-Warden Supreme allows for sending server time zone (and even clock drift information) to clients along with a cryptographic nonce
-at the start of an attestation procedure.
-However, cryptographic operations are performed in hardware and are thus not controlled by the application that receives
-the attestation challenge.
-A time zone offset or clock drift can result in a certificate chain carrying attestation statements that fail temporal checks
-(see below).
+Clock drift and time-zone offsets of several hours occur on devices outside the service operator's control. Warden
+Supreme sends the server time zone and detected drift to the client alongside the nonce at the start of a ceremony.
+Cryptographic hardware still uses the device clock, outside the control of the application receiving the challenge. A
+badly configured clock can therefore produce a certificate chain or attestation statement that fails temporal checks.
 
 ### Clock Drifts and Temporal Validity
 !!! danger "Time is relative (literally)!"
@@ -69,25 +64,23 @@ A time zone offset or clock drift can result in a certificate chain carrying att
     * Android attestation verification
     * The component ensuring freshness, guarding both of the above
     
-    Of course, this still leaves two entities with system clocks that are isolated from each other:
+    Two independent system clocks remain:
     
     * The back-end, verifying attestation proofs (CSRs)
     * Mobile clients, issuing those proofs to begin with
     
-    **This complexity is inherent** and nothing can be done to simplify this situation on a conceptual level, but
-    Warden Supreme provides sane defaults that have proven to work well in practice.  
-    This means that for 99% of all deployments, this complexity is hidden away, but if you need to change the defaults
-    **you will need to get your hands dirty and entertain thoughts about this mess!**
+    This complexity is inherent. Warden Supreme's defaults accommodate the usual drift and hide it for most
+    deployments. Changing them requires understanding how certificate validity, attestation creation time, and nonce
+    expiry interact.
 
 Warden Supreme's verifier allows for setting a global verification clock offset through the parameter `verificationTimeOffset`.
 
-* **This defaults to five minutes, because even one millisecond of clock drift can cause otherwise perfectly valid attestations to error out!**
+* The default is five minutes because any positive drift can make an otherwise valid attestation appear premature.
 * Those five minutes are added to Apple's recommended default lifetime of an iOS attestation, effectively increasing the
   maximum age of an attestation that is still considered valid by five minutes.
 
 
 !!! danger "The Two Sources of Attestation Creation Time"
-    (Yes, things get even more complex!)  
     iOS and Android attestation statements come with two kinds of temporal validity:
     
     1. The (leaf) certificates `notBefore` and `notAfter` validity period
@@ -113,8 +106,8 @@ that is invalidated once used.**
     * Generating truly random nonces that expire after this very same iOS validity
     * Completely disabling the validity checks on the leaf certificate and the encoded attestation statement validity period on Android.
 
-The Warden Supreme defaults do not have any adverse impact on security that matters in practice
-because Warden Supreme checks the validity of challenges **before an attestation proof is even parsed**.
+These defaults preserve the relevant security properties because Warden Supreme validates the challenge **before it
+parses the attestation proof**.
 In addition, Warden Supreme communicates nonce validity periods to clients.
 The validity period encoded into challenges is shifted by the inverse verification time offset, because clients see the drift in the opposite direction.
 Communicating this information to clients has the inherent benefit that large clock drifts can be caught right away and communicated to the user.
@@ -131,7 +124,6 @@ Communicating this information to clients has the inherent benefit that large cl
     
     Whether a **GMS-certified device that was later modified** (bootloader unlock, custom ROM, rooted system, etc.) is “untrusted” is a **policy decision**: the attestation evidence exposes boot state and related signals, and your verifier decides what to accept.
 
-The previous section dealt with one major Android-specific issue, but there's (sadly) more.
 Android bugs fall into three categories:
 
 1. Encoding flaws affecting the byte representation of attestation information
@@ -155,7 +147,7 @@ Some vendors even fail properly encoding DER BOOLEANs. Warden Supreme is lenient
 DER decoder, this might trip it.
 
 #### Patch Level Misencoding
-One would assume a dead-simple encoding of dates is easy to get right. Wrong!
+Date encoding should be unremarkable. Production certificates prove otherwise.
 
 ##### Vendor Patch Level Misencoding
 Many **Android 15** devices (even emulator images) do not conform to the ASN.1 schema for attestation data with respect to patch level encoding.
@@ -176,7 +168,8 @@ Both variants violate the expected `yyyyMMdd`/`yyyyMM` semantics and need the sa
 
 #### Broken RSA PKCS#1 `AlgorithmIdentifier` (Missing ASN.1 NULL)
 Some Android devices generate a non-conforming X.509 leaf certificate **at attestation time**.
-In other words: when the app requests key attestation, the device creates a leaf certificate that carries the attestation proof and signs it using a key in the TEE — but the resulting certificate is not fully X.509/DER-conforming.
+When the app requests key attestation, the device creates a leaf certificate carrying the attestation proof and signs it
+inside the TEE. On affected devices, this newly generated certificate is not fully X.509/DER-conforming.
 
 Concretely, for RSA PKCS#1 v1.5 signature algorithms, the X.509 ASN.1 profile requires `AlgorithmIdentifier.parameters` to be present and encoded as ASN.1 `NULL` (`05 00`).
 On affected devices, the certificate’s signature algorithm is encoded as an `AlgorithmIdentifier` that contains only the OID and omits the required `NULL` parameters.
@@ -185,8 +178,8 @@ A common case is `sha256WithRSAEncryption` with OID `1.2.840.113549.1.1.11`, enc
 - **illegal (missing NULL):** `30 0b 06 09 2a 86 48 86 f7 0d 01 01 0b`
 - **required by X.509 profile:** `30 0d 06 09 2a 86 48 86 f7 0d 01 01 0b 05 00`
 
-Many parsers accept this in practice, but strict implementations may reject such certificates, or fail when comparing signature algorithm identifiers byte-for-byte.
-Hence, certificate parsing needs to be relaxed for Android attestation proofs.
+Many parsers accept this encoding, but strict implementations may reject the certificate or fail when comparing
+signature algorithm identifiers byte-for-byte. Android attestation parsing must accommodate it.
 
 #### Broken Certificate Extension Encoding (Explicit `critical = false`)
 Some devices produce attestation certificates whose extension encoding is not DER-compliant: they explicitly encode the `critical` flag as `false` inside the attestation extension, instead of omitting it.
@@ -195,8 +188,8 @@ Per RFC 5280, an X.509 extension is defined as `SEQUENCE { extnOID, critical BOO
 In DER, values that are equal to their ASN.1 `DEFAULT` **must be omitted** from the encoding.
 Encoding `critical = false` therefore violates RFC 5280 (and, by extension, the expectation that certificate chains are DER-encoded).
 
-In a perfect world, devices producing such certificates should never have passed GMS certification, and such attestations should never have parsed.
-In the real world, they exist in production in very large numbers, so verifiers need to be tolerant here and treat an explicitly encoded `critical = false` the same as if the field had been omitted.
+Devices producing such certificates should not have passed GMS certification. They nevertheless exist in large numbers,
+so a production verifier must treat an explicitly encoded `critical = false` as equivalent to an omitted default.
 
 ### Misleading Assumptions about ECDH
 Virtually every Android device supports hardware-backed EC crypto and EC Diffie-Hellman key agreement.
