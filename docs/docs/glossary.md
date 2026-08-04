@@ -12,7 +12,11 @@ This glossary centralises terms used across the documentation. Each entry is con
     - **App Attestation** — A statement about the app (e.g., unmodified app, signed by the developer, running on an unmodified OS).
 - **Attestation Statement** — The platform-generated attestation payload (Android: X.509 chain with KeyDescription; iOS: App Attest payload).
 - **Attestation Object (iOS)** — Apple’s App Attest CBOR structure (`authenticatorData`, `attStmt`, `x5c`) returned by `attestKey`.
-- **Attestation Proof** — The transport container sent to the server, typically a CSR carrying the attestation statement payload.
+- **Attestation Proof** — The authenticated transport sent to the server: either a signed CSR or a hash-bound unsigned TBS CSR carrying the attestation statement payload.
+- **Proof of Possession** — Evidence that the client can use the private key corresponding to a public key. Warden Supreme
+  obtains this from the CSR signature in `DataAuthentication.Signature` mode. Hash mode deliberately omits it.
+- **Data Authentication** — *(In the context of Warden Supreme!)* The challenge-selected mechanism binding TBS CSR contents to the ceremony: a CSR signature,
+  or a digest incorporated into the platform attestation nonce.
 - **Challenge / Nonce** — A server‑generated, unpredictable byte string used exactly once to guarantee freshness and prevent replay. Android embeds it in the attestation extension; iOS mixes it into the attestation nonce via `clientDataHash` (see [Android Key Attestation]({{ links.android_key_attestation }}), [Attestation Object Validation Guide]({{ links.ios_attestation_validation }})).
 - **Binding** — Cryptographically tying data (e.g., public key bytes + challenge) into an attested statement so the verifier can trust their association.
 
@@ -27,7 +31,15 @@ This glossary centralises terms used across the documentation. Each entry is con
 - **X.509 Certificate Chain** — Sequence of certificates from leaf (key’s cert) → intermediate(s) → root (trust anchor). Android attestation uses an X.509 leaf carrying an attestation extension (see [Android Key Attestation]({{ links.android_key_attestation }})).
 - **Leaf / Intermediate / Root** — The key’s certificate is the leaf; intermediates link to a root certificate that the verifier trusts.
 - **Trust Anchor** — Known‑good root certificate or public key the verifier explicitly trusts (e.g., Google’s Hardware Attestation Root, Apple’s App Attest Root) (see [Android Key Attestation]({{ links.android_key_attestation }}), [Attestation Object Validation Guide]({{ links.ios_attestation_validation }})).
-- **PKCS#10 / CSR (Certificate Signing Request)** — Signed request carrying a public key and optional attributes/extensions; Warden Supreme embeds attestation payloads in CSR attributes and binds the nonce via the CSR subject.
+- **PKCS#10 / CSR (Certificate Signing Request)** — A signed request containing a CertificationRequestInfo (TBS CSR), a
+  signature algorithm, and a signature. Warden Supreme signature mode sends the complete CSR; hash mode sends only the
+  unsigned TBS CSR.
+- **TBS CSR / CertificationRequestInfo** — The part of a PKCS#10 request containing version, subject, public key, and
+  attributes (including requested extensions). It is signed in signature mode and hash-bound in hash mode.
+- **AttestationHashInput** — Canonical DER projection of a TBS CSR excluding its public key and single attestation-proof
+  attribute. Its digest becomes the platform attestation nonce in hash mode.
+- **Attested Client Attribute** — A typed value supplied by verified application code and bound into the TBS CSR. It is
+  software-attested rather than independently asserted by the device hardware or OS.
 - **OID (Object Identifier)** — Hierarchical identifier used in X.509 and CSR attributes/extensions; used to identify custom attestation payloads and optional device-name attributes.
 - **PKI / PKIX** — Public Key Infrastructure and its X.509 profile; governs certificate path validation, constraints, and revocation semantics.
 - **ASN.1 / DER** — Encoding rules used in X.509 and Android’s attestation extension.
