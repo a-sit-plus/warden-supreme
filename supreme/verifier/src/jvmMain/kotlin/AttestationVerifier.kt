@@ -798,6 +798,7 @@ sealed class ChallengeValidationResult {
  * Hence, a certificate can be issued and the whole certificate chain (from newly issued certificate up to the CA)
  * shall be returned.
  */
+@Deprecated("To be removed in Warden Supreme 1.5", replaceWith = ReplaceWith("CertificateIssuerV2"))
 typealias CertificateIssuer = suspend AttestationResult.Verified.(Pkcs10CertificationRequest) -> CertificateChain
 
 /**
