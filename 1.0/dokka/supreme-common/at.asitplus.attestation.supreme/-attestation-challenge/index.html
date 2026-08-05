@@ -1,0 +1,393 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AttestationChallenge</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.0.2
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":supreme-common/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":supreme-common/commonMain" data-filter=":supreme-common/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="supreme-common::at.asitplus.attestation.supreme/AttestationChallenge///PointingToDeclaration//-8504598">
+  <div class="breadcrumbs"><a href="../../index.html">supreme-common</a><span class="delimiter">/</span><a href="../index.html">at.asitplus.attestation.supreme</a><span class="delimiter">/</span><span class="current">AttestationChallenge</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Attestation</span><wbr><span><span>Challenge</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">AttestationChallenge</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/a-sit-plus/warden-supreme/tree/main/supreme/common/src/commonMain/kotlin/AttestationChallenge.kt#L54">source</a>)</span></span></div><p class="paragraph">Represents a challenge for attestation processes, encapsulating necessary details such as the nonce, validity, and additional constraints or metadata for the attestation proof.</p><p class="paragraph">The class provides serialization support for its fields and enforces strict requirements, such as the maximum size of the nonce. It includes both diagnostic and functional properties to support attestation protocols and ensure client compliance with server requirements.</p><h4 class="tableheader">Throws</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-illegal-argument-exception/index.html"><span>Illegal</span><wbr><span>Argument</span><wbr><span><span>Exception</span></span></a></div></span></div><div><div class="title"><p class="paragraph">If the <span data-unresolved-link="at.asitplus.attestation.supreme/AttestationChallenge//#kotlin.time.Instant#kotlin.time.Duration#kotlinx.datetime.TimeZone?#kotlin.ByteArray#kotlin.String#at.asitplus.signum.indispensable.asn1.ObjectIdentifier#at.asitplus.signum.indispensable.asn1.ObjectIdentifier?#kotlin.Int?#at.asitplus.attestation.supreme.KeyConstraints?#kotlin.collections.Map[kotlin.String,kotlin.Any?]?#kotlin.Any?/PointingToCallableParameters(3)/">nonce</span> exceeds 128 bytes or is shorter than 4 bytes</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-217417359%2FConstructors%2F-8504598" anchor-label="AttestationChallenge" id="-217417359%2FConstructors%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attestation-challenge.html"><span>Attestation</span><wbr><span><span>Challenge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-217417359%2FConstructors%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">issuedAt<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a><span class="token punctuation">, </span></span><span class="parameter ">validity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token punctuation">, </span></span><span class="parameter ">timeZone<span class="token operator">: </span><span data-unresolved-link="kotlinx.datetime/TimeZone///PointingToDeclaration/">TimeZone</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">nonce<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">attestationEndpoint<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">proofOID<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span><span class="token punctuation">, </span></span><span class="parameter ">genericDeviceNameOID<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">keyConstraints<span class="token operator">: </span><a href="../-key-constraints/index.html">KeyConstraints</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">additionalPayload<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="../-constrained/index.html">Constrained</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">transientData<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><div class="brief "></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1440300944%2FClasslikes%2F-8504598" anchor-label="Companion" id="1440300944%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1440300944%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="1796545730%2FProperties%2F-8504598" anchor-label="additionalPayload" id="1796545730%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="additional-payload.html"><span>additional</span><wbr><span><span>Payload</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1796545730%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="../-constrained-map-serializer/index.html">ConstrainedMapSerializer::class</a></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="additional-payload.html">additionalPayload</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="../-constrained/index.html">Constrained</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Optional user-defined payload.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1117138532%2FProperties%2F-8504598" anchor-label="attestationEndpoint" id="1117138532%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-endpoint.html"><span>attestation</span><wbr><span><span>Endpoint</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1117138532%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-endpoint.html">attestationEndpoint</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The endpoint to post the CSR containing the attestation proof to.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="777281151%2FProperties%2F-8504598" anchor-label="genericDeviceNameOID" id="777281151%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="generic-device-name-o-i-d.html"><span>generic</span><wbr><span>Device</span><wbr><span>Name</span><wbr><span><span>OID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="777281151%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifierStringSerializer///PointingToDeclaration/">ObjectIdentifierStringSerializer::class</span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="generic-device-name-o-i-d.html">genericDeviceNameOID</a><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof). Setting this to an OID other than <code class="lang-kotlin">null</code> will include a device name on a best-effort basis. Defaults to <code class="lang-kotlin">null</code> (i.e., no device name will be included).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1922466509%2FProperties%2F-8504598" anchor-label="issuedAt" id="-1922466509%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="issued-at.html"><span>issued</span><wbr><span><span>At</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1922466509%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="../-instant-long-serializer/index.html">InstantLongSerializer::class</a></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="issued-at.html">issuedAt</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a></div><div class="brief "><p class="paragraph">The issuing time of the nonce. Useful to detect clock drifts and exit early. This is not considered sensible information, as clocks must be in sync anyhow.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="771047994%2FProperties%2F-8504598" anchor-label="keyConstraints" id="771047994%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="key-constraints.html"><span>key</span><wbr><span><span>Constraints</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="771047994%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="key-constraints.html">keyConstraints</a><span class="token operator">: </span><a href="../-key-constraints/index.html">KeyConstraints</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Specifies key constraints for the client</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="501077818%2FProperties%2F-8504598" anchor-label="nonce" id="501077818%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="nonce.html"><span><span>nonce</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="501077818%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><span data-unresolved-link="at.asitplus.signum.indispensable.io/ByteArrayBase64UrlSerializer///PointingToDeclaration/">ByteArrayBase64UrlSerializer::class</span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="nonce.html">nonce</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">The nonce chosen by the server. Must be at most 128 bytes long, as <a href="https://developer.android.com/reference/android/security/keystore/KeyGenParameterSpec.Builder#setAttestationChallenge(byte%5B%5D)">this is the largest nonce size supported by Android</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-127699829%2FProperties%2F-8504598" anchor-label="proofOID" id="-127699829%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="proof-o-i-d.html"><span>proof</span><wbr><span><span>OID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-127699829%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifierStringSerializer///PointingToDeclaration/">ObjectIdentifierStringSerializer::class</span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="proof-o-i-d.html">proofOID</a><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span></div><div class="brief "><p class="paragraph">The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1516422728%2FProperties%2F-8504598" anchor-label="timeZone" id="-1516422728%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="time-zone.html"><span>time</span><wbr><span><span>Zone</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1516422728%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><span data-unresolved-link="kotlinx.datetime.serializers/TimeZoneSerializer///PointingToDeclaration/">TimeZoneSerializer::class</span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="time-zone.html">timeZone</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.datetime/TimeZone///PointingToDeclaration/">TimeZone</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The server timezone. Purely diagnostic, since <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a> used for <span data-unresolved-link="at.asitplus.attestation.supreme/AttestationChallenge//#kotlin.time.Instant#kotlin.time.Duration#kotlinx.datetime.TimeZone?#kotlin.ByteArray#kotlin.String#at.asitplus.signum.indispensable.asn1.ObjectIdentifier#at.asitplus.signum.indispensable.asn1.ObjectIdentifier?#kotlin.Int?#at.asitplus.attestation.supreme.KeyConstraints?#kotlin.collections.Map[kotlin.String,kotlin.Any?]?#kotlin.Any?/PointingToCallableParameters(0)/">issuedAt</span> is UTC by definition. Can be omitted if the server does not want to disclose this information</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1519583883%2FProperties%2F-8504598" anchor-label="transientData" id="-1519583883%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="transient-data.html"><span>transient</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1519583883%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Transient///PointingToDeclaration/"><span class="token annotation builtin">Transient</span></span></div></div><span class="token keyword">val </span><a href="transient-data.html">transientData</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Optional runtime-only attachment for application state.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1028768577%2FProperties%2F-8504598" anchor-label="validity" id="-1028768577%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="validity.html"><span><span>validity</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1028768577%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="../-duration-whole-seconds-serializer/index.html">DurationWholeSecondsSerializer::class</a></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="validity.html">validity</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a></div><div class="brief "><p class="paragraph">How long this nonce is considered valid.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2011761711%2FProperties%2F-8504598" anchor-label="validUntil" id="2011761711%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="valid-until.html"><span>valid</span><wbr><span><span>Until</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2011761711%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="valid-until.html">validUntil</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a></div><div class="brief "><p class="paragraph">Lazily-evaluated property</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1509546127%2FProperties%2F-8504598" anchor-label="version" id="-1509546127%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="version.html"><span><span>version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1509546127%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="version.html">version</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Indicates the wire format version; needs to default to <code class="lang-kotlin">null</code> for the default serializer to handle it correctly. The public constructor sets this to <a href="-companion/-c-u-r-r-e-n-t_-v-e-r-s-i-o-n.html">CURRENT_VERSION</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1899637488%2FFunctions%2F-8504598" anchor-label="equals" id="1899637488%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="equals.html"><span><span>equals</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1899637488%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="equals.html"><span class="token function">equals</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1999635790%2FFunctions%2F-8504598" anchor-label="getRdnSerialNumber" id="1999635790%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-rdn-serial-number.html"><span>get</span><wbr><span>Rdn</span><wbr><span>Serial</span><wbr><span><span>Number</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1999635790%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-rdn-serial-number.html"><span class="token function">getRdnSerialNumber</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/AttributeTypeAndValue///PointingToDeclaration/">AttributeTypeAndValue</span></div><div class="brief "><p class="paragraph">Encapsulates the nonce encoded into a <span data-unresolved-link="at.asitplus.signum.indispensable.asn1//serialNumber/at.asitplus.signum.indispensable.asn1.KnownOIDs#/PointingToDeclaration/">KnownOIDs.serialNumber</span> RDN component for easier parsing</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="169930742%2FFunctions%2F-8504598" anchor-label="hashCode" id="169930742%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hash-code.html"><span>hash</span><wbr><span><span>Code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="169930742%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="hash-code.html"><span class="token function">hashCode</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

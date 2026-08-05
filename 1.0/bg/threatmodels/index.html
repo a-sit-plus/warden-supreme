@@ -1,0 +1,1983 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://a-sit-plus.github.io/warden-supreme/1.0/bg/threatmodels/">
+      
+      
+        <link rel="prev" href="../platforms/">
+      
+      
+        <link rel="next" href="../privacy/">
+      
+      
+      <link rel="icon" href="../../assets/images/icon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
+    
+    
+      
+        <title>Threat Models and Risks - Warden Supreme</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+      
+        <meta  property="og:type"  content="website" >
+      
+        <meta  property="og:title"  content="Threat Models and Risks - Warden Supreme" >
+      
+        <meta  property="og:description"  content="None" >
+      
+        <meta  property="og:image"  content="https://a-sit-plus.github.io/warden-supreme/1.0/assets/images/social/bg/threatmodels.png" >
+      
+        <meta  property="og:image:type"  content="image/png" >
+      
+        <meta  property="og:image:width"  content="1200" >
+      
+        <meta  property="og:image:height"  content="630" >
+      
+        <meta  property="og:url"  content="https://a-sit-plus.github.io/warden-supreme/1.0/bg/threatmodels/" >
+      
+        <meta  name="twitter:card"  content="summary_large_image" >
+      
+        <meta  name="twitter:title"  content="Threat Models and Risks - Warden Supreme" >
+      
+        <meta  name="twitter:description"  content="None" >
+      
+        <meta  name="twitter:image"  content="https://a-sit-plus.github.io/warden-supreme/1.0/assets/images/social/bg/threatmodels.png" >
+      
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="asp-dark" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#threat-models-and-risks" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+              </button>
+            
+            
+
+  <div class="md-announce__inner">
+    Need help tailored to your needs? See our <a href="https://a-sit-plus.github.io/warden-supreme/1.0services/">&ensp;💎 Services</a>.
+  </div>
+
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+<!-- Determine classes -->
+
+
+
+
+
+<!-- Header -->
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+    <nav
+            class="md-header__inner md-grid"
+            aria-label="Header"
+    >
+
+        <!-- Link to home -->
+        <a
+                href="../.."
+                title="Warden Supreme"
+                class="md-header__button md-logo"
+                aria-label="Warden Supreme"
+                data-md-component="logo"
+        >
+            
+  <img src="../../assets/images/icon.svg" alt="logo">
+
+        </a>
+
+        <!-- Button to open drawer -->
+        <label class="md-header__button md-icon" for="__drawer">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+        </label>
+
+        <!-- Header title -->
+        <div class="md-header__title" data-md-component="header-title">
+            <div class="md-header__ellipsis">
+                <div class="md-header__topic">
+         <!-- <span class="md-ellipsis">
+            Warden Supreme
+          </span>-->
+                </div>
+                <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Threat Models and Risks
+            
+          </span>
+                </div>
+            </div>
+        </div>
+
+        <iframe src="https://github.com/sponsors/a-sit-plus/button" title="Sponsor a-sit-plus" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+
+        <!-- Color palette toggle -->
+        
+        
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="asp-dark" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+        
+        
+
+        <!-- User preference: color palette -->
+        
+        <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+        
+
+        <!-- Site language selector -->
+        
+
+        <!-- Button to open search modal -->
+        
+        <label class="md-header__button md-icon" for="__search">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+
+        <!-- Search interface -->
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+
+        <!-- Repository information -->
+        
+        <div class="md-header__source">
+            <a href="https://github.com/a-sit-plus/warden-supreme" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    a-sit-plus/warden-supreme
+  </div>
+</a>
+        </div>
+        
+    </nav>
+
+    <!-- Navigation tabs (sticky) -->
+    
+    
+    
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../overview/" class="md-tabs__link">
+          
+  
+  Docs Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../integration/supreme/" class="md-tabs__link">
+          
+  
+  Integration Guide
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sbom/" class="md-tabs__link">
+          
+  
+  SBOM
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../glossary/" class="md-tabs__link">
+        
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../dokka/" class="md-tabs__link">
+        
+  
+    
+  
+  API Docs
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../services/" class="md-tabs__link">
+        
+  
+    
+  
+  💎 Services
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+    
+</header>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<!-- Determine classes -->
+
+
+
+
+
+
+<!-- Navigation -->
+<nav
+        class="md-nav md-nav--primary md-nav--lifted"
+        aria-label="Navigation"
+        data-md-level="0"
+>
+
+    <!-- Site title -->
+    <label class="md-nav__title" for="__drawer">
+        <a
+                href="../.."
+                title="Warden Supreme"
+                class="md-nav__button md-logo"
+                aria-label="Warden Supreme"
+                data-md-component="logo"
+        >
+            
+  <img src="../../assets/images/icon.svg" alt="logo">
+
+        </a>
+    </label>
+
+    <!-- Repository information -->
+    
+    <div class="md-nav__source">
+        <a href="https://github.com/a-sit-plus/warden-supreme" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    a-sit-plus/warden-supreme
+  </div>
+</a>
+    </div>
+    
+
+    <!-- Navigation list -->
+    <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Docs Hub
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Docs Hub
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../why-supreme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Why Warden Supreme
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_1_3" id="__nav_1_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Background
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1_3">
+            <span class="md-nav__icon md-icon"></span>
+            Background
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Remote Attestation Primer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../platforms/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Platform Specifics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Threat Models and Risks
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Threat Models and Risks
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-a-everyday-tampering-and-rooted-devices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Threat Model A — Everyday Tampering and Rooted Devices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Threat Model A — Everyday Tampering and Rooted Devices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attack-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attack Goals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concrete-example-repackaging-id-austria" class="md-nav__link">
+    <span class="md-ellipsis">
+      Concrete Example: Repackaging ID Austria
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-b-bot-farms-sybil-attacks-and-largescale-emulator-abuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      Threat Model B — Bot Farms, Sybil Attacks, and Large‑Scale Emulator Abuse
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-c-targeted-attackers-with-physical-device-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Threat Model C — Targeted Attackers with Physical Device Access
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Privacy and Data Protection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_4" id="__nav_1_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Technical Deep Dive
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            Technical Deep Dive
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_4_1" id="__nav_1_4_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Android
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            Android
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Attestation Model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/android/leakedkeys/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Leaked Keyboxes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/ios/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    iOS DeviceCheck &amp; App&nbsp;Attest
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/quirks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quirks and Hints
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Testing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../refs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Integration Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Integration Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Integrating Warden Supreme
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            Integrating Warden Supreme
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integration/supreme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    End-to-End Integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integration/config/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Externalising Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integration/errorhandling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error Handling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integration/datamodel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Model and Schema
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integration/structure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Structure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integration/debugging/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Debugging
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integration/raw/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage without Integrated Clients
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integration/migration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration from WARDEN
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    SBOM
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            SBOM
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/makoto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Warden makoto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/roboto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Warden roboto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-common/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Common
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-verifier/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Verifier
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/config-hoplite/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Config Hoplite
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/config-spring/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Config Spring
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Glossary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dokka/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Docs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../services/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    💎 Services
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+    </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-a-everyday-tampering-and-rooted-devices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Threat Model A — Everyday Tampering and Rooted Devices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Threat Model A — Everyday Tampering and Rooted Devices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attack-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attack Goals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concrete-example-repackaging-id-austria" class="md-nav__link">
+    <span class="md-ellipsis">
+      Concrete Example: Repackaging ID Austria
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-b-bot-farms-sybil-attacks-and-largescale-emulator-abuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      Threat Model B — Bot Farms, Sybil Attacks, and Large‑Scale Emulator Abuse
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-c-targeted-attackers-with-physical-device-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Threat Model C — Targeted Attackers with Physical Device Access
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="threat-models-and-risks">Threat Models and Risks</h1>
+<div class="admonition bug inline end">
+<p class="admonition-title">Android Private Key Extraction</p>
+<p>Some OEM implementations have shipped key isolation bugs where keys were not fully confined to secure hardware.
+See <a href="../../technical/android/leakedkeys/">Leaked Keyboxes</a>.
+Treat attestation as a strong signal, not a proof of perfect secrecy, and track vendor advisories (e.g., <a href="https://source.android.com/docs/security/bulletin">Android Security Bulletin</a>).</p>
+</div>
+<p>Attestation is not a panacea—nothing ever is.
+However, attestation is a powerful mechanism that significantly raises the security bar for clients that would
+otherwise be untrusted. 
+This page walks through common threats and the concrete policies that mitigate them.</p>
+<h2 id="threat-model-a-everyday-tampering-and-rooted-devices">Threat Model A — Everyday Tampering and Rooted Devices</h2>
+<p>This scenario covers mainstream, widely available tampering done at scale using off-the-shelf tools and tutorials:</p>
+<ul>
+<li>Rooting</li>
+<li>Unlocking the bootloader</li>
+<li>Repackaging an app (modifying an APK/IPA, injecting code, or resigning with a different key)</li>
+</ul>
+<p>Attackers here are opportunistic. They apply whatever guide or exploit is currently popular to a stock phone and try to
+use your service.</p>
+<p>To keep such devices and apps out, require strong, cryptographic platform guarantees:</p>
+<ul>
+<li>
+<p>Android  </p>
+<ul>
+<li>Accept only a locked bootloader and trusted verified boot state.<ul>
+<li>For mainstream deployments, this usually means <code>verifiedBootState: VERIFIED</code>.</li>
+<li>For hardened custom-ROM deployments, this can also mean locked-bootloader <code>SELF_SIGNED</code> with an explicitly trusted verified boot key hash.</li>
+</ul>
+</li>
+<li>Enforce a minimum OS security patch level to exclude known, widely exploited vulnerabilities.  </li>
+<li>Verify the app identity: compare package name and signing‑certificate digest(s) against your allowlist.</li>
+</ul>
+</li>
+<li>
+<p>iOS  </p>
+<ul>
+<li>Require a complete App Attest certificate chain, validate the challenge/nonce, and ensure the device counter
+increases monotonically.</li>
+</ul>
+</li>
+</ul>
+<p>Software‑only Android attestation can be forged on rooted devices, so the policy decision is simple:<br />
+<strong>Accept hardware‑backed attestation only; reject software attestation.</strong> Honest users keep access; cheap, commoditised
+attacks are filtered out.</p>
+<div class="admonition tip">
+<p class="admonition-title">No Google Play Certification? No Problem!</p>
+<p>Need to support secure custom ROMs without weakening your attestation policy? Warden Supreme can treat
+trusted <code>SELF_SIGNED</code> verified boot keys just like OEM-verified Android while still requiring a locked
+bootloader and current patches.
+You can accept OEM Android, hardened custom ROMs such as GrapheneOS, or only those hardened custom ROMs for
+high-security deployments.
+GrapheneOS publishes its <a href="https://grapheneos.org/install/web#verified-boot-key-hash">verified boot key hashes</a>.
+See <a href="../../why-supreme/#high-assurance-android-policies">High-Assurance Android Policies</a>, <a href="./">Threat Models and Risks</a>, and
+<a href="../../integration/config/">Externalising Configuration</a>.</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example Repackaging Attacks</p>
+<p>Attestation thwarts common repackaging patterns such as:</p>
+<ul>
+<li>Modifying network calls to bypass server‑side checks and resigning the app with an attacker key.</li>
+<li>Injecting ad‑fraud or click‑spam SDKs into a popular app to monetise traffic.</li>
+<li>Stripping certificate pinning hooks and shipping a “patched” build to enable man-in-the-middle attacks.</li>
+<li>Inject malicious code to exfiltrate sensitive data.</li>
+</ul>
+<p>In each case, the app identity (package name + signer digest) and the hardware‑backed attestation prevent a repackaged or resigned app from being accepted.</p>
+</div>
+<h3 id="attack-goals">Attack Goals</h3>
+<p>The goals of using off-the-shelf methods to tamper with apps are twofold:</p>
+<ol>
+<li>Circumvent root checks and modify app logic on a device the attacker controls</li>
+<li>Distribute malware inside repackaged apps through unofficial app stores</li>
+</ol>
+<p>The first class of "attackers" can be treated as an untrusted client a user deliberately employs.
+Assuming that a user only has access to their own data, this does not pose privacy risks or endanger other users.
+It <strong>can</strong> be an issue in multiplayer games, for example, as it will allow cheating. <strong>Even sophisticated means
+to circumvent attestation (see <a href="#threat-model-c-targeted-attackers-with-physical-device-access">Threat Model&nbsp;C</a>) will still keep other users safe!</strong></p>
+<p>The second class of attackers has malicious intent and tries to harm legitimate users at scale. They do not have access
+to their victims' devices and thus cannot modify the operating system.
+Hence, these attackers are limited to modifying the actual application they distribute, and any invasive changes to a device
+or the operating system are irrelevant for such scenarios. <strong>If your back-end enforces and properly checks attestation, your users are safe</strong>,
+because sophisticated means to circumvent attestation require physical access to a victim's device
+(see <a href="#threat-model-c-targeted-attackers-with-physical-device-access">Threat Model&nbsp;C</a>).</p>
+<h3 id="concrete-example-repackaging-id-austria">Concrete Example: Repackaging ID Austria</h3>
+<p>Public demonstrations have shown attempts to repackage apps to bypass client‑side checks (e.g., root/jailbreak
+detection, pinning) and then re‑sign the modified APK with a different key. A documented community example is
+<a href="https://github.com/eGovPatchesAT/id-austria">github.com/eGovPatchesAT/id-austria</a>,
+which explores patching attempts against the Austrian <em>Digitales Amt</em> app.
+<strong>What the repository proposes and why it’s relevant:</strong></p>
+<ul>
+<li>It documents techniques commonly discussed in reverse‑engineering communities: extracting the APK, modifying bytecode
+  or hooks to disable checks (e.g., root detection, SSL pinning), rebuilding, and re‑signing with a non‑official key.</li>
+<li>It shows that client‑side defences alone (root checks, anti‑debug, obfuscation) can be removed or bypassed once an
+  attacker controls the binary — which is exactly why server‑side verification must rest on cryptography, not heuristics.</li>
+<li>It is a real‑world illustration that repackaging is feasible but strategically futile against
+  services that enforce hardware‑backed attestation and app‑identity binding.</li>
+</ul>
+<p><strong>Why this fails under proper attestation:</strong></p>
+<ul>
+<li>App identity binding (Android): The attestation record includes the package name and signing‑certificate digest(s).
+  Any repackaged build must be signed with a different key; its signer digest won’t match the back-end allowlist and is
+  rejected.</li>
+<li>Hardware root of trust: Attestation is produced by secure hardware (TEE/StrongBox), which cannot be forged by a
+  modified client. Software‑only attestations are rejected by policy.</li>
+<li>Freshness binding: The server‑issued challenge/nonce is bound into the attestation, preventing replay of genuine
+  statements from other devices or app instances.</li>
+<li>Platform integrity gates: Requiring Verified Boot and a locked bootloader, plus enforcing current OS/security patch
+  levels, further blocks devices where low‑level hooks or instrumentation would typically be installed.</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Takeaway</p>
+<p>Even if client‑side protections (e.g., root checks) are patched out, a back-end enforcing hardware‑backed
+attestation with an app‑identity allowlist rejects repackaged apps by construction.</p>
+</div>
+<h2 id="threat-model-b-bot-farms-sybil-attacks-and-largescale-emulator-abuse">Threat Model B — Bot Farms, Sybil Attacks, and Large‑Scale Emulator Abuse</h2>
+<p>Here the adversary doesn’t necessarily tamper with the OS. Instead, they spin up thousands of virtual devices (a form of
+a <a href="https://www.freehaven.net/anonbib/cache/sybil.pdf">Sybil attack</a>—many forged identities controlled by one adversary)
+or automate UI flows on “farms” of cheap handsets to commit large‑scale fraud (e.g., credential stuffing, promo abuse, ad‑click inflation).</p>
+<p>Emulators are effectively free to scale—marginal costs are primarily CPU time and cloud instances
+(see <a href="https://cloud.google.com/compute/vm-instance-pricing">Google Cloud — VM Instance Pricing</a>)—which makes them attractive
+for abuse at massive volume. The Android Emulator’s headless/CI mode also makes horizontal scaling trivial via scripts and
+containers (see <a href="https://developer.android.com/studio/run/emulator-commandline">Android Emulator — Command‑Line and Headless Usage</a>).
+In addition, bot operators often modify or instrument Android builds on physical devices to ease automation (e.g.,
+<a href="https://iamjosephmj.medium.com/unveiling-accessibility-attacks-on-android-code-examples-and-countermeasures-de16bd25c76c">abusing Accessibility Services</a>,
+engineering/rooting ROMs, or repackaging apps to expose hooks and bypass certificate
+pinning).</p>
+<p>Defence therefore focuses on telling real, unique devices apart, making horizontal scaling expensive, and selectively excluding low‑cost hardware classes:</p>
+<ul>
+<li><strong>Attestation requirements:</strong><ul>
+<li>Demand hardware‑backed attestation. For sensitive workflows on known device fleets, consider requiring StrongBox on Android 9+ if your user base supports it (this excludes most budget and many older devices).</li>
+<li>Reject emulator attestation roots and uncertified build fingerprints.</li>
+<li>Verify app identity against your allowlist (package name + signing‑certificate digest).</li>
+</ul>
+</li>
+<li><strong>Cost‑increasing policy levers</strong> (apply based on audience support):<ul>
+<li>Minimum Android OS version: Set a recent floor to exclude older, cheaper second‑hand devices that dominate farms.  </li>
+<li>Patch‑level floor: Require recent security patch levels to filter out poorly maintained devices.  </li>
+<li>Device capabilities:<ul>
+<li>Prefer StrongBox when feasible to rule out inexpensive hardware.</li>
+<li>Require Remote Key Provisioning</li>
+</ul>
+</li>
+<li>Integrity signals: Combine attestation with server‑side anomaly detection (rate limits, IP reputation, proof‑of‑work for abuse endpoints) to degrade automation ROI.</li>
+</ul>
+</li>
+</ul>
+<div class="admonition warning inline end">
+<p class="admonition-title">Warning</p>
+<p>Consider your target audience! If you target a wide user base, you cannot demand fully updated, top-of-the-line devices.</p>
+</div>
+<p>The goal is to require real hardware, block modified apps, remove the cheapest device classes from
+eligibility, and enforce remote key provisioning.
+Requiring real hardware alone raises the cost of Sybil attacks astronomically compared to using emulators.
+Demanding modern hardware with up‑to‑date security drives up the operating cost of a bot farm and makes such
+operations far less feasible.</p>
+<h2 id="threat-model-c-targeted-attackers-with-physical-device-access">Threat Model C — Targeted Attackers with Physical Device Access</h2>
+<div class="admonition warning inline end">
+<p class="admonition-title">Warning</p>
+<p>Attestation cannot detect unknown (zero‑day) or kernel‑level root exploits!</p>
+</div>
+<p>Consider a well‑funded adversary who can access a user’s device and invest in custom exploits, downgrades, or supply‑chain manipulation (e.g., high‑value account takeover, corporate espionage).
+Attestation cannot detect unknown (zero‑day) or kernel‑level root exploits, so perfect prevention is unrealistic.
+However, you can raise the cost and reduce exposure—primarily on Android, where policies are explicit and verifiable:</p>
+<ul>
+<li><strong>Rollback Resistance</strong><ul>
+<li>Accept only attestation statements asserting rollback resistance to block silent firmware or key downgrades.</li>
+</ul>
+</li>
+<li><strong>Dedicated Secure Hardware</strong><ul>
+<li>Require StrongBox‑backed Keystore for the highest level of hardware isolation.</li>
+</ul>
+</li>
+<li><strong>Enforce Latest Security Updates</strong><ul>
+<li>Keep policies strict and current: allow only recent OS versions with up‑to‑date security patches.</li>
+</ul>
+</li>
+<li><strong>User Presence / Authentication</strong><ul>
+<li>Tie sensitive operations (e.g., transaction signing) to fresh biometric authentication so keys cannot be used without the legitimate user.</li>
+</ul>
+</li>
+</ul>
+<p>These controls will exclude older or lower‑end devices. The policy trade‑off is explicit: choose assurance over coverage when stakes are high!</p>
+<p>For Android specifically, this is also where verified-boot policy becomes strategically interesting:</p>
+<ul>
+<li>Broad, consumer-facing deployments often accept OEM-verified Android with current patches.</li>
+<li>Mixed deployments can accept OEM Android plus explicitly trusted hardened custom ROMs.</li>
+<li>High-security deployments can choose to admit only explicitly trusted hardened custom ROMs with locked bootloaders,
+  recent patches, and additional requirements such as StrongBox or rollback resistance.</li>
+</ul>
+<p>This is not a theoretical distinction. It is a practical way to support privacy- and hardening-focused device fleets
+without weakening the integrity model. See <a href="../../why-supreme/">Why Warden Supreme</a> for the product view and
+<a href="../../integration/config/">Externalising Configuration</a> for the actual policy shape.</p>
+<div class="admonition example">
+<p class="admonition-title">Choosing a Policy That Matches Your Risk</p>
+<ul>
+<li>Low to moderate risk:<ul>
+<li>Hardware attestation</li>
+<li>Locked bootloader + trusted verified boot policy</li>
+<li>OEM-only, OEM plus trusted custom ROM keys, or trusted custom ROM keys only</li>
+<li>Reject older patch‑levels</li>
+</ul>
+</li>
+<li>Strong Sybil Resistance<ul>
+<li>Require remote key provisioning</li>
+<li>Require recent OS versions</li>
+<li>Require more recent patch levels</li>
+</ul>
+</li>
+<li>Hardening against targeted attacks:<ul>
+<li>Require StrongBox</li>
+<li>Rollback resistance</li>
+<li>Require latest patch levels + app version</li>
+<li>Require latest and greatest OS version</li>
+<li>Optionally restrict Android to explicitly trusted hardened custom ROM verified boot keys only</li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025-2026 A-SIT Plus GmbH &bull; <a href="https://plus.a-sit.at/imprint.html" target="_blank">Imprint</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://plus.a-sit.at/" target="_blank" rel="noopener" title="plus.a-sit.at" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="m57.7 193 9.4 16.4c8.3 14.5 21.9 25.2 38 29.8l57.9 16.5c17.2 4.9 29 20.6 29 38.5v39.9c0 11 6.2 21 16 25.9s16 14.9 16 25.9v39c0 15.6 14.9 26.9 29.9 22.6 16.1-4.6 28.6-17.5 32.7-33.8l2.8-11.2c4.2-16.9 15.2-31.4 30.3-40l8.1-4.6c15-8.5 24.2-24.5 24.2-41.7v-8.3c0-12.7-5.1-24.9-14.1-33.9l-3.9-3.9c-9-9-21.2-14.1-33.9-14.1H257c-11.1 0-22.1-2.9-31.8-8.4l-34.5-19.7c-4.3-2.5-7.6-6.5-9.2-11.2-3.2-9.6 1.1-20 10.2-24.5l5.9-3c6.6-3.3 14.3-3.9 21.3-1.5l23.2 7.7c8.2 2.7 17.2-.4 21.9-7.5 4.7-7 4.2-16.3-1.2-22.8l-13.6-16.3c-10-12-9.9-29.5.3-41.3l15.7-18.3c8.8-10.3 10.2-25 3.5-36.7l-2.4-4.2c-3.5-.2-6.9-.3-10.4-.3-92.8 0-171.5 60.9-198.2 145M464 256c0-36.8-9.6-71.4-26.4-101.5L412 164.8c-15.7 6.3-23.8 23.8-18.5 39.8l16.9 50.7c3.5 10.4 12 18.3 22.6 20.9l29.1 7.3c1.2-9 1.8-18.2 1.8-27.5zM0 256a256 256 0 1 1 512 0 256 256 0 1 1-512 0"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:<opensource@a-sit.at>" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M498.1 5.6c10.1 7 15.4 19.1 13.5 31.2l-64 416c-1.5 9.7-7.4 18.2-16 23s-18.9 5.4-28 1.6L284 427.7l-68.5 74.1c-8.9 9.7-22.9 12.9-35.2 8.1S160 493.2 160 480v-83.6c0-4 1.5-7.8 4.2-10.8l167.6-182.8c5.8-6.3 5.6-16-.4-22s-15.7-6.4-22-.7L106 360.8l-88.3-44.2C7.1 311.3.3 300.7 0 288.9s5.9-22.8 16.1-28.7l448-256c10.7-6.1 23.9-5.5 34 1.4"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "search.suggest", "search.highlight", "content.code.annotate", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  </body>
+</html>
