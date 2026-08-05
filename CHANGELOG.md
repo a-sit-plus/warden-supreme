@@ -51,6 +51,31 @@
     * Signum 3.26.0 / Supreme 0.16.0, upgrading to Strongbox where available
 
 
+## NEXT
+* **Selectable attestation-proof authentication and attested client attributes**
+    * Add `DataAuthentication.Signature` (default) and `DataAuthentication.Hash` challenge modes.
+    * Signature mode preserves the existing signed-PKCS#10 behaviour and proof-of-possession check.
+    * Hash mode returns an unsigned TBS CSR and binds its version, subject, extensions, and non-proof attributes through
+      a canonical DER hash used as the platform attestation nonce. It deliberately does not prove possession.
+    * Always verify that the public key in the received TBS CSR matches the key proven by the platform attestation.
+    * Add `AttestationProof` as the verifier/client transport abstraction and structurally decode its DER as either
+      a complete CSR or TBS CSR. Hash algorithms remain challenge-owned and are never supplied with client transport.
+      Deprecate CSR-only overloads; they reject hash authentication and requested attributes instead of silently changing
+      behaviour.
+    * Add ordered required/optional client-provided attributes using `AttestableAttributes`, `ToBeAttestedAttribute`,
+      `PrimitiveType`, and ASN.1 codecs. Values are authenticated by either supported mode.
+    * Move authentication selection from optional `KeyConstraints` into `AttestationChallenge`.
+    * Add canonical `AttestationHashInput` conversion to and from TBS CSR data, excluding only the public key and exactly
+      one attestation-proof attribute.
+    * Reject authentication-mode mismatches, duplicate CSR attribute/extension OIDs, malformed extension requests,
+      non-canonical attribute order, key mismatches, and missing or invalid requested attributes.
+    * Route all new verifier validation failures through `onPreAttestationError` as typed
+      `PreAttestationError.ClientDataValidation` values.
+    * Add `dataAuthentication` and human-readable `attestableAttributes` support to `SupremeConfiguration` JSON/YAML.
+    * Expand client, verifier, property, and Android-emulator end-to-end coverage for both authentication modes and
+      required/optional attribute combinations.
+* Add Supreme dependency to `supreme-common`
+
 ## 1.0.3
 * Security hardening:
     * Verify Android attestation certificate chains before fully decoding their attacker-controlled attestation extensions.
