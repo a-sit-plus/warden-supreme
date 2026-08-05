@@ -134,6 +134,23 @@ In addition, approaches based on reflection that do not invoke the configuration
 To externalise configuration for fully integrated attestation flows conveniently, use the umbrella `SupremeConfiguration`.
 It includes both the platform-specific configurations and the properties related to fully integrated attestation itself.
 
+Two integrated-flow properties control proof authentication and client-provided attested values:
+
+* `dataAuthentication` defaults to signature mode. Use `{ "type": "SIGNATURE" }` for a signed CSR with proof of
+  possession, or `{ "type": "HASH", "algorithm": "SHA256" }` for an unsigned TBS CSR whose canonical hash input is
+  bound through the platform attestation nonce.
+* `attestableAttributes` is optional. It defines the dedicated CSR attribute OID and an ordered list of values. `type`
+  uses readable `PrimitiveType` names (`STRING`, `INT`, `BOOLEAN`, `BYTEARRAY`, etc.); `required` defaults to `true`.
+
+The generated YAML and JSON examples below demonstrate hash authentication together with one required and one optional
+attestable attribute. Their example OID is the freely assignable UUID-based OID for
+`e4da8413-46ae-4f0f-88f5-c7325b5850b0`. Generate a fresh UUID-derived `2.25` OID for your own attribute instead of
+borrowing an enterprise subtree you do not control.
+
+These are verifier defaults copied into each issued `AttestationChallenge`; `issueChallenge` can override them per
+ceremony. `AttestationProof.decodeFromDer` distinguishes a complete CSR from an unsigned TBS CSR structurally. The
+matched challenge—not the HTTP layer or client transport—selects the expected mode and hash algorithm.
+
 !!! danger "Bound Payload Sizes"
     `maxAttestationPayloadBytes` defaults to 1 MiB and limits raw attestation proofs when using
     `AttestationVerifier.decodeAttestationProof(…)`. Configure the same limit for the client and enforce it before an
@@ -147,7 +164,8 @@ expose the same (de)serialisation functions as `SupremeConfiguration`.
 ??? example "YAML with Defaults for a Sample Android and iOS App"
     The below example shows every configuration property in YAML form.
     It uses a single Android app and a single iOS app. Android revocation checks use the default Google revocation list,
-    as well as a custom file-based revocation list. All other properties show their default values.  
+    as well as a custom file-based revocation list. It also configures hash authentication and required and optional
+    attestable attributes. All other properties show their default values.
     You can download the below example [here](../examples/supreme.yaml).
     
     ```yaml
@@ -157,7 +175,8 @@ expose the same (de)serialisation functions as `SupremeConfiguration`.
 ??? example "JSON with Defaults for a Sample Android and iOS App"
     The below example shows every configuration property in JSON form.
     It uses a single Android app and a single iOS app. Android revocation checks use the default Google revocation list,
-    as well as a custom file-based revocation list. All other properties show their default values.  
+    as well as a custom file-based revocation list. It also configures hash authentication and required and optional
+    attestable attributes. All other properties show their default values.
     You can download the below example [here](../examples/supreme.json).
     
     ```json

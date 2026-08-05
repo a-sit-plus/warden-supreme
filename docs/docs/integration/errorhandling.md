@@ -104,7 +104,8 @@ offline analysis.
 
 ### Pre-Attestation Errors
 When using fully integrated attestation, preprocessing steps are automatically performed to extract, check, and invalidate
-the received challenge, parse the received CSR, extract the attestation proof (CSR), and so forth.
+the received challenge, parse the signed CSR or unsigned TBS CSR, extract the attestation statement, validate the selected
+authentication mode and canonical CSR structure, match the attested public key, and decode requested attributes.
 Naturally, this does not always work as arbitrary data can be sent to the verifier, which means pre-attestation
 errors can occur.  
 The following snippet shows how to react to such errors.
@@ -112,23 +113,32 @@ Note that the `onPreAttestationError` callback is side-effect-free except that i
 to customise the error message/error code conveyed to the client.
 
 ```kotlin
---8<-- "Readme-Backend-preerrorhandling.kt:15:40"
+--8<-- "Readme-Backend-preerrorhandling.kt:16:38"
 ```
 
-1. Refer to [Debugging](debugging.md)
-2. Certificate is not yet valid or expired. Clock drift is the main source for this error.
-3. An untrusted root certificate was encountered. E.g., an Android Emulator was used in production.
-4. Thrown when an attestation statement is received for a platform that is not configured.
+1. The attestation statement could not be extracted from the received transport. New code receives
+   `AugmentedAttestationStatementExtraction`, which contains `AttestationProof`; the CSR-only class is retained for
+   the deprecated verifier overload.
+2. The nonce/challenge could not be extracted from the received TBS CSR.
+3. Challenge verification or an operational pre-attestation step failed.
+4. `ClientDataValidation` exposes a precise `reason`, the received transport, the validated challenge, and the underlying
+   throwable. Reasons cover authentication-mode mismatch, duplicate attribute/extension OIDs, malformed extension
+   requests, non-canonical attribute order, hash binding, public-key mismatch, and requested-attribute extraction/matching.
+
+The callback's non-null return value becomes the client-facing explanation. Exceptions thrown by this observation callback
+are ignored and the verifier uses its safe fallback explanation.
 
 
 ## Client-Side (Generic, High-Level Error Categories)
 Using fully integrated attestation only ever returns either an `AttestationResponse.Success`
 or an `AttestationResponse.Failure`. The latter indicates one of four error reasons:
 
-1. `TRUST` encompassing untrusted roots, revoked certificates, or invalid certificate chains
+1. `TRUST` encompassing untrusted roots, revoked certificates, invalid certificate chains, invalid CSR signatures, a
+   public key that does not match the attested key, or a transport that does not provide the authentication mode required
+   by the challenge
 2. `TIME` encompassing temporal validity errors with respect to certificates and attestation statements 
-3. `CONTENT` encompassing all cases where the attestation statement itself failed to parse or verify against the policy
-   (i.e. Android devices having an unlocked bootloader, even though the policy mandates a locked bootloader and a factory image)
+3. `CONTENT` encompassing cases where the attestation statement fails to parse or verify against policy, and invalid proof
+   transport content such as ambiguous/malformed CSR attributes or missing/invalid requested attributes
 4. `INTERNAL` encompassing errors on a more fundamental level, such as a structurally valid CSR, but using unsupported signature algorithms, for example,
    or outright implementation issues in Warden Supreme.
 

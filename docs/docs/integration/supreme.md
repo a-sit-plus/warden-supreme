@@ -45,16 +45,46 @@ The back-end, however, can also use [Spring](https://spring.io/) or any other HT
 An attestation flow works as follows, in accordance with Figure&nbsp;1:
 
 1. The client fetches a challenge from the back-end.
-2. The client feeds the challenge into hardware-backed key generation to create an attestation statement.
-3. The client sends the attestation proof (CSR) back to the back-end.
-    * **Wire-format-wise, this is a CSR with a custom attribute carrying the attestation statement payload**
-    * CSRs were chosen because their canonical encoding is precisely specified and because they inherently come with a proof of possession of the private key
-    * CSRs allow defining arbitrary extensions and attributes, which is a perfect fit for Warden Supreme's usage scenario
-    * Finally, the PKIX context is the natural habitat of a CSR
+2. The client prepares the TBS CSR data and feeds either the server nonce or a hash of that data into hardware-backed key
+   generation to create an attestation statement.
+3. The client sends the challenge-selected attestation proof back to the back-end.
+    * `DataAuthentication.Signature` (the default) sends a complete signed CSR and therefore proves possession of the
+      attested private key.
+    * `DataAuthentication.Hash` sends an unsigned TBS CSR. Its version, subject, extensions, and all non-proof attributes
+      are bound through a canonical DER hash used as the platform attestation nonce. This mode deliberately provides no
+      proof of possession.
+    * Both modes carry the attestation statement in a custom TBS CSR attribute and can bind required or optional
+      client-provided attributes.
+    * The public key cannot be part of the pre-generation hash, so the verifier separately requires it to equal the key
+      proven by the platform attestation.
 4. The back-end verifies the attestation statement against a predefined policy.
     * If the attestation is considered valid, the back-end issues a certificate for the attested key, thus vouching for the integrity of the client.
     * If the attestation does not verify, the back-end records the reason for this failure.
 5. The back-end responds either with the full certificate chain (success) or a detailed error reason (failure).
+
+### Choosing an Authentication Mode
+
+Use signature mode when the ceremony must prove that the client can operate the attested private key at that moment. This
+is the default. If key use requires biometric or device authentication, creating the
+CSR signature may display the configured authentication prompt.
+
+Use hash mode when binding the request data and attested key is sufficient and an immediate private-key operation is
+undesirable. Hash mode authenticates the TBS CSR contents but is **not** a proof of possession. A valid platform
+attestation still proves how and where the key was generated, and the verifier still matches that attested key to the TBS
+CSR public key.
+
+The modes are not interchangeable: the verifier rejects a signed CSR for a hash challenge and an unsigned TBS CSR for a
+signature challenge.
+
+### Requesting Client-Provided Attributes
+
+The verifier can place a `CertificationRequestAttributeAttestationDescriptor` in a challenge. It contains a dedicated
+attribute OID and an ordered list of `AttributeAttestationDescriptor(name, type, required)` entries. The client callback
+receives that list and returns one `Primitive` per entry. Required values must be present; optional values can be `null`.
+
+These values are produced by the app, not independently certified by Android or Apple. Successful verification means the
+expected app supplied them and the selected authentication mode bound them into this ceremony.
+Both signature and hash mode bind the same attribute sequence.
 
 <figure>
 <picture>
@@ -276,7 +306,9 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
     Challenge nonces are sensitive replay-protection material. Treat them as bearer values for their short lifetime: do not log them, do not expose them across sessions or callers, serve them only over protected transport, and bind/rate-limit callers in your HTTP layer when your service needs that context.
     Map that exception at your HTTP layer to `429 Too Many Requests` and, if useful, a `Retry-After` header.
     The cache deliberately does not implement backoff; caller-aware rate limiting needs IP, account, tenant, or device context and should live outside Warden Supreme.
-    For horizontally scaled or high-volume deployments, use a distributed TTL-backed `ChallengeValidator` instead (Redis, for example).
+    For horizontally scaled or high-volume deployments, provide a distributed TTL-backed `AttestationChallengeValidator`
+    instead (Redis, for example). Its `validate(AttestationProof)` method handles both signed and hash-based proofs;
+    the deprecated `ChallengeValidator` supports signed CSRs only.
 
 ```kotlin
 --8<-- "Readme-Verifier-min.kt:3"
@@ -287,10 +319,10 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
 
 ??? example "Comprehensive list of Verifier options"
     ```kotlin
-    --8<-- "Readme-Verifier.kt:20"
+    --8<-- "Readme-Verifier.kt:30"
     ```
     
-    1. We want Warden Supreme to convey the attestation statement payload inside the CSR using a custom OID.
+    1. We want Warden Supreme to convey the attestation statement payload inside the TBS CSR using a custom OID.
     2. We don't care about device names in this example.
     3. We explicitly specify the key we want to have created on the client.  
        The values shown here correspond to the defaults, as this is supported by Android and iOS.
@@ -300,11 +332,15 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
         * Enrolling new biometric factors will invalidate the key
     5. We want extra long nonces (default: 64 bytes; max: 128 bytes).
     6. Checking and invalidating challenges is handled by a Redis-backed cache (not shown here; roll your own). This is the recommended approach when multiple verifier instances issue challenges.
+    7. Request two application-provided values under one dedicated attribute OID. `accountId` is required; `riskScore`
+       may be omitted as `null`. Order and type are part of the schema.
+    8. Authenticate the TBS CSR data by hashing it with SHA-256 and feeding the digest into platform attestation. Set
+       `DataAuthentication.Signature` (the default) when proof of possession is required.
     
 
 Instead of passing parameters programmatically, it is also possible to externalise configuration (see [Externalising Configuration](config.md)).
 As such, an `AttestationVerifier` can also be created by passing a `SupremeConfiguration` which contains iOS and Android
-attestation policies, as well as everything needed on top (object identifiers, etc.):
+attestation policies, as well as object identifiers, key constraints, authentication mode, and requested attributes:
 
 ```kotlin
 --8<-- "Readme-Verifier-config-supreme.kt:15"
@@ -318,7 +354,8 @@ attestation policies, as well as everything needed on top (object identifiers, e
 `Makoto` verifies the generic platform and app attestation policy: challenge freshness, attestation statement validity,
 trust anchors, app identifiers, signer digests, boot state, OS and app version constraints, and similar platform-specific
 properties. Some back-ends also need service-specific checks on top of that policy, for example tenant binding, account
-state, risk engine decisions, device inventory rules, or values carried in `AttestationChallenge.additionalPayload`.
+state, risk engine decisions, device inventory rules, or client-provided attested attributes. `additionalPayload` is
+server-controlled context sent to the client; it is not client evidence to validate on receipt.
 
 Use `additionalVerifications` for such checks:
 
@@ -326,10 +363,13 @@ Use `additionalVerifications` for such checks:
 --8<-- "Readme-Backend-additional-verifications.kt:17:33"
 ```
 
-1. This is the verified CSR from the client.
-2. `additionalVerifications` runs after challenge validation, attestation verification, and CSR signature verification.
-   The validated `AttestationChallenge` is the receiver; the CSR and verified attestation result are parameters.
-3. Challenge payload can carry service context that is not part of generic platform attestation policy.
+1. This is the `AttestationProof` received from the client: a signed CSR or hash-authenticated TBS CSR.
+2. `additionalVerifications` runs after challenge validation, attestation verification, public-key matching, requested
+   attribute validation, and the challenge-selected authentication check (including CSR signature verification in
+   signature mode). The validated `AttestationChallenge` is the receiver; the proof transport and verified attestation
+   result are parameters.
+3. `receivedProof.attestedAttributes` parses the client-provided values using the schema from the validated challenge and
+   exposes them by configured name. Optional absent values map to `null`.
 4. Return an `AttestationResponse.Failure` to stop the flow with your own failure kind and explanation.
 5. Return `null` to continue to certificate issuance.
 6. Certificate issuance only runs if generic attestation and all additional checks succeed.
@@ -354,19 +394,22 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
     defaults to 1MB.
 
 ```kotlin
---8<-- "Readme-Backend.kt:50"
+--8<-- "Readme-Backend.kt:60"
 ```
 
 1. We're using JSON to transmit the challenge and the final response.
 2. Endpoint to serve challenges to clients
 3. It does nothing but issue challenges. In production, catch `InMemoryChallengeCache.ChallengeCacheFullException` here and return `429 Too Many Requests`; apply caller-aware rate limiting outside the verifier.
 4. The full URL to post the attestation proof to
-5. Endpoint expecting CSRs containing attestation statement payloads
-6. Read the raw CSR from the HTTP body
+5. Endpoint expecting DER-encoded attestation proofs.
+6. `AttestationProof.decodeFromDer` distinguishes the complete-CSR and TBS-CSR ASN.1 structures.
+   The verifier obtains the expected mode and algorithm from the matched challenge and rejects a shape
+   mismatch.
 7. Here, inside the `verifyAttestation` lambda, we already have a verified attestation according to the configured `makoto` instance.
 8. Signing a `TbsCertificate` automatically creates an X.509 certificate
 9. The contents of your leaf certificate are up to you! What follows is just an example.
-10. `it` is the CSR. Remember: The key from the CSR is already attested here!
+10. The certificate issuer receives `AttestationProof`. Its TBS CSR public key has already been matched to the
+    attested key, regardless of authentication mode.
 11. Build the full certificate chain
 12. Finally, respond with the result:
     * On success, the certificate chain produced above will be returned.
@@ -405,17 +448,24 @@ specifies key constraints:
     endpoint must be treated as a compromise of the attestation flow.
 
 ```kotlin
---8<-- "Readme-client-min.kt:19:35"
+--8<-- "Readme-client-min.kt:19:40"
 ```
 
 1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
 2. Perform the fully integrated attestation flow **iff key constraints are defined in the challenge** consisting of the following steps:
     1. Fetches the challenge from `ENDPOINT_CHALLENGE` 
     2. Automatically creates a key for `ALIAS` and an accompanying attestation statement payload. **Beware:** if a key for this alias exists, this will fail!
-    3. Creates and signs a CSR, feeding the challenge and attestation statement payload into it.
-    4. Sends it to the endpoint encoded in the received challenge.
-3. If everything worked out, store the received certificate chain using whatever storage approach you choose
-4. The kind of error tells you what went wrong. An `AttestationResponse.Failure` **may** also contain a string explaining further details.
+    3. Builds the challenge-selected proof: either a signed CSR with proof of possession or a hash-authenticated unsigned
+       TBS CSR.
+    4. Calls the attribute provider once if the verifier requested client-provided values. The returned values must match
+       the requested order and types; required values cannot be `null`.
+    5. Sends it to the endpoint encoded in the received challenge.
+3. Supply the required `accountId` requested by the verifier. Its value must match the declared `PrimitiveType.STRING`;
+   returning `null` for a required attribute is rejected before the proof is sent.
+4. The verifier declared `riskScore` optional, so the provider may return `null`. The list must still contain an entry for it,
+   preserving the exact order of the challenge's requested-attribute schema.
+5. If everything worked out, store the received certificate chain using whatever storage approach you choose
+6. The kind of error tells you what went wrong. An `AttestationResponse.Failure` **may** also contain a string explaining further details.
 
 This really is it! If you've made it this far, you have successfully issued certificates to mobile clients that fulfil your policy.
 The `AttestationClient` doesn't even come with any configuration options.
@@ -424,31 +474,38 @@ The `AttestationClient` doesn't even come with any configuration options.
     If you need more control, you can also manually perform individual steps, as shown below
     
     ```kotlin
-    --8<-- "Readme-client-step-by-step.kt:20:45"
+    --8<-- "Readme-client-step-by-step.kt:15:45"
     ```
     
     1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
     2. Fetch the challenge
-    3. Create a local attestation proof (a signed CSR) to be sent to the verifier
+    3. Create the signed or hash-authenticated proof selected by the challenge and provide any requested attributes
     4. Send it to the verifier endpoint contained in the challenge
     5. Store the received certificate chain on success
     6. Handle errors based on what went wrong
     
-    In addition, even more low-level access is possible by directly using Signum Supreme:
+    In addition, even more low-level access is possible by directly using Signum Supreme. The following example is
+    intentionally **signature-mode only**; it rejects hash challenges and requested attributes rather than accidentally
+    creating a proof with different semantics:
 
     ```kotlin
-    --8<-- "Readme-client-manual-lowlevel.kt:25:70"
+    --8<-- "Readme-client-manual-lowlevel.kt:31:82"
     ```
     
     1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
     2. Fetch the challenge
-    3. Create and configure a signer using Signum Supreme based on your demands  
+    3. Assert that this manual implementation supports the received challenge, then create and configure a signer using
+       Signum Supreme based on your demands
        This means that you can also override any client hints from the received challenge
     4. Don't forget to pass the nonce to enable attestation!
-    5. Create the CSR as desired
-    6. Send it to the verifier endpoint contained in the challenge
+    5. Create and sign the CSR as desired
+    6. Wrap it as `AttestationProof.Signed` and send it to the verifier endpoint contained in the challenge
     7. Store the received certificate chain on success
     8. Handle errors based on what went wrong
+
+    For new integrations, prefer `createAttestationProof`: it implements both authentication modes, canonical hash-input
+    construction, key matching expectations, and requested-attribute encoding. The deprecated CSR-only client functions
+    accept signature challenges without requested attributes only and fail explicitly otherwise.
 
 ## Beyond the Basics
 
@@ -470,15 +527,19 @@ On the back-end, however, attestation issues typically need to be analysed. Henc
 four callbacks to analyse challenge validation, attestation errors, and success (without side effects):
 
 ```kotlin
---8<-- "Readme-Backend-callbacks.kt:15:50"
+--8<-- "Readme-Backend-callbacks.kt:18:56"
 ```
 
-1. This is simply the CSR from the client, as in the minimal example
-2. `onChallengeValidated` is called after the CSR’s challenge binding was validated. It has the validated challenge as receiver and the CSR as parameter.
-3. `onPreAttestationError` is called in case of operational/internal errors, or if the attestation statement cannot
-   be extracted from a CSR. Different side-effect-free handling strategies can be employed based on error type.
+1. This is the `AttestationProof` from the client, as in the minimal example.
+2. `onChallengeValidated` is called after the proof's challenge binding was validated. It has the validated challenge as
+   receiver and the signed CSR or unsigned TBS CSR wrapper as parameter. Do not log challenge nonces.
+3. `onPreAttestationError` is called for challenge/extraction/operational failures and for new client-data validation
+   failures. `ClientDataValidation.reason` distinguishes authentication mismatch, ambiguous or malformed CSR structure,
+   hash binding, attested-key mismatch, and requested-attribute failures.
 4. At the end of `onPreAttestationError`, it is possible to return a custom error explanation to the client (can be null).
-5. `onAttestationError` is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
+5. `onAttestationError` is called if the platform attestation statement fails to verify. This includes an invalid
+   bootloader lock state, wrong package identifier, nonce/hash mismatch, etc. An invalid CSR signature in signature mode
+   is also reported here.
    See [the dedicated error handling guide](errorhandling.md) for more details!
 6. This logs a debug statement that can be used to replicate and debug the attestation process. **Beware of privacy implications!** See the [Debugging](debugging.md) page.
 7. Again, a custom error message can be sent to the client
@@ -486,15 +547,17 @@ four callbacks to analyse challenge validation, attestation errors, and success 
    This can be useful for statistical analyses, for example.
 9. This is the certificate signing lambda, also having a fully verified attestation result as receiver.
    In contrast to `onAttestationSuccess`, it is not side-effect-free, but is expected to return a certificate chain, whose
-   leaf certifies the attested key. As such, it receives the fully verified CSR as a parameter.
+   leaf certifies the attested key. It receives the fully verified `AttestationProof`; extract its TBS CSR from the
+   signed or hashed subtype as needed.
 
 
 The step-by-step guide [above](#warden-supreme-step-by-step-guide) will cover most use cases perfectly well.
 While extensive configurations were also included alongside the basic ones, Warden Supreme is, in fact, more flexible:
 
 * Instead of always using the defaults, it is possible to specify challenge properties manually for each challenge issued
-* Key constraints need not be specified. In that case, it is up to the client to create a key that is desired by the back-end and sign a CSR manually.  
+* Key constraints need not be specified. In that case, it is up to the client to create a suitable key and construct the
+  authentication mode requested by the challenge manually.
   (This is still very smooth, as can be seen in the [API docs](../dokka/supreme-client/at.asitplus.attestation.supreme/index.html#110236803%2FFunctions%2F-1347999820).)
-* By default, a device identifier is always encoded into the CSR; this can be toggled.
+* By default, a generic device name is encoded into the TBS CSR on a best-effort basis; this can be toggled.
 
 For more details, refer to the API docs on the [verifier](../dokka/supreme-verifier/at.asitplus.attestation.supreme/-attestation-verifier/) and on the [client](../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/)!

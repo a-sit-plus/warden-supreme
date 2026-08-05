@@ -17,6 +17,22 @@ Warden Supreme consolidates
 and integrates them with [Signum](https://a-sit-plus.github.io/signum/), our Kotlin Multiplatform crypto/PKI library,
 into one attestation format and a single client and server API.
 **Creating an attestable, hardware-backed key comes down to a single line of client code.**
+Each challenge can require a signed proof of possession or hash-bind an unsigned TBS CSR, and can request typed
+application-provided attributes that are authenticated by either mode.
+
+The platform libraries underneath Warden Supreme answer whether an Android or Apple attestation artefact is valid.
+Warden Supreme supplies the substantially larger system around that decision that makes the difference between verifying
+an attestation artefact and a production-grade, ready-to-deploy solution:
+
+* Client-side hardware-key creation
+* Versioned challenge and proof protocol
+* Replay protection
+* Cross-platform policy
+* Key and application-data binding
+* Certificate issuance
+* Externalisable configuration
+* Stable error handling
+* **Production-prove, battle-tested platform workarounds**
 
 !!! tip inline end "Familiar with attestation?"
     **[Jump to the integration guide!](integration/supreme.md)**  

@@ -29,6 +29,28 @@ Warden Supreme enforces unified flows and a unified data model. Migration mostly
     [Usage without Integrated Clients](raw.md) (Makoto/Roboto directly),
     and [Externalising Configuration](config.md) (canonical config loading).
 
+## Migrating to Warden Supreme 1.1+
+
+!!! note 
+    This section is targets integrators coming from Warden Supreme 1.0.x.
+
+The integrated transport is no longer unconditionally a signed CSR. New code uses `AttestationProof` end to end:
+
+- `AttestationProof.Signed` wraps the existing complete CSR and preserves proof-of-possession behaviour.
+- `AttestationProof.Hashed` wraps an unsigned TBS CSR whose canonical non-key, non-proof contents are authenticated
+  through the platform attestation nonce.
+- `AttestationChallenge.dataAuth` selects the required mode independently of optional `keyConstraints`.
+- `AttestationChallenge.toBeAttestedAttributes` can request ordered required/optional client-provided values.
+
+Update `AttestationClient.attest`, `AttestationVerifier.verifyAttestation`, `onChallengeValidated`,
+`additionalVerifications`, and the certificate issuer to accept `AttestationProof`. The old CSR-only overloads are
+deprecated compatibility paths: they continue to support signature authentication without requested attributes and reject
+new semantics explicitly.
+
+Use `AttestationProof.decodeFromDer` at HTTP boundaries. It infers complete CSR versus TBS CSR from the ASN.1 shape,
+without accepting a hash algorithm from the caller. The verifier obtains the expected mode and digest algorithm from the
+matched challenge and rejects a submitted shape that does not match it.
+
 ## Changes (Makoto + Roboto APIs)
 This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, without adopting the integrated model.
 
