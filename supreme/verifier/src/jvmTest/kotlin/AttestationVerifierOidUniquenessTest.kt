@@ -27,7 +27,7 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
         ) else null
         val challenge = verifier.issueChallenge(
             attestationEndpoint,
-            attestableAttributes = requested,
+            toBeAttestedAttributes = requested,
         )
         val proof = Pkcs10CertificationRequestAttribute(
             challenge.proofOID,
