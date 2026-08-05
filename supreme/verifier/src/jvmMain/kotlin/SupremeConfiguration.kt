@@ -39,7 +39,7 @@ import kotlin.time.Duration
  * @property defaultKeyConstraints Configuration for default key constraints, such as supported cryptographic operations.
  * @property dataAuthentication Default authentication mode placed in issued challenges. Signature mode proves private-key
  * possession; hash mode binds the TBS CSR contents through the platform attestation nonce without signing it.
- * @property attestableAttributes Optional ordered client-provided values to request and bind into every issued challenge.
+ * @property toBeAttestedAttributes Optional ordered client-provided values to request and bind into every issued challenge.
  * @property maxAttestationPayloadBytes Maximum HTTP payload size, in bytes, accepted for an attestation proof. Warden Supreme uses the
  * same limit at the HTTP boundary for issued challenges and attestation responses. The default accommodates normal
  * CSRs and certificate chains.
@@ -60,7 +60,7 @@ private constructor(
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
     val dataAuthentication: DataAuthentication = DataAuthentication.Signature,
     @Serializable(with = ConfigurationAttestableAttributesSerializer::class)
-    val attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
+    val toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
     val maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
 ) : AttestationConfiguration {
 
@@ -74,7 +74,7 @@ private constructor(
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
-        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
+        toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
         maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         ios,
@@ -85,7 +85,7 @@ private constructor(
         genericDeviceNameOID,
         defaultKeyConstraints,
         dataAuth,
-        attestableAttributes,
+        toBeAttestedAttributes,
         maxAttestationPayloadBytes,
     )
 
@@ -101,7 +101,7 @@ private constructor(
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
-        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
+        toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
         maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         ios,
@@ -112,7 +112,7 @@ private constructor(
         genericDeviceNameOID,
         defaultKeyConstraints,
         dataAuth,
-        attestableAttributes,
+        toBeAttestedAttributes,
         maxAttestationPayloadBytes,
     )
 
@@ -128,7 +128,7 @@ private constructor(
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
-        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
+        toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
         maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         null,
@@ -139,7 +139,7 @@ private constructor(
         genericDeviceNameOID,
         defaultKeyConstraints,
         dataAuth,
-        attestableAttributes,
+        toBeAttestedAttributes,
         maxAttestationPayloadBytes,
     )
 
@@ -282,12 +282,12 @@ private object ConfigurationAttestableAttributesSerializer :
                     CompositeDecoder.DECODE_DONE -> break
                     0 -> oid = decodeSerializableElement(descriptor, 0, ObjectIdentifierStringSerializer)
                     1 -> attributes = decodeSerializableElement(descriptor, 1, attributesSerializer)
-                    else -> throw SerializationException("Unknown AttestableAttributes element index: $index")
+                    else -> throw SerializationException("Unknown toBeAttestedAttributes element index: $index")
                 }
             }
             AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
-                requireNotNull(oid) { "Missing AttestableAttributes.oid" },
-                requireNotNull(attributes) { "Missing AttestableAttributes.attributes" },
+                requireNotNull(oid) { "Missing toBeAttestedAttributes.oid" },
+                requireNotNull(attributes) { "Missing toBeAttestedAttributes.attributes" },
             )
         }
 }

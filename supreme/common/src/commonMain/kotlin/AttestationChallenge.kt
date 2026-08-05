@@ -176,7 +176,7 @@ private constructor(
      *  @param keyConstraints Specifies key constraints for the client.
      *  @param additionalPayload Optional user-defined payload. See [additionalPayload] for serialization requirements.
      *  @param transientData Optional runtime-only attachment. Not serialized and excluded from equality/hashing.
-     *  @param attestableAttributes Optional ordered client-provided values to bind to the attestation.
+     *  @param toBeAttestedAttributes Optional ordered client-provided values to bind to the attestation.
      *  @param dataAuth Authentication mode for the TBS CSR contents.
      *
      * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes or shorter than 4 bytes
@@ -193,7 +193,7 @@ private constructor(
         keyConstraints: KeyConstraints? = null,
         additionalPayload: Map<String, Constrained>? = null,
         transientData: Any? = null,
-        attestableAttributes: CertificationRequestAttributeAttestationDescriptor? = null,
+        toBeAttestedAttributes: CertificationRequestAttributeAttestationDescriptor? = null,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
     ) : this(
         issuedAt = issuedAt,
@@ -207,7 +207,7 @@ private constructor(
         keyConstraints = keyConstraints,
         additionalPayload = additionalPayload,
         transientData = transientData,
-        toBeAttestedAttributes = attestableAttributes,
+        toBeAttestedAttributes = toBeAttestedAttributes,
         dataAuth = dataAuth,
     )
 
@@ -275,7 +275,8 @@ private constructor(
         val attributes: List<AttributeAttestationDescriptor>
     ) {
         init {
-            if(attributes.isEmpty()) throw IllegalArgumentException("attributes can't be empty!")
+            require(attributes.isNotEmpty()) { "attributes can't be empty!" }
+            require(attributes.size == attributes.distinctBy { it.name }.size) { "attributes names must be distinct!" }
         }
     }
 

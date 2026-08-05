@@ -40,7 +40,7 @@ private fun clientChallenge(
     proofOID = WardenDefaults.OIDs.ATTESTATION_PROOF,
     genericDeviceNameOID = null,
     keyConstraints = WardenDefaults.KeyConstraints.p256Signer,
-    attestableAttributes = attributes,
+    toBeAttestedAttributes = attributes,
     dataAuth = authentication,
 )
 

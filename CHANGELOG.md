@@ -15,8 +15,8 @@ this changelog also includes the original WARDEN changelog.
       a complete CSR or TBS CSR. Hash algorithms remain challenge-owned and are never supplied with client transport.
       Deprecate CSR-only overloads; they reject hash authentication and requested attributes instead of silently changing
       behaviour.
-    * Add ordered required/optional client-provided attributes using `AttestableAttributes`, `ToBeAttestedAttribute`,
-      `PrimitiveType`, and ASN.1 codecs. Values are authenticated by either supported mode.
+    * Add ordered required/optional client-provided attributes using `toBeAttestedAttributes`.
+      Values are authenticated by either supported mode.
     * Move authentication selection from optional `KeyConstraints` into `AttestationChallenge`.
     * Add canonical `AttestationHashInput` conversion to and from TBS CSR data, excluding only the public key and exactly
       one attestation-proof attribute.
@@ -24,7 +24,7 @@ this changelog also includes the original WARDEN changelog.
       non-canonical attribute order, key mismatches, and missing or invalid requested attributes.
     * Route all new verifier validation failures through `onPreAttestationError` as typed
       `PreAttestationError.ClientDataValidation` values.
-    * Add `dataAuthentication` and human-readable `attestableAttributes` support to `SupremeConfiguration` JSON/YAML.
+    * Add `dataAuthentication` and human-readable `toBeAttestedAttributes` support to `SupremeConfiguration` JSON/YAML.
     * Expand client, verifier, property, and Android-emulator end-to-end coverage for both authentication modes and
       required/optional attribute combinations.
 * Add Supreme dependency to `supreme-common`
