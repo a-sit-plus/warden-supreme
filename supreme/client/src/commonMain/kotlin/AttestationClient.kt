@@ -10,7 +10,6 @@ import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.*
 import at.asitplus.signum.supreme.dsl.PREFERRED
 import at.asitplus.signum.supreme.hash.digest
-import at.asitplus.signum.supreme.dsl.PREFERRED
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer

@@ -84,6 +84,13 @@ dokka.dokkaSourceSets.named("commonMain") {
     })
 }
 
+dokka.dokkaSourceSets.named("commonMain") {
+    // Dokka 2.2.0 crashes while translating context-parameter property getters: Kotlin/dokka#4519.
+    sourceRoots.setFrom(fileTree("src/commonMain/kotlin") {
+        exclude("AttestedAttributesAccessor.kt")
+    })
+}
+
 publishing {
     publications {
         withType<MavenPublication> {
