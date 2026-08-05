@@ -4,6 +4,7 @@ import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -39,6 +40,16 @@ val AttestationChallengeNonceTest by matrixSuite {
         shouldThrow<IllegalArgumentException> {
             challengeJson.decodeFromString(AttestationChallenge.serializer(), encodedWithShortNonce)
         }.message shouldContain "at least 4 bytes"
+    }
+
+    "new default fields stay absent for old clients" {
+        val encoded = challengeJson.encodeToString(
+            AttestationChallenge.serializer(),
+            challengeWithNonce(ByteArray(4)),
+        )
+
+        encoded shouldNotContain "\"toBeAttestedAttributes\""
+        encoded shouldNotContain "\"dataAuth\""
     }
 }
 

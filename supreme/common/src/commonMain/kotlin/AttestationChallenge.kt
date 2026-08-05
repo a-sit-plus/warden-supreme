@@ -13,6 +13,8 @@ import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Transient
@@ -52,6 +54,7 @@ import kotlin.time.Instant
  *
  * @throws IllegalArgumentException If the [nonce] exceeds 128 bytes or is shorter than 4 bytes
  */
+@OptIn(ExperimentalSerializationApi::class)
 @ConsistentCopyVisibility
 @Serializable
 data class AttestationChallenge
@@ -144,6 +147,7 @@ private constructor(
      * Ordered client-provided values to bind to the attestation. The values are stored under [CertificationRequestAttributeAttestationDescriptor.oid]
      * and decoded according to [CertificationRequestAttributeAttestationDescriptor.attributes].
      */
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     val toBeAttestedAttributes: CertificationRequestAttributeAttestationDescriptor? = null,
 
     /**
@@ -151,6 +155,7 @@ private constructor(
      * private key; [DataAuthentication.Hash] binds the data through the platform attestation nonce without signing.
      * @see DataAuthentication
      */
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     val dataAuth: DataAuthentication = DataAuthentication.Signature,
 
     ) {
