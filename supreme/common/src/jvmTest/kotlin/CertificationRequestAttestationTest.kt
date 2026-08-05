@@ -151,7 +151,7 @@ val CertificationRequestAttestationTest by matrixSuite {
             nonce = byteArrayOf(1, 2, 3, 4),
             attestationEndpoint = "https://example.invalid/attest",
             proofOID = proofOid,
-            attestableAttributes = requested,
+            toBeAttestedAttributes = requested,
         )
         val attribute = Pkcs10CertificationRequestAttribute(
             attributeOid,

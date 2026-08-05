@@ -48,7 +48,7 @@ val verifier = AttestationVerifier(
     nonceValidity = 5.minutes, //DEFAULT
     nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(5)!*/128)) },
  /*(6)!*/challengeValidator = redisBacked,
- /*(7)!*/attestableAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
+ /*(7)!*/toBeAttestedAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
         customerAttributesOID,
         listOf(
             AttestationChallenge.AttributeAttestationDescriptor("accountId", PrimitiveType.STRING),

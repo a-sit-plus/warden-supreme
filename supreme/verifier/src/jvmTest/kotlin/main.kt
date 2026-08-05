@@ -187,7 +187,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                                 "$ENDPOINT_ATTEST/$scenarioName",
                                 timeZone = TimeZone.currentSystemDefault(),
                                 keyConstraints = WardenDefaults.KeyConstraints.p256Signer,
-                                attestableAttributes = scenario.expectedAttributes?.let { requestedAttributes },
+                                toBeAttestedAttributes = scenario.expectedAttributes?.let { requestedAttributes },
                                 dataAuth = scenario.authentication,
                             )
                         )

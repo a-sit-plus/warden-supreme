@@ -64,7 +64,6 @@ sealed interface DataAuthentication {
             when (it.type) {
                 SerializedDataAuthentication.Type.SIGNATURE-> Signature
                 SerializedDataAuthentication.Type.HASH -> Hash(requireNotNull(it.algorithm) { "Missing DataAuthentication.algorithm" })
-                else -> error("Unknown DataAuthentication type: ${it.type}")
             }
         }
     }

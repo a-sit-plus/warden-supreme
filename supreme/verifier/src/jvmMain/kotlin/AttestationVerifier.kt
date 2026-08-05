@@ -40,7 +40,7 @@ private val extensionRequestOid = ObjectIdentifier("1.2.840.113549.1.9.14")
  * [attestationProofOID] identifies the TBS CSR attribute carrying the attestation statement. It defaults to
  * [WardenDefaults.OIDs.ATTESTATION_PROOF]. [dataAuth] selects the default authentication mode for issued challenges:
  * signed PKCS#10 with proof of possession, or hash-bound unsigned TBS CSR without proof of possession.
- * [attestableAttributes] optionally requests ordered client-provided values which are encoded into the TBS CSR and
+ * [toBeAttestedAttributes] optionally requests ordered client-provided values which are encoded into the TBS CSR and
  * authenticated by the selected mode.
  * When [defaultKeyConstraints] is specified, all issued challenges will automatically convey this, unless overridden.
  * **Note that key constraints cannot be reliably enforced** due to technical client limitations. Not all platforms can restrict key usage and properties!
@@ -70,7 +70,7 @@ constructor(
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
     val nonceValidity: Duration = makoto.longestValidityDuration
         ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds,
-    val attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
+    val toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
     val dataAuth: DataAuthentication = DataAuthentication.Signature,
     val maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     private val nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
@@ -99,7 +99,7 @@ constructor(
             iosAttestationConfiguration.attestationStatementValiditySeconds,
             androidAttestationConfiguration.attestationStatementValiditySeconds
         ),
-        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
+        toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
         dataAuth: DataAuthentication = DataAuthentication.Signature,
         maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
         nonceGenerator: NonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) },
@@ -110,7 +110,7 @@ constructor(
         genericDeviceNameOID,
         defaultKeyConstraints,
         nonceValidity,
-        attestableAttributes,
+        toBeAttestedAttributes,
         dataAuth,
         maxAttestationPayloadBytes,
         nonceGenerator,
@@ -128,7 +128,7 @@ constructor(
      * It is possible, to pass a [timeZone], but this is purely informational and is not fed into validity checks.
      *
      * Specify [keyConstraints] to communicate to the type of key and its properties to the client, for automatic key creation. Defaults to [defaultKeyConstraints].
-     * [attestableAttributes] requests ordered client-provided values; [dataAuth] determines how the resulting TBS CSR is
+     * [toBeAttestedAttributes] requests ordered client-provided values; [dataAuth] determines how the resulting TBS CSR is
      * authenticated. Both default to the verifier-wide settings and may be overridden per challenge.
      *
      * Note that the inverse of [Makoto.verificationTimeOffset] is added to the nonce validity period to account for clock drift between clients and server.
@@ -148,7 +148,7 @@ constructor(
         postEndpoint: String,
         timeZone: TimeZone? = null,
         keyConstraints: KeyConstraints? = defaultKeyConstraints,
-        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = this.attestableAttributes,
+        toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = this.toBeAttestedAttributes,
         dataAuth: DataAuthentication = this.dataAuth,
     ) = AttestationChallenge(
         issuedAt = makoto.clock.now() - makoto.verificationTimeOffset,
@@ -159,7 +159,7 @@ constructor(
         proofOID = attestationProofOID,
         genericDeviceNameOID = genericDeviceNameOID,
         keyConstraints = keyConstraints,
-        attestableAttributes = attestableAttributes,
+        toBeAttestedAttributes = toBeAttestedAttributes,
         dataAuth = dataAuth,
     ).also { challengeValidator.store(it) }
 
@@ -705,7 +705,7 @@ constructor(
                 defaultKeyConstraints = configuration.defaultKeyConstraints,
                 nonceValidity = makoto.longestValidityDuration
                     ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds,
-                attestableAttributes = configuration.attestableAttributes,
+                toBeAttestedAttributes = configuration.toBeAttestedAttributes,
                 dataAuth = configuration.dataAuthentication,
                 maxAttestationPayloadBytes = configuration.maxAttestationPayloadBytes,
                 nonceGenerator = nonceGenerator,
