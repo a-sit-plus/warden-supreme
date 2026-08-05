@@ -401,7 +401,8 @@ constructor(
                 )
             }
         }
-        return if (attributes.map { it.encodeToTlv() } != Asn1.SetOf { attributes.forEach { +it } }.toList()) {
+        return if (challenge.dataAuth != DataAuthentication.Signature && (attributes.map { it.encodeToTlv() } != Asn1.SetOf { attributes.forEach { +it } }
+                .toList())) {
             clientDataValidationFailure(
                 type = Type.CONTENT,
                 reason = PreAttestationError.ClientDataValidation.Reason.NON_CANONICAL_CSR_ATTRIBUTE_ORDER,
