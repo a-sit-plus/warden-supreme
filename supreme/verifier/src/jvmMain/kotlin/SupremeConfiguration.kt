@@ -6,16 +6,12 @@ import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifierStringSerializer
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.encoding.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import net.mamoe.yamlkt.Yaml
@@ -26,7 +22,8 @@ import kotlin.time.Duration
  *
  * This configuration deals with two aspects of integrated attestation:
  * - Configuring attestation policies for Android and iOS.
- * - Defining object identifiers and key constraints for fully integrated attestation.
+ * - Defining object identifiers, key constraints, proof authentication, and requested client attributes for fully
+ *   integrated attestation.
  *
  * To add custom Android revocation checkers, see [AndroidRevocationList.loaderRegistry].
  * To add custom time sources / clocks, see [SupremeConfiguration.Clock.registry]
@@ -40,6 +37,9 @@ import kotlin.time.Duration
  * @property attestationProofOID Object identifier for the attestation proof.
  * @property genericDeviceNameOID Optional object identifier for the generic device name.
  * @property defaultKeyConstraints Configuration for default key constraints, such as supported cryptographic operations.
+ * @property dataAuthentication Default authentication mode placed in issued challenges. Signature mode proves private-key
+ * possession; hash mode binds the TBS CSR contents through the platform attestation nonce without signing it.
+ * @property attestableAttributes Optional ordered client-provided values to request and bind into every issued challenge.
  * @property maxAttestationPayloadBytes Maximum HTTP payload size, in bytes, accepted for an attestation proof. Warden Supreme uses the
  * same limit at the HTTP boundary for issued challenges and attestation responses. The default accommodates normal
  * CSRs and certificate chains.
@@ -58,6 +58,9 @@ private constructor(
     @Serializable(with = ObjectIdentifierStringSerializer::class)
     val genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+    val dataAuthentication: DataAuthentication = DataAuthentication.Signature,
+    @Serializable(with = ConfigurationAttestableAttributesSerializer::class)
+    val attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
     val maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
 ) : AttestationConfiguration {
 
@@ -70,6 +73,8 @@ private constructor(
         attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+        dataAuth: DataAuthentication = DataAuthentication.Signature,
+        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
         maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         ios,
@@ -79,6 +84,8 @@ private constructor(
         attestationProofOID,
         genericDeviceNameOID,
         defaultKeyConstraints,
+        dataAuth,
+        attestableAttributes,
         maxAttestationPayloadBytes,
     )
 
@@ -93,6 +100,8 @@ private constructor(
         attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+        dataAuth: DataAuthentication = DataAuthentication.Signature,
+        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
         maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         ios,
@@ -102,6 +111,8 @@ private constructor(
         attestationProofOID,
         genericDeviceNameOID,
         defaultKeyConstraints,
+        dataAuth,
+        attestableAttributes,
         maxAttestationPayloadBytes,
     )
 
@@ -116,6 +127,8 @@ private constructor(
         attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+        dataAuth: DataAuthentication = DataAuthentication.Signature,
+        attestableAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
         maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         null,
@@ -125,6 +138,8 @@ private constructor(
         attestationProofOID,
         genericDeviceNameOID,
         defaultKeyConstraints,
+        dataAuth,
+        attestableAttributes,
         maxAttestationPayloadBytes,
     )
 
@@ -199,6 +214,7 @@ private constructor(
             override fun hashCode(): Int {
                 return timeSource.hashCode()
             }
+
             override fun toString(): String = "System"
         }
 
@@ -242,6 +258,75 @@ private constructor(
             }
         }
     }
+}
+
+private object ConfigurationAttestableAttributesSerializer :
+    KSerializer<AttestationChallenge.CertificationRequestAttributeAttestationDescriptor> {
+
+    override val descriptor: SerialDescriptor = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor.serializer().descriptor
+    private val attributesSerializer = ListSerializer(ConfigurationAttestedAttributeSerializer)
+
+    override fun serialize(encoder: Encoder, value: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor) {
+        encoder.encodeStructure(descriptor) {
+            encodeSerializableElement(descriptor, 0, ObjectIdentifierStringSerializer, value.oid)
+            encodeSerializableElement(descriptor, 1, attributesSerializer, value.attributes)
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): AttestationChallenge.CertificationRequestAttributeAttestationDescriptor =
+        decoder.decodeStructure(descriptor) {
+            var oid: ObjectIdentifier? = null
+            var attributes: List<AttestationChallenge.AttributeAttestationDescriptor>? = null
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    CompositeDecoder.DECODE_DONE -> break
+                    0 -> oid = decodeSerializableElement(descriptor, 0, ObjectIdentifierStringSerializer)
+                    1 -> attributes = decodeSerializableElement(descriptor, 1, attributesSerializer)
+                    else -> throw SerializationException("Unknown AttestableAttributes element index: $index")
+                }
+            }
+            AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
+                requireNotNull(oid) { "Missing AttestableAttributes.oid" },
+                requireNotNull(attributes) { "Missing AttestableAttributes.attributes" },
+            )
+        }
+}
+
+private object ConfigurationAttestedAttributeSerializer :
+    KSerializer<AttestationChallenge.AttributeAttestationDescriptor> {
+
+    override val descriptor: SerialDescriptor = AttestationChallenge.AttributeAttestationDescriptor.serializer().descriptor
+
+    override fun serialize(encoder: Encoder, value: AttestationChallenge.AttributeAttestationDescriptor) {
+        encoder.encodeStructure(descriptor) {
+            encodeStringElement(descriptor, 0, value.name)
+            encodeSerializableElement(descriptor, 1, PrimitiveType.NameSerializer, value.type)
+            if (shouldEncodeElementDefault(descriptor, 2) || !value.required) {
+                encodeBooleanElement(descriptor, 2, value.required)
+            }
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): AttestationChallenge.AttributeAttestationDescriptor =
+        decoder.decodeStructure(descriptor) {
+            var name: String? = null
+            var type: PrimitiveType? = null
+            var required = true
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    CompositeDecoder.DECODE_DONE -> break
+                    0 -> name = decodeStringElement(descriptor, 0)
+                    1 -> type = decodeSerializableElement(descriptor, 1, PrimitiveType.NameSerializer)
+                    2 -> required = decodeBooleanElement(descriptor, 2)
+                    else -> throw SerializationException("Unknown ToBeAttestedAttribute element index: $index")
+                }
+            }
+            AttestationChallenge.AttributeAttestationDescriptor(
+                requireNotNull(name) { "Missing ToBeAttestedAttribute.name" },
+                requireNotNull(type) { "Missing ToBeAttestedAttribute.type" },
+                required,
+            )
+        }
 }
 
 /**

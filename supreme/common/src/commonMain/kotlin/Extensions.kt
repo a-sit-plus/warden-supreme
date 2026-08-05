@@ -4,9 +4,18 @@ import at.asitplus.attestation.android.androidAttestationExtension
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.ECCurve
+import at.asitplus.signum.indispensable.asn1.Asn1Null
+import at.asitplus.signum.indispensable.asn1.Asn1Sequence
+import at.asitplus.signum.indispensable.asn1.encoding.Asn1
+import at.asitplus.signum.indispensable.asn1.encoding.Asn1.ExplicitlyTagged
+import at.asitplus.signum.indispensable.asn1.encoding.Asn1.Sequence
+import at.asitplus.signum.indispensable.asn1.encoding.decodeToUtf8String
+import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1OctetStringPrimitive
+import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1Primitive
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.supreme.hash.digest
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -28,7 +37,6 @@ class InstantLongSerializer : KSerializer<Instant> {
         encoder.encodeLong(value.toEpochMilliseconds())
     }
 }
-
 
 object DigestSerializer : KSerializer<Digest> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("DigestNamer", PrimitiveKind.STRING)

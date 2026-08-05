@@ -1,5 +1,4 @@
 import at.asitplus.gradle.*
-import org.gradle.kotlin.dsl.html
 
 plugins {
     kotlin("multiplatform")
@@ -55,7 +54,7 @@ kotlin {
         }
 
         commonMain.dependencies {
-            api(libs.signum)
+            api(libs.supreme)
         }
 
         jvmMain.dependencies {
@@ -75,6 +74,13 @@ kotlin {
 val javadocJar = setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/supreme",
 )
+
+dokka.dokkaSourceSets.named("commonMain") {
+    // Dokka 2.2.0 crashes while translating context-parameter property getters: Kotlin/dokka#4519.
+    sourceRoots.setFrom(fileTree("src/commonMain/kotlin") {
+        exclude("AttestedAttributesAccessor.kt")
+    })
+}
 
 publishing {
     publications {

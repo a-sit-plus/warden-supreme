@@ -26,7 +26,7 @@ data class KeyConstraints(
     /**
      * Key protection requirements
      */
-    val keyProtection: KeyProtection? = null
+    val keyProtection: KeyProtection? = null,
 ) {
     @Serializable
     sealed class AlgorithmParameters {

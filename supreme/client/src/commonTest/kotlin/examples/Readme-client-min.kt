@@ -18,11 +18,19 @@ suspend fun main() {
 
  /*(1)!*/val client = AttestationClient(ktorClient)
 
- /*(2)!*/when (val result = client.performAttestationFlow(ALIAS, Url(ENDPOINT_CHALLENGE))) {
-        is AttestationResponse.Success ->/*(3)!*/myCertStore.store(result.certificateChain) //<-- You're golden!
+ /*(2)!*/when (val result = client.performAttestationFlow(ALIAS, Url(ENDPOINT_CHALLENGE)) { requested ->
+        requested.map { attribute ->
+            when (attribute.name) {
+                "accountId" -> /*(3)!*/"account-123"
+                "riskScore" -> /*(4)!*/null
+                else -> error("Unsupported requested attribute: ${attribute.name}")
+            }
+        }
+    }) {
+        is AttestationResponse.Success ->/*(5)!*/myCertStore.store(result.certificateChain) //<-- You're golden!
 
         is AttestationResponse.Failure -> {
-         /*(4)!*/when(result.kind) {
+         /*(6)!*/when(result.kind) {
                 AttestationResponse.Failure.Type.TRUST -> TODO()
                 AttestationResponse.Failure.Type.TIME -> TODO()
                 AttestationResponse.Failure.Type.CONTENT -> TODO()
@@ -41,4 +49,3 @@ suspend fun main() {
 
 
 }
-

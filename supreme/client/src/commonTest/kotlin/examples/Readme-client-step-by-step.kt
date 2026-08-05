@@ -15,13 +15,21 @@ suspend fun stepbystep() {
  /*(1)!*/val client = AttestationClient(ktorClient)
  /*(2)!*/val challenge = client.getChallenge(Url(ENDPOINT_CHALLENGE)).getOrThrow()
 
- /*(3)!*/val csr = challenge.createAttestationProof(ALIAS,
+ /*(3)!*/val proof = challenge.createAttestationProof(ALIAS,
      authPromptMessage = "Authenticate for proof of possession",
      authPromptCancelText = "Abort",
      /*additional extensions and attributes go here*/
-     ).getOrThrow() //handle error
+     ) { requested ->
+        requested.map { attribute ->
+            when (attribute.name) {
+                "accountId" -> "account-123"
+                "riskScore" -> null
+                else -> error("Unsupported requested attribute: ${attribute.name}")
+            }
+        }
+    }.getOrThrow() //handle error
 
- /*(4)!*/when (val result = client.attest(csr, challenge.attestationEndpointUrl)) {
+ /*(4)!*/when (val result = client.attest(proof, challenge.attestationEndpointUrl)) {
         is AttestationResponse.Success -> {
          /*(5)!*/myCertStore.store(result.certificateChain) //<-- You're golden!
         }
@@ -39,4 +47,3 @@ suspend fun stepbystep() {
 
 
 }
-
