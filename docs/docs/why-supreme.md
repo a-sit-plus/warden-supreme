@@ -4,8 +4,10 @@ If you only ever target one platform, you might be wondering:
 why not use [`android/keyattestation`](https://github.com/android/keyattestation) or
 [`veehaitch/devicecheck-appattest`](https://github.com/veehaitch/devicecheck-appattest) directly?
 
-Short answer: Warden Supreme is not a replacement for those libraries.
-It builds on top of them and provides a unified integration and policy layer around them.
+Those libraries are deliberately focused verification engines. Warden Supreme builds on them, but its scope is much
+larger: it provides the client ceremony, wire protocol, challenge lifecycle, cross-platform policy, key binding, optional
+proof of possession, application-data authentication, certificate issuance hooks, configuration, error semantics, and
+operational safeguards needed to turn platform attestation primitives into a deployable system.
 
 ## Quick Decision Guide
 
@@ -16,12 +18,17 @@ It builds on top of them and provides a unified integration and policy layer aro
 
 ## What Warden Supreme Adds
 
+!!! tip
+    See the [full comparison matrix](#comparison-matrix) to see how much added value Warden Supreme brings.
+
 The platform libraries deliberately stop at verification primitives. Warden Supreme adds the layer on top of them that
 you would otherwise write yourself:
 
 - Unified Back-end API and decision model shared across Android and iOS
 - Unified Client API shared across Android and iOS
 - Shared wire format and flow (`challenge` -> `attest` -> `certificate / error`)
+- Challenge-selected signed proof of possession or hash-bound data authentication, including typed required/optional
+  client-provided attributes
 - Built-in iOS key-attestation emulation to mirror Android-style key-binding semantics
 - One error and policy model instead of two independent verification stacks
 - Sane defaults and maintained workarounds for platform quirks, informed by years of production operation
@@ -44,8 +51,8 @@ production cohorts of over one million end-user devices across several services,
 Warden Supreme already supports externalising attestation configuration and wiring.
 Hence, policy can be managed outside independently of code and maintained deployment/environment specific.
 
-While upstreamed to the platform libraries, also hardcode very little wrt. policy, using them directly would still have
-you define, maintain, and evolve:
+The platform libraries intentionally hard-code little policy. When using them directly, you still need to define,
+maintain, and evolve:
 
 - a policy model structure,
 - a mapping from external configuration to runtime verifier settings,
@@ -81,40 +88,60 @@ See [Externalising Configuration](integration/config.md) for the actual policy f
 
 ## Comparison Matrix
 
-| Criterion                                       | Warden Supreme                                               | `android/keyattestation`                    | `veehaitch/devicecheck-appattest`                            |
-|-------------------------------------------------|--------------------------------------------------------------|---------------------------------------------|--------------------------------------------------------------|
-| Primary scope                                   | End-to-end Android+iOS attestation integration               | Android attestation verification primitives | iOS App Attest verification primitives                       |
-| Platform coverage                               | Android + iOS                                                | Android only                                | iOS only                                                     |
-| Unified server contract                         | Yes                                                          | No                                          | No                                                           |
-| Unified mobile client contract                  | Yes (integrated clients)                                     | No                                          | No                                                           |
-| Key-attestation semantics on iOS                | Built in (emulated key attestation)                          | Not applicable                              | Requires your own binding design around App Attest semantics |
-| Policy model                                    | Shared high-level policy with platform-specific config knobs | Android-specific only                       | iOS-specific only                                            |
-| Production-hardened defaults and quirk handling | Included and continuously maintained                         | You own this                                | You own this                                                 |
-| Externalised configuration support              | Included                                                     | You design and maintain it                  | You design and maintain it                                   |
-| Wire format and endpoint flow                   | Included and documented                                      | You design it                               | You design it                                                |
-| Multi-platform future-proofing                  | High                                                         | Low                                         | Low                                                          |
-| Integration effort                              | Lower for end-to-end flows                                   | Higher for full product integration         | Higher for full product integration                          |
+The below table compares library scope, not the quality of the underlying cryptographic verification. Warden Supreme delegates
+the platform-specific work to these libraries and adds the end-to-end system around it.
 
-## Android-Only: Why Not Just `android/keyattestation`?
+| Capability                                        | `android/keyattestation`                                       | `devicecheck-appattest`                              | Warden Supreme                                                                        |
+|---------------------------------------------------|----------------------------------------------------------------|------------------------------------------------------|---------------------------------------------------------------------------------------|
+| Primary abstraction                               | Android certificate-chain verifier                             | Apple App Attest verifier                            | Complete mobile attestation and key-certification ceremony                            |
+| Unified API for Android and iOS                   | ❌                                                             | ❌                                                   | Yes, with shared challenge, result, and policy concepts                               |
+| Server-side verification                          | Android only                                                   | iOS only                                             | Android, iOS, or both from one verifier                                               |
+| Integrated mobile client                          | ❌                                                             | ❌                                                   | Kotlin Multiplatform Android/iOS client                                               |
+| Automated hardware-backed key creation            | ❌                                                             | ❌                                                   | Integrated with challenge-provided key requirements                                   |
+| iOS key-attestation semantics                     | ❌                                                             | App Attest primitive; binding design is caller-owned | App Attest is composed into Android-like key-attestation semantics                    |
+| Challenge creation                                | ❌                                                             | ❌                                                   | Issued by the verifier with nonce, validity, endpoint, policy, and app payload        |
+| Challenge expiry and replay protection            | Challenge checkers and an optional in-memory LRU are available | ❌                                                   | Bounded cache, one-time consumption, expiry, and pluggable persistence contract       |
+| Clock-drift handling                              | ❌                                                             | ❌                                                   | Integrated into challenge and attestation validity checks                             |
+| Client/server wire protocol                       | ❌                                                             | ❌                                                   | Versioned challenge, DER proof transport, and structured response model               |
+| Signed proof of possession                        | ❌                                                             | ❌                                                   | Built in through a signed PKCS#10 CSR                                                 |
+| Authentication without signing                    | ❌                                                             | ❌                                                   | Hash-bound TBS CSR through the platform attestation nonce                             |
+| Typed client-provided attested attributes         | ❌                                                             | ❌                                                   | Ordered required/optional attributes with ASN.1 type validation                       |
+| Binding application data to attestation           | Raw challenge checker available                                | Assertion challenge validator available              | Integrated into signed or hash-authenticated CSR contents                             |
+| Binding the claimed public key to the attestation | Exposes the attested public key                                | ❌                                                   | Mandatory verifier check in both authentication modes                                 |
+| CSR construction and validation                   | ❌                                                             | ❌                                                   | Canonical TBS CSR/CSR construction, structural validation, and ambiguity checks       |
+| Certificate issuance                              | ❌                                                             | ❌                                                   | Verified-result callback receives the authenticated request and issues a chain        |
+| Stable cross-platform result model                | Android-specific results                                       | iOS-specific exceptions/results                      | Unified success plus `TRUST`, `TIME`, `CONTENT`, and `INTERNAL` failures              |
+| Typed integration callbacks                       | Verification hooks                                             | Verification hooks                                   | Challenge, client-data, attestation, policy, success, and issuance callbacks          |
+| Additional service policy checks                  | ❌                                                             | ❌                                                   | First-class pre-issuance verification callback with structured failures               |
+| Android application identity policy               | Constraint primitives                                          | ❌                                                   | Package and signer policy in the unified configuration                                |
+| iOS application identity policy                   | ❌                                                             | App identity validation                              | Team, bundle, environment, receipt, and assertion policy in the unified configuration |
+| Android verified-boot policy                      | Parsed/constraint data available                               | ❌                                                   | OEM-only, mixed OEM/custom-ROM, or explicitly trusted custom-ROM policies             |
+| Remote Key Provisioning policy                    | Provisioning information is exposed                            | ❌                                                   | Can require RKP globally or per application and select appropriate roots              |
+| Android trust anchors                             | Google defaults or caller-provided anchors                     | ❌                                                   | Google, RKP, and custom roots with application-level policy                           |
+| Android revocation                                | Google revocation source/checking                              | ❌                                                   | Google plus composable HTTP, file, and custom revocation sources                      |
+| iOS assertions and counters                       | ❌                                                             | Assertion validation                                 | Exposed through Warden makoto with canonical persistence helpers                      |
+| iOS receipts                                      | ❌                                                             | Validation and exchange primitives                   | Integrated into Warden makoto policy and verification                                 |
+| External JSON/YAML configuration                  | ❌                                                             | ❌                                                   | Canonical serialisation for the complete verifier policy                              |
+| Spring Boot configuration                         | ❌                                                             | ❌                                                   | Dedicated integration module                                                          |
+| Hoplite configuration                             | ❌                                                             | ❌                                                   | Dedicated integration module                                                          |
+| Multiple apps and environments                    | Caller orchestration                                           | Caller orchestration                                 | Multiple Android/iOS app policies in one configuration                                |
+| Platform-quirk workarounds                        | Unsatisfactory in practice                                     | iOS verifier scope                                   | Cross-platform workarounds maintained from production device behaviour                |
+| Debuggable attestation failures                   | ❌ (only Android-specific result details)                      | ❌ (only iOS-specific exceptions)                    | Unified typed callbacks plus serialisable debug statements for offline analysis       |
+| End-to-end emulator coverage                      | ❌                                                             | ❌                                                   | Client-to-verifier Android emulator scenarios across auth and attribute combinations  |
+| Escape hatch for custom flows                     | Direct verifier API                                            | Direct verifier API                                  | Integrated Supreme API or lower-level makoto/roboto APIs                              |
 
-If your service is Android-only and you want full custom control, using Android-specific tooling directly can be reasonable.
-Yet Warden Supreme still pays off when you want:
+The difference is architectural: the upstream libraries answer “is this platform artefact valid?” Warden Supreme also
+answers “how is it requested, transported, bound to a key and application data, evaluated consistently across platforms,
+turned into a certificate, configured in production, and reported safely when anything fails?”
 
-- a ready-made, production-oriented verification flow instead of hand-rolled endpoint contracts,
-- a cleaner migration to iOS later without replacing your verifier architecture, or
-- shared policy and error handling across present and future platforms,
-- attestation logic that accounts for platform quirks and evolves with Android releases.
+The above table is more than just a marketing skit.
+It effectively means if you want to use vanilla DeviceCheck/App Attest or `android/keyattestation`, you'd end up implementing a good chunk of what Warden Supreme gives you from scratch.
+It won't work as well, and you'll hit the same walls we did, while developing Warden Supreme, and you'll end up re-doing much of the work that went into Warden Supreme.  
+How do we know? Warden Supreme is the culmination of doing precisely that multiple times.
 
-## iOS-Only: Why Not Just DeviceCheck/App Attest Helpers?
+In the end, we had three slightly different, slightly incompatible implementations with subtle rough edges in different places and incompatible wire formats and configuration
+mechanisms&hairsp;&mdash;&hairsp;even when already using Warden Supreme's predecessors, WARDEN and WARDEN-roboto.
 
-If your service is iOS-only, and you want to own all server/client wiring, using App Attest helpers directly can be reasonable.
-
-Warden Supreme still pays off when you want:
-
-- iOS key-binding semantics aligned with Android via built-in key-attestation emulation,
-- a consistent attestation lifecycle model without custom glue code, or
-- easier future expansion to Android with minimal conceptual churn,
-- attestation logic that accounts for platform quirks and evolves with iOS releases.
 
 ## FAQ
 
