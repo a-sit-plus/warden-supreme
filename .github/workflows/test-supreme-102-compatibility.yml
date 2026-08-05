@@ -31,6 +31,7 @@ jobs:
 
       - name: Compile verifier and 1.0.2 client
         run: |
+          git checkout 1.0.2 supreme/verifier/src/jvmTest/kotlin/main.kt
           ./gradlew :supreme-verifier:jvmTestClasses
           ./102/gradlew -p 102 :supreme-client:createAndroidDeviceTestApkListingFileRedirect
 

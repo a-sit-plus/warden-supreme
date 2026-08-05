@@ -6,10 +6,8 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
@@ -35,32 +33,6 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
-
-private data class AuthenticationScenario(
-    val authentication: DataAuthentication,
-    val expectedAttributes: List<Primitive>?,
-)
-
-private val authenticationScenarios = mapOf(
-    "signed-no-attributes" to AuthenticationScenario(DataAuthentication.Signature, null),
-    "hashed-no-attributes" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), null),
-    "signed-optional-present" to AuthenticationScenario(DataAuthentication.Signature, listOf("required", 42)),
-    "signed-optional-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf("required", null)),
-    "hashed-optional-present" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf("required", 42)),
-    "hashed-optional-omitted" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf("required", null)),
-    "signed-required-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf(null, 42)),
-    "hashed-required-omitted" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf(null, 42)),
-    "signed-all-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf(null, null)),
-    "hashed-all-omitted" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf(null, null)),
-)
-
-private val requestedAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
-    ObjectIdentifier("1.3.6.1.4.1.60387.1"),
-    listOf(
-        AttestationChallenge.AttributeAttestationDescriptor("required", PrimitiveType.STRING),
-        AttestationChallenge.AttributeAttestationDescriptor("optional", PrimitiveType.INT, required = false),
-    ),
-)
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
 val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEnabled = false) }) {
@@ -108,56 +80,6 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                     })
             )
 
-            suspend fun verify(
-                proof: AttestationProof,
-                scenario: AuthenticationScenario,
-            ) = attestationValidator.verifyAttestation(
-                proof,
-                onPreAttestationError = {
-                    val msg = throwable?.message ?: ""
-                    println(msg)
-                    msg
-                },
-                onAttestationError = { statement ->
-                    println(statement.serializeCompact())
-                    statement.serializeCompact()
-                },
-                additionalVerifications = { received, _ ->
-                    val actual = toBeAttestedAttributes?.let { requested ->
-                        val tbsCsr = received.tbsCsr
-                        val encoded = tbsCsr.attributes.singleOrNull { it.oid == requested.oid }
-                            ?.value?.singleOrNull()?.asSequence()
-                        AttestedAttributes(encoded).parsedAttributesBy(this)
-                    }
-                    if (actual == scenario.expectedAttributes) null
-                    else AttestationResponse.Failure(
-                        AttestationResponse.Failure.Type.CONTENT,
-                        "Expected ${scenario.expectedAttributes}, got $actual",
-                    )
-                },
-                certificateIssuer = { received ->
-                    val tbsCsr = received.tbsCsr
-                    println("Successfully attested device ${tbsCsr.deviceNameForOid(attestationValidator.genericDeviceNameOID ?: WardenDefaults.OIDs.DEVICE_NAME)}")
-                    Signer.Ephemeral { ec { } }.getOrThrow().let { signer ->
-                        signer.sign(
-                            TbsCertificate(
-                                serialNumber = Random.nextBytes(32),
-                                publicKey = tbsCsr.publicKey,
-                                signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
-                                validFrom = Asn1Time(Clock.System.now()),
-                                validUntil = Asn1Time(Clock.System.now() + 10.days),
-                                issuerName = listOf(
-                                    RelativeDistinguishedName(
-                                        AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme"))
-                                    )
-                                ),
-                                subjectName = tbsCsr.subjectName,
-                            )
-                        ).map { listOf(it) }.getOrThrow()
-                    }
-                },
-            )
-
 
             val server = embeddedServer(Netty, port = 8080) {
                 install(ContentNegotiation) { json() }
@@ -180,41 +102,56 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
 
 
                     }
-                    get("$ENDPOINT_CHALLENGE/{scenario}") {
-                        val scenarioName = requireNotNull(call.parameters["scenario"])
-                        val scenario = requireNotNull(authenticationScenarios[scenarioName])
-                        call.respond(
-                            attestationValidator.issueChallenge(
-                                "$ENDPOINT_ATTEST/$scenarioName",
-                                timeZone = TimeZone.currentSystemDefault(),
-                                keyConstraints = WardenDefaults.KeyConstraints.p256Signer,
-                                toBeAttestedAttributes = scenario.expectedAttributes?.let { requestedAttributes },
-                                dataAuth = scenario.authentication,
-                            )
-                        )
-                    }
                     post(PATH_ATTEST) {
                         val src = call.receive<ByteArray>()
                         test("Got Challenge") {}
-                        call.respond(
-                            verify(
-                                AttestationProof.Signed(Pkcs10CertificationRequest.decodeFromDer(src)),
-                                AuthenticationScenario(DataAuthentication.Signature, null),
-                            )
-                        )
-                    }
-                    post("$PATH_ATTEST/{scenario}") {
-                        val scenarioName = requireNotNull(call.parameters["scenario"])
-                        val scenario = requireNotNull(authenticationScenarios[scenarioName])
-                        val src = call.receive<ByteArray>()
-                        val proof = AttestationProof.decodeFromDer(src).getOrThrow()
-                        call.respond(verify(proof, scenario))
+
+
+                        val resp =
+                            attestationValidator.verifyAttestation(
+                                Pkcs10CertificationRequest.decodeFromDer(src),
+                                onPreAttestationError = {
+                                    val msg = throwable?.message ?: ""
+                                    println(msg)
+                                    msg
+                                },
+                                onAttestationError = { stmt ->
+                                    println(stmt.serializeCompact())
+                                    stmt.serializeCompact()
+                                }) { csr ->
+                                println("Successfully attested device ${csr.deviceNameForOid(attestationValidator.genericDeviceNameOID ?: WardenDefaults.OIDs.DEVICE_NAME)}")
+                                Signer.Ephemeral {
+                                    ec { }
+                                }.getOrThrow().let { signer ->
+                                    signer.sign(
+                                        TbsCertificate(
+                                            serialNumber = Random.nextBytes(32),
+                                            publicKey = csr.tbsCsr.publicKey,
+                                            signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
+                                                .getOrThrow(),
+                                            validFrom = Asn1Time(Clock.System.now()),
+                                            validUntil = Asn1Time(Clock.System.now() + 10.days),
+                                            issuerName = listOf(
+                                                RelativeDistinguishedName(
+                                                    AttributeTypeAndValue.CommonName(
+                                                        Asn1String.UTF8(
+                                                            "WARDEN Supreme"
+                                                        )
+                                                    )
+                                                )
+                                            ),
+                                            subjectName = csr.tbsCsr.subjectName,
+                                        )
+                                    ).map { listOf(it) }.getOrThrow()
+                                }
+                            }
+                        call.respond(resp)
                     }
 
                 }
             }.start(wait = false)
 
-            val timeout = 15.minutes
+            val timeout = 5.minutes
             println("KTOR server started!")
             println("   Waiting $timeout before auto-shutdown!")
             val before = Clock.System.now()
