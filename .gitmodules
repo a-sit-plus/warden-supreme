@@ -10,3 +10,6 @@
 [submodule "dependencies/http-proxy"]
 	path = dependencies/http-proxy
 	url = https://github.com/zk-123/http-proxy.git
+[submodule "102"]
+	path = 102
+	url = ../warden-supreme.git
