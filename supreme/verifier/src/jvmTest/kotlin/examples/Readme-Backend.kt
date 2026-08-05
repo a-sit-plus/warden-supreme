@@ -1,11 +1,13 @@
 package examples.docs.service
 
+import at.asitplus.attestation.supreme.AttestationProof
+import at.asitplus.attestation.supreme.tbsCsr
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
+import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
@@ -48,6 +50,13 @@ var subjectName = listOf(
 
 val caCert: X509Certificate = TODO()
 
+
+
+
+
+
+
+
 val server = embeddedServer(Netty, port = 8080) {
    /*(1)!*/install(ContentNegotiation) { json() }
 
@@ -58,12 +67,13 @@ val server = embeddedServer(Netty, port = 8080) {
             )
         }
      /*(5)!*/post(PATH_ATTEST) {
-         /*(6)!*/val decodedCSR = Pkcs10CertificationRequest.decodeFromDer(call.receive<ByteArray>())
-            val result = verifier.verifyAttestation(decodedCSR) {
+         /*(6)!*/val proof = AttestationProof.decodeFromDer(call.receive<ByteArray>()).getOrThrow()
+            val result = verifier.verifyAttestation(proof) { received ->
+                val tbsCsr = received.tbsCsr
              /*(7)!*/val leafCertificate = signer.sign(
                  /*(8)!*/TbsCertificate(
                       /*(9)!*/serialNumber = Random.nextBytes(32),
-                      /*(10)!*/publicKey = it.tbsCsr.publicKey,
+                      /*(10)!*/publicKey = tbsCsr.publicKey,
                          signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
                          validFrom = Asn1Time(Clock.System.now()),
                          validUntil = Asn1Time(Clock.System.now() + 10.days),

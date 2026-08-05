@@ -3,8 +3,6 @@ package at.asitplus.attestation.supreme
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import org.kotlincrypto.random.CryptoRand
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -23,6 +21,7 @@ object WardenDefaults {
          * Default device name attribute OID, can be uses, if desired, but must be manually set
          */
         val DEVICE_NAME = ObjectIdentifier(Uuid.parse("792c51ff-6032-47a3-9c1c-2401be1b6a2f"))
+
     }
 
     /**

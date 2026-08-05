@@ -8,6 +8,7 @@ import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
 import at.asitplus.testballoon.matrix.matrixSuite
 import examples.docs.config.grapheneos.grapheneOsConfig
@@ -103,15 +104,15 @@ private suspend fun graphCsr(verifier: AttestationVerifier) =
         generateRsaKeyPair(2048)
     )
 
-private class FixedChallengeValidator : ChallengeValidator {
+private class FixedChallengeValidator : AttestationChallengeValidator {
     private var storedChallenge: AttestationChallenge? = null
 
     override suspend fun store(challenge: AttestationChallenge) {
         storedChallenge = challenge
     }
 
-    override suspend fun validate(csr: Pkcs10CertificationRequest): ChallengeValidationResult {
-        val nonce = csr.tbsCsr.nonce.getOrElse {
+    override suspend fun validate(attestationProof: AttestationProof): ChallengeValidationResult {
+        val nonce = attestationProof.tbsCsr.nonce.getOrElse {
             return ChallengeValidationResult.Failure.NonceExtraction(it)
         }
         val challenge = storedChallenge.shouldNotBeNull()

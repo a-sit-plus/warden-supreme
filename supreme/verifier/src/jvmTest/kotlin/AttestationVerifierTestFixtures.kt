@@ -11,6 +11,7 @@ import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.attestation.data.CreatedAttestation
 import at.asitplus.attestation.data.ProvisioningAuthority
 import at.asitplus.attestation.data.SecurityLevel
+import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.CryptoPublicKey
@@ -146,15 +147,19 @@ internal fun generateRsaKeyPair(keySizeBits: Int): KeyPair =
         initialize(RSAKeyGenParameterSpec(keySizeBits, RSAKeyGenParameterSpec.F4))
     }.generateKeyPair()
 
-internal fun keyPairForAttestation(attestationJson: String): KeyPair {
+internal fun publicKeyForAttestation(attestationJson: String): CryptoPublicKey {
     val attestation = Attestation.fromJSON(attestationJson)
-    val publicKey = when (attestation) {
+    return when (attestation) {
         is AndroidKeystoreAttestation ->
             attestation.certificateChain.first().decodedPublicKey.getOrThrow()
         is IosHomebrewAttestation ->
             attestation.parsedClientData.publicKey
         else -> error("Unsupported attestation type: ${attestation::class.simpleName}")
     }
+}
+
+internal fun keyPairForAttestation(attestationJson: String): KeyPair {
+    val publicKey = publicKeyForAttestation(attestationJson)
     return when (publicKey) {
         is CryptoPublicKey.EC -> generateEcKeyPair()
         is CryptoPublicKey.RSA -> generateRsaKeyPair(publicKey.bits.number.toInt())
@@ -174,7 +179,9 @@ internal fun createCsr(
                 challenge.proofOID,
                 Asn1String.UTF8(attestationJson).encodeToTlv()
             )
-        )
+        ),
+        publicKey = catchingUnwrapped { publicKeyForAttestation(attestationJson) }
+            .getOrElse { keyPair.public.toCryptoPublicKey().getOrThrow() },
     )
 }
 
@@ -182,11 +189,13 @@ internal fun createCsrWithAttributes(
     challenge: AttestationChallenge,
     keyPair: KeyPair,
     attributes: List<Pkcs10CertificationRequestAttribute>,
+    publicKey: CryptoPublicKey = keyPair.public.toCryptoPublicKey().getOrThrow(),
 ): Pkcs10CertificationRequest {
     return createCsrWithSubject(
         subjectName = listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber())),
         keyPair = keyPair,
         attributes = attributes,
+        publicKey = publicKey,
     )
 }
 
@@ -208,10 +217,11 @@ internal fun createCsrWithSubject(
     subjectName: List<RelativeDistinguishedName>,
     keyPair: KeyPair,
     attributes: List<Pkcs10CertificationRequestAttribute>,
+    publicKey: CryptoPublicKey = keyPair.public.toCryptoPublicKey().getOrThrow(),
 ): Pkcs10CertificationRequest {
     val tbsCsr = TbsCertificationRequest(
         subjectName = subjectName,
-        publicKey = keyPair.public.toCryptoPublicKey().getOrThrow(),
+        publicKey = publicKey,
         attributes = attributes,
     )
     val (sigAlg, signature) = when (keyPair.private) {
