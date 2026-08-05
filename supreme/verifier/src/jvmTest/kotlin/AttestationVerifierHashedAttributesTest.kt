@@ -75,7 +75,7 @@ private suspend fun hashedProofFixture(
     val challenge = verifier.issueChallenge(
         attestationEndpoint,
         keyConstraints = WardenDefaults.KeyConstraints.p256Signer,
-        attestableAttributes = hashedAttributeRequest,
+        toBeAttestedAttributes = hashedAttributeRequest,
         dataAuth = authentication,
     )
     val tbsCsr = hashInput.toTbsCsr(
