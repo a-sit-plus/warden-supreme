@@ -8,6 +8,7 @@ import at.asitplus.signum.indispensable.asn1.KnownOIDs
 import at.asitplus.signum.indispensable.asn1.serialNumber
 import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.*
+import at.asitplus.signum.supreme.hash.digest
 import at.asitplus.signum.supreme.dsl.PREFERRED
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.signum.supreme.sign
@@ -24,7 +25,7 @@ import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 
 /**
- * Mobile client, fetching attestation challenges and posting CSRs containing
+ * Mobile client, fetching attestation challenges and posting signed CSRs or unsigned TBS CSRs containing
  * attestation statements to an attestation verification endpoint.
  *
  * Based on a _Ktor_ [client]. Automatically installs JSON content negotiation.
@@ -84,14 +85,19 @@ class AttestationClient(
     }
 
     /**
-     * Posts a [csr] containing an attestation challenge, as created by [createAttestationProof].
-     * @throws Throwable for any IO/low-level errors. Attestation failures are **not** thrown but encoded into the [AttestationResponse]!
+     * Posts an attestation proof created by [createAttestationProof]. Signed proofs send a complete PKCS#10 CSR;
+     * hash-authenticated proofs send an unsigned TBS CSR. Both are encoded as DER octet streams.
      */
     @Throws(Throwable::class)
-    suspend fun attest(csr: Pkcs10CertificationRequest, destination: Url) =
+    suspend fun attest(attestationProof: AttestationProof, destination: Url) =
         Json.decodeFromString<AttestationResponse>(client.post(destination) {
             contentType(ContentType.Application.OctetStream)
-            setBody(csr.encodeToDer())
+            setBody(
+                when (attestationProof) {
+                    is AttestationProof.Signed -> attestationProof.data.encodeToDer()
+                    is AttestationProof.Hashed -> attestationProof.data.encodeToDer()
+                }
+            )
         }.boundedPayload(maxAttestationPayloadBytes))
 }
 
@@ -118,23 +124,26 @@ private suspend fun HttpResponse.boundedPayload(maxAttestationPayloadBytes: Int)
  * This is literally a shorthand for:
  * ```
  * val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
- * val csr = challenge.createAttestationProof(alias).getOrThrow()
- * return attest(csr, challenge.attestationEndpointUrl)
+ * val proof = challenge.createAttestationProof(alias) { requested -> provideValues(requested) }.getOrThrow()
+ * return attest(proof, challenge.attestationEndpointUrl)
  * ```
  *
- * It is possible to specify [authPromptMessage] and [authPromptCancelText] for when key usage (i.e. signing)
- * requires authentication.
+ * The challenge selects signed or hash-based authentication. [authPromptMessage] and [authPromptCancelText] apply when
+ * private-key use requires authentication; hash-based authentication does not sign the TBS CSR.
  *
  * Requires the verifier to pack [KeyConstraints] into the conveyed challenge.
  *
  *
  * Usually, you'll want to use pass [AlternativeNames] into [additionalCsrExtensions], not a subject name!
- * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [nonce].
+ * By default, the RDN used for the TBS CSR contains [KnownOIDs.serialNumber] with the challenge nonce.
  * Hence, the values passed to this parameter containing a [KnownOIDs.serialNumber] will be overwritten.
  *
  * @param additionalCsrExtensions Certificate extensions to be requested. May be ignored by the issuer.
  *
  * @param additionalCsrAttributes Additional CSR attributes to pack into this CSR.
+ * @param toBeAttestedAttributes Supplies values requested by [AttestationChallenge.toBeAttestedAttributes], in exactly
+ * the same order. It is invoked once when values are requested and not invoked otherwise. Optional values may be `null`;
+ * required values may not.
  *
  */
 @Throws(Throwable::class)
@@ -144,28 +153,62 @@ suspend fun AttestationClient.performAttestationFlow(
     authPromptCancelText: String? = null,
     additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
     additionalCsrAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
+    toBeAttestedAttributes: (List<AttestationChallenge.AttributeAttestationDescriptor>) -> List<Primitive>,
 ): AttestationResponse {
     val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
-    val csr = challenge.createAttestationProof(
+    val proof = challenge.createAttestationProof(
         alias,
         authPromptMessage,
         authPromptCancelText,
         additionalCsrExtensions,
-        additionalCsrAttributes
+        additionalCsrAttributes,
+        toBeAttestedAttributes
     ).getOrThrow()
-    return attest(csr, challenge.attestationEndpointUrl)
+    return attest(proof, challenge.attestationEndpointUrl)
+}
+
+@Deprecated("Use the overload accepting toBeAttestedAttributes")
+@Throws(Throwable::class)
+suspend fun AttestationClient.performAttestationFlow(
+    alias: String,
+    fetchChallengeEndpoint: Url,
+    authPromptMessage: String? = null,
+    authPromptCancelText: String? = null,
+    additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
+    additionalCsrAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
+): AttestationResponse {
+    val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
+    require(challenge.toBeAttestedAttributes == null) {
+        "The deprecated CSR-only overload cannot attest additional attributes"
+    }
+    require(challenge.dataAuth == DataAuthentication.Signature) {
+        "The deprecated CSR-only overload requires signature data authentication"
+    }
+    return attest(
+        challenge.createAttestationProof(
+            alias,
+            authPromptMessage,
+            authPromptCancelText,
+            additionalCsrExtensions,
+            additionalCsrAttributes,
+        ) { emptyList() }.getOrThrow(),
+        challenge.attestationEndpointUrl,
+    )
 }
 
 /**
- * Creates a signed CSR from a received [AttestationChallenge] according to [AttestationChallenge.keyConstraints].
+ * Creates a signed CSR or unsigned TBS CSR from this challenge, according to [AttestationChallenge.dataAuth].
+ * Key creation follows [AttestationChallenge.keyConstraints].
  * Hence, if no constraints are set, this method will always fail!
  *
- * It is possible to specify [authPromptMessage] and [authPromptCancelText] for when key usage (i.e. signing)
- * requires authentication.
+ * [DataAuthentication.Signature] signs the completed TBS CSR and proves possession of the attested private key.
+ * [DataAuthentication.Hash] hashes an [AttestationHashInput] containing the subject, extensions, and attributes, feeds
+ * that digest into platform attestation, and returns the completed but unsigned TBS CSR. The verifier separately checks
+ * that its public key is the attested key.
  *
  * Encodes the challenge's nonce into a [KnownOIDs.serialNumber] subjectName
  * and the attestation statement into a Pkcs10CertificationRequestAttribute with [AttestationChallenge.proofOID].
- * Since this operation prepares and directly signs the CSR, it may require user authentication.
+ * Signing may require user authentication. Hash authentication performs no CSR signing.
  *
  * Usually, you'll want to use pass [AlternativeNames] into [additionalCsrExtensions], not a subject name!
  * By default, the RDN used for this CSR will only contain [KnownOIDs.serialNumber] containing the nonce from the passed [nonce].
@@ -174,6 +217,11 @@ suspend fun AttestationClient.performAttestationFlow(
  * @param additionalCsrExtensions Certificate extensions to be requested. May be ignored by the issuer.
  *
  * @param additionalCsrAttributes Additional CSR attributes to pack into this CSR.
+ * @param attestAttributes Supplies the requested values in order. It is invoked exactly once when
+ * [AttestationChallenge.toBeAttestedAttributes] is present and is not invoked otherwise.
+ *
+ * @return [AttestationProof.Signed] for [DataAuthentication.Signature], or
+ * [AttestationProof.Hashed] for [DataAuthentication.Hash].
  */
 suspend fun AttestationChallenge.createAttestationProof(
     /**
@@ -184,12 +232,36 @@ suspend fun AttestationChallenge.createAttestationProof(
     authPromptCancelText: String? = null,
     additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
     additionalCsrAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
-): KmmResult<Pkcs10CertificationRequest> {
+    attestAttributes: (List<AttestationChallenge.AttributeAttestationDescriptor>) -> List<Primitive>,
+): KmmResult<AttestationProof> {
 
-
-    val params = keyConstraints?.algorithmParameters
+    val constraints = keyConstraints
         ?: throw IllegalArgumentException("No algorithm specified. Refusing to automatically create an attested key")
-    val protectionParameters = keyConstraints?.keyProtection
+    val params = constraints.algorithmParameters
+    val protectionParameters = constraints.keyProtection
+    val deviceName = genericDeviceNameOID?.let { getDeviceName() }
+    val otherAttributes = toBeAttestedAttributes?.let { requested ->
+        attestAttributes(requested.attributes).also {
+            require(it.size == requested.attributes.size) {
+                "Expected ${requested.attributes.size} attested attributes, got ${it.size}"
+            }
+        }.toSequence()
+    }
+    val additionalAttributes = additionalCsrAttributes + listOfNotNull(
+        genericDeviceNameOID?.let {
+            Pkcs10CertificationRequestAttribute(it, Asn1String.UTF8(deviceName!!).encodeToTlv())
+        },
+        toBeAttestedAttributes?.let {
+            Pkcs10CertificationRequestAttribute(it.oid, otherAttributes!!)
+        },
+    )
+    val hashInput = AttestationHashInput(
+        subjectName = csrSubjectName(),
+        extensions = additionalCsrExtensions,
+        attributes = additionalAttributes,
+    )
+
+
     PlatformSigningProvider.createSigningKey(alias) {
         when (params) {
             is KeyConstraints.AlgorithmParameters.EC -> ec {
@@ -216,7 +288,10 @@ suspend fun AttestationChallenge.createAttestationProof(
         hardware {
             backing = PREFERRED
             attestation {
-                challenge = this@createAttestationProof.nonce
+                challenge = when (val authentication = dataAuth) {
+                    DataAuthentication.Signature -> nonce
+                    is DataAuthentication.Hash -> authentication.algorithm.digest(hashInput.encodeToDer())
+                }
             }
             protectionParameters?.let {
                 protection {
@@ -230,29 +305,51 @@ suspend fun AttestationChallenge.createAttestationProof(
             }
         }
     }.getOrThrow()
-    val additionalAttributes = genericDeviceNameOID?.let { deviceNameOID ->
-        additionalCsrAttributes +
-                Pkcs10CertificationRequestAttribute(
-                    deviceNameOID,
-                    Asn1String.UTF8(getDeviceName()).encodeToTlv()
-                )
 
-    } ?: additionalCsrAttributes
     val signer = PlatformSigningProvider.getSignerForKey(alias) {
         unlockPrompt {
             authPromptMessage?.let { message = it }
             authPromptCancelText?.let { cancelText = it }
         }
     }.getOrThrow()
-    return signer.createCsr(
-        this,
-        additionalExtensions = additionalCsrExtensions,
-        additionalAttributes = additionalAttributes
-    )
+    val tbsCsr = signer.createTbsCsr(this, hashInput).getOrThrow()
+
+    return catching {
+        when (dataAuth) {
+            DataAuthentication.Signature ->
+                AttestationProof.Signed(signer.sign(tbsCsr).getOrThrow())
+
+            is DataAuthentication.Hash -> AttestationProof.Hashed(tbsCsr)
+        }
+    }
+}
+
+@Deprecated("Use the overload accepting attestAttributes")
+suspend fun AttestationChallenge.createAttestationProof(
+    alias: String,
+    authPromptMessage: String? = null,
+    authPromptCancelText: String? = null,
+    additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
+    additionalCsrAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
+): KmmResult<Pkcs10CertificationRequest> = catching {
+    require(toBeAttestedAttributes == null) {
+        "The deprecated CSR-only overload cannot attest additional attributes"
+    }
+    require(dataAuth == DataAuthentication.Signature) {
+        "The deprecated CSR-only overload requires signature data authentication"
+    }
+    (createAttestationProof(
+        alias,
+        authPromptMessage,
+        authPromptCancelText,
+        additionalCsrExtensions,
+        additionalCsrAttributes,
+    ) { emptyList() }.getOrThrow() as AttestationProof.Signed).data
 }
 
 /**
- * Creates a signed CSR from an attestable signer.
+ * Creates a signed CSR from an attestable signer. This is the low-level signature-authentication path and always proves
+ * possession of the private key; use [createAttestationProof] to follow a challenge-selected authentication mode.
  * Encodes the challenge's nonce into a [KnownOIDs.serialNumber] subjectName
  * and the attestation statement into a Pkcs10CertificationRequestAttribute with [AttestationChallenge.proofOID].
  * Since this operation prepares and directly signs the CSR, it may require user authentication.
@@ -270,22 +367,54 @@ suspend fun Signer.Attestable<*>.createCsr(
     challenge: AttestationChallenge,
     subjectName: List<RelativeDistinguishedName> = listOf(),
     additionalExtensions: List<X509CertificateExtension> = listOf(),
-    additionalAttributes: List<Pkcs10CertificationRequestAttribute> = listOf()
-): KmmResult<Pkcs10CertificationRequest> =
-    attestation?.let { attestation ->
-        sign(
-            TbsCertificationRequest(
-                subjectName = subjectName.map { name ->
-                    RelativeDistinguishedName(name.attrsAndValues.filterNot { value -> value.oid == KnownOIDs.serialNumber })
-                } + RelativeDistinguishedName(challenge.getRdnSerialNumber()),
-                publicKey = publicKey,
-                attributes = additionalAttributes + Pkcs10CertificationRequestAttribute(
-                    challenge.proofOID,
-                    Asn1String.UTF8(attestation.jsonEncoded).encodeToTlv()
-                ),
-                extensions = additionalExtensions
-            ))
-    } ?: KmmResult.failure(IllegalStateException("No attestation statement present instance found"))
+    additionalAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
+): KmmResult<Pkcs10CertificationRequest> = catching {
+    sign(createTbsCsr(challenge, subjectName, additionalExtensions, additionalAttributes).getOrThrow()).getOrThrow()
+}
+
+/**
+ * Creates a TBS CSR containing this signer's public key and attestation statement. This overload derives the subject,
+ * extensions, and attributes directly from [challenge] and the supplied additions.
+ */
+fun Signer.Attestable<*>.createTbsCsr(
+    challenge: AttestationChallenge,
+    subjectName: List<RelativeDistinguishedName> = listOf(),
+    additionalExtensions: List<X509CertificateExtension> = listOf(),
+    additionalAttributes: List<Pkcs10CertificationRequestAttribute> = listOf(),
+): KmmResult<TbsCertificationRequest> = catching {
+    createTbsCsr(
+        challenge,
+        AttestationHashInput(
+            subjectName = challenge.csrSubjectName(subjectName),
+            extensions = additionalExtensions,
+            attributes = additionalAttributes,
+        ),
+    ).getOrThrow()
+}
+
+/**
+ * Completes [hashInput] with this signer's public key and attestation statement. The same conversion is used for signed
+ * and hash-authenticated proofs; callers decide separately whether to sign the result.
+ */
+fun Signer.Attestable<*>.createTbsCsr(
+    challenge: AttestationChallenge,
+    hashInput: AttestationHashInput,
+): KmmResult<TbsCertificationRequest> = catching {
+    val attestation = requireNotNull(attestation) { "No attestation statement present instance found" }
+    hashInput.toTbsCsr(
+        publicKey,
+        Pkcs10CertificationRequestAttribute(
+            challenge.proofOID,
+            Asn1String.UTF8(attestation.jsonEncoded).encodeToTlv(),
+        ),
+    )
+}
+
+private fun AttestationChallenge.csrSubjectName(
+    subjectName: List<RelativeDistinguishedName> = emptyList(),
+) = subjectName.map { name ->
+    RelativeDistinguishedName(name.attrsAndValues.filterNot { value -> value.oid == KnownOIDs.serialNumber })
+} + RelativeDistinguishedName(getRdnSerialNumber())
 
 /**
  * convenience shorthand to parse the attestation POST endpoint as a URL

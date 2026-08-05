@@ -1,6 +1,7 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
+import at.asitplus.attestation.supreme.AttestationChallenge.Companion.CURRENT_VERSION
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Attestation
@@ -20,8 +21,8 @@ import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
- * Represents a challenge for attestation processes, encapsulating necessary details such as the nonce, validity, and
- * additional constraints or metadata for the attestation proof.
+ * Represents a challenge for an attestation ceremony, including freshness, key-generation hints, the required
+ * [DataAuthentication] mode, and optional client-provided values that must be bound to the attestation.
  *
  * The class provides serialization support for its fields and enforces strict requirements, such as the maximum size of
  * the nonce. It includes both diagnostic and functional properties to support attestation protocols and ensure client
@@ -35,13 +36,17 @@ import kotlin.time.Instant
  * @property timeZone The optional timezone of the server where the challenge was issued. This is purely diagnostic, since
  * [Instant] used for timestamps is UTC by definition.
  * @property nonce A server-specified unique identifier, bound by a maximum size of 128 bytes.
- * @property attestationEndpoint The URL endpoint where the Certificate Signing Request containing the attestation proof
- * will be posted.
- * @property proofOID The Object Identifier used for encoding the attestation proof into the CSR.
+ * @property attestationEndpoint The URL endpoint where the signed CSR or unsigned TBS CSR containing the attestation
+ * proof will be posted.
+ * @property proofOID The Object Identifier used for the TBS CSR attribute carrying the attestation statement.
  * @property genericDeviceNameOID Optional OID specifying whether a generic device name should be included in the
  * attestation proof. If set, the device name is included on a best-effort basis.
  * @property version Indicates the wire format version. The default value is set to [CURRENT_VERSION].
  * @property keyConstraints Specifies constraints on keys that can be used during the attestation process.
+ * @property toBeAttestedAttributes Optional ordered description of client-provided values that must be encoded into the
+ * TBS CSR and authenticated according to [dataAuth].
+ * @property dataAuth Selects whether the client signs the TBS CSR or binds it through a digest used as the platform
+ * attestation nonce.
  * @property additionalPayload An optional user-defined map for custom payloads. Constraints on serialization apply,
  * where nested maps or primitives are strictly controlled for cross-format consistency.
  * @property transientData Optional runtime-only attachment. Not serialized and excluded from equality/hashing.
@@ -83,12 +88,12 @@ private constructor(
     val nonce: ByteArray,
 
     /**
-     * The endpoint to post the CSR containing the attestation proof to.
+     * The endpoint to post the signed CSR or unsigned TBS CSR containing the attestation proof to.
      */
     val attestationEndpoint: String,
 
     /**
-     * The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
+     * The OID of the TBS CSR attribute used to transfer the attestation statement.
      */
     @Serializable(with = ObjectIdentifierStringSerializer::class)
     val proofOID: ObjectIdentifier,
@@ -136,6 +141,19 @@ private constructor(
     @Transient
     val transientData: Any? = null,
 
+    /**
+     * Ordered client-provided values to bind to the attestation. The values are stored under [CertificationRequestAttributeAttestationDescriptor.oid]
+     * and decoded according to [CertificationRequestAttributeAttestationDescriptor.attributes].
+     */
+    val toBeAttestedAttributes: CertificationRequestAttributeAttestationDescriptor? = null,
+
+    /**
+     * How the client authenticates the TBS CSR contents. [DataAuthentication.Signature] also proves possession of the
+     * private key; [DataAuthentication.Hash] binds the data through the platform attestation nonce without signing.
+     * @see DataAuthentication
+     */
+    val dataAuth: DataAuthentication = DataAuthentication.Signature,
+
     ) {
     init {
         require(nonce.size <= 128) { "nonce too large! must be at most 128 bytes." }
@@ -151,13 +169,15 @@ private constructor(
      *  Can be omitted if the server does not want to disclose this information
      *  @param nonce The nonce chosen by the server. Must be at most 128 bytes long, as
      *  [this is the largest nonce size supported by Android](https://developer.android.com/reference/android/security/keystore/KeyGenParameterSpec.Builder#setAttestationChallenge(byte%5B%5D)).
-     *  @param attestationEndpoint The endpoint to post the CSR containing the attestation proof to.
-     *  @param proofOID The OID to be used for encoding the attestation proof into the signed CSR used to transfer the proof.
+     *  @param attestationEndpoint The endpoint to post the signed CSR or unsigned TBS CSR containing the proof to.
+     *  @param proofOID The OID of the TBS CSR attribute carrying the attestation statement.
      *  @param genericDeviceNameOID Whether to include a generic make and model (such as "Google Pixel 8", or "iPhone 16" with the attestation proof).
      *  Setting this to an OID other than `null` will include a device name on a best-effort basis. Defaults to `null` (i.e., no device name will be included).
      *  @param keyConstraints Specifies key constraints for the client.
      *  @param additionalPayload Optional user-defined payload. See [additionalPayload] for serialization requirements.
      *  @param transientData Optional runtime-only attachment. Not serialized and excluded from equality/hashing.
+     *  @param attestableAttributes Optional ordered client-provided values to bind to the attestation.
+     *  @param dataAuth Authentication mode for the TBS CSR contents.
      *
      * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes or shorter than 4 bytes
      */
@@ -173,6 +193,8 @@ private constructor(
         keyConstraints: KeyConstraints? = null,
         additionalPayload: Map<String, Constrained>? = null,
         transientData: Any? = null,
+        attestableAttributes: CertificationRequestAttributeAttestationDescriptor? = null,
+        dataAuth: DataAuthentication = DataAuthentication.Signature,
     ) : this(
         issuedAt = issuedAt,
         validity = validity,
@@ -185,6 +207,8 @@ private constructor(
         keyConstraints = keyConstraints,
         additionalPayload = additionalPayload,
         transientData = transientData,
+        toBeAttestedAttributes = attestableAttributes,
+        dataAuth = dataAuth,
     )
 
     /**
@@ -216,6 +240,8 @@ private constructor(
         if (keyConstraints != other.keyConstraints) return false
         if (additionalPayload != other.additionalPayload) return false
         if (validUntil != other.validUntil) return false
+        if (toBeAttestedAttributes != other.toBeAttestedAttributes) return false
+        if (dataAuth != other.dataAuth) return false
 
         return true
     }
@@ -232,8 +258,35 @@ private constructor(
         result = 31 * result + (keyConstraints?.hashCode() ?: 0)
         result = 31 * result + (additionalPayload?.hashCode() ?: 0)
         result = 31 * result + validUntil.hashCode()
+        result = 31 * result + toBeAttestedAttributes.hashCode()
+        result = 31 * result + dataAuth.hashCode()
         return result
     }
+
+    /**
+     * Lets the verifier describe an ordered list of client-provided values carried in one dedicated CertificationRequestInfo attribute.
+     *
+     * [oid] identifies the CertificationRequestInfo attribute. Each value is encoded by position using the corresponding entry in [attributes].
+     */
+    @Serializable
+    data class CertificationRequestAttributeAttestationDescriptor(
+        @Serializable(with = ObjectIdentifierStringSerializer::class)
+        val oid: ObjectIdentifier,
+        val attributes: List<AttributeAttestationDescriptor>
+    ) {
+        init {
+            if(attributes.isEmpty()) throw IllegalArgumentException("attributes can't be empty!")
+        }
+    }
+
+    /**
+     * Describes one client-provided value requested by the verifier.
+     *
+     * [name] is application-facing metadata, [type] determines ASN.1 encoding, and [required] controls whether an
+     * encoded ASN.1 `NULL` is accepted for this position.
+     */
+    @Serializable
+    data class AttributeAttestationDescriptor(val name: String, val type: PrimitiveType, val required: Boolean = true)
 
     companion object {
         const val CURRENT_VERSION: Int = 2

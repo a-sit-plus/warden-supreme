@@ -1,3 +1,5 @@
+import at.asitplus.gradle.bouncycastle
+
 plugins {
     kotlin("jvm")
     application
@@ -34,7 +36,5 @@ sourceSets.main {
 
 dependencies {
     implementation(project(":supreme-common"))
-    implementation(libs.signum) {
-        exclude("org.bouncycastle", "bcpkix-jdk18on")
-    }
+    implementation(libs.signum)
 }
