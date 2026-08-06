@@ -2,6 +2,7 @@
 
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.Digest
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.encoding.Asn1
@@ -112,7 +113,10 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
     test("non-canonical attribute order is rejected as CONTENT") {
         val fixture = generateAndroidFixture()
         val verifier = fixture.verifier(fixture.trustedConfig())
-        val challenge = verifier.issueChallenge(attestationEndpoint)
+        val challenge = verifier.issueChallenge(
+            attestationEndpoint,
+            dataAuth = DataAuthentication.Hash(Digest.SHA256),
+        )
         val proof = Pkcs10CertificationRequestAttribute(
             challenge.proofOID,
             Asn1String.UTF8(fixture.fake.attestationJson()).encodeToTlv(),
@@ -128,7 +132,7 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
 
         var callbackError: PreAttestationError.ClientDataValidation? = null
         val failure = verifier.verifyAttestation(
-            AttestationProof.Signed(csr),
+            AttestationProof.Hashed(csr.tbsCsr),
             onPreAttestationError = {
                 callbackError = shouldBeInstanceOf<PreAttestationError.ClientDataValidation>()
                 "callback"

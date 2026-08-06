@@ -31,9 +31,9 @@ jobs:
 
       - name: Compile verifier and 1.0.2 client
         run: |
-          cp 102/supreme/verifier/src/jvmTest/kotlin/main.kt supreme/verifier/src/jvmTest/kotlin/main.kt
+          cp release-1.0.2/supreme/verifier/src/jvmTest/kotlin/main.kt supreme/verifier/src/jvmTest/kotlin/main.kt
           ./gradlew :supreme-verifier:jvmTestClasses
-          ./102/gradlew -p 102 :supreme-client:createAndroidDeviceTestApkListingFileRedirect
+          ./release-1.0.2/gradlew -p release-1.0.2 :supreme-client:createAndroidDeviceTestApkListingFileRedirect
 
       - name: Run 1.0.2 client against current verifier
         run: |
@@ -48,7 +48,7 @@ jobs:
           curl --fail --retry 60 --retry-connrefused --retry-delay 1 \
             http://localhost:8080/api/v1/challenge >/dev/null
 
-          ./102/gradlew -p 102 pixelAVDAndroidDeviceTest --info
+          ./release-1.0.2/gradlew -p release-1.0.2 pixelAVDAndroidDeviceTest --info
           wait "$verifier_pid"
 
       - name: Test report
@@ -56,6 +56,6 @@ jobs:
         if: success() || failure()
         with:
           name: Warden Supreme 1.0.2 Compatibility Tests
-          path: 102/supreme/client/build/outputs/androidTest-results/managedDevice/**/pixelAVD/TEST*.xml,supreme/**/build/test-results/**/TEST*.xml
+          path: release-1.0.2/supreme/client/build/outputs/androidTest-results/managedDevice/**/pixelAVD/TEST*.xml,supreme/**/build/test-results/**/TEST*.xml
           reporter: java-junit
           use-actions-summary: true
