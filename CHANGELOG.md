@@ -27,6 +27,7 @@ this changelog also includes the original WARDEN changelog.
     * Add `dataAuthentication` and human-readable `toBeAttestedAttributes` support to `SupremeConfiguration` JSON/YAML.
     * Expand client, verifier, property, and Android-emulator end-to-end coverage for both authentication modes and
       required/optional attribute combinations.
+    * Bump ChallengeVersion to 3, but still transmit 2, of DataAuthentication.Signature is used without any requested to-be-attested attributes
 * Add Supreme dependency to `supreme-common`
 * Dependency Updates
     * KeyAttestation [47f970d044ae4da7b00da068e7e1a4e952b0fd2f](https://github.com/android/keyattestation/commit/47f970d044ae4da7b00da068e7e1a4e952b0fd2f)

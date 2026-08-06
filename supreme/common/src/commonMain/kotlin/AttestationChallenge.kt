@@ -13,11 +13,7 @@ import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.Transient
+import kotlinx.serialization.*
 import kotlin.time.Duration
 import kotlin.time.Instant
 
@@ -207,7 +203,7 @@ private constructor(
         attestationEndpoint = attestationEndpoint,
         proofOID = proofOID,
         genericDeviceNameOID = genericDeviceNameOID,
-        version = CURRENT_VERSION,
+        version = if (dataAuth == DataAuthentication.Signature && toBeAttestedAttributes == null) 2 else CURRENT_VERSION,
         keyConstraints = keyConstraints,
         additionalPayload = additionalPayload,
         transientData = transientData,
@@ -294,7 +290,7 @@ private constructor(
     data class AttributeAttestationDescriptor(val name: String, val type: PrimitiveType, val required: Boolean = true)
 
     companion object {
-        const val CURRENT_VERSION: Int = 2
+        const val CURRENT_VERSION: Int = 3
     }
 }
 
