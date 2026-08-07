@@ -29,6 +29,19 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 private val extensionRequestOid = ObjectIdentifier("1.2.840.113549.1.9.14")
+private val objectIdentifierComparator = Comparator<ObjectIdentifier> { left, right ->
+    left.bytes.compareUnsigned(right.bytes)
+}
+
+private fun ByteArray.compareUnsigned(other: ByteArray): Int {
+    var index = 0
+    while (index < minOf(size, other.size)) {
+        val result = (this[index].toInt() and 0xff) - (other[index].toInt() and 0xff)
+        if (result != 0) return result
+        index++
+    }
+    return size.compareTo(other.size)
+}
 
 /**
  * Verifies attestation statements and issues certificates on success.
@@ -364,7 +377,7 @@ constructor(
         challenge: AttestationChallenge,
         onPreAttestationError: suspend PreAttestationError.() -> String?,
     ): Failure? {
-        if (attributes.map { it.oid }.toSet().size != attributes.size) {
+        if (SortedSet(attributes.map { it.oid }, objectIdentifierComparator).size != attributes.size) {
             return clientDataValidationFailure(
                 type = Type.CONTENT,
                 reason = PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_ATTRIBUTE_OID,
@@ -390,7 +403,7 @@ constructor(
                     throwable = it,
                 )
             }
-            if (extensions.map { it.oid }.toSet().size != extensions.size) {
+            if (SortedSet(extensions.map { it.oid }, objectIdentifierComparator).size != extensions.size) {
                 return clientDataValidationFailure(
                     type = Type.CONTENT,
                     reason = PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_EXTENSION_OID,
