@@ -402,22 +402,3 @@ fun Pkcs10CertificationRequest.deviceNameForOid(oid: ObjectIdentifier): String? 
  */
 fun Pkcs10CertificationRequest.deviceNameForChallenge(challenge: AttestationChallenge): String? =
     tbsCsr.deviceNameForChallenge(challenge)
-
-
-//TODO: remove in 1.1!
-@Deprecated(
-    "Use `deviceNameForOid(WardenDefaults.OIDs.DEVICE_NAME)` instead to emulate old behaviour, but you should really specify whatever OID you have set to convey a generic device. Will be removed in 1.1.",
-    ReplaceWith("deviceNameForOid(deviceNameOid)"),
-    DeprecationLevel.ERROR
-)
-val TbsCertificationRequest.deviceName: String?
-    get() = deviceNameForOid(WardenDefaults.OIDs.DEVICE_NAME)
-
-
-//TODO: remove in 1.1!
-@Deprecated(
-    "Use `deviceNameForOid(WardenDefaults.OIDs.DEVICE_NAME)` instead to emulate old behaviour, but you should really specify whatever OID you have set to convey a generic device. Will be removed in 1.1",
-    ReplaceWith("deviceNameForOid(deviceNameOid)"),
-    DeprecationLevel.ERROR
-)
-val Pkcs10CertificationRequest.deviceName: String? get() = tbsCsr.deviceNameForOid(WardenDefaults.OIDs.DEVICE_NAME)

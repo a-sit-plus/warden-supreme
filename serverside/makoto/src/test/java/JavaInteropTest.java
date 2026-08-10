@@ -5,6 +5,7 @@ import at.asitplus.attestation.Makoto;
 import at.asitplus.attestation.android.AndroidAttestationConfiguration;
 import at.asitplus.attestation.android.PatchLevel;
 import at.asitplus.attestation.android.Roboto;
+import at.asitplus.attestation.android.RobotoKt;
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException;
 import at.asitplus.attestation.android.exceptions.AttestationValueException;
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException;
@@ -135,7 +136,7 @@ public class JavaInteropTest {
 
         Roboto checker = new Roboto(config);
         try {
-            checker.verifyAttestation(certificateChain, new Date(), challenge);
+            checker.verifyBlocking(certificateChain, new Date().toInstant(), challenge);
 
             //chose either
             checker.collectDebugInfo(new LinkedList<X509Certificate>(), new byte[0], Instant.now());

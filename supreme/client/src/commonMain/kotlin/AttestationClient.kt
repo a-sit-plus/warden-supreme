@@ -99,6 +99,12 @@ class AttestationClient(
                 }
             )
         }.boundedPayload(maxAttestationPayloadBytes))
+
+
+    @Deprecated("To be removed in Warden Supreme 1.3. Use the overload taking AttestationProof")
+    @Throws(Throwable::class)
+    suspend fun attest(csr: Pkcs10CertificationRequest, destination: Url) =
+        attest(AttestationProof.Signed(csr), destination)
 }
 
 private suspend fun HttpResponse.boundedPayload(maxAttestationPayloadBytes: Int): String {
@@ -167,7 +173,7 @@ suspend fun AttestationClient.performAttestationFlow(
     return attest(proof, challenge.attestationEndpointUrl)
 }
 
-@Deprecated("Use the overload accepting toBeAttestedAttributes")
+@Deprecated("To be removed in Warden Supreme 1.3. Use the overload accepting toBeAttestedAttributes")
 @Throws(Throwable::class)
 suspend fun AttestationClient.performAttestationFlow(
     alias: String,
@@ -324,7 +330,7 @@ suspend fun AttestationChallenge.createAttestationProof(
     }
 }
 
-@Deprecated("Use the overload accepting attestAttributes")
+@Deprecated("To be removed in Warden Supreme 1.3. Use the overload accepting attestAttributes")
 suspend fun AttestationChallenge.createAttestationProof(
     alias: String,
     authPromptMessage: String? = null,

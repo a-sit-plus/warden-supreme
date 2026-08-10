@@ -1,9 +1,5 @@
 package at.asitplus.attestation
 
-import at.asitplus.attestation.IosAttestationConfiguration.Companion.DEFAULT_VALIDITY_SECONDS
-import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromJsonObject
-import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromJsonString
-import at.asitplus.attestation.IosAttestationConfiguration.Companion.fromYamlString
 import at.asitplus.attestation.android.TrustedRoot
 import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.receipt.ReceiptValidator
@@ -15,9 +11,6 @@ import net.mamoe.yamlkt.Yaml
 import net.swiftzer.semver.SemVer
 import kotlin.time.toKotlinDuration
 
-//TODO remove in 1.1
-@Deprecated("Legacy name, will be removed in 1.1", replaceWith = ReplaceWith("IosAttestationConfiguration"))
-typealias IOSAttestationConfiguration = IosAttestationConfiguration
 
 /**
  * Configuration class for Apple App Attestation
