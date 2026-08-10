@@ -658,6 +658,8 @@ constructor(
          */
         @Deprecated("To be Removed In Warden Supreme 1.3. Replace with AttestationChallengeValidator-creating callback")
         @JvmName("fromConfiguration")
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        @kotlin.internal.LowPriorityInOverloadResolution
         operator fun invoke(
             configuration: SupremeConfiguration,
             nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
