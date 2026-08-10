@@ -134,6 +134,12 @@ In addition, approaches based on reflection that do not invoke the configuration
 To externalise configuration for fully integrated attestation flows conveniently, use the umbrella `SupremeConfiguration`.
 It includes both the platform-specific configurations and the properties related to fully integrated attestation itself.
 
+!!! danger "Bound Payload Sizes"
+    `maxAttestationPayloadBytes` defaults to 1 MiB and limits raw attestation proofs when using
+    `AttestationVerifier.decodeAttestationProof(…)`. Configure the same limit for the client and enforce it before an
+     HTTP handler buffers or decodes a request body.  
+     **Never use `Pkcs10CertificationRequest.decodeFromDer(…)` as advertised before Warden Supreme 1.0.3!** 
+
 Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for
 fully integrated attestation, which is why they also have canonical serialised representations (JSON and YAML) and
 expose the same (de)serialisation functions as `SupremeConfiguration`.

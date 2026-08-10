@@ -3,8 +3,6 @@ package at.asitplus.attestation.supreme
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import org.kotlincrypto.random.CryptoRand
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -29,6 +27,14 @@ object WardenDefaults {
      * Default, secure random 64-byte nonce generator
      */
     val nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(64)) }
+
+    /**
+     * Default maximum payload size exchange between client and verifier. Affects:
+     * * [AttestationChallenge]
+     * * Client-sent attestation proofs, such as  [at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest]s
+     * * Responses, like the resulting [AttestationResponse]
+     */
+    const val DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES: Int = 1 * 1024 * 1024
 
     object KeyConstraints {
         val p256Signer = at.asitplus.attestation.supreme.KeyConstraints(

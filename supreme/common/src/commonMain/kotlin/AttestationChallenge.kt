@@ -1,7 +1,6 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.KmmResult
-import at.asitplus.attestation.supreme.AttestationChallenge.Companion.CURRENT_VERSION
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Attestation
@@ -263,39 +262,48 @@ fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): K
             ?: throw Asn1StructuralException("Attestation statement not present")
     }
 
-/** Max JSON array-nesting depth accepted before parsing. kotlinx.serialization (1.10.0)
- *  recurses on nested arrays without a depth limit, so deeply nested arrays overflow the
- *  stack. Object nesting is already guarded by the library. */
-internal const val MAX_JSON_ARRAY_DEPTH = 64
+/** Max JSON container-nesting depth accepted before parsing. */
+const val MAX_JSON_NESTING_DEPTH = 64
 
-/** Scans [json] for excessive array nesting without parsing it. Brackets inside string
+/** Scans [json] for excessive object or array nesting without parsing it. Brackets inside string
  *  literals (keys/values) are ignored. Throws [SerializationException] if depth exceeds
- *  [MAX_JSON_ARRAY_DEPTH]. Cheap, single linear pass, no allocation. */
-internal fun requireBoundedArrayNesting(json: String) {
+ *  [MAX_JSON_NESTING_DEPTH]. Cheap, single linear pass, no allocation. */
+fun requireBoundedArrayNesting(json: String) {
     var depth = 0
+    val openers = CharArray(MAX_JSON_NESTING_DEPTH)
     var inString = false
     var escaped = false
     for (c in json) {
         if (inString) {
             when {
-                escaped   -> escaped = false
-                c == '\\' -> escaped = true
+                //@formatter:off
+                escaped   -> escaped  = false
+                c == '\\' -> escaped  = true
                 c == '"'  -> inString = false
+                //@formatter:on
             }
             continue
         }
         when (c) {
             '"' -> inString = true
-            '[' -> {
+            '[', '{' -> {
                 depth++
-                if (depth > MAX_JSON_ARRAY_DEPTH)
+                if (depth > MAX_JSON_NESTING_DEPTH)
                     throw SerializationException(
-                        "JSON array nesting exceeds $MAX_JSON_ARRAY_DEPTH"
+                        "JSON nesting exceeds $MAX_JSON_NESTING_DEPTH"
                     )
+                openers[depth - 1] = c
             }
-            ']' -> if (depth > 0) depth--
+
+            ']', '}' -> {
+                val expectedOpener = if (c == ']') '[' else '{'
+                if (depth == 0 || openers[depth - 1] != expectedOpener)
+                    throw SerializationException("Mismatched JSON container delimiter")
+                depth--
+            }
         }
     }
+    if (depth != 0) throw SerializationException("Unclosed JSON container")
 }
 
 @Deprecated("Misnomer. To be removed in 1.1", replaceWith = ReplaceWith("nonce"))

@@ -242,8 +242,11 @@ deserialise them before use.
     Hardware attestation is enabled by default, while hybrid and software-only attestation needs to be explicitly enabled.
     Doing so will chain the corresponding
     `AndroidAttestationChecker`s from the strictest (hardware) to the least strict (software-only).
-    Naturally, hardware attestation can also be disabled by setting `disableHardwareAttestation = true`, although there is probably
-    no real use case for such a configuration **except for testing**.
+    Verification succeeds when any enabled checker accepts the attestation. Therefore, enabling software attestation
+    makes software-only attestation an accepted fallback even when hardware attestation remains enabled; it does not
+    require hardware backing as well. Enable it only in environments where software-only devices, such as emulators in
+    test stages, are acceptable.
+    Hardware attestation can be disabled with `disableHardwareAttestation = true`, which is primarily useful for testing.
 
 #### Flexible Android Revocation Configuration
 Warden Supreme 1.0.0 and later completely revamp revocation handling.
@@ -345,6 +348,11 @@ the certificate issuer.
 ### Handling Requests
 This example assumes Ktor. Since this is an example environment, TLS is omitted for brevity.
 
+!!! danger "Bound Attestation Proof Reads!"
+    Always decode received attestation proofs using `attestationVerifier.decodeAttestationProof(…)` as it checks the total
+    size of the payload and refuses to decode anything larger than the configured `maxAttestationPayloadBytes`, which
+    defaults to 1MB.
+
 ```kotlin
 --8<-- "Readme-Backend.kt:50"
 ```
@@ -389,6 +397,12 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 On the client, Warden Supreme is even easier to integrate. In contrast to the verifier, it is tailored around Ktor for its KMP goodness.
 Doing so allows for obtaining a certificate chain for an attested key in literally three short lines of code, if the challenge already
 specifies key constraints:
+
+!!! warning "Trust the Challenge Endpoint"
+    The client deserializes the challenge before it can validate its contents, so the verifier/challenge endpoint is a
+    trust boundary. Fetch challenges only over HTTPS from a verifier you trust, and configure certificate pinning on the
+    supplied Ktor client where appropriate. The initial challenge fetch is unauthenticated; a malicious or compromised
+    endpoint must be treated as a compromise of the attestation flow.
 
 ```kotlin
 --8<-- "Readme-client-min.kt:19:35"

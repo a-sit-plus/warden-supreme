@@ -9,7 +9,6 @@ import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
 import at.asitplus.signum.indispensable.toJcaPublicKey
@@ -109,7 +108,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
 
                         val resp =
                             attestationValidator.verifyAttestation(
-                                Pkcs10CertificationRequest.decodeFromDer(src),
+                                attestationValidator.decodeAttestationProof(src).getOrThrow(),
                                 onPreAttestationError = {
                                     val msg = throwable?.message ?: ""
                                     println(msg)

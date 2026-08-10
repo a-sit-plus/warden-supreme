@@ -332,9 +332,9 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
  * Only change this flag, if you **really** know what you are doing!
  * @param enableSoftwareAttestation Enables software attestation.
  * A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
- * Only change this flag, if you **really** know what you are doing!
- * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
- * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
+ * When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software
+ * attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only
+ * devices, such as emulators in test stages, are acceptable.
  * @param enforceFactoryProvisionedChainValidity Whether to enforce timely validity for factory-provisioned certificate
  * chains. Some old devices may have expired intermediate certificates, which will trip a validity check unless this is
  * false.
@@ -422,9 +422,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
-     * Only change this flag, if you **really** know what you are doing!
-     * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-     * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
+     * When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software
+     * attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only
+     * devices, such as emulators in test stages, are acceptable.
      */
     val enableSoftwareAttestation: Boolean = false,
     /**
@@ -557,9 +557,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
-         * Only change this flag, if you **really** know what you are doing!
-         * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-         * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
+         * When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software
+         * attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only
+         * devices, such as emulators in test stages, are acceptable.
          */
         enableSoftwareAttestation: Boolean = false,
 
@@ -682,9 +682,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
-         * Only change this flag, if you **really** know what you are doing!
-         * Enabling this flag, while keeping [disableHardwareAttestation] `true` makes is possible to instantiate both a
-         * [HardwareAttestationVerifier] and a [SoftwareAttestationVerifier].
+         * When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software
+         * attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only
+         * devices, such as emulators in test stages, are acceptable.
          */
         enableSoftwareAttestation: Boolean = false,
 

@@ -12,11 +12,14 @@ import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.utils.io.readAvailable
+import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 
 /**
@@ -24,10 +27,19 @@ import kotlin.time.Clock
  * attestation statements to an attestation verification endpoint.
  *
  * Based on a _Ktor_ [client]. Automatically installs JSON content negotiation.
+ * [maxAttestationPayloadBytes] bounds challenge and response bodies before they are deserialized.
  * For testing, it is possible to provide a custom [clock] for high-level checks.
  * **Note that this clock does not affect generated attestation proofs, because those will always use the actual device clock!**
  */
-class AttestationClient(client: HttpClient, private val clock: Clock = Clock.System) {
+class AttestationClient(
+    client: HttpClient,
+    private val clock: Clock = Clock.System,
+    private val maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
+) {
+    init {
+        require(maxAttestationPayloadBytes > 0) { "maxAttestationPayloadBytes must be positive" }
+    }
+
     private val client = client.config {
         install(ContentNegotiation) {
             json()
@@ -37,6 +49,11 @@ class AttestationClient(client: HttpClient, private val clock: Clock = Clock.Sys
 
     /**
      * Fetches a challenge from an endpoint. This is the first step in an attestation ceremony.
+     *
+     * The challenge endpoint is a trust boundary: its response is deserialized before the client can validate its
+     * contents. Use HTTPS and configure certificate pinning on the supplied Ktor client where appropriate. A client
+     * must only fetch challenges from a verifier it trusts.
+     *
      * This will fail if the system time is off too much:
      *  * [AttestationChallenge.validUntil] is earlier than the local clock
      *  * [AttestationChallenge.issuedAt] is later than the local clock
@@ -51,7 +68,9 @@ class AttestationClient(client: HttpClient, private val clock: Clock = Clock.Sys
      * this check is only performed if the challenge indicates any validity.
      */
     suspend fun getChallenge(endpoint: Url): KmmResult<AttestationChallenge> = catching {
-        client.get(endpoint).body<AttestationChallenge>().also {
+        Json.decodeFromString<AttestationChallenge>(
+            client.get(endpoint).boundedPayload(maxAttestationPayloadBytes).also(::requireBoundedArrayNesting)
+        ).also {
             val now = clock.now()
             if (it.validUntil < now || it.issuedAt > now) throw IllegalStateException(
                 "System time off: issuedAt: ${it.issuedAt}, validUntil: ${it.validUntil}, local system time: $now"
@@ -69,10 +88,25 @@ class AttestationClient(client: HttpClient, private val clock: Clock = Clock.Sys
      */
     @Throws(Throwable::class)
     suspend fun attest(csr: Pkcs10CertificationRequest, destination: Url) =
-        client.post(destination) {
+        Json.decodeFromString<AttestationResponse>(client.post(destination) {
             contentType(ContentType.Application.OctetStream)
             setBody(csr.encodeToDer())
-        }.body<AttestationResponse>()
+        }.boundedPayload(maxAttestationPayloadBytes))
+}
+
+private suspend fun HttpResponse.boundedPayload(maxAttestationPayloadBytes: Int): String {
+    val bytes = ByteArray(maxAttestationPayloadBytes + 1)
+    val channel = bodyAsChannel()
+    var size = 0
+    while (size < bytes.size) {
+        val read = channel.readAvailable(bytes, size, bytes.size - size)
+        if (read <= 0) break
+        size += read
+    }
+    require(size <= maxAttestationPayloadBytes) {
+        "Attestation payload exceeds $maxAttestationPayloadBytes bytes"
+    }
+    return bytes.copyOf(size).decodeToString()
 }
 
 /**
@@ -256,4 +290,4 @@ suspend fun Signer.Attestable<*>.createCsr(
  */
 val AttestationChallenge.attestationEndpointUrl: Url get() = Url(attestationEndpoint);
 
-expect internal fun getDeviceName(): String
+internal expect fun getDeviceName(): String

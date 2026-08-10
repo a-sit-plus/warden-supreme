@@ -75,6 +75,7 @@ kotlin {
 
         commonTest.dependencies {
             implementation("at.asitplus.gradle:testhelper:20251114")
+            implementation(ktor("client-mock"))
         }
     }
 }

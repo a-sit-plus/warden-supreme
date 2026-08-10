@@ -99,5 +99,17 @@ val initTests by matrixSuite {
         (verifierFromMakoto.challengeValidator).offset shouldBe -makoto.verificationTimeOffset
     }
 
+    "payload limit is propagated and enforced" {
+        val verifier = AttestationVerifier(
+            SupremeConfiguration(
+                androidAttestationConfiguration,
+                iosAttestationConfiguration,
+                maxAttestationPayloadBytes = 16,
+            )
+        )
+        verifier.maxAttestationPayloadBytes shouldBe 16
+        verifier.decodeAttestationProof(ByteArray(17)).isFailure shouldBe true
+    }
+
 
 }

@@ -1,10 +1,12 @@
 import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.WardenDefaults
+import at.asitplus.attestation.supreme.requireBoundedArrayNesting
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.SerializationException
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
@@ -39,6 +41,11 @@ val AttestationChallengeNonceTest by matrixSuite {
         shouldThrow<IllegalArgumentException> {
             challengeJson.decodeFromString(AttestationChallenge.serializer(), encodedWithShortNonce)
         }.message shouldContain "at least 4 bytes"
+    }
+
+    "nesting guard ignores delimiters in strings" {
+        requireBoundedArrayNesting("""{"value":"[{]} \" [}"}""")
+        shouldThrow<SerializationException> { requireBoundedArrayNesting("[}") }
     }
 }
 

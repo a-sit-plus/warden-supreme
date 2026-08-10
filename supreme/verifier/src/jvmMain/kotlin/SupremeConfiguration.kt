@@ -3,6 +3,7 @@ package at.asitplus.attestation.supreme
 import at.asitplus.attestation.*
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
+import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifierStringSerializer
 import kotlinx.serialization.KSerializer
@@ -39,6 +40,9 @@ import kotlin.time.Duration
  * @property attestationProofOID Object identifier for the attestation proof.
  * @property genericDeviceNameOID Optional object identifier for the generic device name.
  * @property defaultKeyConstraints Configuration for default key constraints, such as supported cryptographic operations.
+ * @property maxAttestationPayloadBytes Maximum HTTP payload size, in bytes, accepted for an attestation proof. Warden Supreme uses the
+ * same limit at the HTTP boundary for issued challenges and attestation responses. The default accommodates normal
+ * CSRs and certificate chains.
  */
 @ExposedCopyVisibility
 @Serializable
@@ -54,6 +58,7 @@ private constructor(
     @Serializable(with = ObjectIdentifierStringSerializer::class)
     val genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
     val defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+    val maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
 ) : AttestationConfiguration {
 
     @Throws(AttestationException.Configuration::class, IllegalArgumentException::class)
@@ -65,6 +70,7 @@ private constructor(
         attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+        maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         ios,
         android,
@@ -73,6 +79,7 @@ private constructor(
         attestationProofOID,
         genericDeviceNameOID,
         defaultKeyConstraints,
+        maxAttestationPayloadBytes,
     )
 
     /**
@@ -86,6 +93,7 @@ private constructor(
         attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+        maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         ios,
         null,
@@ -94,6 +102,7 @@ private constructor(
         attestationProofOID,
         genericDeviceNameOID,
         defaultKeyConstraints,
+        maxAttestationPayloadBytes,
     )
 
     /**
@@ -107,6 +116,7 @@ private constructor(
         attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
         genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
         defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+        maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
     ) : this(
         null,
         android,
@@ -115,10 +125,12 @@ private constructor(
         attestationProofOID,
         genericDeviceNameOID,
         defaultKeyConstraints,
+        maxAttestationPayloadBytes,
     )
 
     init {
         require(android != null || ios != null) { "At least one attestation configuration (iOS or Android) must be provided" }
+        require(maxAttestationPayloadBytes > 0) { "maxAttestationPayloadSize must be positive" }
     }
 
     override fun toJsonString(): String = json.encodeToString(this)
@@ -206,7 +218,7 @@ private constructor(
             }
 
             override fun deserialize(decoder: Decoder): Clock {
-                val scalar = runCatching { decoder.decodeString() }.getOrNull()
+                val scalar = catchingUnwrapped { decoder.decodeString() }.getOrNull()
                 if (scalar != null) {
                     if (scalar.equals("system", ignoreCase = true)) return System
                     throw SerializationException("Unknown clock value: $scalar")

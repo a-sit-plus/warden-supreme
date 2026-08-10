@@ -27,6 +27,13 @@ import kotlin.time.toKotlinInstant
 const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
 
 
+/**
+ * Verifies an Android attestation with the engines enabled in [attestationConfiguration].
+ *
+ * When multiple engines are enabled, verification succeeds if any one engine accepts the attestation. In particular,
+ * enabling software attestation accepts software-only attestations as a fallback even while hardware attestation remains
+ * enabled. Keep software attestation disabled when hardware backing is required.
+ */
 class Roboto
 @JvmOverloads
 constructor(
