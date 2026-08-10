@@ -4,7 +4,7 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-## NEXT
+## 1.0.3
 * Security hardening:
     * Verify Android attestation certificate chains before fully decoding their attacker-controlled attestation extensions.
     * Use a narrowly scoped, size-limited application-ID extraction for per-application trust-anchor selection.

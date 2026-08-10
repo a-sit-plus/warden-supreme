@@ -7,12 +7,31 @@ on:
         required: false
         default: ''
         type: string
+permissions:
+  contents: read
+  packages: read
+  checks: write
 jobs:
-  build:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "linux"]') || 'ubuntu-latest' }}
-    env:
+  build-private:
+    name: build
+    if: ${{ github.event.repository.private }}
+    runs-on: [self-hosted, linux]
+    container:
+      image: ghcr.io/a-sit-plus/docker-android-sdk:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    env: &build-env
       KOTLIN_VERSION_ENV: ${{ inputs.kotlin-version }}
-    steps:
+    steps: &build-steps
+      - name: Trust workspace repositories
+        if: ${{ github.event.repository.private }}
+        run: |
+          git config --system --add safe.directory "$GITHUB_WORKSPACE"
+          git config --system --add safe.directory "$GITHUB_WORKSPACE/warden-roboto"
+          git config --system --add safe.directory "$GITHUB_WORKSPACE/dependencies/keyattestation"
+          git config --system --add safe.directory "$GITHUB_WORKSPACE/dependencies/android-key-attestation"
+          git config --system --add safe.directory "$GITHUB_WORKSPACE/dependencies/http-proxy"
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -33,3 +52,9 @@ jobs:
           list-tests: failed
           reporter: java-junit
           use-actions-summary: true
+  build-public:
+    name: build
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    env: *build-env
+    steps: *build-steps

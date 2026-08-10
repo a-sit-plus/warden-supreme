@@ -2,11 +2,27 @@ name: Publish
 on: workflow_dispatch
 permissions:
   contents: read
+  packages: read
 jobs:
-  publish:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "macOS"]') || 'macos-latest' }}
+  publish-private:
+    name: publish
+    if: ${{ github.event.repository.private }}
+    runs-on: [self-hosted, linux]
     timeout-minutes: 300
-    steps:
+    container:
+      image: ghcr.io/a-sit-plus/docker-android-sdk:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps: &publish-steps
+      - name: Trust workspace repositories
+        if: ${{ github.event.repository.private }}
+        run: |
+          git config --system --add safe.directory "$GITHUB_WORKSPACE"
+          git config --system --add safe.directory "$GITHUB_WORKSPACE/warden-roboto"
+          git config --system --add safe.directory "$GITHUB_WORKSPACE/dependencies/keyattestation"
+          git config --system --add safe.directory "$GITHUB_WORKSPACE/dependencies/android-key-attestation"
+          git config --system --add safe.directory "$GITHUB_WORKSPACE/dependencies/http-proxy"
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -15,38 +31,20 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: 26.3.0
       - name: Publish to Sonatype
         run: ./gradlew clean publishReleaseModulesToSonatype
-        env:
+        env: &publish-env
           ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.PUBLISH_SIGNING_KEYID }}
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.PUBLISH_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PUBLISH_SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.PUBLISH_SONATYPE_USER }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.PUBLISH_SONATYPE_PASSWORD }}
-  close:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "macOS"]') || 'macos-latest' }}
-    timeout-minutes: 300
-    needs: publish
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: 26.3.0
       - name: Close Sonatype
         run: ./gradlew findSonatypeStagingRepository closeSonatypeStagingRepository
-        env:
-          ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.PUBLISH_SIGNING_KEYID }}
-          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.PUBLISH_SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PUBLISH_SIGNING_PASSWORD }}
-          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.PUBLISH_SONATYPE_USER }}
-          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.PUBLISH_SONATYPE_PASSWORD }}
+        env: *publish-env
+  publish-public:
+    name: publish
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps: *publish-steps
