@@ -176,7 +176,7 @@ private fun assertAuthorizationListSemanticallyEqual(
         val oursUserAuth = ours.userAuthType?.successValueOrThrow("$path.userAuthType")
         if (googleUserAuth == 0L && oursUserAuth == null) return@capture
         if (googleUserAuth == 0L && (oursUserAuth!!.authTypes.isEmpty())) return@capture
-        checkEquals("$path.userAuthType", googleUserAuth, oursUserAuth?.intValue?.toLongValue())
+        checkEquals("$path.userAuthType", google.userAuthType().map { it.name }.toSet(), oursUserAuth?.authTypes?.map { it.name }?.toSet())
     }
 
     diffs.capture {

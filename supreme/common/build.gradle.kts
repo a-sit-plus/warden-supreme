@@ -1,5 +1,4 @@
 import at.asitplus.gradle.*
-import com.android.build.api.dsl.androidLibrary
 import org.gradle.kotlin.dsl.html
 
 plugins {
@@ -24,7 +23,7 @@ kotlin {
     jvm()
     iosArm64()
     iosSimulatorArm64()
-    androidLibrary {
+    android {
         namespace = "at.asitplus.warden.supreme.common"
         withDeviceTestBuilder {
             sourceSetTreeName = "test"

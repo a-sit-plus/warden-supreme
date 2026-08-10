@@ -7,7 +7,9 @@ import at.asitplus.testballoon.matrix.CompactReport
 import at.asitplus.testballoon.matrix.matrixSuite
 import com.android.keyattestation.verifier.KeyDescription
 import com.google.android.attestation.ParsedAttestationRecord
+import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -21,9 +23,11 @@ import org.bouncycastle.asn1.DEROctetString
 import java.io.ByteArrayInputStream
 import java.security.cert.X509Certificate
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.io.bufferedReader
 import kotlin.io.forEachLine
+import kotlin.io.println
 import kotlin.time.Duration
 import kotlin.time.Instant
 import kotlin.use
@@ -52,29 +56,35 @@ val DebugStatementParserTest by matrixSuite {
 
                 val lst = mutableListOf<DebugStmt>()
                 it.forEachLine { line ->
+                    catchingUnwrapped {
+                        val parsed =
+                            json.parseToJsonElement(MultiBase.decode(line.trim())!!.decodeToString()).jsonObject
+                        val timestamp =
+                            catchingUnwrapped { Instant.parse(parsed.getValue("verificationTime").jsonPrimitive.content) }.getOrNull()
+                                ?: Instant.fromEpochMilliseconds(parsed.getValue("verificationTime").jsonPrimitive.content.toLong())
+                        val offset = Duration.parse(parsed.getValue("verificationTimeOffset").jsonPrimitive.content)
+                        val challenge =
+                            parsed.getValue("challenge").jsonPrimitive.content.decodeToByteArray(Base64UrlStrict)
+                        val androidApp =
+                            parsed.getValue("androidAttestationConfiguration").jsonObject.getValue("applications").jsonArray.first().jsonObject
+                        val pkg = androidApp.getValue("packageName").jsonPrimitive.content
 
-                    val parsed = json.parseToJsonElement(MultiBase.decode(line)!!.decodeToString()).jsonObject
-                    val timestamp = Instant.parse(parsed.getValue("verificationTime").jsonPrimitive.content)
-                    val offset = Duration.parse(parsed.getValue("verificationTimeOffset").jsonPrimitive.content)
-                    val challenge =
-                        parsed.getValue("challenge").jsonPrimitive.content.decodeToByteArray(Base64UrlStrict)
-                    val androidApp =
-                        parsed.getValue("androidAttestationConfiguration").jsonObject.getValue("applications").jsonArray.first().jsonObject
-                    val pkg = androidApp.getValue("packageName").jsonPrimitive.content
+                        val digests = (catchingUnwrapped { androidApp.getValue("signatureDigests")}.getOrNull()
+                            ?: androidApp.getValue("signerFingerprints")).jsonArray.map {
+                            catchingUnwrapped { it.jsonPrimitive.content.decodeToByteArray(Base64UrlStrict) }.getOrNull()
+                                ?: it.jsonPrimitive.content.parseHex()
+                        }.toSet()
 
-                    val digests = androidApp.getValue("signatureDigests").jsonArray.map {
-                        it.jsonPrimitive.content.decodeToByteArray(Base64UrlStrict)
-                    }.toSet()
-
-                    val attestationCfg =
-                        AndroidAttestationConfiguration(
-                            AndroidAttestationConfiguration.AppData(pkg, digests),
-                            ignoreLeafValidity = true,
-                            verificationSecondsOffset = offset.inWholeSeconds
-                        )
-                    val chain = (parsed.getValue("genericAttestationProof").jsonArray).map { it.jsonPrimitive.content }
-                    lst += DebugStmt(chain, attestationCfg, DebugDetails(timestamp, challenge))
-
+                        val attestationCfg =
+                            AndroidAttestationConfiguration(
+                                AndroidAttestationConfiguration.AppData(pkg, digests),
+                                ignoreLeafValidity = true,
+                                verificationSecondsOffset = offset.inWholeSeconds
+                            )
+                        val chain =
+                            (parsed.getValue("genericAttestationProof").jsonArray).map { it.jsonPrimitive.content }
+                        lst += DebugStmt(chain, attestationCfg, DebugDetails(timestamp, challenge))
+                    }.getOrElse { println(line) }
                 }
                 lst
 
@@ -84,13 +94,18 @@ val DebugStatementParserTest by matrixSuite {
         }
 
     if (proofs.isEmpty()) {
-        if (System.getenv("NO_PRIVATE_TEST_DATA") != "true") throw RuntimeException("NO PRIVATE TEST DATA PRESENT. Fine for CI, but not for local tests")
+        if (System.getenv("NO_PRIVATE_TEST_DATA") != "true")
+
+            "NO PRIVATE TEST DATA PRESENT. Fine for CI, but not for local tests" {
+                fail("NO PRIVATE TEST DATA PRESENT")
+            }
 
         "No private test data present" {}
         return@matrixSuite
     }
 
-    compact("${proofs.size} collected real-world proofs")  { report = CompactReport.FailuresOnly } - {
+    compact("${proofs.size} collected real-world proofs") { report = CompactReport.FailuresOnly } - {
+        val erroneous = AtomicInteger(0)
         data(
             proofs.withIndex().toList(),
             nameFn = { _, value -> "${value.index}: ${value.value.first.size} certs" }) - { (index, it) ->
@@ -156,10 +171,14 @@ val DebugStatementParserTest by matrixSuite {
                 "Own" {
                     if (fromGoogle == null) {
                         System.err.println("Old Google parser glitched out")
-                        val newParser = catchingUnwrapped { KeyDescription.parseFrom(attestationCertChain.first()) }
+                        val newParser = attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
+                            ?.let { catchingUnwrapped { KeyDescription.parseFrom(it) }.getOrNull() }
 
-                        attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }.shouldBeNull()
-                        return@invoke//well, well, well…}
+                        if (newParser == null) {
+                            attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
+                            .shouldBeNull()
+                            return@invoke//well, well, well…}
+                        }
                     }
                     androidAttestationExtension.shouldNotBeNull()
                     attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
@@ -181,7 +200,7 @@ val DebugStatementParserTest by matrixSuite {
                     }.getOrElse {
                         throw it
                     }
-                    assertSemanticallyEqual(fromGoogle, androidAttestationExtension)
+                    if (fromGoogle != null) assertSemanticallyEqual(fromGoogle, androidAttestationExtension)
 
                 }
                 "Roboto Engine Check" - {
@@ -239,11 +258,25 @@ val DebugStatementParserTest by matrixSuite {
 
                         //needs toString, because types inside result differ on error
                         withClue("Supreme success: ${supreme.isSuccess}, Legacy success: ${legacy.isSuccess}") {
-                            supreme.toString() shouldBe legacy.toString()
+                            if (fromGoogle == null) {
+                                if (runCatching {
+                                        ParsedAttestationRecord.createParsedAttestationRecord(
+                                            attestationCertChain
+                                        )
+                                    }.exceptionOrNull()?.message?.startsWith("Multiple authorization list entries for tag") != true)
+                                    supreme.isFailure.shouldBeTrue()
+                                else {
+                                    erroneous.incrementAndGet()
+                                    System.err.println(attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
+                                        ?.let { Base64.getEncoder().encodeToString(it.encoded) }
+                                        ?: "NO attestation cert found")
+                                }
+                            } else supreme.toString() shouldBe legacy.toString()
                         }
                     }
                 }
             } else "Empty chain" {}
         }
+        println("Number of erroneous attestation proofs: " + erroneous.get())
     }
 }

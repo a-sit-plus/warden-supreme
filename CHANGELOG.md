@@ -4,6 +4,16 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
+## NEXT
+* Fix tag conflation in supreme parser
+* Dependency Updates
+    * KeyAttestation [47f970d044ae4da7b00da068e7e1a4e952b0fd2f](https://github.com/android/keyattestation/commit/47f970d044ae4da7b00da068e7e1a4e952b0fd2f)
+    * AGP 9.1.1
+    * Gradle 9.6.1
+    * Kotlin 2.4.10
+    * TestBalloon 1.0.1
+    * TestBalloon Addons 0.16.0
+
 # 1.0.2
 * Ktor 3.5.1
 * kotlinx.datetime 0.8.0

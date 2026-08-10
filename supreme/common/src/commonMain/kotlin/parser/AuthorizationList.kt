@@ -231,14 +231,48 @@ data class AuthorizationList private constructor(
         get() = elements.asSequence().mapNotNull { (it as? Element.Unknown)?.value }.toList()
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T> firstSingleByTag(tag: Tagged): T? =
-        (elements.firstOrNull { it is Element.Single && it.value.tagged.explicitTag == tag.explicitTag } as? Element.Single)
-            ?.value as? T
+    private fun <T> singleByTag(tag: Tagged): T? {
+        val matching =
+            elements.filterIsInstance<Element.Single>().filter { it.value.tagged.explicitTag == tag.explicitTag }
+        return when (matching.size) {
+            0 -> null
+            1 -> matching.single().value as? T
+            else -> matching.first().let { first ->
+                if (matching.all { it.value.encodeToTlv().derEncoded.contentEquals(first.value.encodeToTlv().derEncoded) }) {
+                    first.value as T
+                } else {
+                    AttestationValue.Failure(
+                        "Multiple elements with tag ${tag.explicitTag}",
+                        tag,
+                        first.value.encodeToTlv()
+                    ) as T
+                }
+            }
+        }
+    }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T> firstSetByTag(tag: Tagged): Set<T>? =
-        (elements.firstOrNull { it is Element.SetOf && it.value.first().tagged.explicitTag == tag.explicitTag } as? Element.SetOf)
-            ?.value as? Set<T>
+    private fun <T> setByTag(tag: Tagged): Set<T>? {
+        val matching =
+            elements.filterIsInstance<Element.SetOf>().filter { it.value.first().tagged.explicitTag == tag.explicitTag }
+        return when (matching.size) {
+            0 -> null
+            1 -> matching.single().value as? Set<T>
+            else -> matching.first().let { first ->
+                if (matching.all { it.value.encode().derEncoded.contentEquals(first.value.encode().derEncoded) }) {
+                    first.value as Set<T>
+                } else {
+                    setOf(
+                        AttestationValue.Failure(
+                            "Multiple elements with tag ${tag.explicitTag}",
+                            tag,
+                            first.value.first().encodeToTlv()
+                        )
+                    ) as Set<T>
+                }
+            }
+        }
+    }
 
     // @formatter:off
     /**
@@ -252,7 +286,7 @@ data class AuthorizationList private constructor(
      * See [KeyPurpose.Tag.explicitTag].
      */
     val purpose                    :  Set<AttestationValue<   KeyPurpose  >>?
-        get() = firstSetByTag(  KeyPurpose  )
+        get() = setByTag(  KeyPurpose  )
 
     /**
      * Key algorithm.
@@ -265,7 +299,7 @@ data class AuthorizationList private constructor(
      * See [Algorithm.Tag.explicitTag].
      */
     val algorithm                  :  AttestationValue<          Algorithm  >?
-        get() = firstSingleByTag(  Algorithm  )
+        get() = singleByTag(  Algorithm  )
 
     /**
      * Key size (in bits).
@@ -278,7 +312,7 @@ data class AuthorizationList private constructor(
      * See [KeySize.Tag.explicitTag].
      */
     val keySize                    :  AttestationValue<          KeySize  >?
-        get() = firstSingleByTag(  KeySize  )
+        get() = singleByTag(  KeySize  )
 
     /**
      * Block modes.
@@ -291,7 +325,7 @@ data class AuthorizationList private constructor(
      * See [BlockMode.Tag.explicitTag].
      */
     val blockMode                  :  Set<AttestationValue<   BlockMode  >>?
-        get() = firstSetByTag(  BlockMode  )
+        get() = setByTag(  BlockMode  )
 
     /**
      * Digest modes.
@@ -304,7 +338,7 @@ data class AuthorizationList private constructor(
      * See [Digest.Tag.explicitTag].
      */
     val digest                     :  Set<AttestationValue<   Digest  >>?
-        get() = firstSetByTag(  Digest  )
+        get() = setByTag(  Digest  )
 
     /**
      * Padding modes.
@@ -317,7 +351,7 @@ data class AuthorizationList private constructor(
      * See [Padding.Tag.explicitTag].
      */
     val padding                    :  Set<AttestationValue<   Padding  >>?
-        get() = firstSetByTag(  Padding  )
+        get() = setByTag(  Padding  )
 
     /**
      * Caller-provided nonce flag.
@@ -331,7 +365,7 @@ data class AuthorizationList private constructor(
      * See [CallerNonce.explicitTag].
      */
     val callerNonce                :  AttestationValue<          CallerNonce  >?
-        get() = firstSingleByTag(  CallerNonce  )
+        get() = singleByTag(  CallerNonce  )
 
     /**
      * Minimum MAC length (in bits).
@@ -344,7 +378,7 @@ data class AuthorizationList private constructor(
      * See [MinMacLength.Tag.explicitTag].
      */
     val minMacLength               :  AttestationValue<          MinMacLength  >?
-        get() = firstSingleByTag(  MinMacLength  )
+        get() = singleByTag(  MinMacLength  )
 
     /**
      * Elliptic curve identifier.
@@ -357,7 +391,7 @@ data class AuthorizationList private constructor(
      * See [ECCurve.Tag.explicitTag].
      */
     val ecCurve                    :  AttestationValue<          ECCurve  >?
-        get() = firstSingleByTag(  ECCurve  )
+        get() = singleByTag(  ECCurve  )
 
     /**
      * RSA public exponent.
@@ -370,7 +404,7 @@ data class AuthorizationList private constructor(
      * See [RsaPublicExponent.Tag.explicitTag].
      */
     val rsaPublicExponent          :  AttestationValue<          RsaPublicExponent  >?
-        get() = firstSingleByTag(  RsaPublicExponent  )
+        get() = singleByTag(  RsaPublicExponent  )
 
     /**
      * RSA OAEP MGF digest.
@@ -383,7 +417,7 @@ data class AuthorizationList private constructor(
      * See [MgfDigest.Tag.explicitTag].
      */
     val mgfDigest                  :  Set<AttestationValue<   MgfDigest  >>?
-        get() = firstSetByTag(  MgfDigest  )
+        get() = setByTag(  MgfDigest  )
 
     /**
      * Rollback resistance.
@@ -397,7 +431,7 @@ data class AuthorizationList private constructor(
      * See [RollbackResistance.explicitTag].
      */
     val rollbackResistance         :  AttestationValue<          RollbackResistance  >?
-        get() = firstSingleByTag(  RollbackResistance  )
+        get() = singleByTag(  RollbackResistance  )
 
     /**
      * Early-boot-only restriction.
@@ -411,7 +445,7 @@ data class AuthorizationList private constructor(
      * See [EarlyBootOnly.explicitTag].
      */
     val earlyBootOnly              :  AttestationValue<          EarlyBootOnly  >?
-        get() = firstSingleByTag(  EarlyBootOnly  )
+        get() = singleByTag(  EarlyBootOnly  )
 
     /**
      * Key validity "not before" timestamp.
@@ -424,7 +458,7 @@ data class AuthorizationList private constructor(
      * See [ActiveDateTime.Tag.explicitTag].
      */
     val activeDateTime             :  AttestationValue<          ActiveDateTime  >?
-        get() = firstSingleByTag(  ActiveDateTime  )
+        get() = singleByTag(  ActiveDateTime  )
 
     /**
      * Key origination validity "not after" timestamp.
@@ -437,7 +471,7 @@ data class AuthorizationList private constructor(
      * See [OriginationExpireDateTime.Tag.explicitTag].
      */
     val originationExpireDateTime  :  AttestationValue<          OriginationExpireDateTime  >?
-        get() = firstSingleByTag(  OriginationExpireDateTime  )
+        get() = singleByTag(  OriginationExpireDateTime  )
 
     /**
      * Key usage validity "not after" timestamp.
@@ -450,7 +484,7 @@ data class AuthorizationList private constructor(
      * See [UsageExpireDateTime.Tag.explicitTag].
      */
     val usageExpireDateTime        :  AttestationValue<          UsageExpireDateTime  >?
-        get() = firstSingleByTag(  UsageExpireDateTime  )
+        get() = singleByTag(  UsageExpireDateTime  )
 
     /**
      * Key usage count limit.
@@ -463,7 +497,7 @@ data class AuthorizationList private constructor(
      * See [UsageCountLimit.Tag.explicitTag].
      */
     val usageCountLimit            :  AttestationValue<          UsageCountLimit  >?
-        get() = firstSingleByTag(  UsageCountLimit  )
+        get() = singleByTag(  UsageCountLimit  )
 
     /**
      * Secure user ID (SID).
@@ -476,7 +510,7 @@ data class AuthorizationList private constructor(
      * See [UserSecureId.Tag.explicitTag].
      */
     val userSecureId               :  AttestationValue<          UserSecureId  >?
-        get() = firstSingleByTag(  UserSecureId  )
+        get() = singleByTag(  UserSecureId  )
 
     /**
      * No-authentication-required flag.
@@ -490,7 +524,7 @@ data class AuthorizationList private constructor(
      * See [NoAuthRequired.explicitTag].
      */
     val noAuthRequired             :  AttestationValue<          NoAuthRequired  >?
-        get() = firstSingleByTag(  NoAuthRequired  )
+        get() = singleByTag(  NoAuthRequired  )
 
     /**
      * Hardware authenticator type (user authentication type).
@@ -503,7 +537,7 @@ data class AuthorizationList private constructor(
      * See [UserAuth.Tag.explicitTag].
      */
     val userAuthType               :  AttestationValue<          UserAuth  >?
-        get() = firstSingleByTag(  UserAuth  )
+        get() = singleByTag(  UserAuth  )
 
     /**
      * User authentication timeout.
@@ -516,7 +550,7 @@ data class AuthorizationList private constructor(
      * See [AuthTimeout.Tag.explicitTag].
      */
     val authTimeout                :  AttestationValue<          AuthTimeout  >?
-        get() = firstSingleByTag(  AuthTimeout  )
+        get() = singleByTag(  AuthTimeout  )
 
     /**
      * Allow-while-on-body flag.
@@ -530,7 +564,7 @@ data class AuthorizationList private constructor(
      * See [AllowWhileOnBody.explicitTag].
      */
     val allowWhileOnBody           :  AttestationValue<          AllowWhileOnBody  >?
-        get() = firstSingleByTag(  AllowWhileOnBody  )
+        get() = singleByTag(  AllowWhileOnBody  )
 
     /**
      * Trusted user presence required flag.
@@ -544,7 +578,7 @@ data class AuthorizationList private constructor(
      * See [TrustedUserPresenceRequired.explicitTag].
      */
     val trustedUserPresenceRequired:  AttestationValue<          TrustedUserPresenceRequired  >?
-        get() = firstSingleByTag(  TrustedUserPresenceRequired  )
+        get() = singleByTag(  TrustedUserPresenceRequired  )
 
     /**
      * Trusted confirmation required flag.
@@ -558,7 +592,7 @@ data class AuthorizationList private constructor(
      * See [TrustedConfirmationRequired.explicitTag].
      */
     val trustedConfirmationRequired:  AttestationValue<          TrustedConfirmationRequired  >?
-        get() = firstSingleByTag(  TrustedConfirmationRequired  )
+        get() = singleByTag(  TrustedConfirmationRequired  )
 
     /**
      * Unlocked device required flag.
@@ -572,7 +606,7 @@ data class AuthorizationList private constructor(
      * See [UnlockedDeviceRequired.explicitTag].
      */
     val unlockedDeviceRequired     :  AttestationValue<          UnlockedDeviceRequired  >?
-        get() = firstSingleByTag(  UnlockedDeviceRequired  )
+        get() = singleByTag(  UnlockedDeviceRequired  )
 
     /**
      * "All applications" flag (legacy / keymaster).
@@ -589,7 +623,7 @@ data class AuthorizationList private constructor(
      * See [AllApplications.explicitTag].
      */
     val allApplications            :  AttestationValue<          AllApplications  >?
-        get() = firstSingleByTag(  AllApplications  )
+        get() = singleByTag(  AllApplications  )
 
     /**
      * Key creation timestamp.
@@ -602,7 +636,7 @@ data class AuthorizationList private constructor(
      * See [CreationDateTime.Tag.explicitTag].
      */
     val creationDateTime           :  AttestationValue<          CreationDateTime  >?
-        get() = firstSingleByTag(  CreationDateTime  )
+        get() = singleByTag(  CreationDateTime  )
 
     /**
      * Key origin.
@@ -615,7 +649,7 @@ data class AuthorizationList private constructor(
      * See [Origin.Tag.explicitTag].
      */
     val origin                     :  AttestationValue<          Origin  >?
-        get() = firstSingleByTag(  Origin  )
+        get() = singleByTag(  Origin  )
 
     /**
      * Legacy rollback-resistant flag (keymaster attestation versions 1–2).
@@ -631,7 +665,7 @@ data class AuthorizationList private constructor(
      * See [RollbackResistent.explicitTag].
      */
     val rollbackResistant          :  AttestationValue<          RollbackResistent  >?
-        get() = firstSingleByTag(  RollbackResistent  )
+        get() = singleByTag(  RollbackResistent  )
 
     /**
      * Root of trust information (verified boot state, device lock state, etc).
@@ -644,7 +678,7 @@ data class AuthorizationList private constructor(
      * See [RootOfTrust.Tag.explicitTag].
      */
     val rootOfTrust                :  AttestationValue<          RootOfTrust  >?
-        get() = firstSingleByTag(  RootOfTrust  )
+        get() = singleByTag(  RootOfTrust  )
 
     /**
      * Operating system version.
@@ -657,7 +691,7 @@ data class AuthorizationList private constructor(
      * See [OsVersion.Tag.explicitTag].
      */
     val osVersion                  :  AttestationValue<          OsVersion  >?
-        get() = firstSingleByTag(  OsVersion  )
+        get() = singleByTag(  OsVersion  )
 
     /**
      * Operating system patch level.
@@ -670,7 +704,7 @@ data class AuthorizationList private constructor(
      * See [OsPatchLevel.Tag.explicitTag].
      */
     val osPatchLevel               :  AttestationValue<          OsPatchLevel  >?
-        get() = firstSingleByTag(  OsPatchLevel  )
+        get() = singleByTag(  OsPatchLevel  )
 
     /**
      * Attestation application ID.
@@ -683,7 +717,7 @@ data class AuthorizationList private constructor(
      * See [AttestationApplicationId.Tag.explicitTag].
      */
     val attestationApplicationId   :  AttestationValue<          AttestationApplicationId  >?
-        get() = firstSingleByTag(  AttestationApplicationId  )
+        get() = singleByTag(  AttestationApplicationId  )
 
     /**
      * Device brand.
@@ -696,7 +730,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.Brand.Tag.explicitTag].
      */
     val attestationIdBrand         :  AttestationValue<          AttestationId.Brand  >?
-        get() = firstSingleByTag(  AttestationId.Brand  )
+        get() = singleByTag(  AttestationId.Brand  )
 
     /**
      * Device name.
@@ -709,7 +743,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.Device.Tag.explicitTag].
      */
     val attestationIdDevice        :  AttestationValue<          AttestationId.Device  >?
-        get() = firstSingleByTag(  AttestationId.Device  )
+        get() = singleByTag(  AttestationId.Device  )
 
     /**
      * Product name.
@@ -722,7 +756,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.Product.Tag.explicitTag].
      */
     val attestationIdProduct       :  AttestationValue<          AttestationId.Product  >?
-        get() = firstSingleByTag(  AttestationId.Product  )
+        get() = singleByTag(  AttestationId.Product  )
 
     /**
      * Device serial number.
@@ -735,7 +769,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.Serial.Tag.explicitTag].
      */
     val attestationIdSerial        :  AttestationValue<          AttestationId.Serial  >?
-        get() = firstSingleByTag(  AttestationId.Serial  )
+        get() = singleByTag(  AttestationId.Serial  )
 
     /**
      * IMEI (first slot).
@@ -748,7 +782,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.Imei.Tag.explicitTag].
      */
     val attestationIdImei          :  AttestationValue<          AttestationId.Imei  >?
-        get() = firstSingleByTag(  AttestationId.Imei  )
+        get() = singleByTag(  AttestationId.Imei  )
 
     /**
      * MEID.
@@ -761,7 +795,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.Meid.Tag.explicitTag].
      */
     val attestationIdMeid          :  AttestationValue<          AttestationId.Meid  >?
-        get() = firstSingleByTag(  AttestationId.Meid  )
+        get() = singleByTag(  AttestationId.Meid  )
 
     /**
      * Manufacturer name.
@@ -774,7 +808,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.Manufacturer.Tag.explicitTag].
      */
     val attestationIdManufacturer  :  AttestationValue<          AttestationId.Manufacturer  >?
-        get() = firstSingleByTag(  AttestationId.Manufacturer  )
+        get() = singleByTag(  AttestationId.Manufacturer  )
 
     /**
      * Device model.
@@ -787,7 +821,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.Model.Tag.explicitTag].
      */
     val attestationIdModel         :  AttestationValue<          AttestationId.Model  >?
-        get() = firstSingleByTag(  AttestationId.Model  )
+        get() = singleByTag(  AttestationId.Model  )
 
     /**
      * Vendor patch level.
@@ -800,7 +834,7 @@ data class AuthorizationList private constructor(
      * See [PatchLevel.Vendor.Tag.explicitTag].
      */
     val vendorPatchLevel           :  AttestationValue<          PatchLevel.Vendor  >?
-        get() = firstSingleByTag(  PatchLevel.Vendor  )
+        get() = singleByTag(  PatchLevel.Vendor  )
 
     /**
      * Boot patch level.
@@ -813,7 +847,7 @@ data class AuthorizationList private constructor(
      * See [PatchLevel.Boot.Tag.explicitTag].
      */
     val bootPatchLevel             :  AttestationValue<          PatchLevel.Boot  >?
-        get() = firstSingleByTag(  PatchLevel.Boot  )
+        get() = singleByTag(  PatchLevel.Boot  )
 
     /**
      * Device-unique attestation flag.
@@ -827,7 +861,7 @@ data class AuthorizationList private constructor(
      * See [DeviceUniqueAttestation.explicitTag].
      */
     val deviceUniqueAttestation    :  AttestationValue<          DeviceUniqueAttestation  >?
-        get() = firstSingleByTag(  DeviceUniqueAttestation  )
+        get() = singleByTag(  DeviceUniqueAttestation  )
 
     /**
      * IMEI (second slot).
@@ -840,7 +874,7 @@ data class AuthorizationList private constructor(
      * See [AttestationId.SecondImei.Tag.explicitTag].
      */
     val attestationIdSecondImei    :  AttestationValue<          AttestationId.SecondImei  >?
-        get() = firstSingleByTag(  AttestationId.SecondImei  )
+        get() = singleByTag(  AttestationId.SecondImei  )
 
     /**
      * Module hash.
@@ -853,7 +887,7 @@ data class AuthorizationList private constructor(
      * See [ModuleHash.Tag.explicitTag].
      */
     val moduleHash                 :  AttestationValue<          ModuleHash  >?
-        get() = firstSingleByTag(  ModuleHash  )
+        get() = singleByTag(  ModuleHash  )
     // @formatter:on
 
     init {
@@ -942,7 +976,7 @@ data class AuthorizationList private constructor(
                         Asn1.ExplicitTag(KeyPurpose.explicitTag)                  -> (inner as? Asn1Set)        ?.let { KeyPurpose                  .decodeSetElement<KeyPurpose>(it) }?.also { add(Element.SetOf(it)) }
                         Asn1.ExplicitTag(Algorithm.explicitTag)                   -> add(Element.Single(        value = Algorithm                   .decodeElement<Algorithm>(inner)))
                         Asn1.ExplicitTag(KeySize.explicitTag)                     -> add(Element.Single(        value = KeySize                     .decodeElement<KeySize>(inner)))
-                        Asn1.ExplicitTag(BlockMode.explicitTag)                   -> (inner as? Asn1Set)        ?.let { BlockMode                  .decodeSetElement<BlockMode>(it) }?.also { add(Element.SetOf(it)) }
+                        Asn1.ExplicitTag(BlockMode.explicitTag)                   -> (inner as? Asn1Set)        ?.let { BlockMode                   .decodeSetElement<BlockMode>(it) }?.also { add(Element.SetOf(it)) }
                         Asn1.ExplicitTag(Digest.explicitTag)                      -> (inner as? Asn1Set)        ?.let { Digest                      .decodeSetElement<Digest>(it) }?.also { add(Element.SetOf(it)) }
                         Asn1.ExplicitTag(Padding.explicitTag)                     -> (inner as? Asn1Set)        ?.let { Padding                     .decodeSetElement<Padding>(it) }?.also { add(Element.SetOf(it)) }
                         Asn1.ExplicitTag(CallerNonce.explicitTag)                 -> (inner as? Asn1Primitive)  ?.let { add(Element.Single(value =  CallerNonce                 .decodeNullElement(it))) }

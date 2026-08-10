@@ -1,6 +1,5 @@
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
-import com.android.build.api.dsl.androidLibrary
 
 
 plugins {
@@ -24,7 +23,7 @@ version = artifactVersion
 kotlin {
     iosArm64()
     iosSimulatorArm64()
-    androidLibrary {
+    android {
         namespace = "at.asitplus.attestation.supreme.client"
         withDeviceTestBuilder {
             sourceSetTreeName = "test"

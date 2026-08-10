@@ -1,5 +1,6 @@
 import at.asitplus.attestation.android.*
 import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.asn1.encoding.Asn1
 import at.asitplus.signum.indispensable.toKmpCertificate
 import at.asitplus.testballoon.matrix.matrixSuite
 import com.google.android.attestation.ParsedAttestationRecord
@@ -25,6 +26,20 @@ import java.util.*
 internal val certificateFactory = CertificateFactory.getInstance("X.509")
 
 val CustomParserTests by matrixSuite {
+    "only conflicting duplicate authorization-list tags become a property failure" {
+        val rsa = AuthorizationList(algorithm = AuthorizationList.Algorithm.RSA).encodeToTlv().children.single()
+        val ec = AuthorizationList(algorithm = AuthorizationList.Algorithm.EC).encodeToTlv().children.single()
+        val callerNonce = AuthorizationList(callerNonce = AuthorizationList.CallerNonce).encodeToTlv().children.single()
+
+        val same = AuthorizationList.decodeFromTlv(Asn1.Sequence { +rsa; +rsa; +callerNonce })
+        same.algorithm!!.isSuccess() shouldBe true
+        same.callerNonce!!.isSuccess() shouldBe true
+
+        val different = AuthorizationList.decodeFromTlv(Asn1.Sequence { +rsa; +ec; +callerNonce })
+        different.algorithm!!.isFailure() shouldBe true
+        different.callerNonce!!.isSuccess() shouldBe true
+    }
+
     val chain: Map<String, JsonObject> by lazy {
         val json = Json { ignoreUnknownKeys = true }
         val classLoader = Thread.currentThread().contextClassLoader
