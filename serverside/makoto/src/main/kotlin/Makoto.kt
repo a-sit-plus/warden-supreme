@@ -261,8 +261,8 @@ class Makoto
 
 
         private fun findMatchingConfiguration(validatedAttestation: ValidatedAttestation) =
-            iosSetup?.attestationValidators?.toList()
-                ?.find { (attest, _) -> attest.app.appIdentifier == validatedAttestation.receipt.payload.appId.value }?.first
+            iosSetup?.iosApps?.entries
+                ?.find { (_, attest) -> attest.app.appIdentifier == validatedAttestation.receipt.payload.appId.value }?.value
                 ?: throw AttestationException.Configuration(
                     Platform.IOS, "No matching app for ${validatedAttestation.receipt.payload.appId.value} found",
                     cause = NullPointerException()
@@ -732,7 +732,7 @@ class Makoto
         if (results.filter { (_, result) -> result.isFailure }.size == results.size)
             throw results.first().second.exceptionOrNull()!!
 
-        val result: Pair<AppleAppAttest, ValidatedAttestation> =
+        val result: Pair<IosAttestationConfiguration.AppData, ValidatedAttestation> =
             results.first { (_, result) -> result.isSuccess }.let { (app, res) -> app to res.getOrNull()!! }
 
 
@@ -744,9 +744,7 @@ class Makoto
                 cause = IosAttestationException(reason = IosAttestationException.Reason.STATEMENT_TIME)
             )
 
-        val iosVersion =
-            iosSetup.iosApps.entries.firstOrNull { (_, appAttest) -> appAttest.app == result.first.app }?.key?.iosVersionOverride
-                ?: iosSetup.iosVersion
+        val iosVersion = result.first.iosVersionOverride ?: iosSetup.iosVersion
 
         var parsedVersion: ParsedVersions = null to null
         iosVersion?.let { configuredVersion ->
@@ -1010,11 +1008,11 @@ class Makoto
             }
 
 
-        val attestationValidators: Map<AppleAppAttest, List<AttestationValidator>> =
+        val attestationValidators: Map<IosAttestationConfiguration.AppData, List<AttestationValidator>> =
             iosApps.map { (cfg, app) ->
 
                 val anchors = cfg.trustedRootOverrides ?: iosAttestationConfiguration.trustedRoots
-                app to anchors.map { trustAnchor ->
+                cfg to anchors.map { trustAnchor ->
                     app.createAttestationValidator(
                         clock = appAttestClock,
                         receiptValidator = app.createReceiptValidator(
@@ -1026,7 +1024,6 @@ class Makoto
                     )
                 }
             }.toMap()
-
         val iosVersion: IosAttestationConfiguration.OsVersions? = iosAttestationConfiguration.iosVersion
     }
 

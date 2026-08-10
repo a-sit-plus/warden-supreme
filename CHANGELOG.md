@@ -9,10 +9,11 @@ this changelog also includes the original WARDEN changelog.
     * Verify Android attestation certificate chains before fully decoding their attacker-controlled attestation extensions.
     * Use a narrowly scoped, size-limited application-ID extraction for per-application trust-anchor selection.
     * Canonicalize Android application package information and signer digests with ordered collections rather than attacker-controlled hash sets.
-    * Replace full-cache expiry scans in `InMemoryChallengeCache` with nonce- and expiry-ordered indexes.
-    * Bound payload sizes
-    * Clarify docs wrt. configuration
-    * Fix tag conflation in supreme parser
+    * Replace full-cache expiry scans in `InMemoryChallengeCache` with nonce- and expiry-ordered indexes ([GHSA-3chr-q239-rmpp](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-3chr-q239-rmpp)).
+    * Bound payload sizes and recursion depth ([GHSA-qv7m-wr3r-hfg3](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-qv7m-wr3r-hfg3)) ([GHSA-3qj3-8wvm-fmcp](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-3qj3-8wvm-fmcp))
+    * Clarify docs wrt. configuration ([GHSA-744h-w68v-qfpc](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-744h-w68v-qfpc))
+    * Fix tag conflation in supreme parser ([GHSA-rxrw-2p38-wfmr](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-rxrw-2p38-wfmr))
+    * Fix iOS stage confusion bug ([GHSA-2f9g-97q5-f2wr](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-2f9g-97q5-f2wr))
 * Dependency Updates
     * KeyAttestation [47f970d044ae4da7b00da068e7e1a4e952b0fd2f](https://github.com/android/keyattestation/commit/47f970d044ae4da7b00da068e7e1a4e952b0fd2f)
     * AGP 9.1.1

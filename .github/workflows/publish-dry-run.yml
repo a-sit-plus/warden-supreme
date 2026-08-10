@@ -25,7 +25,7 @@ permissions:
   contents: read
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "macOS"]') || 'macos-latest' }}
     env:
       KOTLIN_VERSION_ENV: ${{ inputs.kotlin-version }}
       KOTEST_VERSION_ENV: ${{ inputs.kotest-version }}
@@ -84,7 +84,7 @@ jobs:
               done
 
   deploy-docs:
-    runs-on: macos-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "macOS"]') || 'macos-latest' }}
     env:
       KOTLIN_VERSION_ENV: ${{ inputs.kotlin-version }}
       KOTEST_VERSION_ENV: ${{ inputs.kotest-version }}

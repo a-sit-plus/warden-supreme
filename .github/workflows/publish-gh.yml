@@ -23,7 +23,7 @@ permissions:
   id-token: write
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "linux"]') || 'ubuntu-latest' }}
     env:
       KOTLIN_VERSION_ENV: ${{ inputs.kotlin-version }}
       KOTEST_VERSION_ENV: ${{ inputs.kotest-version }}

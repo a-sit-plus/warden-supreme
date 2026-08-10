@@ -2,7 +2,7 @@ name: Test makoto + roboto
 on: [push]
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "linux"]') || 'ubuntu-latest' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3

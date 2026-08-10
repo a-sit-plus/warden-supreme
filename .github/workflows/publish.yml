@@ -4,7 +4,7 @@ permissions:
   contents: read
 jobs:
   publish:
-    runs-on: macos-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "macOS"]') || 'macos-latest' }}
     timeout-minutes: 300
     steps:
       - name: Checkout
@@ -27,7 +27,7 @@ jobs:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.PUBLISH_SONATYPE_USER }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.PUBLISH_SONATYPE_PASSWORD }}
   close:
-    runs-on: macos-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "macOS"]') || 'macos-latest' }}
     timeout-minutes: 300
     needs: publish
     steps:

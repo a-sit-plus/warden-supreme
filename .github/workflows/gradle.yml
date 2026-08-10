@@ -2,7 +2,7 @@ name: Test and Build
 on: [push]
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "macOS"]') || 'macos-latest' }}
     env:
       NO_PRIVATE_TEST_DATA: "true"
     steps:
@@ -24,7 +24,7 @@ jobs:
           path: serverside/**/build/test-results/**/TEST*.xml,utils/**/build/test-results/**/TEST*.xml,supreme/**/build/test-results/**/TEST*.xml
           reporter: java-junit
   loader-mutation:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "linux"]') || 'ubuntu-latest' }}
     needs: build
     env:
       NO_PRIVATE_TEST_DATA: "true"

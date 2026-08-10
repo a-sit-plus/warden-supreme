@@ -30,7 +30,6 @@ private fun clientForJson(
     maxAttestationPayloadBytes,
 )
 
-
 val AttestationClientProofTest by matrixSuite {
     test("challenge rejects excessive payload size") {
         clientForJson("{}", maxAttestationPayloadBytes = 1)

@@ -6,11 +6,16 @@ on:
         description: 'Documentation version (for example, 1.0)'
         required: true
         type: string
+      latest:
+        description: 'Mark this version as latest'
+        required: true
+        default: true
+        type: boolean
 permissions:
   contents: write
 jobs:
   deploy-docs:
-    runs-on: macos-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "macOS"]') || 'macos-latest' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -52,5 +57,5 @@ jobs:
           git fetch origin gh-pages:gh-pages
           export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib
           cd docs
-          mike deploy --push --update-aliases "${{ inputs.docs_version }}" latest
-          mike set-default --push latest
+          mike deploy --push --update-aliases "${{ inputs.docs_version }}" ${{ inputs.latest && 'latest' || '' }}
+          if ${{ inputs.latest }}; then mike set-default --push latest; fi
