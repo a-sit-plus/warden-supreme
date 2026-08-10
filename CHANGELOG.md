@@ -28,6 +28,7 @@
     * Add `dataAuthentication` and human-readable `toBeAttestedAttributes` support to `SupremeConfiguration` JSON/YAML.
     * Expand client, verifier, property, and Android-emulator end-to-end coverage for both authentication modes and
       required/optional attribute combinations.
+    * Bump ChallengeVersion to 3, but still transmit 2, of DataAuthentication.Signature is used without any requested to-be-attested attributes
 * Add Supreme dependency to `supreme-common`
 
 ## 1.0.3

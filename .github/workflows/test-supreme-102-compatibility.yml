@@ -1,0 +1,61 @@
+name: Test Supreme 1.0.2 Client Compatibility
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Accept Android SDK licences
+        run: yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses
+
+      - name: Install Android SDK 30
+        run: ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install platform-tools "platforms;android-30" "build-tools;30.0.0" "system-images;android-30;default;x86_64"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Compile verifier and 1.0.2 client
+        run: |
+          cp release-1.0.2/supreme/verifier/src/jvmTest/kotlin/main.kt supreme/verifier/src/jvmTest/kotlin/main.kt
+          ./gradlew :supreme-verifier:jvmTestClasses
+          ./release-1.0.2/gradlew -p release-1.0.2 :supreme-client:createAndroidDeviceTestApkListingFileRedirect
+
+      - name: Run 1.0.2 client against current verifier
+        run: |
+          set -euo pipefail
+
+          SUPREME_ENDTOENDTEST=true \
+          TESTBALLOON_INCLUDE_PATTERNS=at.asitplus.attestation.supreme.TestEnv* \
+            ./gradlew :supreme-verifier:jvmTest > verifier.log 2>&1 &
+          verifier_pid=$!
+          trap 'kill "$verifier_pid" 2>/dev/null || true' EXIT
+
+          curl --fail --retry 60 --retry-connrefused --retry-delay 1 \
+            http://localhost:8080/api/v1/challenge >/dev/null
+
+          ./release-1.0.2/gradlew -p release-1.0.2 pixelAVDAndroidDeviceTest --info
+          wait "$verifier_pid"
+
+      - name: Test report
+        uses: dorny/test-reporter@v2
+        if: success() || failure()
+        with:
+          name: Warden Supreme 1.0.2 Compatibility Tests
+          path: release-1.0.2/supreme/client/build/outputs/androidTest-results/managedDevice/**/pixelAVD/TEST*.xml,supreme/**/build/test-results/**/TEST*.xml
+          reporter: java-junit
+          use-actions-summary: true

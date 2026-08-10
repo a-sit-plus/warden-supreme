@@ -11,3 +11,6 @@
     * Or: Set the environment vatriable `NO_PRIVATE_TEST_DATA` to `true`
 * To publish locally: `publishAllpublicationsToMavenLocal`
 * See Project structure in the official documentation for info on which module does what
+
+If you change behaviour in a braking way or `AttestationChallenge` changes shape, bump the `CURRENT_VERSION`and check if
+older versin can still be used in some scenarios for improved compat
