@@ -126,7 +126,7 @@ val DebugStatementParserTest by matrixSuite {
 
                 val androidAttestationExtension = attestationCertChain.first().androidAttestationExtension
                 "from chain should be same as from leaf" {
-                    androidAttestationExtension shouldBe attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }?.androidAttestationExtension
+                    androidAttestationExtension shouldBe attestationCertChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }?.androidAttestationExtension
                 }
                 "convert" - {
                     data(
@@ -156,11 +156,11 @@ val DebugStatementParserTest by matrixSuite {
                         }.getOrNull()
                     }.filterNotNull()
 
-                    if (prev.isNotEmpty() && ((androidAttestationExtension != null) && prev.closestToRootOrNull { it.hasAndroidKeystoreAttestation }?.androidAttestationExtension != null)) {
+                    if (prev.isNotEmpty() && ((androidAttestationExtension != null) && prev.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }?.androidAttestationExtension != null)) {
                         "concatenating two chains (current = $index) should get the same exnt as just from the current chain" {
                             //leaf = fist in chain, root = last in chain. so we went the closest to CURRENT root. hence we need to prepent
                             //s.t. the chain gets extended below the leaf and not above the root
-                            (prev + attestationCertChain).closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension shouldBe attestationCertChain.closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension
+                            (prev + attestationCertChain).closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension shouldBe attestationCertChain.closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension
                         }
                     }
                 }
@@ -171,17 +171,17 @@ val DebugStatementParserTest by matrixSuite {
                 "Own" {
                     if (fromGoogle == null) {
                         System.err.println("Old Google parser glitched out")
-                        val newParser = attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
+                        val newParser = attestationCertChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }
                             ?.let { catchingUnwrapped { KeyDescription.parseFrom(it) }.getOrNull() }
 
                         if (newParser == null) {
-                            attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
+                            attestationCertChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }
                             .shouldBeNull()
                             return@invoke//well, well, well…}
                         }
                     }
                     androidAttestationExtension.shouldNotBeNull()
-                    attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
+                    attestationCertChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }
                         .shouldNotBeNull().androidAttestationExtension shouldBe androidAttestationExtension
                     catchingUnwrapped {
 
@@ -267,7 +267,7 @@ val DebugStatementParserTest by matrixSuite {
                                     supreme.isFailure.shouldBeTrue()
                                 else {
                                     erroneous.incrementAndGet()
-                                    System.err.println(attestationCertChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }
+                                    System.err.println(attestationCertChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }
                                         ?.let { Base64.getEncoder().encodeToString(it.encoded) }
                                         ?: "NO attestation cert found")
                                 }

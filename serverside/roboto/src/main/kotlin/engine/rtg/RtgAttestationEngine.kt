@@ -30,6 +30,9 @@ sealed class RtgAttestationEngine(
     override val List<X509Certificate>.attestationRecord: ParsedAttestationRecord
         get() = ParsedAttestationRecord.createParsedAttestationRecord(this)
 
+    override fun List<X509Certificate>.selectAttestedApplication() =
+        selectAttestedApplication(attestationConfiguration.applications)
+
     override val ParsedAttestationRecord.attestationSecLevel: GeneralizedSecurityLevel
         get() = when (attestationSecurityLevel()) {
             ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE

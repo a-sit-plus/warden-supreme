@@ -6,7 +6,7 @@ import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.closestToRootOrNull
-import at.asitplus.attestation.android.hasAndroidKeystoreAttestation
+import at.asitplus.attestation.android.hasAndroidKeyAttestationExtensionOid
 import at.asitplus.attestation.data.AttestationCreator
 import at.asitplus.attestation.data.CreatedAttestation
 import at.asitplus.attestation.data.SecurityLevel
@@ -140,7 +140,7 @@ val GeneratedAttestationTests by matrixSuite {
         val forgedChain = prependForgedAttestationLeaf(attestationProof)
         val result = AttestationResult.Android.Verified(forgedChain)
 
-        forgedChain.closestToRootOrNull { it.hasAndroidKeystoreAttestation }!!.encoded shouldBe attestationProof.first().encoded
+        forgedChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }!!.encoded shouldBe attestationProof.first().encoded
 
         result.isLeafAttestationCertificate shouldBe false
         result.attestationCertificateClosestToRoot shouldBe attestationProof.first()
@@ -162,8 +162,8 @@ val GeneratedAttestationTests by matrixSuite {
         val extendedChain = prependSignedChildLeaf(createdAttestation)
 
         extendedChain.first().verify(attestationProof.first().publicKey)
-        extendedChain.first().hasAndroidKeystoreAttestation shouldBe false
-        extendedChain[1].hasAndroidKeystoreAttestation shouldBe true
+        extendedChain.first().hasAndroidKeyAttestationExtensionOid shouldBe false
+        extendedChain[1].hasAndroidKeyAttestationExtensionOid shouldBe true
 
         val result = attestationService.verifyKeyAttestation(
             extendedChain.toAndroidKeystoreAttestation(),

@@ -19,6 +19,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import org.kotlincrypto.random.CryptoRand
 import java.security.Signature
+import java.util.TreeSet
+import java.util.TreeMap
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -486,30 +488,28 @@ constructor(
 
     private val mutex = Mutex()
 
-    /**
-     * Use a hash map keyed by nonce instead of a list to make lookups O(1) instead of O(n).
-     * ByteArray is not suitable as a key directly, so we wrap it.
-     */
-    private class NonceKey(val bytes: ByteArray) {
-        override fun equals(other: Any?): Boolean =
-            this === other || (other is NonceKey && bytes.contentEquals(other.bytes))
+    private class ChallengeEntry(val nonce: ByteArray, val challenge: AttestationChallenge)
 
-        override fun hashCode(): Int = bytes.contentHashCode()
-        override fun toString(): String = bytes.toHexString()
+    private val challengesByNonce = TreeMap<ByteArray, ChallengeEntry>(::compareUnsigned)
+    private val challengesByExpiry = TreeSet<ChallengeEntry> { left, right ->
+        val expiry = left.challenge.validUntil.compareTo(right.challenge.validUntil)
+        if (expiry != 0) expiry else compareUnsigned(left.nonce, right.nonce)
     }
-
-    private val challengesByNonce = mutableMapOf<NonceKey, AttestationChallenge>()
 
     @Throws(ChallengeCacheFullException::class)
     override suspend fun store(challenge: AttestationChallenge) {
         mutex.withLock {
             pruneExpiredEntries()
-            val key = NonceKey(challenge.nonce)
-            // Strong cryptographic nonces make collisions unrealistic, so we simply overwrite
-            if (!challengesByNonce.containsKey(key) && challengesByNonce.size >= maxChallenges) {
+            val nonce = challenge.nonce
+            if (!challengesByNonce.containsKey(nonce) && challengesByNonce.size >= maxChallenges) {
                 throw ChallengeCacheFullException(maxChallenges)
             }
-            challengesByNonce[key] = challenge
+            // Strong cryptographic nonces make collisions unrealistic, so we simply overwrite
+            challengesByNonce.remove(nonce)?.let(challengesByExpiry::remove)
+            ChallengeEntry(nonce, challenge).also {
+                challengesByNonce[nonce] = it
+                challengesByExpiry += it
+            }
         }
     }
 
@@ -524,27 +524,34 @@ constructor(
     }
 
     private fun find(nonce: ByteArray): ChallengeValidationResult {
-        val key = NonceKey(nonce)
-        val challenge = challengesByNonce.remove(key) ?: return ChallengeValidationResult.Failure.Other(
+        val entry = challengesByNonce.remove(nonce) ?: return ChallengeValidationResult.Failure.Other(
             IllegalStateException("No challenge found")
         )
+        challengesByExpiry.remove(entry)
 
         // With a Map, you can't have multiple active entries for the same nonce
         // unless you deliberately store a collection. Given strong random nonces,
         // we assume at most one.
-        return ChallengeValidationResult.Success(challenge)
+        return ChallengeValidationResult.Success(entry.challenge)
     }
 
     private fun pruneExpiredEntries() {
         // Capture time once per call instead of per-entry
         val nowWithOffset = clock.now() + offset
 
-        val iterator = challengesByNonce.entries.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            if (entry.value.validUntil <= nowWithOffset) {
-                iterator.remove()
-            }
+        while (challengesByExpiry.isNotEmpty() && challengesByExpiry.first().challenge.validUntil <= nowWithOffset) {
+            val entry = challengesByExpiry.pollFirst()
+            if (challengesByNonce[entry.nonce] === entry) challengesByNonce.remove(entry.nonce)
         }
+    }
+
+    private fun compareUnsigned(left: ByteArray, right: ByteArray): Int {
+        var index = 0
+        while (index < minOf(left.size, right.size)) {
+            val result = (left[index].toInt() and 0xff) - (right[index].toInt() and 0xff)
+            if (result != 0) return result
+            index++
+        }
+        return left.size.compareTo(right.size)
     }
 }

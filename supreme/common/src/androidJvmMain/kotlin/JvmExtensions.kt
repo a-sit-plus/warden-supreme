@@ -15,7 +15,7 @@ val java.security.cert.X509Certificate.androidAttestationExtension: AttestationK
         null
     }
 
-@Deprecated("Unsafe behaviour", replaceWith = ReplaceWith("closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension"), DeprecationLevel.ERROR)
+@Deprecated("Unsafe behaviour", replaceWith = ReplaceWith("closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension"), DeprecationLevel.ERROR)
 val List<java.security.cert.X509Certificate>.androidAttestationExtension: AttestationKeyDescription?
     get() = catchingUnwrapped {
         mapNotNull { it.toKmpCertificate().getOrNull() }.let {
@@ -25,7 +25,15 @@ val List<java.security.cert.X509Certificate>.androidAttestationExtension: Attest
         null
     }
 
-val java.security.cert.X509Certificate.hasAndroidKeystoreAttestation get() = androidAttestationExtension!=null
+val java.security.cert.X509Certificate.hasAndroidKeyAttestationExtensionOid: Boolean
+    get() = nonCriticalExtensionOIDs?.contains(AttestationKeyDescription.oid.toString()) == true
+
+@Deprecated(
+    "Parses the extension. Use hasAndroidKeyAttestationExtensionOid to check only for its OID.",
+    ReplaceWith("hasAndroidKeyAttestationExtensionOid"),
+    DeprecationLevel.ERROR,
+)
+val java.security.cert.X509Certificate.hasAndroidKeystoreAttestation get() = androidAttestationExtension != null
 
 /**
  * Returns a list of certificates that contain an attestation extension; in-order.

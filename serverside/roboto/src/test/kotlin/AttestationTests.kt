@@ -5,7 +5,7 @@ import at.asitplus.attestation.android.closestToRoot
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
-import at.asitplus.attestation.android.hasAndroidKeystoreAttestation
+import at.asitplus.attestation.android.hasAndroidKeyAttestationExtensionOid
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.attestation.replayBlocking
@@ -16,8 +16,14 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.util.*
+import com.google.protobuf.ByteString
 import org.bouncycastle.util.encoders.Base64
+import org.bouncycastle.asn1.ASN1Encodable
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERSequence
+import org.bouncycastle.asn1.DERSet
 import java.security.cert.X509Certificate
+import kotlin.system.measureTimeMillis
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -148,8 +154,8 @@ val AttestationTests by matrixSuite {
                             verificationDate,
                             challenge
                         ).getOrThrow().shouldBeInstanceOf<List<X509Certificate>>().apply {
-                            closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                            closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                            closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                            closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
                         }
 
                         val collectDebugInfo =
@@ -157,8 +163,8 @@ val AttestationTests by matrixSuite {
 
                         AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                             .shouldBeInstanceOf<List<X509Certificate>>().apply {
-                                closestToRoot {  it.hasAndroidKeystoreAttestation }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                                closestToRoot {  it.hasAndroidKeystoreAttestation }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                                closestToRoot {  it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                                closestToRoot {  it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
                             }
 
                     }

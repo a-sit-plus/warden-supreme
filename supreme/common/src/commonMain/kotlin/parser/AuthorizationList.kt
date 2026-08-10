@@ -3,6 +3,7 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.AuthorizationList.UserAuth.Type
+import at.asitplus.attestation.supreme.SortedSet
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.*
 import at.asitplus.signum.indispensable.asn1.encoding.*
@@ -1971,46 +1972,51 @@ data class AuthorizationList private constructor(
      * The schema does not define a correspondence between entries of these sets.
      *
      * #### Ordering
-     * When decoded, both sets are stored using an internal order-preserving [Set] implementation so iteration preserves
-     * the original element order (even if the source violates DER sorting). When encoding, such order-preserving sets
-     * are emitted without re-sorting.
+     * When decoded, both sets are sorted and deduplicated without hashing. This accepts duplicate values emitted by
+     * devices while avoiding attacker-controlled hash-table insertion.
      */
     data class AttestationApplicationId(
         val packageInfos: Set<AttestationPackageInfo>,
         val signatureDigests: Set<ByteArray>
     ) : Asn1Encodable<Asn1Element>, Tagged.WithTag<Asn1Element>, PrettyPrintable {
-        private class DigestKey(private val bytes: ByteArray) {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other !is DigestKey) return false
-                return bytes.contentEquals(other.bytes)
+        companion object Tag : Tagged(709uL), Asn1Decodable<Asn1Element, AttestationApplicationId> {
+            private val packageInfoComparator = compareBy<AttestationPackageInfo> { it.packageName }
+                .thenBy { it.version }
+            private val digestComparator = Comparator<ByteArray> { left, right ->
+                var index = 0
+                while (index < minOf(left.size, right.size)) {
+                    val result = (left[index].toInt() and 0xff) - (right[index].toInt() and 0xff)
+                    if (result != 0) return@Comparator result
+                    index++
+                }
+                left.size.compareTo(right.size)
             }
 
-            override fun hashCode(): Int = bytes.contentHashCode()
-        }
+            private fun <E> canonicalSet(
+                values: List<E>,
+                comparator: Comparator<E>,
+                hash: (E) -> Int,
+            ): Set<E> = SortedSet(values, comparator, hash)
 
-        private fun signatureDigestKeySet(): Set<DigestKey> =
-            signatureDigests.mapTo(LinkedHashSet()) { DigestKey(it) }
-
-        companion object Tag : Tagged(709uL), Asn1Decodable<Asn1Element, AttestationApplicationId> {
             override fun doDecode(src: Asn1Element): AttestationApplicationId {
                 val children = src.asEncapsulatingOctetString().children
                 require(children.size == 1) // TODO: check others TLV entries so that at most 1 is given
                 val sequence = children.first().asSequence()
 
                 return sequence.iterator().run {
-                    val decodedPackageInfos =
-                        next().asSet().children.fold(LinkedHashSet<AttestationPackageInfo>()) { acc, el ->
-                            acc += AttestationPackageInfo.decodeFromTlv(el.asSequence())
-                            acc
-                        }
-                    val decodedSignatureDigests = next().asSet().children.fold(LinkedHashSet<ByteArray>()) { acc, el ->
-                        acc += el.asOctetString().content
-                        acc
-                    }
+                    val decodedPackageInfos = canonicalSet(
+                        next().asSet().children.map { AttestationPackageInfo.decodeFromTlv(it.asSequence()) },
+                        packageInfoComparator,
+                        AttestationPackageInfo::hashCode,
+                    )
+                    val decodedSignatureDigests = canonicalSet(
+                        next().asSet().children.map { it.asOctetString().content },
+                        digestComparator,
+                        ByteArray::contentHashCode,
+                    )
                     AttestationApplicationId(
-                        OrderPreservingSet(decodedPackageInfos),
-                        OrderPreservingSet(decodedSignatureDigests)
+                        decodedPackageInfos,
+                        decodedSignatureDigests,
                     )
                 }
             }
@@ -2046,14 +2052,15 @@ data class AuthorizationList private constructor(
             other as AttestationApplicationId
 
             if (packageInfos != other.packageInfos) return false
-            if (signatureDigestKeySet() != other.signatureDigestKeySet()) return false
+            if (signatureDigests.size != other.signatureDigests.size ||
+                signatureDigests.zip(other.signatureDigests).any { (left, right) -> !left.contentEquals(right) }) return false
 
             return true
         }
 
         override fun hashCode(): Int {
             var result = packageInfos.hashCode()
-            val digestsHash = signatureDigestKeySet().fold(0) { acc, d -> acc + d.hashCode() }
+            val digestsHash = signatureDigests.fold(0) { acc, digest -> acc + digest.contentHashCode() }
             result = 31 * result + digestsHash
             return result
         }

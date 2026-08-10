@@ -111,7 +111,7 @@ val CustomParserTests by matrixSuite {
 
         "Chain vs. leaf" {
             withClue(androidAttestationExtension?.prettyPrint()) {
-                attestationCertChain.closestToRoot { it.hasAndroidKeystoreAttestation }.androidAttestationExtension shouldBe androidAttestationExtension
+                attestationCertChain.closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension shouldBe androidAttestationExtension
             }
         }
         "convert" - {

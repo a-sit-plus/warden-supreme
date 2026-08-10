@@ -31,6 +31,8 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
 
     abstract val List<Cert>.attestationRecord: AttRecord?
 
+    protected abstract fun List<Cert>.selectAttestedApplication(): AndroidAttestationConfiguration.AppData?
+
     protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
     protected abstract val AttRecord.challenge: ByteArray
     protected abstract val AttRecord.createdAt: Instant?
@@ -80,7 +82,31 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             Date.from((verificationDate + attestationConfiguration.verificationSecondsOffset.seconds).toJavaInstant())
 
 
-        //do this before we check everything else to actually identify the app we're having here
+        //limited, purpose-build extractor, hardened application id extractor is used here
+        //because at this point, the certificate chain has not been validated, but we need the app to match against
+        //configured trust anchors
+        val attestedApp = try {
+            certificates.selectAttestedApplication()
+                ?: throw IllegalArgumentException("No matching attested application")
+        } catch (it: AttestationValueException) {
+            throw it
+        } catch (it: Throwable) {
+            throw AttestationValueException(
+                "Could not select attested application",
+                it,
+                reason = AttestationValueException.Reason.APP_UNEXPECTED,
+                expectedValue = "Configured application identity",
+                actualValue = null
+            )
+        }
+
+        val thisAppsTrustAnchors = attestedApp.trustedRootOverrides ?: trustAnchors
+        val rkpRequired =
+            attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
+        val certPath: CertPath = with(certChainValidator) {
+            certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
+        }
+
         val parsedAttestationRecord = catchingUnwrapped {
             certificates.attestationRecord ?: throw IllegalArgumentException("No attestation record present")
         }.getOrElse {
@@ -92,19 +118,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
                 actualValue = null
             )
         }
-        val attestedApp = attestationConfiguration.applications.associateWith { app ->
-            catchingUnwrapped { parsedAttestationRecord.verifyApplication(app) }
-        }.let {
-            it.entries.firstOrNull { (_, result) -> result.isSuccess } ?: it.values.first().exceptionOrNull()!!
-                .let { throw it }
-        }.key
-
-        val thisAppsTrustAnchors = attestedApp.trustedRootOverrides ?: trustAnchors
-        val rkpRequired =
-            attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
-        val certPath: CertPath = with(certChainValidator) {
-            certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
-        }
+        parsedAttestationRecord.verifyApplication(attestedApp)
 
 
         val receivedChallenge = parsedAttestationRecord.challenge
