@@ -11,7 +11,12 @@ import de.infix.testBalloon.framework.core.testScope
 import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
-import kotlin.random.Random
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.bind
+import io.kotest.property.arbitrary.frequency
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.map
+import io.kotest.property.arbitrary.withEdgecases
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -20,112 +25,76 @@ import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
 
+private data class TimeOffsetCase(val offset: Duration?, val validity: Duration?)
+
+private val offsetArb: Arb<Duration?> = Arb.frequency(
+    // This broad conversion caught an Android configuration bug, so keep it alongside the finer-grained durations.
+    10 to Arb.int().map { catchingUnwrapped { it.seconds }.getOrNull() },
+    10 to Arb.int().map { it.seconds },
+    10 to Arb.int().map { it.milliseconds },
+    10 to Arb.int().map { it.nanoseconds },
+).withEdgecases(5.minutes, Duration.ZERO, null)
+
+private val validityArb: Arb<Duration?> = Arb.int(0..Int.MAX_VALUE).map { it.seconds }
+private val timeOffsetCaseArb = Arb.bind(offsetArb, validityArb, ::TimeOffsetCase)
+
 val TimeOffsetTest by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEnabled = true, timeout = 15.minutes) }) {
+    compact("makoto vs bare")- {
+        property(timeOffsetCaseArb, iterations = 2150) test { (offset, validity) ->
+            val expectedValidity =
+                validity ?: (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET)
+            val expectedOffset = offset ?: Makoto.DEFAULT_TIME_OFFSET
 
-    val rands = Array<Duration?>(10) {
-        //There are limits to durations, and this will mostly be infinities, but it caught an Android config bug, so it stays
-        catchingUnwrapped { Random.nextInt().seconds }.getOrNull()
-    } + Array<Duration?>(10) {
-        //long durations
-        Random.nextInt().seconds
-    } + Array<Duration?>(10) {
-        //shorter ones
-        Random.nextInt().milliseconds
-    } + Array<Duration?>(10) {
-        //shorter ones
-        Random.nextInt().nanoseconds
-    }
-    "makoto vs bare" - {
-        data("offsets", listOf(
-            5.minutes, Duration.ZERO, null as Duration?, *rands,
-        )) - { offset ->
+            val clk = FixedTimeClock(0)
+            val clkConfig = object : SupremeConfiguration.Clock {
+                override val timeSource: Clock
+                    get() = clk
+            }
 
-            //we only have seconds precision here
-            data("validities", listOf(
-                *Array<Duration?>(50) { Random.nextInt(0, Int.MAX_VALUE).seconds },
-            )) - { validity ->
+            val androidAttestationConfiguration = if (validity != null) AndroidAttestationConfiguration(
+                AndroidAttestationConfiguration.AppData("foo", setOf(byteArrayOf())),
+                attestationStatementValiditySeconds = expectedValidity.inWholeSeconds,
+            ) else AndroidAttestationConfiguration(
+                AndroidAttestationConfiguration.AppData("foo", setOf(byteArrayOf())),
+            )
+            val iosAttestationConfiguration = if (validity != null) IosAttestationConfiguration(
+                IosAttestationConfiguration.AppData("1234567890", "baz"),
+                attestationStatementValiditySeconds = expectedValidity.inWholeSeconds,
+            ) else IosAttestationConfiguration(
+                IosAttestationConfiguration.AppData("1234567890", "baz"),
+            )
 
-                val expectedValidity =
-                    validity
-                        ?: (ReceiptValidator.APPLE_RECOMMENDED_MAX_AGE.toKotlinDuration() + Makoto.DEFAULT_TIME_OFFSET)
+            val makoto = if (offset != null) Makoto(
+                androidAttestationConfiguration,
+                iosAttestationConfiguration,
+                clock = clk,
+                verificationTimeOffset = expectedOffset,
+            ) else Makoto(
+                androidAttestationConfiguration,
+                iosAttestationConfiguration,
+                clock = clk,
+            )
+            val expectedIssuedAt = clk.now() - makoto.verificationTimeOffset
 
-                val expectedOffset = offset ?: Makoto.DEFAULT_TIME_OFFSET
+            withClue("Offset for $offset") { makoto.verificationTimeOffset shouldBe expectedOffset }
+            withClue("Validity for $validity") { makoto.shortestValidityDuration shouldBe expectedValidity }
 
-                val clk = FixedTimeClock(0)
-                val clkConfig = object : SupremeConfiguration.Clock {
-                    override val timeSource: Clock
-                        get() = clk
-                }
-
-                val androidAttestationConfiguration = if (validity != null) AndroidAttestationConfiguration(
-                    AndroidAttestationConfiguration.AppData(
-                        "foo",
-                        setOf(byteArrayOf())
-                    ),
-                    attestationStatementValiditySeconds = expectedValidity.inWholeSeconds
-                ) else AndroidAttestationConfiguration(
-                    AndroidAttestationConfiguration.AppData(
-                        "foo",
-                        setOf(byteArrayOf())
+            listOf(
+                AttestationVerifier(makoto),
+                AttestationVerifier(
+                    SupremeConfiguration(
+                        androidAttestationConfiguration,
+                        iosAttestationConfiguration,
+                        clkConfig,
+                        verificationTimeOffset = expectedOffset,
                     )
-                )
-                val iosAttestationConfiguration = if (validity != null) IosAttestationConfiguration(
-                    IosAttestationConfiguration.AppData(
-                        "1234567890",
-                        "baz"
-                    ),
-                    attestationStatementValiditySeconds = expectedValidity.inWholeSeconds
-                ) else IosAttestationConfiguration(
-                    IosAttestationConfiguration.AppData(
-                        "1234567890",
-                        "baz"
-                    )
-                )
-
-
-                val makoto = if (offset != null) Makoto(
-                    androidAttestationConfiguration,
-                    iosAttestationConfiguration,
-                    clock = clk,
-                    verificationTimeOffset = expectedOffset
-                )
-                else Makoto(
-                    androidAttestationConfiguration,
-                    iosAttestationConfiguration,
-                    clock = clk,
-                )
-
-                val expectedIssuedAt = clk.now() - makoto.verificationTimeOffset
-
-
-                //we verify makoto functionality here and not separately, as the verifier is tightly tied to it
-                //hence, it makes sense to contain these tests here
-                "makoto config checks" {
-                    withClue("Offset for $offset") { makoto.verificationTimeOffset shouldBe expectedOffset }
-                    withClue("Validity for $validity") { makoto.shortestValidityDuration shouldBe expectedValidity }
-                }
-
-
-                data(
-                    "verifiers",
-                    mapOf(
-                        "makoto" to AttestationVerifier(makoto),
-                        "bare" to AttestationVerifier(
-                            SupremeConfiguration(
-                                androidAttestationConfiguration,
-                                iosAttestationConfiguration,
-                                clkConfig,
-                                verificationTimeOffset = expectedOffset,
-                            )
-                        )
-                    ).values
-                ) test { verifier ->
-                    verifier.nonceValidity shouldBe expectedValidity
-                    verifier.issueChallenge("").let {
-                        withClue("Issued at") { it.issuedAt shouldBe expectedIssuedAt }
-                        withClue("Validity") { it.validity shouldBe expectedValidity }
-                        withClue("Valid until") { it.validUntil shouldBe expectedIssuedAt + expectedValidity }
-                    }
+                ),
+            ).forEach { verifier ->
+                verifier.nonceValidity shouldBe expectedValidity
+                verifier.issueChallenge("").let {
+                    withClue("Issued at") { it.issuedAt shouldBe expectedIssuedAt }
+                    withClue("Validity") { it.validity shouldBe expectedValidity }
+                    withClue("Valid until") { it.validUntil shouldBe expectedIssuedAt + expectedValidity }
                 }
             }
         }
