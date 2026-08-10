@@ -1,7 +1,7 @@
 package at.asitplus.attestation.supreme
 
 /** A KMP-compatible immutable set backed by sorted values, never by attacker-controlled hashes. */
-internal class SortedSet<E>(
+class SortedSet<E>(
     values: Collection<E>,
     private val comparator: Comparator<E>,
     private val hash: (E) -> Int = { it.hashCode() },
