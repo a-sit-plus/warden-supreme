@@ -657,6 +657,7 @@ constructor(
          * @return An instance of [AttestationVerifier] configured with the provided parameters.
          */
         @Deprecated("To be Removed In Warden Supreme 1.3. Replace with AttestationChallengeValidator-creating callback")
+        @JvmName("fromConfiguration")
         operator fun invoke(
             configuration: SupremeConfiguration,
             nonceGenerator: NonceGenerator = WardenDefaults.nonceGenerator,
