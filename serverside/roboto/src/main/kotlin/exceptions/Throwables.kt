@@ -101,11 +101,7 @@ class AttestationValueException(
          */
         STATEMENT_TIME;
 
-        companion object {
-            //TODO: remove in 1.1!
-            @Deprecated("Misnomer; renamed to STATEMENT_TIME. To be removed in 1.1", ReplaceWith("AttestationValueException.Reason.STATEMENT_TIME"), DeprecationLevel.ERROR)
-            val TIME = STATEMENT_TIME
-        }
+        companion object
     }
 
     override fun equals(other: Any?): Boolean {

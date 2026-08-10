@@ -5,6 +5,8 @@ dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
 ## NEXT
+* Remove Deprecations schedules for removal in 1.1
+* Deprecate APIs with rough edges (will be removed in Warden Supreme 1.3)
 * **Selectable attestation-proof authentication and attested client attributes**
     * Add `DataAuthentication.Signature` (default) and `DataAuthentication.Hash` challenge modes.
     * Signature mode preserves the existing signed-PKCS#10 behaviour and proof-of-possession check.

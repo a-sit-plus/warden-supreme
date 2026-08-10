@@ -122,18 +122,6 @@ sealed class AttestationValue<out A : Asn1Encodable<*>>() :
         }
     }
 
-    @Deprecated("To be removed in 1.1. Do not use!", level = DeprecationLevel.ERROR)
-    inline fun <R> onSuccess(onSuccess: (A) -> R): R? =
-        if (this is Success) onSuccess(value) else {
-            null
-        }
-
-    @Deprecated("To be removed in 1.1. Do not use!", level = DeprecationLevel.ERROR)
-    inline fun <R> onFailure(onFailure: (String, AuthorizationList.Tagged, Asn1Element) -> R): R? =
-        if (this is Failure<*>) onFailure(elementName, tagged, rawAsn1Value) else {
-            null
-        }
-
     fun isSuccess(): Boolean {
         @OptIn(ExperimentalContracts::class)
         contract { returns(true) implies (this@AttestationValue is Success<*>) }
@@ -146,18 +134,6 @@ sealed class AttestationValue<out A : Asn1Encodable<*>>() :
         contract { returns(true) implies (this@AttestationValue is Failure<*>) }
         return this is Failure<*>
     }
-
-    @Deprecated(
-        "Misnomer to be removed with 1.1",
-        replaceWith = ReplaceWith("getOrThrow()"),
-        level = DeprecationLevel.ERROR
-    )
-    @Throws(NoSuchElementException::class)
-    inline fun get(): A = // will be removed, to borked semantics don't matter
-        when (this) {
-            is Success -> value
-            is Failure<*> -> throw NoSuchElementException("No value present; elementName=$elementName, tagged=$tagged, rawAsn1Value=$rawAsn1Value")
-        }
 
     /**
      * Returns the encapsulated value if this instance is of type [Success],

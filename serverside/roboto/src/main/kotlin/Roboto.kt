@@ -122,39 +122,6 @@ constructor(
     )
 
     /**
-     * **Java-Friendly method**
-     *
-     * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
-     * Checks are performed according to the properties set in the [attestationConfiguration].
-     *
-     * @See [AndroidAttestationConfiguration] for details on what is and is not checked.
-     *
-     * @return [AttestationExtension] on success
-     * @throws AttestationValueException if a property fails to verify according to the current configuration
-     * @throws RevocationException if a certificate has been revoked
-     * @throws CertificateInvalidException if certificates fail to verify
-     *
-     */
-    @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
-    @JvmName("verifyAttestation")
-    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("verify(certificates, verificationDate, expectedChallenge).getOrThrow().attestationExension"))
-    fun verifyAttestation(
-        certificates: List<X509Certificate>,
-        verificationDate: Date = Date(),
-        expectedChallenge: ByteArray
-    ): ParsedAttestationRecord =
-        verifyBlocking(
-            certificates,
-            verificationDate.toInstant().toKotlinInstant(),
-            expectedChallenge
-        ).getOrThrow().parsedAttestationRecord ?: throw AttestationValueException(
-            "Could not parse attestation record",
-            reason = AttestationValueException.Reason.APP_UNEXPECTED,
-            expectedValue = "A parseabel attestation record",
-            actualValue = null
-        )
-
-    /**
      * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
      * Checks are performed according to the properties set in the [attestationConfiguration].
      *
