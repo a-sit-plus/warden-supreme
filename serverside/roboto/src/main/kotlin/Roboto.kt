@@ -4,11 +4,8 @@ import at.asitplus.KmmResult
 import at.asitplus.attestation.android.engine.AndroidAttestationEngine
 import at.asitplus.attestation.android.engine.RtgAttestationEngine
 import at.asitplus.attestation.android.engine.SupremeAttestationEngine
-import at.asitplus.attestation.android.exceptions.AndroidAttestationException
+import at.asitplus.attestation.android.exceptions.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
-import at.asitplus.attestation.android.exceptions.CertificateInvalidException
-import at.asitplus.attestation.android.exceptions.ConfigurationException
-import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
@@ -19,6 +16,7 @@ import java.security.cert.X509Certificate
 import java.util.*
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
 
 /**
@@ -53,18 +51,19 @@ constructor(
         engines.first().certChainValidator.revocationListsFromLastCall()
 
 
-    private val engines = mutableListOf<AndroidAttestationEngine<*, *, X509Certificate, KeyAttestationCertPath>>().apply {
-        if (!attestationConfiguration.disableHardwareAttestation) add(
-            if (attestationConfiguration.supremeParser)
-                SupremeAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
-            else RtgAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
-        )
-        if (attestationConfiguration.enableSoftwareAttestation) add(
-            if (attestationConfiguration.supremeParser)
-                SupremeAttestationEngine.Software(attestationConfiguration, verifyChallenge)
-            else RtgAttestationEngine.Software(attestationConfiguration, verifyChallenge)
-        )
-    }
+    private val engines =
+        mutableListOf<AndroidAttestationEngine<*, *, X509Certificate, KeyAttestationCertPath>>().apply {
+            if (!attestationConfiguration.disableHardwareAttestation) add(
+                if (attestationConfiguration.supremeParser)
+                    SupremeAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
+                else RtgAttestationEngine.Hardware(attestationConfiguration, verifyChallenge)
+            )
+            if (attestationConfiguration.enableSoftwareAttestation) add(
+                if (attestationConfiguration.supremeParser)
+                    SupremeAttestationEngine.Software(attestationConfiguration, verifyChallenge)
+                else RtgAttestationEngine.Software(attestationConfiguration, verifyChallenge)
+            )
+        }
 
     init {
         if (engines.isEmpty()) throw ConfigurationException("Neither hardware nor software attestation enabled")
@@ -129,39 +128,6 @@ constructor(
     )
 
     /**
-     * **Java-Friendly method**
-     *
-     * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
-     * Checks are performed according to the properties set in the [attestationConfiguration].
-     *
-     * @See [AndroidAttestationConfiguration] for details on what is and is not checked.
-     *
-     * @return [AttestationExtension] on success
-     * @throws AttestationValueException if a property fails to verify according to the current configuration
-     * @throws RevocationException if a certificate has been revoked
-     * @throws CertificateInvalidException if certificates fail to verify
-     *
-     */
-    @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
-    @JvmName("verifyAttestation")
-    @Deprecated("To be removed in 1.1", replaceWith = ReplaceWith("verify(certificates, verificationDate, expectedChallenge).getOrThrow().attestationExension"))
-    fun verifyAttestation(
-        certificates: List<X509Certificate>,
-        verificationDate: Date = Date(),
-        expectedChallenge: ByteArray
-    ): ParsedAttestationRecord =
-        verifyBlocking(
-            certificates,
-            verificationDate.toInstant().toKotlinInstant(),
-            expectedChallenge
-        ).getOrThrow().parsedAttestationRecord ?: throw AttestationValueException(
-            "Could not parse attestation record",
-            reason = AttestationValueException.Reason.APP_UNEXPECTED,
-            expectedValue = "A parseabel attestation record",
-            actualValue = null
-        )
-
-    /**
      * Verifies Android Key attestation Implements in accordance with https://developer.android.com/training/articles/security-key-attestation.
      * Checks are performed according to the properties set in the [attestationConfiguration].
      *
@@ -200,8 +166,31 @@ constructor(
             throw results.last() //this way we are most lenient
                 .exceptionOrNull()!!
         } else certificates
-
     }
+
+    /**
+     * Java-friendly version of [verify]
+     */
+    @JvmName("verifyBlocking")
+    @JvmOverloads
+    @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
+    internal fun verifyBlocking(
+        certificates: List<X509Certificate>,
+        verificationDate: java.time.Instant = Clock.System.now().toJavaInstant(),
+        expectedChallenge: ByteArray
+    ): KmmResult<List<X509Certificate>> =
+        runBlocking { verify(certificates, verificationDate.toKotlinInstant(), expectedChallenge) }
+
+    /**
+     * Java-friendly version of [collectDebugInfo]
+     */
+    @JvmName("collectDebugInfoBlocking")
+    @JvmOverloads
+    internal fun collectDebugInfoBlocking(
+    certificates: List<X509Certificate>,
+    expectedChallenge: ByteArray,
+    verificationDate: java.time.Instant = Clock.System.now().toJavaInstant(),
+    ) = runBlocking { collectDebugInfo(certificates, expectedChallenge, verificationDate.toKotlinInstant()) }
 }
 
 /**

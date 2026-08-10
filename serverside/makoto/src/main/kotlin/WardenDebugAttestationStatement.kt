@@ -101,9 +101,6 @@ internal constructor(
         Method.KEY_ATTESTATION_LEGACY, Method.KEY_ATTESTATION_LEGACY_RAW -> replayKeyAttestationLegacy()
     }
 
-    @Deprecated("To be removed in 1.1", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("replay"))
-    suspend fun replaySmart() = replay()
-
     /**
      * Replays
      * ```kotlin
