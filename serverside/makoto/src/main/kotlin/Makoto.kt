@@ -269,34 +269,37 @@ class Makoto
                 )
 
 
-        override fun verifyAssertion(
+        override fun validateAssertionWithChallenge(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             expectedChallenge: ByteArray,
-            validCounters: LongRange
-        ): Result<Assertion> = verifyAssertion(
-            validatedAttestation,
-            assertion,
-            expectedChallenge,
-            validCounters,
-            expectedChallenge,
-            object : AssertionChallengeValidator {
-                override fun validate(
-                    assertionObj: Assertion,
-                    clientData: ByteArray,
-                    attestationPublicKey: ECPublicKey,
-                    challenge: ByteArray,
-                ) = clientData.contentEquals(challenge)
-            }
-        )
+            lastSeenCounter: Long,
+            maxCounter: Long
+        ): Result<Assertion> = with(object : AssertionChallengeValidator {
+            override fun validate(
+                assertionObj: Assertion,
+                clientData: ByteArray,
+                attestationPublicKey: ECPublicKey,
+                challenge: ByteArray,
+            ) = clientData.contentEquals(challenge)
+        }) {
+            validateAssertion(
+                validatedAttestation,
+                assertion,
+                expectedChallenge,
+                expectedChallenge,
+                lastSeenCounter, maxCounter
+            )
+        }
 
-        override fun verifyAssertion(
+        context(validator: AssertionChallengeValidator)
+        override fun validateAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             referenceClientData: ByteArray,
-            validCounters: LongRange,
             expectedChallenge: ByteArray,
-            validator: AssertionChallengeValidator,
+            lastSeenCounter: Long,
+            maxCounterAdvance: Long
         ): Result<Assertion> = catchingUnwrapped {
             findMatchingConfiguration(validatedAttestation).let { attest ->
                 catchingUnwrapped {
@@ -304,12 +307,12 @@ class Makoto
                         assertion,
                         referenceClientData,
                         validatedAttestation.receipt.payload.attestationCertificate.value.publicKey as ECPublicKey,
-                        validCounters.first,
+                        lastSeenCounter,
                         expectedChallenge
                     ).also { assertion ->
-                        if (assertion.authenticatorData.signCount - 1 > validCounters.last) {
+                        if (assertion.authenticatorData.signCount > maxCounterAdvance) {
                             val msg =
-                                "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
+                                "iOS Assertion counter is ${assertion.authenticatorData.signCount}, but should be at most ${maxCounterAdvance}"
                             throw AttestationException.Content.iOS(
                                 msg,
                                 IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)

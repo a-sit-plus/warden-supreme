@@ -12,14 +12,10 @@ import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
-import ch.veehait.devicecheck.appattest.common.AuthenticatorData
-import ch.veehait.devicecheck.appattest.common.AuthenticatorDataFlag
 import kotlinx.coroutines.runBlocking
 import java.security.PublicKey
 import java.security.cert.X509Certificate
 import java.security.interfaces.ECPublicKey
-import kotlin.experimental.and
-import kotlin.experimental.xor
 import kotlin.time.ExperimentalTime
 import at.asitplus.attestation.AttestationException as AttException
 
@@ -231,19 +227,6 @@ abstract class AttestationService {
             challenge: ByteArray,
         ): AttestationResult
 
-        @Deprecated(
-            "Misnomer, counter is ignored",
-            level = DeprecationLevel.ERROR,
-            replaceWith = ReplaceWith("verifyCombined(attestationObject, assertionFromDevice, referenceClientData, challenge)")
-        )
-        fun verifyAssertion(
-            attestationObject: ByteArray,
-            assertionFromDevice: ByteArray,
-            referenceClientData: ByteArray,
-            challenge: ByteArray,
-            counter: Long = 0
-        ) = verifyCombined(attestationObject, assertionFromDevice, referenceClientData, challenge)
-
         /**
          * Verifies a fresh assertion, tied to a previously stored attestation.
          * This function assumes that `clientDataHash` is the SHA-256 digest of [expectedChallenge].
@@ -261,11 +244,29 @@ abstract class AttestationService {
          * @param expectedChallenge the expected client data to be contained in [assertion]
          * @param validCounters The range of valid counters
          */
+        @Deprecated(
+            "To be removed in Warden Supreme 1.3. Confusing API",
+            replaceWith = ReplaceWith("validateAssertionWithChallenge(validatedAttestation, assertion, expectedChallenge, lastSeenCounter = validCounters.first, maxCounter = validCounters.last - 1)")
+        )
         fun verifyAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             expectedChallenge: ByteArray,
             validCounters: LongRange
+        ): Result<Assertion> = validateAssertionWithChallenge(
+            validatedAttestation,
+            assertion,
+            expectedChallenge,
+            lastSeenCounter = validCounters.first,
+            maxCounter = if(validCounters.last==Long.MAX_VALUE) Long.MAX_VALUE else validCounters.last + 1
+        )
+
+        fun validateAssertionWithChallenge(
+            validatedAttestation: ValidatedAttestation,
+            assertion: ByteArray,
+            expectedChallenge: ByteArray,
+            lastSeenCounter: Long,
+            maxCounter: Long = Long.MAX_VALUE,
         ): Result<Assertion>
 
         /**
@@ -285,6 +286,10 @@ abstract class AttestationService {
          * @param validCounters The range of valid counters
          * @param validator a fresh [AssertionChallengeValidator] that checks for challenge, clientData, etc.
          */
+        @Deprecated(
+            "To be removed in Warden Supreme 1.3. Confusing API",
+            replaceWith = ReplaceWith("validator.validateAssertion(validatedAttestation, assertion, referenceClientData = referenceClientData, expectedChallenge = expectedChallenge, lastSeenCounter = validCounters.first, maxCounter = validCounters.last - 1)")
+        )
         fun verifyAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
@@ -292,6 +297,56 @@ abstract class AttestationService {
             validCounters: LongRange,
             expectedChallenge: ByteArray,
             validator: AssertionChallengeValidator,
+        ): Result<Assertion> = with(validator) {
+            validateAssertion(
+                validatedAttestation,
+                assertion,
+                referenceClientData = referenceClientData,
+                expectedChallenge = expectedChallenge,
+                lastSeenCounter = validCounters.first,
+                maxCounterAdvance = if(validCounters.last==Long.MAX_VALUE) Long.MAX_VALUE else validCounters.last + 1
+            )
+        }
+
+        /**
+         * Verifies a fresh assertion, tied to a previously stored attestation.
+         *
+         * **The attestation is not verified again!**
+         * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
+         * calling this function
+         *
+         * **A Note on Counters:**<br>
+         * AppAttest only checks whether the signature counter is _higher_ than *the last seen counter**. That is, a value of `0L` will always work.
+         * Warden Supreme also allows specifying how much the counter may at most have advanced since the [lastSeenCounter]
+         * (i.e. since the signaure count of the last seen valid assertion), hence [maxCounterAdvance].<br>
+         *
+         * Example:
+         * ```kotlin
+         * // calling for the very first time, an assertion is received:
+         * with(validator) {
+         *   validateAssertion(attestation, assertion, clientData, challenge,
+         *     lastSeenCounter = 0L, //No signatures have been created
+         *     maxCounterAdvance = 1L //Make sure that this is the first signature to be created
+         * }
+         * ```
+         *
+         *
+         * @param validator a fresh [AssertionChallengeValidator] that checks for challenge, clientData, etc.
+         * @param validatedAttestation the previously validated attestation
+         * @param assertion the assertions to validate
+         * @param referenceClientData the client data inside the assertion
+         * @param expectedChallenge the expected challenge
+         * @param lastSeenCounter the counter of the last recorded assertion; the current [assertion] counter must be > [lastSeenCounter]. That is, a value of `0L` will always work.
+         * @param maxCounterAdvance the maximum the counter is allowed to have advanced since the last validated assertion.
+         */
+        context(validator: AssertionChallengeValidator)
+        fun validateAssertion(
+            validatedAttestation: ValidatedAttestation,
+            assertion: ByteArray,
+            referenceClientData: ByteArray,
+            expectedChallenge: ByteArray,
+            lastSeenCounter: Long,
+            maxCounterAdvance: Long = Long.MAX_VALUE,
         ): Result<Assertion>
     }
 
@@ -417,32 +472,40 @@ object NoopAttestationService : AttestationService() {
 
             //Will always throw
             @DisabledAttestation
-            override fun verifyAssertion(
+            override fun validateAssertionWithChallenge(
                 validatedAttestation: ValidatedAttestation,
                 assertion: ByteArray,
                 expectedChallenge: ByteArray,
-                validCounters: LongRange,
-            ): Result<Assertion> = verifyAssertion(
-                validatedAttestation, assertion, expectedChallenge, validCounters, expectedChallenge,
-                object : AssertionChallengeValidator {
-                    override fun validate(
-                        assertionObj: Assertion,
-                        clientData: ByteArray,
-                        attestationPublicKey: ECPublicKey,
-                        challenge: ByteArray
-                    ) = true
-                })
+                lastSeenCounter: Long,
+                maxCounter: Long
+            ): Result<Assertion> = with(object : AssertionChallengeValidator {
+                override fun validate(
+                    assertionObj: Assertion,
+                    clientData: ByteArray,
+                    attestationPublicKey: ECPublicKey,
+                    challenge: ByteArray
+                ) = true
+            }) {
+                validateAssertion(
+                    validatedAttestation,
+                    assertion,
+                    expectedChallenge,
+                    expectedChallenge,
+                    lastSeenCounter, maxCounter
+                )
+            }
 
 
             //Will always throw
             @DisabledAttestation
-            override fun verifyAssertion(
+            context(validator: AssertionChallengeValidator)
+            override fun validateAssertion(
                 validatedAttestation: ValidatedAttestation,
                 assertion: ByteArray,
                 referenceClientData: ByteArray,
-                validCounters: LongRange,
                 expectedChallenge: ByteArray,
-                validator: AssertionChallengeValidator,
+                lastSeenCounter: Long,
+                maxCounterAdvance: Long
             ): Result<Assertion> {
                 val envelope = assertionReader.readValue<AssertionEnvelope>(assertion)
                 return catchingUnwrapped {

@@ -18,32 +18,32 @@ val iosAssertionTests by matrixSuite {
             listOf(
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEA0bFrd/408h5pFCtg/3aHqbMB9NPPNfcRoqSZ07cTYF4CICjgFJDGy3y22pBFak0L8iIIXlVa/bi82SD2NcMz63R2cWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAB",
-                    0L..0L,
+                    0L,1L,
                     true
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEA0bFrd/408h5pFCtg/3aHqbMB9NPPNfcRoqSZ07cTYF4CICjgFJDGy3y22pBFak0L8iIIXlVa/bi82SD2NcMz63R2cWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAB",
-                    1L..1L,
+                    1L,2L,
                     false
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEApfmQgjBYm4wWI5DbpDN0M+BGwKEOn37Wx0jn2Q7mhhwCICeY2SxtTAQLIRqg7kzjpmPWhMWaFC6WXKlVF8Pti0rjcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAC",
-                    1L..1L,
+                    1L,2L,
                     true
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEApfmQgjBYm4wWI5DbpDN0M+BGwKEOn37Wx0jn2Q7mhhwCICeY2SxtTAQLIRqg7kzjpmPWhMWaFC6WXKlVF8Pti0rjcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAC",
-                    0L..1L,
+                    0L,2L,
                     true
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEApfmQgjBYm4wWI5DbpDN0M+BGwKEOn37Wx0jn2Q7mhhwCICeY2SxtTAQLIRqg7kzjpmPWhMWaFC6WXKlVF8Pti0rjcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAC",
-                    0L..0L,
+                    0L,1L,
                     false
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEApfmQgjBYm4wWI5DbpDN0M+BGwKEOn37Wx0jn2Q7mhhwCICeY2SxtTAQLIRqg7kzjpmPWhMWaFC6WXKlVF8Pti0rjcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAC",
-                    2L..2L,
+                    2L,3L,
                     false
                 ),
             )
@@ -58,12 +58,12 @@ val iosAssertionTests by matrixSuite {
             listOf(
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYSDBGAiEAtdYEziuDlj3zWZbGZS7vuafTYvoCBEbmMJ5vLRgUGYwCIQDPXkcgyXyPzBD+sdPssE9yyOR+4/rv1wVrbvxx1YjgYnFhdXRoZW50aWNhdG9yRGF0YVglxO8o2ehg8OupYqV9SotBotDzcuUZogTLh5j3u6TBqY9AAAAAAQ==",
-                    0L..0L,
+                   0L,1L,
                     true
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYSDBGAiEAtdYEziuDlj3zWZbGZS7vuafTYvoCBEbmMJ5vLRgUGYwCIQDPXkcgyXyPzBD+sdPssE9yyOR+4/rv1wVrbvxx1YjgYnFhdXRoZW50aWNhdG9yRGF0YVglxO8o2ehg8OupYqV9SotBotDzcuUZogTLh5j3u6TBqY9AAAAAAQ==",
-                    1L..1L,
+                    1L,2L,
                     false
                 ),
             )
@@ -78,7 +78,7 @@ val iosAssertionTests by matrixSuite {
             listOf(
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEArFO49ETCcve8DP5j7fd5Gq3blVoWryf8NOl7bmMqNB8CIGA+xXC5mWHi9y0K6WZTFjIWY0BOXEEQKUHIKmb4Aiy4cWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAB",
-                    0L..0L,
+                    0L,1L,
                     false
                 )
             )
@@ -93,7 +93,7 @@ val iosAssertionTests by matrixSuite {
             listOf(
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEAgOTHKUM9dvAOEepdwefbSFZJeIVgPR6KvacnfeaBkroCID4aR8ZOpiE3InRLrzPdMGjxCa4W6DD6EdtAzIlTA3FGcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAB",
-                    0L..0L,
+                    0L,1L,
                     false
                 )
             )
@@ -112,11 +112,10 @@ val iosAssertionTests by matrixSuite {
         val iosResult = makoto.ios.verifyAppAttestation(it.attestation, it.challenge)
         "Attestation" {
             iosResult.shouldBeInstanceOf<AttestationResult.IOS.Verified>()
-            val json = Json { }
+            val json = Json
             val serialized = json.encodeToString(iosResult.attestation.canonicalize())
             val serialized2 = json.encodeToString(ValidatedAttestationSerializer, iosResult.attestation)
             serialized2 shouldBe serialized
-            println(serialized)
             json.encodeToString(
                 json.decodeFromString<CanonicalIosAttestation>(serialized)
             ) shouldBe serialized
@@ -132,22 +131,22 @@ val iosAssertionTests by matrixSuite {
         "Assertion" - {
             data("assertions", it.assertions) test { assertion ->
                 iosResult as AttestationResult.IOS.Verified
-                val asserted = makoto.ios.verifyAssertion(
+                val asserted = makoto.ios.validateAssertionWithChallenge(
                     iosResult.attestation,
                     assertion.assertion,
                     it.challenge,
-                    assertion.counterRange
+                    assertion.lastSeenCounter, assertion.maxCounter
                 )
                 withClue(asserted.exceptionOrNull()?.message ?: "") {
                     asserted.isSuccess shouldBe assertion.ok
                 }
                 withClue("serializing + deserializing") {
-                    val asserted = makoto.ios.verifyAssertion(
+                    val asserted = makoto.ios.validateAssertionWithChallenge(
                         CanonicalIosAttestation.decodeFromDer(iosResult.attestation.canonicalize().encodeToDer())
                             .toValidatedAttestation(),
                         assertion.assertion,
                         it.challenge,
-                        assertion.counterRange
+                        assertion.lastSeenCounter, assertion.maxCounter
                     )
                     asserted.isSuccess shouldBe assertion.ok
                 }
@@ -182,19 +181,22 @@ data class CapturedIosData(
 
     data class Assertion(
         val assertion: ByteArray,
-        val counterRange: LongRange,
+        val lastSeenCounter:Long,
+        val maxCounter:Long,
         val ok: Boolean,
     ) {
-        constructor(assertion: String, counterRange: LongRange, assertionOK: Boolean) : this(
+        constructor(assertion: String, lastSeenCounter: Long, maxCounter: Long, assertionOK: Boolean) : this(
             assertion.decodeBase64ToArray(),
-            counterRange,
+            lastSeenCounter,
+            maxCounter,
             assertionOK
         )
 
         override fun toString(): String {
             return "Assertion(" +
                     "assertion=${assertion.encodeBase64()}, " +
-                    "counterRange=$counterRange, " +
+                    "lastSeenCounter=$lastSeenCounter, " +
+                    "maxCounter=$maxCounter, " +
                     "ok=$ok" +
                     ")"
         }
