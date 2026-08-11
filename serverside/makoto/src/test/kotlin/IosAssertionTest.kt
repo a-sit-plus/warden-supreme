@@ -23,17 +23,17 @@ val iosAssertionTests by matrixSuite {
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEA0bFrd/408h5pFCtg/3aHqbMB9NPPNfcRoqSZ07cTYF4CICjgFJDGy3y22pBFak0L8iIIXlVa/bi82SD2NcMz63R2cWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAB",
-                    1L,2L,
+                    1L,1L,
                     false
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEApfmQgjBYm4wWI5DbpDN0M+BGwKEOn37Wx0jn2Q7mhhwCICeY2SxtTAQLIRqg7kzjpmPWhMWaFC6WXKlVF8Pti0rjcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAC",
-                    1L,2L,
+                    1L,1L,
                     true
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEApfmQgjBYm4wWI5DbpDN0M+BGwKEOn37Wx0jn2Q7mhhwCICeY2SxtTAQLIRqg7kzjpmPWhMWaFC6WXKlVF8Pti0rjcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAC",
-                    0L,2L,
+                    0L,1L,
                     true
                 ),
                 CapturedIosData.Assertion(
@@ -43,7 +43,7 @@ val iosAssertionTests by matrixSuite {
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEApfmQgjBYm4wWI5DbpDN0M+BGwKEOn37Wx0jn2Q7mhhwCICeY2SxtTAQLIRqg7kzjpmPWhMWaFC6WXKlVF8Pti0rjcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAC",
-                    2L,3L,
+                    2L,1L,
                     false
                 ),
             )
@@ -63,7 +63,7 @@ val iosAssertionTests by matrixSuite {
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYSDBGAiEAtdYEziuDlj3zWZbGZS7vuafTYvoCBEbmMJ5vLRgUGYwCIQDPXkcgyXyPzBD+sdPssE9yyOR+4/rv1wVrbvxx1YjgYnFhdXRoZW50aWNhdG9yRGF0YVglxO8o2ehg8OupYqV9SotBotDzcuUZogTLh5j3u6TBqY9AAAAAAQ==",
-                    1L,2L,
+                    1L,1L,
                     false
                 ),
             )
@@ -131,22 +131,22 @@ val iosAssertionTests by matrixSuite {
         "Assertion" - {
             data("assertions", it.assertions) test { assertion ->
                 iosResult as AttestationResult.IOS.Verified
-                val asserted = makoto.ios.validateAssertionWithChallenge(
+                val asserted = makoto.ios.validateAssertionOverChallenge(
                     iosResult.attestation,
                     assertion.assertion,
                     it.challenge,
-                    assertion.lastSeenCounter, assertion.maxCounter
+                    assertion.lastSeenCounter, assertion.maxCounterAdvance
                 )
                 withClue(asserted.exceptionOrNull()?.message ?: "") {
                     asserted.isSuccess shouldBe assertion.ok
                 }
                 withClue("serializing + deserializing") {
-                    val asserted = makoto.ios.validateAssertionWithChallenge(
+                    val asserted = makoto.ios.validateAssertionOverChallenge(
                         CanonicalIosAttestation.decodeFromDer(iosResult.attestation.canonicalize().encodeToDer())
                             .toValidatedAttestation(),
                         assertion.assertion,
                         it.challenge,
-                        assertion.lastSeenCounter, assertion.maxCounter
+                        assertion.lastSeenCounter, assertion.maxCounterAdvance
                     )
                     asserted.isSuccess shouldBe assertion.ok
                 }
@@ -182,7 +182,7 @@ data class CapturedIosData(
     data class Assertion(
         val assertion: ByteArray,
         val lastSeenCounter:Long,
-        val maxCounter:Long,
+        val maxCounterAdvance:Long,
         val ok: Boolean,
     ) {
         constructor(assertion: String, lastSeenCounter: Long, maxCounter: Long, assertionOK: Boolean) : this(
@@ -196,7 +196,7 @@ data class CapturedIosData(
             return "Assertion(" +
                     "assertion=${assertion.encodeBase64()}, " +
                     "lastSeenCounter=$lastSeenCounter, " +
-                    "maxCounter=$maxCounter, " +
+                    "maxCounterAdvance=$maxCounterAdvance, " +
                     "ok=$ok" +
                     ")"
         }
