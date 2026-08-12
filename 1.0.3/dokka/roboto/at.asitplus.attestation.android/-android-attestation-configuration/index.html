@@ -1,0 +1,588 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AndroidAttestationConfiguration</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.0.3
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":roboto/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":roboto/main" data-filter=":roboto/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="roboto::at.asitplus.attestation.android/AndroidAttestationConfiguration///PointingToDeclaration//2122162949">
+  <div class="breadcrumbs"><a href="../../index.html">roboto</a><span class="delimiter">/</span><a href="../index.html">at.asitplus.attestation.android</a><span class="delimiter">/</span><span class="current">AndroidAttestationConfiguration</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Android</span><wbr><span>Attestation</span><wbr><span><span>Configuration</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">AndroidAttestationConfiguration</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>applications<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-app-data/index.html">AndroidAttestationConfiguration.AppData</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>androidVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>patchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>requireStrongBox<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>allowBootloaderUnlock<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>requireRollbackResistance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>ignoreLeafValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>verificationSecondsOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationStatementValiditySeconds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>hardwareTrustedRoots<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span><span class="token operator"> = </span>GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>softwareTrustedRoots<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span><span class="token operator"> = </span>GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>disableHardwareAttestation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>enableSoftwareAttestation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>requireRemoteKeyProvisioning<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>revocation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-android-revocation-list/-loader/-configuration/index.html">AndroidRevocationList.Loader.Configuration</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>verifiedBootKeys<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-verified-boot-key/index.html">VerifiedBootKey</a><span class="token operator">&gt;</span><span class="token operator"> = </span>linkedSetOf(VerifiedBootKey.OEM)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>enforceFactoryProvisionedChainValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>supremeParser<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>customProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span> : <a href="../../../supreme-common/at.asitplus.attestation/-attestation-configuration/index.html">AttestationConfiguration</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/a-sit-plus/warden-supreme/tree/main/serverside/roboto/src/main/kotlin/AndroidAttestationConfiguration.kt#L343">source</a>)</span></span></div><p class="paragraph">Main Android attestation configuration class serving as ground truth for all key and app attestation verifications.</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>applications</span></span></u></div></span></div><div><div class="title"><p class="paragraph">list of applications to be attested</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>android</span><wbr><span><span>Version</span></span></u></div></span></div><div><div class="title"><p class="paragraph">optional parameter. If set, attestation enforces Android version to be greater or equal to this parameter. <strong>Caution:</strong> Major Android versions increment in steps of ten-thousands. I.e. Android 11 is specified as <code class="lang-kotlin">110000</code> Can be overridden for individual apps</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>patch</span><wbr><span><span>Level</span></span></u></div></span></div><div><div class="title"><p class="paragraph">optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>require</span><wbr><span>Strong</span><wbr><span><span>Box</span></span></u></div></span></div><div><div class="title"><p class="paragraph">optional parameter. Set to <code class="lang-kotlin">true</code> if <i>StrongBox</i> security level should be required</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>allow</span><wbr><span>Bootloader</span><wbr><span><span>Unlock</span></span></u></div></span></div><div><div class="title"><p class="paragraph">optional parameter. Set to true if unlocked bootloaders should be allowed. <strong>Attention:</strong> Allowing unlocked bootloaders in production effectively defeats the purpose of app attestation. (but retains the ability to attest whether a key is securely stored in hardware) Useful for debugging/testing. When this is <code class="lang-kotlin">true</code>, verified boot state and verified boot key digest checks are skipped, because they only make sense when requiring a locked bootloader.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>require</span><wbr><span>Rollback</span><wbr><span><span>Resistance</span></span></u></div></span></div><div><div class="title"><p class="paragraph">optional parameter. Unsupported by most devices. See <a href="https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance">Official Documentation</a></p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>ignore</span><wbr><span>Leaf</span><wbr><span><span>Validity</span></span></u></div></span></div><div><div class="title"><p class="paragraph">optional parameter. Whether to ignore the timely validity of the leaf certificate (looking at you, Samsung!)</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>hardware</span><wbr><span>Trusted</span><wbr><span><span>Roots</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key. Overriding this set is useful for automated end-to-end tests, for example. The default trust anchors are accessible through <a href="../-g-o-o-g-l-e_-d-e-f-a-u-l-t_-h-a-r-d-w-a-r-e_-t-r-u-s-t_-a-n-c-h-o-r-s.html">GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS</a></p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>software</span><wbr><span>Trusted</span><wbr><span><span>Roots</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys. Overriding this set is useful for automated end-to-end tests, for example. The default trust anchors are accessible through <a href="../-g-o-o-g-l-e_-s-o-f-t-w-a-r-e_-t-r-u-s-t_-a-n-c-h-o-r-s_-u-n-t-i-l_-a12.html">GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12</a></p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>disable</span><wbr><span>Hardware</span><wbr><span><span>Attestation</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Entirely disable creation of a <a href="../-hardware-attestation-verifier/index.html">HardwareAttestationVerifier</a>. Only change this flag, if you <strong>really</strong> know what you are doing!</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>enable</span><wbr><span>Software</span><wbr><span><span>Attestation</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Enables software attestation. A <a href="../-software-attestation-verifier/index.html">SoftwareAttestationVerifier</a> can only be instantiated if this flag is set to true. When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only devices, such as emulators in test stages, are acceptable.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>enforce</span><wbr><span>Factory</span><wbr><span>Provisioned</span><wbr><span>Chain</span><wbr><span><span>Validity</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Whether to enforce timely validity for factory-provisioned certificate chains. Some old devices may have expired intermediate certificates, which will trip a validity check unless this is false.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-2139845095%2FConstructors%2F2122162949" anchor-label="AndroidAttestationConfiguration" id="-2139845095%2FConstructors%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-android-attestation-configuration.html"><span>Android</span><wbr><span>Attestation</span><wbr><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2139845095%2FConstructors%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">applications<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-app-data/index.html">AndroidAttestationConfiguration.AppData</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">androidVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">patchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">requireStrongBox<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">allowBootloaderUnlock<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">requireRollbackResistance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">ignoreLeafValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">verificationSecondsOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">attestationStatementValiditySeconds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">hardwareTrustedRoots<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span><span class="token operator"> = </span>GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS<span class="token punctuation">, </span></span><span class="parameter ">softwareTrustedRoots<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span><span class="token operator"> = </span>GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12<span class="token punctuation">, </span></span><span class="parameter ">disableHardwareAttestation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">enableSoftwareAttestation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">requireRemoteKeyProvisioning<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">revocation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-android-revocation-list/-loader/-configuration/index.html">AndroidRevocationList.Loader.Configuration</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)<span class="token punctuation">, </span></span><span class="parameter ">verifiedBootKeys<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-verified-boot-key/index.html">VerifiedBootKey</a><span class="token operator">&gt;</span><span class="token operator"> = </span>linkedSetOf(VerifiedBootKey.OEM)<span class="token punctuation">, </span></span><span class="parameter ">enforceFactoryProvisionedChainValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">supremeParser<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">customProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">singleApp<span class="token operator">: </span><a href="-app-data/index.html">AndroidAttestationConfiguration.AppData</a><span class="token punctuation">, </span></span><span class="parameter ">androidVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">patchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">requireStrongBox<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">allowBootloaderUnlock<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">requireRollbackResistance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">ignoreLeafValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">verificationSecondsOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">attestationStatementValiditySeconds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">hardwareTrustedRoots<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span><span class="token operator"> = </span>GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS<span class="token punctuation">, </span></span><span class="parameter ">softwareTrustedRoots<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span><span class="token operator"> = </span>GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12<span class="token punctuation">, </span></span><span class="parameter ">disableHardwareAttestation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">enableSoftwareAttestation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">revocation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-android-revocation-list/-loader/-configuration/index.html">AndroidRevocationList.Loader.Configuration</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)<span class="token punctuation">, </span></span><span class="parameter ">requireRemoteKeyProvisioning<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">verifiedBootKeys<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-verified-boot-key/index.html">VerifiedBootKey</a><span class="token operator">&gt;</span><span class="token operator"> = </span>linkedSetOf(VerifiedBootKey.OEM)<span class="token punctuation">, </span></span><span class="parameter ">enforceFactoryProvisionedChainValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">supremeParser<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">customProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Convenience constructor to attest a single app</p></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">version<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">patchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">requireStrongBox<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">allowBootloaderUnlock<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">requireRollbackResistance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">ignoreLeafValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">verificationSecondsOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">attestationStatementValiditySeconds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">disableHardwareAttestation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">enableSoftwareAttestation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">hardwareTrustedRoots<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">&gt;</span><span class="token operator"> = </span>GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.map { it.derEncoded }.toSet()<span class="token punctuation">, </span></span><span class="parameter ">softwareTrustedRoots<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">&gt;</span><span class="token operator"> = </span>GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.map { it.derEncoded }.toSet()<span class="token punctuation">, </span></span><span class="parameter ">apps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-app-data/index.html">AndroidAttestationConfiguration.AppData</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">revocation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-android-revocation-list/-loader/-configuration/index.html">AndroidRevocationList.Loader.Configuration</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf(AndroidRevocationList.GoogleDefaultLoaderConfig)<span class="token punctuation">, </span></span><span class="parameter ">requireRemoteKeyProvisioning<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">verifiedBootKeys<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-verified-boot-key/index.html">VerifiedBootKey</a><span class="token operator">&gt;</span><span class="token operator"> = </span>linkedSetOf(VerifiedBootKey.OEM)<span class="token punctuation">, </span></span><span class="parameter ">enforceFactoryProvisionedChainValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">supremeParser<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">customProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Constructor used when loading this class from a config file through <a href="https://github.com/sksamuel/hoplite">Hoplite</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-1980662087%2FClasslikes%2F2122162949" anchor-label="AppData" id="-1980662087%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-app-data/index.html"><span>App</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1980662087%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-app-data/index.html">AppData</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>signerFingerprints<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="../-byte-array-b64-hex-serializer/index.html">ByteArrayB64HexSerializer::class</a></span><wbr><span class="token punctuation">)</span>&nbsp;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>appVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>androidVersionOverride<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>patchLevelOverride<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>requireRemoteKeyProvisioningOverride<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>trustedRootOverrides<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>requireStrongBoxOverride<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>verifiedBootKeys<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-verified-boot-key/index.html">VerifiedBootKey</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>customProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Specifies a to-be attested app</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2137896311%2FClasslikes%2F2122162949" anchor-label="Builder" id="-2137896311%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-builder/index.html"><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2137896311%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-builder/index.html">Builder</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">applications<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-app-data/index.html">AndroidAttestationConfiguration.AppData</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Builder to construct an <a href="index.html">AndroidAttestationConfiguration</a> in a java-friendly way</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-724316296%2FClasslikes%2F2122162949" anchor-label="Companion" id="-724316296%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-724316296%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a> : <a href="../../../supreme-common/at.asitplus.attestation/-attestation-configuration/-reader/index.html">AttestationConfiguration.Reader</a><span class="token operator">&lt;</span><a href="index.html">AndroidAttestationConfiguration</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="1631658463%2FProperties%2F2122162949" anchor-label="allowBootloaderUnlock" id="1631658463%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="allow-bootloader-unlock.html"><span>allow</span><wbr><span>Bootloader</span><wbr><span><span>Unlock</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1631658463%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="allow-bootloader-unlock.html">allowBootloaderUnlock</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Set to true if unlocked bootloaders should be allowed. <strong>Attention:</strong> Allowing unlocked bootloaders in production effectively defeats the purpose of Key Attestation. Useful for debugging/testing. When this is <code class="lang-kotlin">true</code>, verified boot state and verified boot key digest checks are skipped, because they only make sense when requiring a locked bootloader. <strong>BEWARE</strong> that this switch is utterly useless if <a href="../-software-attestation-verifier/index.html">SoftwareAttestationVerifier</a> is used</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="247854720%2FProperties%2F2122162949" anchor-label="androidVersion" id="247854720%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="android-version.html"><span>android</span><wbr><span><span>Version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="247854720%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="android-version.html">androidVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">optional parameter. If set, attestation enforces Android version to be greater or equal to this parameter. <strong>Caution:</strong> Major Android versions increment in steps of ten-thousands. I.e. Android 11 is specified as <code class="lang-kotlin">110000</code> Can be overridden for individual apps</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2029773562%2FProperties%2F2122162949" anchor-label="applications" id="-2029773562%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="applications.html"><span><span>applications</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2029773562%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="applications.html">applications</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-app-data/index.html">AndroidAttestationConfiguration.AppData</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">List of applications which can be attested. Intentionally a list to prioritise.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1166382973%2FProperties%2F2122162949" anchor-label="attestationStatementValiditySeconds" id="-1166382973%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-statement-validity-seconds.html"><span>attestation</span><wbr><span>Statement</span><wbr><span>Validity</span><wbr><span><span>Seconds</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1166382973%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-statement-validity-seconds.html">attestationStatementValiditySeconds</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Validity of the attestation statement in seconds. This is not the certificate validity! An attestation statement has a creation time. This value indicates how far in the past the creation time might be.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1346600901%2FProperties%2F2122162949" anchor-label="customProperties" id="1346600901%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="custom-properties.html"><span>custom</span><wbr><span><span>Properties</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1346600901%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="custom-properties.html">customProperties</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Allows attaching custom configuration properties to this configuration. Sensible for extending it with custom configs while still relying on the configuration parser.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-671380471%2FProperties%2F2122162949" anchor-label="disableHardwareAttestation" id="-671380471%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="disable-hardware-attestation.html"><span>disable</span><wbr><span>Hardware</span><wbr><span><span>Attestation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-671380471%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="disable-hardware-attestation.html">disableHardwareAttestation</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Entirely disable creation of a <a href="../-hardware-attestation-verifier/index.html">HardwareAttestationVerifier</a>. Only change this flag, if you <strong>really</strong> know what you are doing!</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2128064715%2FProperties%2F2122162949" anchor-label="enableSoftwareAttestation" id="2128064715%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="enable-software-attestation.html"><span>enable</span><wbr><span>Software</span><wbr><span><span>Attestation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2128064715%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="enable-software-attestation.html">enableSoftwareAttestation</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Enables software attestation. A <a href="../-software-attestation-verifier/index.html">SoftwareAttestationVerifier</a> can only be instantiated if this flag is set to true. When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only devices, such as emulators in test stages, are acceptable.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-770792574%2FProperties%2F2122162949" anchor-label="enforceFactoryProvisionedChainValidity" id="-770792574%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="enforce-factory-provisioned-chain-validity.html"><span>enforce</span><wbr><span>Factory</span><wbr><span>Provisioned</span><wbr><span>Chain</span><wbr><span><span>Validity</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-770792574%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="enforce-factory-provisioned-chain-validity.html">enforceFactoryProvisionedChainValidity</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether to enforce timely validity for factory-provisioned certificate chains. Some old (as in: almost certainly not receiving security updates) devices may have expired intermediate certificates. Those will trip a validity check unless this flag is set to false.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="355675111%2FProperties%2F2122162949" anchor-label="hardwareTrustedRoots" id="355675111%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hardware-trusted-roots.html"><span>hardware</span><wbr><span>Trusted</span><wbr><span><span>Roots</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="355675111%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="hardware-trusted-roots.html">hardwareTrustedRoots</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Manually specify the trust anchor for HW-attested certificate chains. Defaults to google HW attestation key. Overriding this set is useful for automated end-to-end tests, for example. The default trust anchors are accessible through <a href="../-g-o-o-g-l-e_-d-e-f-a-u-l-t_-h-a-r-d-w-a-r-e_-t-r-u-s-t_-a-n-c-h-o-r-s.html">GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="912368231%2FProperties%2F2122162949" anchor-label="ignoreLeafValidity" id="912368231%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="ignore-leaf-validity.html"><span>ignore</span><wbr><span>Leaf</span><wbr><span><span>Validity</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="912368231%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="ignore-leaf-validity.html">ignoreLeafValidity</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether to ignore the timely validity of the leaf certificate</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="986608553%2FProperties%2F2122162949" anchor-label="osPatchLevel" id="986608553%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="os-patch-level.html"><span>os</span><wbr><span>Patch</span><wbr><span><span>Level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="986608553%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="os-patch-level.html">osPatchLevel</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Internal representation of the patch level as contained in the <a href="../../com.google.android.attestation/-parsed-attestation-record/index.html">com.google.android.attestation.ParsedAttestationRecord</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="48772909%2FProperties%2F2122162949" anchor-label="patchLevel" id="48772909%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="patch-level.html"><span>patch</span><wbr><span><span>Level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="48772909%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="patch-level.html">patchLevel</a><span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">optional parameter. If set, attestation enforces Security patch level to be greater or equal to this parameter. Can be overridden for individual apps.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1109500552%2FProperties%2F2122162949" anchor-label="requireRemoteKeyProvisioning" id="1109500552%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="require-remote-key-provisioning.html"><span>require</span><wbr><span>Remote</span><wbr><span>Key</span><wbr><span><span>Provisioning</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1109500552%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="require-remote-key-provisioning.html">requireRemoteKeyProvisioning</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph"><a href="https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning">Mandates Remote Key Provisioning (RKP)</a> for attestation checks to pass</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="286087151%2FProperties%2F2122162949" anchor-label="requireRollbackResistance" id="286087151%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="require-rollback-resistance.html"><span>require</span><wbr><span>Rollback</span><wbr><span><span>Resistance</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="286087151%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="require-rollback-resistance.html">requireRollbackResistance</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Unsupported by most devices. See <a href="https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance">Official Documentation</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1798135334%2FProperties%2F2122162949" anchor-label="requireStrongBox" id="-1798135334%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="require-strong-box.html"><span>require</span><wbr><span>Strong</span><wbr><span><span>Box</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1798135334%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="require-strong-box.html">requireStrongBox</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Set to <code class="lang-kotlin">true</code> if <i>StrongBox</i> security level should be required. <strong>BEWARE</strong> that this switch is utterly useless if <a href="../-software-attestation-verifier/index.html">SoftwareAttestationVerifier</a> is used</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="983022059%2FProperties%2F2122162949" anchor-label="revocation" id="983022059%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="revocation.html"><span><span>revocation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="983022059%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="revocation.html">revocation</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-android-revocation-list/-loader/-configuration/index.html">AndroidRevocationList.Loader.Configuration</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy. Intentionally a list to prioritise.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="441150344%2FProperties%2F2122162949" anchor-label="softwareTrustedRoots" id="441150344%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="software-trusted-roots.html"><span>software</span><wbr><span>Trusted</span><wbr><span><span>Roots</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="441150344%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="software-trusted-roots.html">softwareTrustedRoots</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-trusted-root/index.html">TrustedRoot</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Manually specify the trust anchor for SW-attested certificate chains. Defaults to google SW attestation keys. Overriding this set is useful for automated end-to-end tests, for example. The default trust anchors are accessible through <a href="../-g-o-o-g-l-e_-s-o-f-t-w-a-r-e_-t-r-u-s-t_-a-n-c-h-o-r-s_-u-n-t-i-l_-a12.html">GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2041601191%2FProperties%2F2122162949" anchor-label="supremeParser" id="-2041601191%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="supreme-parser.html"><span>supreme</span><wbr><span><span>Parser</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2041601191%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="supreme-parser.html">supremeParser</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Flag to try out the new supreme parser</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-708616070%2FProperties%2F2122162949" anchor-label="verificationSecondsOffset" id="-708616070%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="verification-seconds-offset.html"><span>verification</span><wbr><span>Seconds</span><wbr><span><span>Offset</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-708616070%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="verification-seconds-offset.html">verificationSecondsOffset</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></div><div class="brief "><p class="paragraph">Tolerance in seconds added to verification date</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="830216091%2FProperties%2F2122162949" anchor-label="verifiedBootKeys" id="830216091%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="verified-boot-keys.html"><span>verified</span><wbr><span>Boot</span><wbr><span><span>Keys</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="830216091%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="verified-boot-keys.html">verifiedBootKeys</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../-verified-boot-key/index.html">VerifiedBootKey</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Configures which verified boot keys are accepted while requiring a locked bootloader. The default is <a href="../-verified-boot-key/-o-e-m/index.html">VerifiedBootKey.OEM</a>, which accepts vendor-managed <code class="lang-kotlin">VERIFIED</code> boot without checking a custom digest. Additional <a href="../-verified-boot-key/-digest/index.html">VerifiedBootKey.Digest</a> entries allow matching explicit <code class="lang-kotlin">SELF_SIGNED</code> verified boot keys by digest. Combining <a href="../-verified-boot-key/-o-e-m/index.html">VerifiedBootKey.OEM</a> with digest entries accepts both vendor-managed <code class="lang-kotlin">VERIFIED</code> boot and explicitly whitelisted <code class="lang-kotlin">SELF_SIGNED</code> keys. Omitting <a href="../-verified-boot-key/-o-e-m/index.html">VerifiedBootKey.OEM</a> accepts only explicitly whitelisted <code class="lang-kotlin">SELF_SIGNED</code> keys. This check is only meaningful when <span data-unresolved-link="at.asitplus.attestation.android/AndroidAttestationConfiguration//#kotlin.collections.List[at.asitplus.attestation.android.AndroidAttestationConfiguration.AppData]#kotlin.Int?#at.asitplus.attestation.android.PatchLevel?#kotlin.Boolean#kotlin.Boolean#kotlin.Boolean#kotlin.Boolean#kotlin.Long#kotlin.Long?#kotlin.collections.Set[at.asitplus.attestation.android.TrustedRoot]#kotlin.collections.Set[at.asitplus.attestation.android.TrustedRoot]#kotlin.Boolean#kotlin.Boolean#kotlin.Boolean#kotlin.collections.List[at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration[*]]#kotlin.collections.Set[at.asitplus.attestation.android.VerifiedBootKey]#kotlin.Boolean#kotlin.Boolean#kotlin.collections.Map[kotlin.String,kotlin.String]/PointingToCallableParameters(4)/">allowBootloaderUnlock</span> is <code class="lang-kotlin">false</code>, because verified boot state and verified boot key digest checks are skipped when unlocked bootloaders are allowed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-298167592%2FFunctions%2F2122162949" anchor-label="equals" id="-298167592%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="equals.html"><span><span>equals</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-298167592%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="equals.html"><span class="token function">equals</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1423916274%2FFunctions%2F2122162949" anchor-label="hashCode" id="-1423916274%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hash-code.html"><span>hash</span><wbr><span><span>Code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1423916274%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="hash-code.html"><span class="token function">hashCode</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-873592104%2FFunctions%2F2122162949" anchor-label="toJsonElement" id="-873592104%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-json-element.html"><span>to</span><wbr><span>Json</span><wbr><span><span>Element</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-873592104%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-json-element.html"><span class="token function">toJsonElement</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span></div><div class="brief "><p class="paragraph">Serialises this config into a <span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span>. Can be loaded using <a href="-companion/from-json-object.html">fromJsonObject</a> afterwards.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1359652693%2FFunctions%2F2122162949" anchor-label="toJsonString" id="1359652693%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-json-string.html"><span>to</span><wbr><span>Json</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1359652693%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-json-string.html"><span class="token function">toJsonString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Serialises this config into its canonical form (JSON). Can be loaded using <a href="-companion/from-json-string.html">fromJsonString</a> afterwards.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1602082339%2FFunctions%2F2122162949" anchor-label="toString" id="-1602082339%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-string.html"><span>to</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1602082339%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-9297482%2FFunctions%2F2122162949" anchor-label="toYamlString" id="-9297482%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-yaml-string.html"><span>to</span><wbr><span>Yaml</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-9297482%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-yaml-string.html"><span class="token function">toYamlString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Serialises this config into its canonical form (YAML). Can be loaded using <a href="-companion/from-json-string.html">fromJsonString</a> afterwards.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
