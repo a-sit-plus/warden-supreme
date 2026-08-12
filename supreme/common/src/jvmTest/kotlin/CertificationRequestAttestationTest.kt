@@ -1,11 +1,9 @@
-import at.asitplus.attestation.supreme.AttestationHashInput
-import at.asitplus.attestation.supreme.AttestationChallenge
-import at.asitplus.attestation.supreme.Primitive
-import at.asitplus.attestation.supreme.PrimitiveType
-import at.asitplus.attestation.supreme.AttestationProof
-import at.asitplus.attestation.supreme.attestedAttributes
-import at.asitplus.attestation.supreme.toHashInput
-import at.asitplus.attestation.supreme.toSequence
+import at.asitplus.KmmResult
+import at.asitplus.attestation.supreme.*
+import at.asitplus.attestation.supreme.AttestationProof.Hashed
+import at.asitplus.attestation.supreme.AttestationProof.Signed
+import at.asitplus.catching
+import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.CryptoSignature
 import at.asitplus.signum.indispensable.ECCurve
@@ -13,12 +11,7 @@ import at.asitplus.signum.indispensable.X509SignatureAlgorithm
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
-import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.indispensable.pki.X509CertificateExtension
+import at.asitplus.signum.indispensable.pki.*
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -100,7 +93,7 @@ val CertificationRequestAttestationTest by matrixSuite {
             )
             val received = hashInput.toTbsCsr(publicKey, proof)
             received.attributes.map { it.encodeToTlv() } shouldBe
-                Asn1.SetOf { (hashInput.attributes + proof).forEach { +it } }.toList()
+                    Asn1.SetOf { (hashInput.attributes + proof).forEach { +it } }.toList()
             val decodedHashInput = AttestationHashInput.decodeFromTlv(hashInput.encodeToTlv())
             decodedHashInput.encodeToDer().contentEquals(hashInput.encodeToDer()) shouldBe true
             received.toHashInput(proofOid).encodeToDer().contentEquals(hashInput.encodeToDer()) shouldBe true
@@ -165,5 +158,13 @@ val CertificationRequestAttestationTest by matrixSuite {
                 received.attestedAttributes shouldBe mapOf("accountId" to "account-123", "riskScore" to null)
             }
         }
+    }
+}
+
+private fun AttestationProof.Companion.decodeFromDer(src: ByteArray): KmmResult<AttestationProof> = catching {
+    catchingUnwrapped {
+        Signed(Pkcs10CertificationRequest.decodeFromDer(src))
+    }.getOrElse {
+        Hashed(TbsCertificationRequest.decodeFromDer(src))
     }
 }

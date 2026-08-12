@@ -197,7 +197,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                         test("Got Challenge") {}
                         call.respond(
                             verify(
-                                AttestationProof.decodeFromDer(src).getOrThrow(),
+                                attestationValidator.decodeAttestationProof(src).getOrThrow(),
                                 AuthenticationScenario(DataAuthentication.Signature, null),
                             )
                         )
@@ -206,7 +206,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                         val scenarioName = requireNotNull(call.parameters["scenario"])
                         val scenario = requireNotNull(authenticationScenarios[scenarioName])
                         val src = call.receive<ByteArray>()
-                        val proof = AttestationProof.decodeFromDer(src).getOrThrow()
+                        val proof = attestationValidator.decodeAttestationProof(src).getOrThrow()
                         call.respond(verify(proof, scenario))
                     }
 

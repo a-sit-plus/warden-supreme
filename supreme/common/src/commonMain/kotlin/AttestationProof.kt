@@ -1,8 +1,5 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.KmmResult
-import at.asitplus.catching
-import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.Asn1Encodable
 import at.asitplus.signum.indispensable.asn1.Asn1Sequence
 import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
@@ -25,21 +22,7 @@ sealed interface AttestationProof {
     /** An unsigned TBS CSR whose non-key, non-proof contents are authenticated using the challenge's hash algorithm. */
     class Hashed(override val data: TbsCertificationRequest) : AttestationProof
 
-    companion object {
-        /**
-         * Decodes DER as either a complete PKCS#10 CSR or an unsigned TBS CSR according to its ASN.1 structure.
-         *
-         * This deliberately infers only the transport shape. For [Hashed], the expected digest algorithm remains part
-         * of the issued [AttestationChallenge].
-         */
-        fun decodeFromDer(src: ByteArray): KmmResult<AttestationProof> = catching {
-            catchingUnwrapped {
-                Signed(Pkcs10CertificationRequest.decodeFromDer(src))
-            }.getOrElse {
-                Hashed(TbsCertificationRequest.decodeFromDer(src))
-            }
-        }
-    }
+    companion object
 }
 
 /** Returns the unsigned certification-request information carried by either transport shape. */

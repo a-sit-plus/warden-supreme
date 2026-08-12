@@ -144,7 +144,7 @@ attestable attribute. Their example OID is the freely assignable UUID-based OID 
 borrowing an enterprise subtree you do not control.
 
 These are verifier defaults copied into each issued `AttestationChallenge`; `issueChallenge` can override them per
-ceremony. `AttestationProof.decodeFromDer` distinguishes a complete CSR from an unsigned TBS CSR structurally. The
+ceremony. `AttestationVerifier.decodeAttestationProof(…)` distinguishes a complete CSR from an unsigned TBS CSR structurally. The
 matched challenge—not the HTTP layer or client transport—selects the expected mode and hash algorithm.
 
 !!! danger "Bound Payload Sizes"

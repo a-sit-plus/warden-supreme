@@ -48,7 +48,7 @@ Update `AttestationClient.attest`, `AttestationVerifier.verifyAttestation`, `onC
 deprecated compatibility paths: they continue to support signature authentication without requested attributes and reject
 new semantics explicitly.
 
-Use `AttestationProof.decodeFromDer` at HTTP boundaries. It infers complete CSR versus TBS CSR from the ASN.1 shape,
+Use `AttestationVerifier.decodeAttestationProof(…)` at HTTP boundaries. It infers complete CSR versus TBS CSR from the ASN.1 shape,
 without accepting a hash algorithm from the caller. The verifier obtains the expected mode and digest algorithm from the
 matched challenge and rejects a submitted shape that does not match it.
 

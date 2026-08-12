@@ -1,6 +1,7 @@
 package examples.docs.service
 
 import at.asitplus.attestation.supreme.AttestationProof
+import at.asitplus.attestation.supreme.decodeAttestationProof
 import at.asitplus.attestation.supreme.tbsCsr
 import at.asitplus.signum.indispensable.asn1.Asn1String
 import at.asitplus.signum.indispensable.asn1.Asn1Time
@@ -67,7 +68,7 @@ val server = embeddedServer(Netty, port = 8080) {
             )
         }
      /*(5)!*/post(PATH_ATTEST) {
-         /*(6)!*/val proof = AttestationProof.decodeFromDer(call.receive<ByteArray>()).getOrThrow()
+         /*(6)!*/val proof = verifier.decodeAttestationProof(call.receive<ByteArray>()).getOrThrow()
             val result = verifier.verifyAttestation(proof) { received ->
                 val tbsCsr = received.tbsCsr
              /*(7)!*/val leafCertificate = signer.sign(
