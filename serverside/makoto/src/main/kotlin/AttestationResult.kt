@@ -66,7 +66,7 @@ sealed class AttestationResult {
                 ?: throw IllegalStateException("No Android attestation extension present in certificate chain")
         }
 
-        @Deprecated("Use attestationCertificateClosestToRoot", replaceWith = ReplaceWith("attestationCertificateClosestToRoot"), level = DeprecationLevel.ERROR)
+        @Deprecated("Will be removed in Warden Supreme 1.2", replaceWith = ReplaceWith("attestationCertificateClosestToRoot"), level = DeprecationLevel.ERROR)
         val attestationCertificate by lazy { attestationCertificateChain.first() }
 
 

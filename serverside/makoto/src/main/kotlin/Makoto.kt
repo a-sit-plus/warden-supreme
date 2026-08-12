@@ -788,23 +788,23 @@ class Makoto
 
         return assertionData?.let { assertionData ->
             catchingUnwrapped {
-                val assertion =
-                    with( object : AssertionChallengeValidator {
-                        override fun validate(
-                            assertionObj: Assertion,
-                            clientData: ByteArray,
-                            attestationPublicKey: ECPublicKey,
-                            challenge: ByteArray,
-                        ) = challenge contentEquals expectedChallenge
-                    }) {
-                        ios.validateAssertion(
-                            validatedAttestation = result.second,
-                            assertion = assertionData.assertion,
-                            referenceClientData = assertionData.clientData,
-                            expectedChallenge = expectedChallenge,
-                            lastSeenCounter = counter,
-                        )
-                    }.getOrThrow()
+                val challengeWasValidatedByAttestation = object : AssertionChallengeValidator {
+                    override fun validate(
+                        assertionObj: Assertion,
+                        clientData: ByteArray,
+                        attestationPublicKey: ECPublicKey,
+                        challenge: ByteArray,
+                    ): Boolean = true // challenge is bound by the fresh attestation; assertion must have counter 1
+                }
+                val assertion = with(challengeWasValidatedByAttestation) {
+                    ios.validateAssertion(
+                        validatedAttestation = result.second,
+                        assertion = assertionData.assertion,
+                        referenceClientData = assertionData.clientData,
+                        expectedChallenge = expectedChallenge,
+                        lastSeenCounter = counter,
+                    )
+                }.getOrThrow()
                 return if (assertion.authenticatorData.signCount != 1L) "iOS Assertion counter is ${assertion.authenticatorData.signCount}, but should be 1".let { msg ->
                     AttestationResult.Error(
                         msg,

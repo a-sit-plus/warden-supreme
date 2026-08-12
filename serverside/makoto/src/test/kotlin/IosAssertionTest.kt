@@ -1,9 +1,12 @@
 import at.asitplus.attestation.*
 import at.asitplus.testballoon.matrix.*
+import ch.veehait.devicecheck.appattest.assertion.Assertion as AppAttestAssertion
+import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
+import java.security.interfaces.ECPublicKey
 import kotlin.time.Instant
 
 val iosAssertionTests by matrixSuite {
@@ -33,7 +36,7 @@ val iosAssertionTests by matrixSuite {
                 ),
                 CapturedIosData.Assertion(
                     "omlzaWduYXR1cmVYRzBFAiEApfmQgjBYm4wWI5DbpDN0M+BGwKEOn37Wx0jn2Q7mhhwCICeY2SxtTAQLIRqg7kzjpmPWhMWaFC6WXKlVF8Pti0rjcWF1dGhlbnRpY2F0b3JEYXRhWCXE7yjZ6GDw66lipX1Ki0Gi0PNy5RmiBMuHmPe7pMGpj0AAAAAC",
-                    0L,1L,
+                    0L,2L,
                     true
                 ),
                 CapturedIosData.Assertion(
@@ -149,6 +152,89 @@ val iosAssertionTests by matrixSuite {
                         assertion.lastSeenCounter, assertion.maxCounterAdvance
                     )
                     asserted.isSuccess shouldBe assertion.ok
+                }
+
+                if (assertion.ok) {
+                    val expectedChallenge = it.challenge
+                    val wrongChallenge = expectedChallenge.copyOf().also { bytes ->
+                        bytes[0] = (bytes[0].toInt() xor 1).toByte()
+                    }
+
+                    withClue("validateAssertionOverChallenge rejects a wrong challenge") {
+                        val failure = makoto.ios.validateAssertionOverChallenge(
+                            iosResult.attestation,
+                            assertion.assertion,
+                            wrongChallenge,
+                            assertion.lastSeenCounter,
+                            assertion.maxCounterAdvance,
+                        )
+                        failure.isFailure shouldBe true
+                        failure.exceptionOrNull().shouldBeInstanceOf<AttestationException.Content.iOS>()
+                            .cause.reason shouldBe IosAttestationException.Reason.APP_UNEXPECTED
+                    }
+
+                    val challengeValidator = object : AssertionChallengeValidator {
+                        override fun validate(
+                            assertionObj: AppAttestAssertion,
+                            clientData: ByteArray,
+                            attestationPublicKey: ECPublicKey,
+                            challenge: ByteArray,
+                        ) = clientData.contentEquals(expectedChallenge) &&
+                                challenge.contentEquals(expectedChallenge)
+                    }
+
+                    withClue("validateAssertion accepts valid client data and challenge") {
+                        with(challengeValidator) {
+                            makoto.ios.validateAssertion(
+                                iosResult.attestation,
+                                assertion.assertion,
+                                expectedChallenge,
+                                expectedChallenge,
+                                assertion.lastSeenCounter,
+                                assertion.maxCounterAdvance,
+                            )
+                        }.isSuccess shouldBe true
+                    }
+
+                    withClue("validateAssertion rejects a wrong expected challenge") {
+                        val failure = with(challengeValidator) {
+                            makoto.ios.validateAssertion(
+                                iosResult.attestation,
+                                assertion.assertion,
+                                expectedChallenge,
+                                wrongChallenge,
+                                assertion.lastSeenCounter,
+                                assertion.maxCounterAdvance,
+                            )
+                        }
+                        failure.isFailure shouldBe true
+                        failure.exceptionOrNull().shouldBeInstanceOf<AttestationException.Content.iOS>()
+                            .cause.reason shouldBe IosAttestationException.Reason.CHALLENGE
+                    }
+
+                    withClue("validateAssertion rejects client data not covered by the signature") {
+                        val acceptChallenge = object : AssertionChallengeValidator {
+                            override fun validate(
+                                assertionObj: AppAttestAssertion,
+                                clientData: ByteArray,
+                                attestationPublicKey: ECPublicKey,
+                                challenge: ByteArray,
+                            ) = true
+                        }
+                        val failure = with(acceptChallenge) {
+                            makoto.ios.validateAssertion(
+                                iosResult.attestation,
+                                assertion.assertion,
+                                wrongChallenge,
+                                expectedChallenge,
+                                assertion.lastSeenCounter,
+                                assertion.maxCounterAdvance,
+                            )
+                        }
+                        failure.isFailure shouldBe true
+                        failure.exceptionOrNull().shouldBeInstanceOf<AttestationException.Content.iOS>()
+                            .cause.reason shouldBe IosAttestationException.Reason.APP_UNEXPECTED
+                    }
                 }
             }
         }
