@@ -269,27 +269,36 @@ class Makoto
                 )
 
 
+        // This function assumes expectedChallenge as the complete client data and passes the
+        // same bytes below as both referenceClientData and expectedChallenge, so the assertion validator callback has no
+        // challenge to extract or compare. Returning true skips only that redundant comparison:
+        // validateAssertion() still hashes expectedChallenge, reconstructs the signed assertion data,
+        // and verifies its signature with the attested public key. A different challenge therefore
+        // produces different signed data and fails signature verification.
+        private val noopAssertionChallengeValidator = object : AssertionChallengeValidator {
+            override fun validate(
+                assertionObj: Assertion,
+                clientData: ByteArray,
+                attestationPublicKey: ECPublicKey,
+                challenge: ByteArray,
+            ) = true
+        }
         override fun validateAssertionOverChallenge(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             expectedChallenge: ByteArray,
             lastSeenCounter: Long,
             maxCounterAdvance: Long
-        ): Result<Assertion> = with(object : AssertionChallengeValidator {
-            override fun validate(
-                assertionObj: Assertion,
-                clientData: ByteArray,
-                attestationPublicKey: ECPublicKey,
-                challenge: ByteArray,
-            ) = clientData.contentEquals(challenge)
-        }) {
-            validateAssertion(
-                validatedAttestation,
-                assertion,
-                expectedChallenge,
-                expectedChallenge,
-                lastSeenCounter, maxCounterAdvance
-            )
+        ): Result<Assertion> {
+            return with(noopAssertionChallengeValidator) {
+                validateAssertion(
+                    validatedAttestation,
+                    assertion,
+                    expectedChallenge,
+                    expectedChallenge,
+                    lastSeenCounter, maxCounterAdvance
+                )
+            }
         }
 
         context(validator: AssertionChallengeValidator)
