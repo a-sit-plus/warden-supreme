@@ -77,7 +77,7 @@ client-provided attributes are carried by the same TBS CSR.
   nonce. The verifier reconstructs and hashes the same structure and independently checks that the TBS CSR public key is
   the attested key. This authenticates the included data but deliberately provides no proof of possession.
 
-The raw HTTP body is DER in both cases. `AttestationProof.decodeFromDer` distinguishes a complete CSR from a TBS CSR
+The raw HTTP body is DER in both cases. `AttestationVerifier.decodeAttestationProof(…)r` distinguishes a complete CSR from a TBS CSR
 by their different ASN.1 structures; it does not need the challenge or a caller-supplied hash algorithm. The verifier then
 loads the matching challenge, obtains the expected authentication mode and digest algorithm from it, and rejects a
 signed/unsigned shape mismatch.

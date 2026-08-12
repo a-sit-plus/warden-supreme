@@ -430,7 +430,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 3. It does nothing but issue challenges. In production, catch `InMemoryChallengeCache.ChallengeCacheFullException` here and return `429 Too Many Requests`; apply caller-aware rate limiting outside the verifier.
 4. The full URL to post the attestation proof to
 5. Endpoint expecting DER-encoded attestation proofs.
-6. `AttestationProof.decodeFromDer` distinguishes the complete-CSR and TBS-CSR ASN.1 structures.
+6. `verifier.decodeAttestationProof(…)` distinguishes the complete-CSR and TBS-CSR ASN.1 structures.
    The verifier obtains the expected mode and algorithm from the matched challenge and rejects a shape
    mismatch.
 7. Here, inside the `verifyAttestation` lambda, we already have a verified attestation according to the configured `makoto` instance.

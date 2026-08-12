@@ -4,6 +4,8 @@ import at.asitplus.KmmResult
 import at.asitplus.attestation.*
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AttestationValueException
+import at.asitplus.attestation.supreme.AttestationProof.Hashed
+import at.asitplus.attestation.supreme.AttestationProof.Signed
 import at.asitplus.attestation.supreme.AttestationResponse.Failure
 import at.asitplus.attestation.supreme.AttestationResponse.Failure.Type
 import at.asitplus.attestation.supreme.PreAttestationError.ChallengeVerification
@@ -727,7 +729,11 @@ fun AttestationVerifier.decodeAttestationProof(payload: ByteArray): KmmResult<At
     require(payload.size <= maxAttestationPayloadBytes) {
         "Attestation payload exceeds $maxAttestationPayloadBytes bytes"
     }
-    AttestationProof.decodeFromDer(payload).getOrThrow()
+        catchingUnwrapped {
+            Signed(Pkcs10CertificationRequest.decodeFromDer(payload))
+        }.getOrElse {
+            Hashed(TbsCertificationRequest.decodeFromDer(payload))
+        }
 }
 
 
