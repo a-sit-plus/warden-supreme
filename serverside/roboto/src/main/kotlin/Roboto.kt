@@ -216,7 +216,7 @@ fun Roboto.collectDebugInfoBlocking(
  * Convenience helper to get a legacy [ParsedAttestationRecord] from a certificate chain.
  * Returns `null` if no record is present or parsing is impossible
  */
-@Deprecated("Will be removed soon", replaceWith = ReplaceWith("attestationExtension"))
+@Deprecated("To be removed in Warden Supreme 1.2", replaceWith = ReplaceWith("attestationExtension"))
 val List<X509Certificate>.parsedAttestationRecord: ParsedAttestationRecord?
     get() = catching {
         ParsedAttestationRecord.createParsedAttestationRecord(

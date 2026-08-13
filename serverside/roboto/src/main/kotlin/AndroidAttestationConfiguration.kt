@@ -253,25 +253,6 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
     ),
 )
 
-
-/**
- * Default public keys used as trust anchors used to verify hardware attestation
- */
-@Deprecated(
-    "Supports only public keys",
-    replaceWith = ReplaceWith("GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS"),
-    DeprecationLevel.ERROR
-)
-val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
-    KeyFactory.getInstance("RSA")
-        .generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(GOOGLE_ROOT_CA_PUB_KEY))),
-    //new Google EC Root
-    CryptoPublicKey.decodeFromDer(
-        Base64.getDecoder()
-            .decode("MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEI9ojcU7fPlsFCjxy6IRqzgeOoK0b+YsV9FPQywiyw8EQRTkJ9u3qwfnI4DGoSLlBqClTXJfgfCcZvs60FikNMHnu4fkRzObfgDkU2KNXezT9/RQ+XvNslxPHrHCowhGr")
-    ).toJcaPublicKey().getOrThrow()
-
-)
 private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("EC")
         .generatePublic(

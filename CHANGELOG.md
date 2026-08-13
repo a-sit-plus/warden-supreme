@@ -7,6 +7,13 @@ this changelog also includes the original WARDEN changelog.
 ## NEXT
 * Remove Deprecations schedules for removal in 1.1
 * Deprecate APIs with rough edges (will be removed in Warden Supreme 1.3)
+* **Rework iOS App Attest assertion validation**
+    * Add `validateAssertionOverChallenge` for assertions whose complete client data is the server challenge.
+    * Add `validateAssertion` with a caller-provided `AssertionChallengeValidator` for arbitrary client data.
+    * Replace counter ranges with explicit `lastSeenCounter` and `maxCounterAdvance` parameters.
+    * Deprecate the legacy `verifyAssertion` overloads for removal in Warden Supreme 1.3.
+    * Clarify challenge binding for standalone and combined attestation/assertion validation, and expand coverage for
+      wrong challenges, mismatched client data, custom validators, and counter bounds.
 * **Selectable attestation-proof authentication and attested client attributes**
     * Add `DataAuthentication.Signature` (default) and `DataAuthentication.Hash` challenge modes.
     * Signature mode preserves the existing signed-PKCS#10 behaviour and proof-of-possession check.
