@@ -361,9 +361,6 @@ fun requireBoundedArrayNesting(json: String) {
     if (depth != 0) throw SerializationException("Unclosed JSON container")
 }
 
-@Deprecated("Misnomer. To be removed in 1.1", replaceWith = ReplaceWith("nonce"))
-val TbsCertificationRequest.challenge get() = nonce
-
 /**
  * Tries to extract the nonce from a TBS CSR's subject name, given it is encoded into an RDN containing a [KnownOIDs.serialNumber]
  */

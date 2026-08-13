@@ -278,34 +278,46 @@ class Makoto
                 )
 
 
-        override fun verifyAssertion(
+        // This function assumes expectedChallenge as the complete client data and passes the
+        // same bytes below as both referenceClientData and expectedChallenge, so the assertion validator callback has no
+        // challenge to extract or compare. Returning true skips only that redundant comparison:
+        // validateAssertion() still hashes expectedChallenge, reconstructs the signed assertion data,
+        // and verifies its signature with the attested public key. A different challenge therefore
+        // produces different signed data and fails signature verification.
+        private val noopAssertionChallengeValidator = object : AssertionChallengeValidator {
+            override fun validate(
+                assertionObj: Assertion,
+                clientData: ByteArray,
+                attestationPublicKey: ECPublicKey,
+                challenge: ByteArray,
+            ) = true
+        }
+        override fun validateAssertionOverChallenge(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             expectedChallenge: ByteArray,
-            validCounters: LongRange
-        ): Result<Assertion> = verifyAssertion(
-            validatedAttestation,
-            assertion,
-            expectedChallenge,
-            validCounters,
-            expectedChallenge,
-            object : AssertionChallengeValidator {
-                override fun validate(
-                    assertionObj: Assertion,
-                    clientData: ByteArray,
-                    attestationPublicKey: ECPublicKey,
-                    challenge: ByteArray,
-                ) = clientData.contentEquals(challenge)
+            lastSeenCounter: Long,
+            maxCounterAdvance: Long
+        ): Result<Assertion> {
+            return with(noopAssertionChallengeValidator) {
+                validateAssertion(
+                    validatedAttestation,
+                    assertion,
+                    expectedChallenge,
+                    expectedChallenge,
+                    lastSeenCounter, maxCounterAdvance
+                )
             }
-        )
+        }
 
-        override fun verifyAssertion(
+        context(validator: AssertionChallengeValidator)
+        override fun validateAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             referenceClientData: ByteArray,
-            validCounters: LongRange,
             expectedChallenge: ByteArray,
-            validator: AssertionChallengeValidator,
+            lastSeenCounter: Long,
+            maxCounterAdvance: Long
         ): Result<Assertion> = catchingUnwrapped {
             findMatchingConfiguration(validatedAttestation).let { attest ->
                 catchingUnwrapped {
@@ -313,12 +325,12 @@ class Makoto
                         assertion,
                         referenceClientData,
                         validatedAttestation.receipt.payload.attestationCertificate.value.publicKey as ECPublicKey,
-                        validCounters.first,
+                        lastSeenCounter,
                         expectedChallenge
                     ).also { assertion ->
-                        if (assertion.authenticatorData.signCount - 1 > validCounters.last) {
+                        if (assertion.authenticatorData.signCount -lastSeenCounter > maxCounterAdvance) {
                             val msg =
-                                "iOS Assertion counter is ${assertion.authenticatorData.signCount - 1}, but should be at most ${validCounters.last}"
+                                "iOS Assertion counter is ${assertion.authenticatorData.signCount}, but should be at most have advanced by $maxCounterAdvance since $lastSeenCounter"
                             throw AttestationException.Content.iOS(
                                 msg,
                                 IosAttestationException(msg, reason = IosAttestationException.Reason.SIG_CTR)
@@ -344,7 +356,7 @@ class Makoto
         override suspend fun verifyKeyAttestation(
             attestationCerts: List<X509Certificate>,
             expectedChallenge: ByteArray
-        ) = verifyKeyAttestation<PublicKey>(
+        ) = @Suppress("DEPRECATION") verifyKeyAttestation<PublicKey>(
             attestationCerts.map { it.encoded },
             expectedChallenge,
             attestationCerts.first().publicKey
@@ -417,6 +429,7 @@ class Makoto
      *
      *  The resulting [WardenDebugAttestationStatement] features JSON-based`.serialize()` and `deserialize()` methods
      */
+    @Suppress("UNUSED")
     fun collectDebugInfo(
         attestationProof: List<ByteArray>,
         challenge: ByteArray,
@@ -797,20 +810,23 @@ class Makoto
 
         return assertionData?.let { assertionData ->
             catchingUnwrapped {
-                val assertion = ios.verifyAssertion(
-                    validatedAttestation = result.second,
-                    assertion = assertionData.assertion,
-                    validCounters = counter..Long.MAX_VALUE,
-                    referenceClientData = assertionData.clientData,
-                    expectedChallenge = expectedChallenge,
-                    validator = object : AssertionChallengeValidator {
-                        override fun validate(
-                            assertionObj: Assertion,
-                            clientData: ByteArray,
-                            attestationPublicKey: ECPublicKey,
-                            challenge: ByteArray,
-                        ) = challenge contentEquals expectedChallenge
-                    }).getOrThrow()
+                val challengeWasValidatedByAttestation = object : AssertionChallengeValidator {
+                    override fun validate(
+                        assertionObj: Assertion,
+                        clientData: ByteArray,
+                        attestationPublicKey: ECPublicKey,
+                        challenge: ByteArray,
+                    ): Boolean = true // challenge is bound by the fresh attestation; assertion must have counter 1
+                }
+                val assertion = with(challengeWasValidatedByAttestation) {
+                    ios.validateAssertion(
+                        validatedAttestation = result.second,
+                        assertion = assertionData.assertion,
+                        referenceClientData = assertionData.clientData,
+                        expectedChallenge = expectedChallenge,
+                        lastSeenCounter = counter,
+                    )
+                }.getOrThrow()
                 return if (assertion.authenticatorData.signCount != 1L) "iOS Assertion counter is ${assertion.authenticatorData.signCount}, but should be 1".let { msg ->
                     AttestationResult.Error(
                         msg,
@@ -866,7 +882,7 @@ class Makoto
         oid = AttestationValidator.AppleCertificateExtensions.OS_VERSION_OID,
         //the SemVer-encoded iOS version and the build number use distinct tags, which are three numbers apart
         tagNo = AttestationValidator.AppleCertificateExtensions.OS_VERSION_TAG_NO + 3,
-    )?.octets?.let(::String)?.let { it.toBuildNumber() }
+    )?.octets?.let(::String)?.toBuildNumber()
 
     private fun encapsulateIosAttestationException(it: Throwable): AttestationException {
         /*@formatter:off*/

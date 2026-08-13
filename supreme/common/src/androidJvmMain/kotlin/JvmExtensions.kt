@@ -15,7 +15,7 @@ val java.security.cert.X509Certificate.androidAttestationExtension: AttestationK
         null
     }
 
-@Deprecated("Unsafe behaviour", replaceWith = ReplaceWith("closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension"), DeprecationLevel.ERROR)
+@Deprecated("To be Removed in Warden Supreme 1.2; Unsafe behaviour", replaceWith = ReplaceWith("closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension"), DeprecationLevel.ERROR)
 val List<java.security.cert.X509Certificate>.androidAttestationExtension: AttestationKeyDescription?
     get() = catchingUnwrapped {
         mapNotNull { it.toKmpCertificate().getOrNull() }.let {

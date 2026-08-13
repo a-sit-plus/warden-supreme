@@ -12,14 +12,10 @@ import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
-import ch.veehait.devicecheck.appattest.common.AuthenticatorData
-import ch.veehait.devicecheck.appattest.common.AuthenticatorDataFlag
 import kotlinx.coroutines.runBlocking
 import java.security.PublicKey
 import java.security.cert.X509Certificate
 import java.security.interfaces.ECPublicKey
-import kotlin.experimental.and
-import kotlin.experimental.xor
 import kotlin.time.ExperimentalTime
 import at.asitplus.attestation.AttestationException as AttException
 
@@ -216,13 +212,18 @@ abstract class AttestationService {
         /**
          * Verifies an App Attestation in conjunction with an assertion for some client data.
          *
-         * First, it verifies the app attestation, afterwards it verifies the assertion, checks whether at most the assertion was the first thing that was signed
-         * after attesting the key (i.e. signature counter = `0` before signing the assertion), and verifies whether the client data
-         * referenced within the assertion matches [referenceClientData]
+         * First, it verifies that the attestation was created over [challenge]. It then verifies that the same attested
+         * key signed [referenceClientData] in its first assertion. This binds [referenceClientData] to the fresh
+         * attestation, so [referenceClientData] does not itself need to contain [challenge].
+         *
+         * App Attest assertions do not contain the client data. [referenceClientData] must be the exact, unhashed bytes
+         * whose SHA-256 digest the client passed to `generateAssertion`.
+         * The caller must obtain [challenge] from trusted server-side state and enforce its expiry and single use.
          *
          * @param attestationObject the AppAttest attestation object to verify
          * @param assertionFromDevice the assertion data created on the device.
-         * @param referenceClientData the expected client data to be contained in [assertionFromDevice]
+         * @param referenceClientData the exact client data cryptographically bound to [assertionFromDevice]
+         * @param challenge the one-time server challenge used to create [attestationObject]
          */
         fun verifyCombined(
             attestationObject: ByteArray,
@@ -231,22 +232,11 @@ abstract class AttestationService {
             challenge: ByteArray,
         ): AttestationResult
 
-        @Deprecated(
-            "Misnomer, counter is ignored",
-            level = DeprecationLevel.ERROR,
-            replaceWith = ReplaceWith("verifyCombined(attestationObject, assertionFromDevice, referenceClientData, challenge)")
-        )
-        fun verifyAssertion(
-            attestationObject: ByteArray,
-            assertionFromDevice: ByteArray,
-            referenceClientData: ByteArray,
-            challenge: ByteArray,
-            counter: Long = 0
-        ) = verifyCombined(attestationObject, assertionFromDevice, referenceClientData, challenge)
-
         /**
-         * Verifies a fresh assertion, tied to a previously stored attestation.
-         * This function assumes that `clientDataHash` is the SHA-256 digest of [expectedChallenge].
+         * Verifies an assertion whose entire client data is [expectedChallenge], tied to a previously stored attestation.
+         * The client must have passed `SHA-256(expectedChallenge)` as `clientDataHash` to `generateAssertion`.
+         * The challenge is not stored inside the assertion; signature verification cryptographically binds the assertion
+         * to [expectedChallenge].
          *
          * **The attestation is not verified again!**
          * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
@@ -258,18 +248,56 @@ abstract class AttestationService {
          * **Also note that the upper bound will also be calculated on the value _BEFORE_ creating the assertion!**
          *
          * @param validatedAttestation the previously validated attestation
-         * @param expectedChallenge the expected client data to be contained in [assertion]
+         * @param expectedChallenge the server-issued challenge used as the complete client data
          * @param validCounters The range of valid counters
          */
+        @Deprecated(
+            "To be removed in Warden Supreme 1.3. Confusing API",
+            replaceWith = ReplaceWith("validateAssertionOverChallenge(validatedAttestation, assertion, expectedChallenge, lastSeenCounter = validCounters.first, maxCounterAdvance = validCounters.last - 1 - validCounters.first)")
+        )
         fun verifyAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
             expectedChallenge: ByteArray,
             validCounters: LongRange
+        ): Result<Assertion> = validateAssertionOverChallenge(
+            validatedAttestation,
+            assertion,
+            expectedChallenge,
+            lastSeenCounter = validCounters.first,
+            maxCounterAdvance = validCounters.last-1-validCounters.first
+        )
+
+        /**
+         * Verifies an assertion whose entire client data is [expectedChallenge], tied to [validatedAttestation].
+         *
+         * The client must pass `SHA-256(expectedChallenge)` as `clientDataHash` to `generateAssertion`. App Attest does
+         * not include the challenge or client data in the assertion; verification succeeds because the assertion
+         * signature is reconstructed using [expectedChallenge]. The caller must obtain the expected challenge from
+         * trusted server-side state and enforce its expiry and single use.
+         *
+         * @param validatedAttestation the previously validated attestation
+         * @param assertion the assertion to validate
+         * @param expectedChallenge the server-issued challenge used as the complete client data
+         * @param lastSeenCounter the counter of the last validated assertion
+         * @param maxCounterAdvance the maximum permitted counter advance since [lastSeenCounter]
+         */
+        fun validateAssertionOverChallenge(
+            validatedAttestation: ValidatedAttestation,
+            assertion: ByteArray,
+            expectedChallenge: ByteArray,
+            lastSeenCounter: Long,
+            maxCounterAdvance: Long = Long.MAX_VALUE,
         ): Result<Assertion>
 
         /**
-         * Verifies a fresh assertion, tied to a previously stored attestation.
+         * Verifies an assertion over arbitrary client data, tied to a previously stored attestation.
+         *
+         * [referenceClientData] must contain the exact, unhashed bytes whose SHA-256 digest the client passed to
+         * `generateAssertion`. App Attest assertions do not contain those bytes. Signature verification proves their
+         * integrity, while [validator] is responsible for parsing them and verifying that they contain
+         * [expectedChallenge]. The caller must obtain the expected challenge from trusted server-side state and enforce
+         * its expiry and single use.
          *
          * **The attestation is not verified again!**
          * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
@@ -283,8 +311,12 @@ abstract class AttestationService {
          *
          * @param validatedAttestation the previously validated attestation
          * @param validCounters The range of valid counters
-         * @param validator a fresh [AssertionChallengeValidator] that checks for challenge, clientData, etc.
+         * @param validator an [AssertionChallengeValidator] that extracts and verifies [expectedChallenge] in [referenceClientData]
          */
+        @Deprecated(
+            "To be removed in Warden Supreme 1.3. Confusing API",
+            replaceWith = ReplaceWith("validator.validateAssertion(validatedAttestation, assertion, referenceClientData = referenceClientData, expectedChallenge = expectedChallenge, lastSeenCounter = validCounters.first, maxCounterAdvance = validCounters.last - 1 - validCounters.first)")
+        )
         fun verifyAssertion(
             validatedAttestation: ValidatedAttestation,
             assertion: ByteArray,
@@ -292,6 +324,62 @@ abstract class AttestationService {
             validCounters: LongRange,
             expectedChallenge: ByteArray,
             validator: AssertionChallengeValidator,
+        ): Result<Assertion> = with(validator) {
+            validateAssertion(
+                validatedAttestation,
+                assertion,
+                referenceClientData = referenceClientData,
+                expectedChallenge = expectedChallenge,
+                lastSeenCounter = validCounters.first,
+                maxCounterAdvance = validCounters.last-1-validCounters.first,
+            )
+        }
+
+        /**
+         * Verifies an assertion over arbitrary client data, tied to a previously stored attestation.
+         *
+         * [referenceClientData] must contain the exact, unhashed bytes whose SHA-256 digest the client passed to
+         * `generateAssertion`. App Attest assertions do not contain those bytes. Signature verification proves their
+         * integrity, while [validator] is responsible for parsing them and verifying that they contain
+         * [expectedChallenge]. The caller must obtain the expected challenge from trusted server-side state and enforce
+         * its expiry and single use.
+         *
+         * **The attestation is not verified again!**
+         * There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge **before**
+         * calling this function
+         *
+         * **A Note on Counters:**<br>
+         * AppAttest only checks whether the signature counter is _higher_ than *the last seen counter**. That is, a value of `0L` will always work.
+         * Warden Supreme also allows specifying how much the counter may at most have advanced since the [lastSeenCounter]
+         * (i.e. since the signaure count of the last seen valid assertion), hence [maxCounterAdvance].<br>
+         *
+         * Example:
+         * ```kotlin
+         * // calling for the very first time, an assertion is received:
+         * with(validator) {
+         *   validateAssertion(attestation, assertion, clientData, challenge,
+         *     lastSeenCounter = 0L, //No signatures have been created
+         *     maxCounterAdvance = 1L //Make sure that this is the first signature to be created
+         * }
+         * ```
+         *
+         *
+         * @param validator an [AssertionChallengeValidator] that extracts and verifies [expectedChallenge] in [referenceClientData]
+         * @param validatedAttestation the previously validated attestation
+         * @param assertion the assertions to validate
+         * @param referenceClientData the exact client data cryptographically bound to [assertion]
+         * @param expectedChallenge the server-issued challenge that [validator] must find in [referenceClientData]
+         * @param lastSeenCounter the counter of the last recorded assertion; the current [assertion] counter must be > [lastSeenCounter]. That is, a value of `0L` will always work.
+         * @param maxCounterAdvance the maximum the counter is allowed to have advanced since the last validated assertion.
+         */
+        context(validator: AssertionChallengeValidator)
+        fun validateAssertion(
+            validatedAttestation: ValidatedAttestation,
+            assertion: ByteArray,
+            referenceClientData: ByteArray,
+            expectedChallenge: ByteArray,
+            lastSeenCounter: Long,
+            maxCounterAdvance: Long = Long.MAX_VALUE,
         ): Result<Assertion>
     }
 
@@ -417,32 +505,40 @@ object NoopAttestationService : AttestationService() {
 
             //Will always throw
             @DisabledAttestation
-            override fun verifyAssertion(
+            override fun validateAssertionOverChallenge(
                 validatedAttestation: ValidatedAttestation,
                 assertion: ByteArray,
                 expectedChallenge: ByteArray,
-                validCounters: LongRange,
-            ): Result<Assertion> = verifyAssertion(
-                validatedAttestation, assertion, expectedChallenge, validCounters, expectedChallenge,
-                object : AssertionChallengeValidator {
-                    override fun validate(
-                        assertionObj: Assertion,
-                        clientData: ByteArray,
-                        attestationPublicKey: ECPublicKey,
-                        challenge: ByteArray
-                    ) = true
-                })
+                lastSeenCounter: Long,
+                maxCounterAdvance: Long
+            ): Result<Assertion> = with(object : AssertionChallengeValidator {
+                override fun validate(
+                    assertionObj: Assertion,
+                    clientData: ByteArray,
+                    attestationPublicKey: ECPublicKey,
+                    challenge: ByteArray
+                ) = true
+            }) {
+                validateAssertion(
+                    validatedAttestation,
+                    assertion,
+                    expectedChallenge,
+                    expectedChallenge,
+                    lastSeenCounter, maxCounterAdvance
+                )
+            }
 
 
             //Will always throw
             @DisabledAttestation
-            override fun verifyAssertion(
+            context(validator: AssertionChallengeValidator)
+            override fun validateAssertion(
                 validatedAttestation: ValidatedAttestation,
                 assertion: ByteArray,
                 referenceClientData: ByteArray,
-                validCounters: LongRange,
                 expectedChallenge: ByteArray,
-                validator: AssertionChallengeValidator,
+                lastSeenCounter: Long,
+                maxCounterAdvance: Long
             ): Result<Assertion> {
                 val envelope = assertionReader.readValue<AssertionEnvelope>(assertion)
                 return catchingUnwrapped {
@@ -473,4 +569,3 @@ object NoopAttestationService : AttestationService() {
 @RequiresOptIn(message = "Access to disabled attestation. ALL BETS ARE OFF! NO AUTH GUARANTEES WHATSOEVER!")
 /** This is dangerous. It is exposed if you know what you are doing. Never use in production, only for testing*/
 annotation class DisabledAttestation()
-

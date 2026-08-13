@@ -101,7 +101,7 @@ class AttestationClient(
         }.boundedPayload(maxAttestationPayloadBytes))
 
 
-    @Deprecated("To be removed in Warden Supreme 1.3. Use the overload taking AttestationProof")
+    @Deprecated("To be removed in Warden Supreme 1.3. Use the overload taking AttestationProof", replaceWith = ReplaceWith("attest(AttestationProof.Signed(csr), destination)"))
     @Throws(Throwable::class)
     suspend fun attest(csr: Pkcs10CertificationRequest, destination: Url) =
         attest(AttestationProof.Signed(csr), destination)
