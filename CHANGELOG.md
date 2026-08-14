@@ -1,8 +1,6 @@
 # Changelog
 
-Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as
-dedicated artefacts,
-this changelog also includes the original WARDEN changelog.
+## NEXT
 
 ## 1.1.0
 * Remove Deprecations schedules for removal in 1.1
@@ -391,7 +389,17 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
     * Update Kotlin to 2.2.20
     * Replace `kotlinx.datetime` with `kotlin.time`
 
-### WARDEN 2.0.0
+---
+
+# WARDEN changelog
+
+Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as
+dedicated artefacts,
+this changelog also includes the original WARDEN changelog.
+
+---
+
+## WARDEN 2.0.0
 
 Breaking changes ahead!
 
