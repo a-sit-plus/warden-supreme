@@ -71,8 +71,11 @@ This section focuses on upgrades that keep using `Makoto` / `Roboto` directly, w
 
 ### Results and Exceptions
 
-!!! tip "Try the custom parser"
-    To enable the custom Android attestation extension parser, set `supremeParser = true` in your configuration and run your usual `Roboto`/`Makoto` verification flow.
+!!! tip "Enable the Supreme parser"
+    Set `supremeParser = true` in your configuration and run your usual `Roboto`/`Makoto` verification flow. Enabling
+    the Supreme parser is recommended, but it remains disabled by default for compatibility and is planned to become the
+    default in a future release. It also handles the repeated `AuthorizationList` tags emitted by some Android 16 devices;
+    see [Duplicate AuthorizationList Tags on Android 16](../technical/quirks.md#duplicate-authorizationlist-tags-on-android-16).
 
 - `AttestationResult` gains a `Verified` marker; NOOP results are distinct.
 - `AttestationResult.Error` always carries a `cause`.

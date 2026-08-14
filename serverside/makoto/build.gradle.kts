@@ -60,9 +60,10 @@ dependencies {
 }
 
 
-val javadocJar = setupDokka(
+setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/serverside",
 )
+val javadocRedirectJar = tasks.named<Jar>("javadocRedirectJar")
 
 val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
@@ -75,7 +76,7 @@ publishing {
         register("mavenJava", MavenPublication::class) {
             from(components["java"])
             if (this.name != "relocation") {
-                artifact(javadocJar.get())
+                artifact(javadocRedirectJar)
                 artifact(sourcesJar.get())
             }
             pom {

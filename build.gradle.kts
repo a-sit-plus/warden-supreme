@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.plugins.signing.Sign
 
 plugins {
@@ -69,6 +70,13 @@ val publishedProjects = listOf(
     project(":config-hoplite"),
     project(":config-spring"),
 )
+
+publishedProjects.forEach { moduleProject ->
+    moduleProject.tasks.register<Jar>("javadocRedirectJar") {
+        archiveClassifier.set("javadoc")
+        from(rootProject.layout.projectDirectory.dir("docs/javadoc"))
+    }
+}
 
 val releasePublicationsByProject = linkedMapOf(
     ":makoto" to listOf("mavenJava"),
