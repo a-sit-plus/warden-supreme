@@ -13,6 +13,7 @@ private suspend fun foo() {
 
 
 
+// --8<-- [start:pre-attestation-error-handling]
 val result = verifier.verifyAttestation(
     attestationProof = proof,
     onPreAttestationError = {
@@ -36,6 +37,7 @@ val result = verifier.verifyAttestation(
         }
     }
 ) { TODO("Refer to minimum example for certificate issuance") }
+// --8<-- [end:pre-attestation-error-handling]
 
 
 

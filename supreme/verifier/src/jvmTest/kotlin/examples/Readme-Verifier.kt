@@ -28,6 +28,7 @@ val customerAttributesOID = ObjectIdentifier("2.25.30419858255939885837023545453
 
 
 
+// --8<-- [start:verifier-config]
 val verifier = AttestationVerifier(
     makoto = makoto,
  /*(1)!*/attestationProofOID = serviceSpecificOID, //override default
@@ -57,3 +58,4 @@ val verifier = AttestationVerifier(
     ),
  /*(8)!*/dataAuth = DataAuthentication.Hash(Digest.SHA256),
 )
+// --8<-- [end:verifier-config]

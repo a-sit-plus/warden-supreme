@@ -168,4 +168,5 @@ nav:
         - Config Spring: sbom/modules/config-spring.md
     - Glossary: glossary.md
     - API Docs: dokka/index.html
+    - Security Policy and Hardening: hardening.md
     - 💎 Services: services.md

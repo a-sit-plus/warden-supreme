@@ -13,7 +13,9 @@ private val configuration: SupremeConfiguration =
 
 
 
+// --8<-- [start:verifier-from-supreme-config]
 val verifierFromConfig = AttestationVerifier(
     configuration,
  /*(1)!*/WardenDefaults.nonceGenerator
 ) {/*(2)!*/clock, offset -> InMemoryChallengeCache(clock, offset) }
+// --8<-- [end:verifier-from-supreme-config]

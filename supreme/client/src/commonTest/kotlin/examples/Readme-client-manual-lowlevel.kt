@@ -28,6 +28,7 @@ suspend fun lowlevel() {
 
 
 
+    // --8<-- [start:manual-client-flow]
  /*(1)!*/val client = AttestationClient(ktorClient)
  /*(2)!*/val serverChallenge = client.getChallenge(Url(ENDPOINT_CHALLENGE)).getOrThrow()
     require(serverChallenge.dataAuth == DataAuthentication.Signature) {
@@ -80,6 +81,7 @@ suspend fun lowlevel() {
             }
         }
     }
+    // --8<-- [end:manual-client-flow]
 
 
 

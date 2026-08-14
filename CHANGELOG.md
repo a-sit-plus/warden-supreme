@@ -4,7 +4,7 @@ Since Warden Supreme is an evolution of WARDEN and continues to maintain and pub
 dedicated artefacts,
 this changelog also includes the original WARDEN changelog.
 
-## NEXT
+## 1.1.0
 * Remove Deprecations schedules for removal in 1.1
 * Deprecate APIs with rough edges (will be removed in Warden Supreme 1.3)
 * **Rework iOS App Attest assertion validation**
@@ -36,13 +36,17 @@ this changelog also includes the original WARDEN changelog.
     * Add `dataAuthentication` and human-readable `toBeAttestedAttributes` support to `SupremeConfiguration` JSON/YAML.
     * Expand client, verifier, property, and Android-emulator end-to-end coverage for both authentication modes and
       required/optional attribute combinations.
-    * Bump ChallengeVersion to 3, but still transmit 2, of DataAuthentication.Signature is used without any requested to-be-attested attributes
+    * Bump ChallengeVersion to 3, but still transmit 2, of DataAuthentication.Signature is used without any requested to-be-attested attributes  
+      **This keeps compatibility between non-aligned clients and verifiers across Warden Supreme 1.0 and 1.1.**
 * Add Supreme dependency to `supreme-common`
+* Dependency Updates:
+    * Bouncy Castle 1.85
+    * Signum Indispensable 3.25.0
 
 ## 1.0.3
 * Security hardening:
     * Verify Android attestation certificate chains before fully decoding their attacker-controlled attestation extensions.
-    * Use a narrowly scoped, size-limited application-ID extraction for per-application trust-anchor selection.
+    * Use a narrowly scoped, size-limited application-ID extraction for per-application trust-anchor selection ((GHSA-4r28-jj7j-g7v8)[https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-4r28-jj7j-g7v8])
     * Canonicalize Android application package information and signer digests with ordered collections rather than attacker-controlled hash sets.
     * Replace full-cache expiry scans in `InMemoryChallengeCache` with nonce- and expiry-ordered indexes ([GHSA-3chr-q239-rmpp](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-3chr-q239-rmpp)).
     * Bound payload sizes and recursion depth ([GHSA-qv7m-wr3r-hfg3](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-qv7m-wr3r-hfg3)) ([GHSA-3qj3-8wvm-fmcp](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-3qj3-8wvm-fmcp))
@@ -60,7 +64,7 @@ this changelog also includes the original WARDEN changelog.
 # 1.0.2
 * Ktor 3.5.1
 * kotlinx.datetime 0.8.0
-* Assert security level from certificate chain (Addresses GHSA-frpv-cj76-xm4r)
+* Assert security level from certificate chain ([GHSA-frpv-cj76-xm4r](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-frpv-cj76-xm4r))
     * **For Strongbox-requiring policies**, the attestation security level is now **derived from the certificate chain** and must match the level advertised in the attestation extension (`keymasterSecurityLevel`). A mismatch now fails verification.
     * **Impact on generated attestation chains (automated testing):** synthetic chains must now be shaped to match the claimed security level. Chains that previously passed (e.g. a three-certificate chain advertising a StrongBox extension) are now rejected — either with a certificate-trust error (wrong chain shape) or an `AttestationValueException` for the security-level mismatch (surfaced as `CONTENT`). Required shapes:
         * **StrongBox** (factory-provisioned): `ROOT → FACTORY_INTERMEDIATE → ATTESTATION → TARGET` (four certificates). The factory intermediate's subject must carry a serialNumber (OID `2.5.4.5`) **and** a title (OID `2.5.4.12`) of exactly `TEE` or `StrongBox`.

@@ -32,6 +32,7 @@ object RawIosAssertionExample {
 
 
 
+        // --8<-- [start:ios-assertion-verification]
         val registration = /*(1)!*/makoto.ios.verifyAppAttestation(attestationObject, challengeAtRegistration)
         val verified = /*(2)!*/registration as AttestationResult.IOS.Verified
 
@@ -58,6 +59,7 @@ object RawIosAssertionExample {
             expectedChallenge = expectedChallenge,
             validCounters = (previousCounter - 1)..previousCounter
         )
+        // --8<-- [end:ios-assertion-verification]
 
 
 

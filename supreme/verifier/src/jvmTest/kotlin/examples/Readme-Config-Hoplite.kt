@@ -12,6 +12,7 @@ import com.sksamuel.hoplite.ExperimentalHoplite
 private fun readmeHopliteConfigExample() {
 
 
+// --8<-- [start:hoplite-config-loader]
 val loader = ConfigLoaderBuilder.default()
     .withExplicitSealedTypes()
     .addDecoder(AndroidAttestationConfiguration.hopliteDecoder())
@@ -23,6 +24,7 @@ val config: SupremeConfiguration = loader.loadConfigOrThrow()
 
 
 
+// --8<-- [end:hoplite-config-loader]
 
 
 

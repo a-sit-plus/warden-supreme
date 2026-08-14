@@ -132,7 +132,7 @@ Since Android and iOS attestation require different configuration parameters, di
 The following snippet shows an MWE that also accounts for five minutes of clock drift:
 
 ```kotlin
---8<-- "Readme-Config-min.kt:8"
+--8<-- "Readme-Config-min.kt:minimal-makoto-config"
 ```
 
 1. At least package identifier and a single signer digest need to be configured for an Android application to be attested.
@@ -166,7 +166,7 @@ property; the expandable example below shows them together.
     **Be sure to check the annotations!**
     
     ```kotlin
-    --8<-- "Readme-Config.kt:15"
+    --8<-- "Readme-Config.kt:makoto-config"
     ```
     
     1. The basic application for the masses
@@ -237,7 +237,7 @@ boot key hashes, use GrapheneOS's
 [`attestation.json.sig`](https://grapheneos.org/attestation.json.sig).
 
 ```kotlin
---8<-- "Readme-Config-Graphene.kt:15"
+--8<-- "Readme-Config-Graphene.kt:grapheneos-config"
 ```
 
 1. Order is irrelevant, and Warden Supreme makes this explicit by forcing a `Set` of verified boot key hashes
@@ -310,7 +310,7 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
     the deprecated `ChallengeValidator` supports signed CSRs only.
 
 ```kotlin
---8<-- "Readme-Verifier-min.kt:3"
+--8<-- "Readme-Verifier-min.kt:minimal-verifier"
 ```
 
 1. This minimal setup covers most deployments. Defaults include instructions (`KeyConstraints`) for the client to create
@@ -318,7 +318,7 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
 
 ??? example "Comprehensive list of Verifier options"
     ```kotlin
-    --8<-- "Readme-Verifier.kt:30"
+    --8<-- "Readme-Verifier.kt:verifier-config"
     ```
     
     1. We want Warden Supreme to convey the attestation statement payload inside the TBS CSR using a custom OID.
@@ -342,7 +342,7 @@ As such, an `AttestationVerifier` can also be created by passing a `SupremeConfi
 attestation policies, as well as object identifiers, key constraints, authentication mode, and requested attributes:
 
 ```kotlin
---8<-- "Readme-Verifier-config-supreme.kt:15"
+--8<-- "Readme-Verifier-config-supreme.kt:verifier-from-supreme-config"
 ```
 
 1. Default, secure nonce generator.
@@ -359,7 +359,7 @@ server-controlled context sent to the client; it is not client evidence to valid
 Use `additionalVerifications` for such checks:
 
 ```kotlin
---8<-- "Readme-Backend-additional-verifications.kt:17:33"
+--8<-- "Readme-Backend-additional-verifications.kt:additional-verifications"
 ```
 
 1. This is the `AttestationProof` received from the client: a signed CSR or hash-authenticated TBS CSR.
@@ -393,7 +393,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
     defaults to 1MB.
 
 ```kotlin
---8<-- "Readme-Backend.kt:60"
+--8<-- "Readme-Backend.kt:backend-server"
 ```
 
 1. We're using JSON to transmit the challenge and the final response.
@@ -447,7 +447,7 @@ specifies key constraints:
     endpoint must be treated as a compromise of the attestation flow.
 
 ```kotlin
---8<-- "Readme-client-min.kt:19:40"
+--8<-- "Readme-client-min.kt:minimal-client-flow"
 ```
 
 1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
@@ -473,7 +473,7 @@ The `AttestationClient` doesn't even come with any configuration options.
     If you need more control, you can also manually perform individual steps, as shown below
     
     ```kotlin
-    --8<-- "Readme-client-step-by-step.kt:15:45"
+    --8<-- "Readme-client-step-by-step.kt:step-by-step-client-flow"
     ```
     
     1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
@@ -488,7 +488,7 @@ The `AttestationClient` doesn't even come with any configuration options.
     creating a proof with different semantics:
 
     ```kotlin
-    --8<-- "Readme-client-manual-lowlevel.kt:31:82"
+    --8<-- "Readme-client-manual-lowlevel.kt:manual-client-flow"
     ```
     
     1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
@@ -525,7 +525,7 @@ The back-end still needs enough information to analyse failures. The Supreme att
 four side-effect-free callbacks for challenge validation, attestation errors, and successful verification:
 
 ```kotlin
---8<-- "Readme-Backend-callbacks.kt:18:56"
+--8<-- "Readme-Backend-callbacks.kt:verifier-callbacks"
 ```
 
 1. This is the `AttestationProof` from the client, as in the minimal example.

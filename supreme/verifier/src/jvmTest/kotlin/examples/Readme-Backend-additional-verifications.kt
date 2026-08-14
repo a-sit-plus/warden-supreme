@@ -15,6 +15,7 @@ private suspend fun foo() {
 
 
 
+// --8<-- [start:additional-verifications]
 val response = verifier.verifyAttestation(
  /*(1)!*/attestationProof = proof,
  /*(2)!*/additionalVerifications = { receivedProof, _ ->
@@ -31,6 +32,7 @@ val response = verifier.verifyAttestation(
  /*(6)!*/certificateIssuer = { verifiedProof ->
         issueCertificateChain(verifiedProof)
     }
+// --8<-- [end:additional-verifications]
 )
 
 
