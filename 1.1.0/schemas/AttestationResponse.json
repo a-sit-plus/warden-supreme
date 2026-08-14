@@ -1,0 +1,47 @@
+{
+   "anyOf": [
+      {
+         "type": "object",
+         "required": [
+            "kind"
+         ],
+         "properties": {
+            "kind": {
+               "enum": [
+                  "TRUST",
+                  "TIME",
+                  "CONTENT",
+                  "INTERNAL"
+               ],
+               "title": "Type"
+            },
+            "explanation": {
+               "type": [
+                  "string",
+                  "null"
+               ],
+               "title": "String"
+            }
+         },
+         "title": "Failure"
+      },
+      {
+         "type": "object",
+         "required": [
+            "certificateChain"
+         ],
+         "properties": {
+            "certificateChain": {
+               "type": "array",
+               "items": {
+                  "type": "string",
+                  "title": "X509CertificateBase64Url"
+               },
+               "title": "ArrayList<X509CertificateBase64Url>"
+            }
+         },
+         "title": "Success"
+      }
+   ],
+   "title": "AttestationResponse"
+}

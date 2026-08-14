@@ -1,0 +1,613 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>at.asitplus.attestation.supreme</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.1.0
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":supreme-common/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":supreme-common/commonMain" data-filter=":supreme-common/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageids="supreme-common::at.asitplus.attestation.supreme////PointingToDeclaration//-8504598">
+  <div class="breadcrumbs"><a href="../index.html">supreme-common</a><span class="delimiter">/</span><span class="current">at.asitplus.attestation.supreme</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-452559730%2FClasslikes%2F-8504598" anchor-label="AttestationChallenge" id="-452559730%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attestation-challenge/index.html"><span>Attestation</span><wbr><span><span>Challenge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-452559730%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-attestation-challenge/index.html">AttestationChallenge</a></div><div class="brief "><p class="paragraph">Represents a challenge for an attestation ceremony, including freshness, key-generation hints, the required <a href="-data-authentication/index.html">DataAuthentication</a> mode, and optional client-provided values that must be bound to the attestation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1635840949%2FClasslikes%2F-8504598" anchor-label="AttestationHashInput" id="1635840949%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attestation-hash-input/index.html"><span>Attestation</span><wbr><span>Hash</span><wbr><span><span>Input</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1635840949%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-attestation-hash-input/index.html">AttestationHashInput</a> : <span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Encodable///PointingToDeclaration/">Asn1Encodable</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Sequence///PointingToDeclaration/">Asn1Sequence</span><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Canonical DER structure authenticated by <a href="-data-authentication/-hash/index.html">DataAuthentication.Hash</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="166096589%2FClasslikes%2F-8504598" anchor-label="AttestationProof" id="166096589%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attestation-proof/index.html"><span>Attestation</span><wbr><span><span>Proof</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="166096589%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-attestation-proof/index.html">AttestationProof</a></div><div class="brief "><p class="paragraph">An authenticated client-to-verifier transport carrying the platform-generated attestation statement.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1626518448%2FClasslikes%2F-8504598" anchor-label="AttestationResponse" id="1626518448%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attestation-response/index.html"><span>Attestation</span><wbr><span><span>Response</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1626518448%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-attestation-response/index.html">AttestationResponse</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-14928410%2FClasslikes%2F-8504598" anchor-label="AttestedAttributes" id="-14928410%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attested-attributes/index.html"><span>Attested</span><wbr><span><span>Attributes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-14928410%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-attested-attributes/index.html">AttestedAttributes</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>otherAttributesEncoded<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Sequence///PointingToDeclaration/">Asn1Sequence</span><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Additional client-provided values decoded from the sequence stored in a dedicated TBS CSR attribute.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="718195996%2FClasslikes%2F-8504598" anchor-label="BitLengthSerializer" id="718195996%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-bit-length-serializer/index.html"><span>Bit</span><wbr><span>Length</span><wbr><span><span>Serializer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="718195996%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-bit-length-serializer/index.html">BitLengthSerializer</a> : <span data-unresolved-link="kotlinx.serialization/KSerializer///PointingToDeclaration/">KSerializer</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.misc/BitLength///PointingToDeclaration/">BitLength</span><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1494947285%2FClasslikes%2F-8504598" anchor-label="Constrained" id="-1494947285%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-constrained/index.html"><span><span>Constrained</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1494947285%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="-constrained/index.html">Constrained</a><span class="token operator"> = </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Constrained value type for <a href="-attestation-challenge/additional-payload.html">AttestationChallenge.additionalPayload</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1518472265%2FClasslikes%2F-8504598" anchor-label="ConstrainedMapSerializer" id="1518472265%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-constrained-map-serializer/index.html"><span>Constrained</span><wbr><span>Map</span><wbr><span><span>Serializer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1518472265%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-constrained-map-serializer/index.html">ConstrainedMapSerializer</a> : <span data-unresolved-link="kotlinx.serialization/KSerializer///PointingToDeclaration/">KSerializer</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="-constrained/index.html">Constrained</a><span class="token operator">&gt;</span><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Format-agnostic serializer for <code class="lang-kotlin">Map&lt;String, Constrained&gt;</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1315174943%2FClasslikes%2F-8504598" anchor-label="DataAuthentication" id="1315174943%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-data-authentication/index.html"><span>Data</span><wbr><span><span>Authentication</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1315174943%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="-data-authentication/-serializer/index.html">DataAuthentication.Serializer::class</a></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-data-authentication/index.html">DataAuthentication</a></div><div class="brief "><p class="paragraph">Selects how the client authenticates the data surrounding an attestation proof.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2073015573%2FClasslikes%2F-8504598" anchor-label="DigestSerializer" id="-2073015573%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-digest-serializer/index.html"><span>Digest</span><wbr><span><span>Serializer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2073015573%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-digest-serializer/index.html">DigestSerializer</a> : <span data-unresolved-link="kotlinx.serialization/KSerializer///PointingToDeclaration/">KSerializer</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable/Digest///PointingToDeclaration/">Digest</span><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="775246131%2FClasslikes%2F-8504598" anchor-label="DurationWholeSecondsSerializer" id="775246131%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-duration-whole-seconds-serializer/index.html"><span>Duration</span><wbr><span>Whole</span><wbr><span>Seconds</span><wbr><span><span>Serializer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="775246131%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-duration-whole-seconds-serializer/index.html">DurationWholeSecondsSerializer</a> : <span data-unresolved-link="kotlinx.serialization/KSerializer///PointingToDeclaration/">KSerializer</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-87192674%2FClasslikes%2F-8504598" anchor-label="ECCurveSerializer" id="-87192674%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-e-c-curve-serializer/index.html"><span>ECCurve</span><wbr><span><span>Serializer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-87192674%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-e-c-curve-serializer/index.html">ECCurveSerializer</a> : <span data-unresolved-link="kotlinx.serialization/KSerializer///PointingToDeclaration/">KSerializer</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable/ECCurve///PointingToDeclaration/">ECCurve</span><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2052544306%2FClasslikes%2F-8504598" anchor-label="InstantLongSerializer" id="2052544306%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-instant-long-serializer/index.html"><span>Instant</span><wbr><span>Long</span><wbr><span><span>Serializer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2052544306%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-instant-long-serializer/index.html">InstantLongSerializer</a> : <span data-unresolved-link="kotlinx.serialization/KSerializer///PointingToDeclaration/">KSerializer</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-800206294%2FClasslikes%2F-8504598" anchor-label="KeyConstraints" id="-800206294%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-key-constraints/index.html"><span>Key</span><wbr><span><span>Constraints</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-800206294%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-key-constraints/index.html">KeyConstraints</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>algorithmParameters<span class="token operator">: </span><a href="-key-constraints/-algorithm-parameters/index.html">KeyConstraints.AlgorithmParameters</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>keyProtection<span class="token operator">: </span><a href="-key-constraints/-key-protection/index.html">KeyConstraints.KeyProtection</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Constraints on the key to be created on the client. If properly set, allows for ridiculously hands-free key and attestation statement creation</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1026016582%2FClasslikes%2F-8504598" anchor-label="Primitive" id="-1026016582%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-primitive/index.html"><span><span>Primitive</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1026016582%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="-primitive/index.html">Primitive</a><span class="token operator"> = </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Primitive value type used for client-provided attested attributes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1208575008%2FClasslikes%2F-8504598" anchor-label="PrimitiveType" id="1208575008%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-primitive-type/index.html"><span>Primitive</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1208575008%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><span data-unresolved-link="at.asitplus.attestation.supreme/PrimitiveType.ByteSerializer///PointingToDeclaration/">PrimitiveType.ByteSerializer::class</span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">enum </span><a href="-primitive-type/index.html">PrimitiveType</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-primitive-type/index.html">PrimitiveType</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Type discriminator and ASN.1 codec for <a href="-primitive/index.html">Primitive</a> values.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1618097404%2FClasslikes%2F-8504598" anchor-label="SortedSet" id="1618097404%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-sorted-set/index.html"><span>Sorted</span><wbr><span><span>Set</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1618097404%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-sorted-set/index.html">SortedSet</a><span class="token operator">&lt;</span><a href="-sorted-set/index.html">E</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">values<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><a href="-sorted-set/index.html">E</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">comparator<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-comparator/index.html">Comparator</a><span class="token operator">&lt;</span><a href="-sorted-set/index.html">E</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">hash<span class="token operator">: </span><span class="token punctuation">(</span><a href="-sorted-set/index.html">E</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>{ it.hashCode() }</span></span><span class="token punctuation">)</span> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-sorted-set/index.html">E</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A KMP-compatible immutable set backed by sorted values, never by attacker-controlled hashes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="585823978%2FClasslikes%2F-8504598" anchor-label="WardenDefaults" id="585823978%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-warden-defaults/index.html"><span>Warden</span><wbr><span><span>Defaults</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="585823978%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-warden-defaults/index.html">WardenDefaults</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-905108724%2FProperties%2F-8504598" anchor-label="MAX_JSON_NESTING_DEPTH" id="-905108724%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-m-a-x_-j-s-o-n_-n-e-s-t-i-n-g_-d-e-p-t-h.html"><span>MAX_</span><wbr><span>JSON_</span><wbr><span>NESTING_</span><wbr><span>DEPTH</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-905108724%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-m-a-x_-j-s-o-n_-n-e-s-t-i-n-g_-d-e-p-t-h.html">MAX_JSON_NESTING_DEPTH</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">64</span></div><div class="brief "><p class="paragraph">Max JSON container-nesting depth accepted before parsing.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1498542471%2FProperties%2F-8504598" anchor-label="nonce" id="-1498542471%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="nonce.html"><span><span>nonce</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1498542471%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span><span class="token punctuation">.</span><a href="nonce.html">nonce</a><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Tries to extract the nonce from a TBS CSR's subject name, given it is encoded into an RDN containing a <span data-unresolved-link="at.asitplus.signum.indispensable.asn1//serialNumber/at.asitplus.signum.indispensable.asn1.KnownOIDs#/PointingToDeclaration/">KnownOIDs.serialNumber</span></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1277566300%2FProperties%2F-8504598" anchor-label="tbsCsr" id="-1277566300%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tbs-csr.html"><span>tbs</span><wbr><span><span>Csr</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1277566300%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="-attestation-proof/index.html">AttestationProof</a><span class="token punctuation">.</span><a href="tbs-csr.html">tbsCsr</a><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span></div><div class="brief "><p class="paragraph">Returns the unsigned certification-request information carried by either transport shape.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1634160177%2FFunctions%2F-8504598" anchor-label="attestationStatementForChallenge" id="-1634160177%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-statement-for-challenge.html"><span>attestation</span><wbr><span>Statement</span><wbr><span>For</span><wbr><span><span>Challenge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1634160177%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span><span class="token punctuation">.</span><a href="attestation-statement-for-challenge.html"><span class="token function">attestationStatementForChallenge</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">challenge<span class="token operator">: </span><a href="-attestation-challenge/index.html">AttestationChallenge</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable/Attestation///PointingToDeclaration/">Attestation</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Tries to extract an attestation statement from a TBS CSR based on the <code class="lang-kotlin">proofOID</code> specified in <a href="attestation-statement-for-challenge.html">challenge</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1100443639%2FFunctions%2F-8504598" anchor-label="attestationStatementForOid" id="1100443639%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-statement-for-oid.html"><span>attestation</span><wbr><span>Statement</span><wbr><span>For</span><wbr><span><span>Oid</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1100443639%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span><span class="token punctuation">.</span><a href="attestation-statement-for-oid.html"><span class="token function">attestationStatementForOid</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">oid<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable/Attestation///PointingToDeclaration/">Attestation</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Tries to extract an attestation statement from a TBS CSR, given it is present as an attribute with <a href="attestation-statement-for-oid.html">oid</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1794677631%2FFunctions%2F-8504598" anchor-label="closestToRoot" id="-1794677631%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="closest-to-root.html"><span>closest</span><wbr><span>To</span><wbr><span><span>Root</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1794677631%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509Certificate///PointingToDeclaration/">X509Certificate</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="closest-to-root.html"><span class="token function">closestToRoot</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">predicate<span class="token operator">: </span><span class="token punctuation">(</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509Certificate///PointingToDeclaration/">X509Certificate</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509Certificate///PointingToDeclaration/">X509Certificate</span></div><div class="brief "><p class="paragraph">Returns the certificate matching the predicate that is closest to the root. Can be the root itself.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1472757079%2FFunctions%2F-8504598" anchor-label="closestToRootOrNull" id="1472757079%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="closest-to-root-or-null.html"><span>closest</span><wbr><span>To</span><wbr><span>Root</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1472757079%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509Certificate///PointingToDeclaration/">X509Certificate</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="closest-to-root-or-null.html"><span class="token function">closestToRootOrNull</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">predicate<span class="token operator">: </span><span class="token punctuation">(</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509Certificate///PointingToDeclaration/">X509Certificate</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509Certificate///PointingToDeclaration/">X509Certificate</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns the certificate matching the predicate that is closes to the root. Can be the root itself.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1632396453%2FFunctions%2F-8504598" anchor-label="deviceNameForChallenge" id="1632396453%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="device-name-for-challenge.html"><span>device</span><wbr><span>Name</span><wbr><span>For</span><wbr><span><span>Challenge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1632396453%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequest///PointingToDeclaration/">Pkcs10CertificationRequest</span><span class="token punctuation">.</span><a href="device-name-for-challenge.html"><span class="token function">deviceNameForChallenge</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">challenge<span class="token operator">: </span><a href="-attestation-challenge/index.html">AttestationChallenge</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><br><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span><span class="token punctuation">.</span><a href="device-name-for-challenge.html"><span class="token function">deviceNameForChallenge</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">challenge<span class="token operator">: </span><a href="-attestation-challenge/index.html">AttestationChallenge</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Tries to extract a device name from a TBS CSR if <code class="lang-kotlin">genericDeviceNameOID</code> is specified in <a href="device-name-for-challenge.html">challenge</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1439262173%2FFunctions%2F-8504598" anchor-label="deviceNameForOid" id="-1439262173%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="device-name-for-oid.html"><span>device</span><wbr><span>Name</span><wbr><span>For</span><wbr><span><span>Oid</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1439262173%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequest///PointingToDeclaration/">Pkcs10CertificationRequest</span><span class="token punctuation">.</span><a href="device-name-for-oid.html"><span class="token function">deviceNameForOid</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">oid<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><br><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span><span class="token punctuation">.</span><a href="device-name-for-oid.html"><span class="token function">deviceNameForOid</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">oid<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Tries to extract a device name from a TBS CSR, given it is present as an attribute with <a href="device-name-for-oid.html">oid</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-894828889%2FFunctions%2F-8504598" anchor-label="parsedAttributesBy" id="-894828889%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="parsed-attributes-by.html"><span>parsed</span><wbr><span>Attributes</span><wbr><span><span>By</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-894828889%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-attested-attributes/index.html">AttestedAttributes</a><span class="token punctuation">.</span><a href="parsed-attributes-by.html"><span class="token function">parsedAttributesBy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">challenge<span class="token operator">: </span><a href="-attestation-challenge/index.html">AttestationChallenge</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-primitive/index.html">Primitive</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Decodes these values using the ordered attribute description carried by <a href="parsed-attributes-by.html">challenge</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1261574127%2FFunctions%2F-8504598" anchor-label="requireBoundedArrayNesting" id="1261574127%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="require-bounded-array-nesting.html"><span>require</span><wbr><span>Bounded</span><wbr><span>Array</span><wbr><span><span>Nesting</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1261574127%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="require-bounded-array-nesting.html"><span class="token function">requireBoundedArrayNesting</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">json<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Scans <a href="require-bounded-array-nesting.html">json</a> for excessive object or array nesting without parsing it. Brackets inside string literals (keys/values) are ignored. Throws <span data-unresolved-link="kotlinx.serialization/SerializationException///PointingToDeclaration/">SerializationException</span> if depth exceeds <a href="-m-a-x_-j-s-o-n_-n-e-s-t-i-n-g_-d-e-p-t-h.html">MAX_JSON_NESTING_DEPTH</a>. Cheap, single linear pass, no allocation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1629957964%2FFunctions%2F-8504598" anchor-label="toHashInput" id="-1629957964%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-hash-input.html"><span>to</span><wbr><span>Hash</span><wbr><span><span>Input</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1629957964%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span><span class="token punctuation">.</span><a href="to-hash-input.html"><span class="token function">toHashInput</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">proofOid<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-attestation-hash-input/index.html">AttestationHashInput</a></div><div class="brief "><p class="paragraph">Removes the public key and exactly one attestation-proof attribute identified by <a href="to-hash-input.html">proofOid</a>, producing the canonical input used by <a href="-data-authentication/-hash/index.html">DataAuthentication.Hash</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="976742902%2FFunctions%2F-8504598" anchor-label="toSequence" id="976742902%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-sequence.html"><span>to</span><wbr><span><span>Sequence</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="976742902%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-primitive/index.html">Primitive</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="to-sequence.html"><span class="token function">toSequence</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Sequence///PointingToDeclaration/">Asn1Sequence</span></div><div class="brief "><p class="paragraph">Encodes only the additional attribute values, tagged by position, for storage in the TBS CSR.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1726890340%2FFunctions%2F-8504598" anchor-label="withAndroidAttestationExtensions" id="-1726890340%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="with-android-attestation-extensions.html"><span>with</span><wbr><span>Android</span><wbr><span>Attestation</span><wbr><span><span>Extensions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1726890340%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/CertificateChain///PointingToDeclaration/">CertificateChain</span><span class="token punctuation">.</span><a href="with-android-attestation-extensions.html"><span class="token function">withAndroidAttestationExtensions</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509Certificate///PointingToDeclaration/">X509Certificate</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a list of certificates that contain an attestation extension; in-order.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
