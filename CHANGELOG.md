@@ -1,9 +1,6 @@
 # Changelog
 
-## 1.0.4
-* **Fix:** Include the Android revocation-list snapshot used during certificate-chain validation in debug statements and reuse it during replay.
-* **Dependency Update:**
-    * Signum 3.26.0 / Supreme 0.16.0, upgrading to Strongbox where available
+## NEXT
 
 ## 1.1.0
 * Remove Deprecations schedules for removal in 1.1
@@ -43,6 +40,12 @@
 * Dependency Updates:
     * Bouncy Castle 1.85
     * Signum Indispensable 3.25.0
+
+## 1.0.4
+* **Fix:** Include the Android revocation-list snapshot used during certificate-chain validation in debug statements and reuse it during replay.
+* **Dependency Update:**
+    * Signum 3.26.0 / Supreme 0.16.0, upgrading to Strongbox where available
+
 
 ## 1.0.3
 * Security hardening:
