@@ -12,6 +12,7 @@ import kotlin.time.Duration.Companion.minutes
 val myCustomRoots = APPLE_DEFAULT_TRUSTED_ROOTS
 
 
+// --8<-- [start:makoto-config]
 val makoto = Makoto(
     androidAttestationConfiguration = AndroidAttestationConfiguration(
         applications = listOf(
@@ -77,3 +78,4 @@ val makoto = Makoto(
     clock = Clock.System, //DEFAULT
  /*(28)!*/verificationTimeOffset = 5.minutes, //OPTIONAL, defaults shown
 )
+// --8<-- [end:makoto-config]

@@ -12,6 +12,7 @@ import io.ktor.http.*
 suspend fun stepbystep() {
 
 
+    // --8<-- [start:step-by-step-client-flow]
  /*(1)!*/val client = AttestationClient(ktorClient)
  /*(2)!*/val challenge = client.getChallenge(Url(ENDPOINT_CHALLENGE)).getOrThrow()
 
@@ -43,6 +44,7 @@ suspend fun stepbystep() {
             }
         }
     }
+    // --8<-- [end:step-by-step-client-flow]
 
 
 

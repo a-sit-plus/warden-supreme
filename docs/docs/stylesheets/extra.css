@@ -70,6 +70,10 @@
     font-size: .8rem;
 }
 
+.md-typeset hr {
+    border-color: var(--md-typeset-table-color);
+}
+
 .md-typeset code {
     font-size: 100%;
     font-feature-settings: "kern", "liga";

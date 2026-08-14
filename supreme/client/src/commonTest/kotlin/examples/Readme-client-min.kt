@@ -16,6 +16,7 @@ suspend fun main() {
 
 
 
+    // --8<-- [start:minimal-client-flow]
  /*(1)!*/val client = AttestationClient(ktorClient)
 
  /*(2)!*/when (val result = client.performAttestationFlow(ALIAS, Url(ENDPOINT_CHALLENGE)) { requested ->
@@ -38,6 +39,7 @@ suspend fun main() {
             }
         }
     }
+    // --8<-- [end:minimal-client-flow]
 
 
 

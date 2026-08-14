@@ -5,6 +5,7 @@ import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.parseHex
 
+// --8<-- [start:minimal-makoto-config]
 val makoto = Makoto(
     androidAttestationConfiguration = AndroidAttestationConfiguration(
      /*(1)!*/AndroidAttestationConfiguration.AppData(
@@ -19,3 +20,4 @@ val makoto = Makoto(
         )
     )
 )
+// --8<-- [end:minimal-makoto-config]

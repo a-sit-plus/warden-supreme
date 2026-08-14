@@ -6,6 +6,12 @@ Each SBOM describes one published Maven artifact, not just one Gradle project. F
 means there is usually one SBOM for the root `kotlinMultiplatform` publication and one SBOM for each concrete target
 publication such as `jvm`, `android`, `iosArm64`, or `iosSimulatorArm64`.
 
+!!! abstract "Machine-Readable Index"
+    A lightweight JSON index of every module/publication pair — with absolute Maven Central URLs for the JSON, XML, and
+    detached `.asc` signature files — is available at
+    [`sbom/index.json`]({{ config.site_url }}/sbom/index.json). See [Documentation Index](#documentation-index) below for
+    details.
+
 ## Formats
 
 - CycloneDX JSON

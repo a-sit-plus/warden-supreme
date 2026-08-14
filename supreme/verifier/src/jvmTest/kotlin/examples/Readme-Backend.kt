@@ -58,6 +58,7 @@ val caCert: X509Certificate = TODO()
 
 
 
+// --8<-- [start:backend-server]
 val server = embeddedServer(Netty, port = 8080) {
    /*(1)!*/install(ContentNegotiation) { json() }
 
@@ -88,3 +89,4 @@ val server = embeddedServer(Netty, port = 8080) {
         }
     }
 }.start(wait = false)
+// --8<-- [end:backend-server]

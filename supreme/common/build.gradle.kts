@@ -60,6 +60,7 @@ kotlin {
         jvmMain.dependencies {
             api(libs.yamltk)
             api(serialization("json"))
+            implementation(bouncycastle("bcpkix"))
         }
 
         jvmTest.dependencies {
@@ -71,9 +72,10 @@ kotlin {
     }
 }
 
-val javadocJar = setupDokka(
+setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/supreme",
 )
+val javadocRedirectJar = tasks.named<Jar>("javadocRedirectJar")
 
 dokka.dokkaSourceSets.named("commonMain") {
     // Dokka 2.2.0 crashes while translating context-parameter property getters: Kotlin/dokka#4519.
@@ -85,7 +87,7 @@ dokka.dokkaSourceSets.named("commonMain") {
 publishing {
     publications {
         withType<MavenPublication> {
-            artifact(javadocJar)
+            artifact(javadocRedirectJar)
             pom {
                 name.set("Warden Supreme Commons")
                 description.set("Attestation datatypes and utilities; part of the WARDEN Supreme integrated key attestation suite")
