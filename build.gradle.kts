@@ -14,6 +14,10 @@ plugins {
     alias(libs.plugins.agp) apply (false)
     alias(libs.plugins.sbombastic)
     alias(libs.plugins.pitest) apply false
+    alias(libs.plugins.composeMultiplatform) apply false
+    alias(libs.plugins.composeCompiler) apply false
+    alias(libs.plugins.ktor) apply false
+    alias(libs.plugins.androidApplication) apply false
 }
 
 val artifactVersion: String by extra

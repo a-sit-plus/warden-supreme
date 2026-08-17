@@ -1,0 +1,44 @@
+# SupremeConfiguration for the collector backend (attestation verifier).
+#
+# Android: software attestation (Android emulator can't do hardware attestation), matching
+# supreme/verifier/src/jvmTest/kotlin/main.kt:
+#   - packageName        = the collector launcher applicationId (:collector-android)
+#   - signerFingerprints = SHA-256 of the `key0` cert in supreme/client/keystore.p12
+#                          (the same keystore the launcher APK is signed with)
+#   - softwareTrustedRoots = the software-attestation root PUBLIC KEY of the test emulator image
+#                            (Pixel 4, API 30, aosp). If your emulator differs, replace this PEM
+#                            with your image's software-attestation root public key.
+#
+# iOS: App Attest in the sandbox/development environment. teamIdentifier is a placeholder (10 chars);
+# replace it with your real Apple Team ID when you build & deploy on a device. bundleIdentifier must
+# match the iosApp bundle id (see collector/iosApp/Configuration/Config.xcconfig).
+#
+# Verification uses real system time (clock defaults to `system`); the default verificationTimeOffset
+# leeway absorbs normal client/server clock skew.
+android:
+  applications:
+    - packageName: at.asitplus.warden.collector
+      signerFingerprints:
+        - 'a3:e5:5b:a9:45:7d:e2:90:0f:e8:63:03:a5:d5:56:c4:96:b6:91:af:ff:2c:0d:d5:04:88:be:d3:e4:00:cc:6b'
+  enableSoftwareAttestation: true
+  supremeParser: true
+  enforceFactoryProvisionedChainValidity: false
+ios:
+  applications:
+    - teamIdentifier: ABCDE12345
+      bundleIdentifier: at.asitplus.warden.collector.AttestationCollector
+      sandbox: true
+genericDeviceNameOID: 2.25.161066711659881035499644753588417948207
+defaultKeyConstraints:
+  algorithmParameters:
+    type: EC
+    value:
+      curve: 'P-256'
+      digests:
+        - SHA256
+      allowKeyAgreement: false
+      allowSigning: true
+  keyProtection: null
+dataAuthentication:
+  type: HASH
+  algorithm: SHA256
