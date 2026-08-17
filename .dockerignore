@@ -1,6 +1,4 @@
-.git/**
-!.git/HEAD
-!.git/index
+.git
 .gradle
 .gradle-user-home
 .idea
