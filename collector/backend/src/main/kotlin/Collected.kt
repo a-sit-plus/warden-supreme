@@ -202,8 +202,6 @@ class CollectorStore(private val dir: File) : AutoCloseable {
     }
 
     override fun close() {
-        archiveCommands.close()
-        archiveRequests.close()
         archiveScope.cancel()
     }
 
