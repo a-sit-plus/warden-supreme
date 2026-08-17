@@ -44,12 +44,12 @@ RUN --mount=type=cache,target=/root/.gradle \
 FROM eclipse-temurin:17-jre-jammy
 
 RUN useradd --system --uid 10001 collector \
-    && mkdir /attetations \
-    && chown collector /attetations
+    && mkdir /attestations \
+    && chown collector /attestations
 WORKDIR /app
 COPY --from=build /workspace/collector/backend/build/libs/collector-backend-all.jar app.jar
 
-ENV OUTPUT_DIR=/attetations
+ENV OUTPUT_DIR=/attestations
 EXPOSE 8080
 USER collector
 ENTRYPOINT ["java", "-jar", "app.jar"]
