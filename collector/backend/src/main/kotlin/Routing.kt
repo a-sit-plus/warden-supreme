@@ -21,6 +21,7 @@ import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.warden.collector.shared.DemoAttestation
+import io.ktor.http.ContentType
 import io.ktor.server.application.*
 import io.ktor.server.html.respondHtml
 import io.ktor.server.http.content.staticFiles
@@ -59,9 +60,6 @@ fun Application.configureRouting() {
     val store = CollectorStore(outputDir)
 
     routing {
-        get("/") {
-            call.respondText("Warden Supreme collector backend")
-        }
 
         // The app fetches a challenge here; the challenge embeds `attestEndpoint` so the app knows
         // where to submit its proof.
@@ -150,9 +148,16 @@ fun Application.configureRouting() {
         }
 
         // Human-readable report of everything collected so far.
-        get("/collected") {
+        get("/") {
             val records = store.list()
             call.respondHtml { renderCollectedReport(records) }
+        }
+
+        get("/favicon.png") {
+            call.respondResource("warden.png")
+        }
+        get("/logo.png") {
+            call.respondResource("supreme-horz.png")
         }
 
         // Downloads (chain.der, proof.der, debug-statement.json, attestation.json) are the files

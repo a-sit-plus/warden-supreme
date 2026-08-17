@@ -507,6 +507,18 @@ specifies key constraints:
 This really is it! If you've made it this far, you have successfully issued certificates to mobile clients that fulfil your policy.
 The `AttestationClient` doesn't even come with any configuration options.
 
+!!! note "Key backing: hardware-preferred, software-fallback"
+    On Android, the default client (`createAttestationProof` / `performAttestationFlow`) requests a **hardware-backed** key —
+    StrongBox where available, otherwise the TEE — but **transparently falls back to a software-backed key** when the platform
+    cannot provide hardware backing, most notably on **emulators**. This is deliberate: the same client code runs in
+    emulator-based tests without special-casing.
+
+    This is **not** a security weakness. The client only *produces* a proof; the **verifier** decides whether to accept it. A
+    software-backed key yields a software-level attestation, which the verifier **rejects by policy** unless you explicitly opt in
+    via `enableSoftwareAttestation` (see [Attestation Policy Configuration](#attestation-policy-configuration)). Keep software
+    attestation disabled in production, and hardware/StrongBox requirements are enforced server-side regardless of what the client
+    managed to create.
+
 ??? "Lower-level APIs"
     If you need more control, you can also manually perform individual steps, as shown below
     

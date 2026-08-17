@@ -17,7 +17,6 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import kotlin.io.encoding.Base64
 import kotlin.random.Random
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -119,16 +118,23 @@ class CollectorStore(private val dir: File) {
             verified = verified,
             securityLevel = extract { extension?.attestationSecurityLevel?.display() },
             osAndPatch = extract {
-                val version = hw?.osVersion?.getOrNull()?.let { "${it.major}.${it.minor}.${it.sub}" }
-                val patch = hw?.let { it.osPatchLevelLenient?.toString() }
+                val version = (hw?.osVersion?.getOrNull()
+                    ?: sw?.osVersion?.getOrNull())?.let { "${it.major}.${it.minor}.${it.sub}" }
+                val patch = hw?.osPatchLevelLenient?.toString() ?: sw?.osPatchLevelLenient?.toString()
                 listOfNotNull(version, patch).joinToString(" / ")
             },
-            avb = extract { hw?.rootOfTrust?.getOrNull()?.let { avbStatus(it) } },
+            avb = extract { (hw?.rootOfTrust?.getOrNull() ?: sw?.rootOfTrust?.getOrNull())?.let { avbStatus(it) } },
             packageName = extract { sw?.attestationApplicationId?.getOrNull()?.packageInfos?.firstOrNull()?.packageName },
             packageVersion = extract { sw?.attestationApplicationId?.getOrNull()?.packageInfos?.firstOrNull()?.version?.toString() },
             certValidityStart = extract { chain?.leaf?.tbsCertificate?.let { "${it.validFrom.instant}" } } ?: NA,
             certValidityEnd = extract { chain?.leaf?.tbsCertificate?.let { "${it.validUntil.instant}" } } ?: NA,
-            provisioning = extract { chain?.let { provisioning(it) } },
+            provisioning = extract {
+                if (extension?.keyMintSecurityLevel != AttestationKeyDescription.SecurityLevel.SOFTWARE) chain?.let {
+                    provisioning(
+                        it
+                    )
+                } else "SOFTWARE"
+            },
             createdOnDevice = extract { sw?.creationDateTime?.getOrNull()?.timestamp?.toString() },
             attestationJson = attestationJson,
             hasChain = hasChain,
@@ -186,6 +192,8 @@ private const val NA = "—"
 private val reportCss = """
   :root { color-scheme: dark; }
   body { margin: 0; background: #0D1117; color: #F0F6FC; font-family: -apple-system, Segoe UI, Roboto, sans-serif; }
+  /* Static night sky behind everything: fixed to the viewport, painted once, non-interactive. */
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
   header { padding: 20px 24px; border-bottom: 1px solid #243441; }
   h1 { margin: 0; font-size: 3.25rem; color: #01f9fe; font-weight: 600; display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
   h1 > span { align-self: center; white-space: nowrap; line-height: 1; padding-left: 1rem; }
@@ -209,6 +217,9 @@ private val reportCss = """
   td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; color: #C9D6E2; }
   td.ok { color: #2FB170; font-weight: 600; }
   td.bad { color: #E6695B; }
+  /* Auto table-layout squeezes the only wrappable column to its longest word; a fixed-width inner
+     block box the cell can't shrink below is the reliable fix. */
+  td.result div.rw { width: 300px; white-space: normal; overflow-wrap: normal; word-break: normal; }
   a { color: #00C1FF; }
   .empty { padding: 24px; color: #9FB2C2; }
   td.att { vertical-align: top; max-width: 640px; }
@@ -222,6 +233,8 @@ private val reportCss = """
   .tree .n { color: #E6695B; }
   .tree .z { color: #9FB2C2; }
   .jsonlink { display: block; margin-bottom: 6px; font-size: .72rem; }
+  footer { padding: 16px 24px 28px; border-top: 1px solid #243441; color: #9FB2C2; font-size: .8rem; }
+  footer a { color: #00C1FF; }
 """.trimIndent()
 
 private val columns = listOf(
@@ -237,22 +250,38 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
         meta(name = "viewport", content = "width=device-width, initial-scale=1")
         title { +"Warden Supreme — Collected Attestations" }
         style { unsafe { +reportCss } }
+        link {
+            rel = "icon"
+            href = "/favicon.png"
+            type = "image/png"
+            sizes = "any"
+        }
     }
     body {
+        canvas { id = "sky" }
         header {
             h1 {
                 img(
                     alt = "Warden Supreme",
-                    src = "data:image/png;base64, " + Base64.encode(
-                        ClassLoader.getSystemResourceAsStream("supreme-horz.png").readAllBytes()
-                    )
+                    src = "/logo.png"
                 )
                 span {
                     +"Collected Attestations"
                 }
             }
             div("count") { +"${records.size} collected" }
+
+            span {
+                a {
+                    href = "https://a-sit-plus.github.io"
+                    target = "_blank"
+                    +"Learn more"
+                }
+            }
         }
+
+
+
         if (records.isEmpty()) {
             p("empty") { +"No attestations collected yet." }
         } else div("scroll") {
@@ -261,17 +290,62 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                 tbody { records.forEach { (id, record) -> reportRow(id, record) } }
             }
         }
+        footer {
+            +"© 2026 A-SIT Plus · "
+            a {
+                href = "https://plus.a-sit.at/imprint.html"
+                target = "_blank"
+                +"Imprint"
+            }
+        }
+        script { unsafe { +starfieldJs } }
     }
 }
+
+/**
+ * Draws a static starfield once onto `#sky` (repainted only on resize), matching the app's night sky:
+ * cyan-white dots with brightness-varied radius/opacity. No animation — it is just a backdrop.
+ */
+private val starfieldJs = """
+  (function () {
+    var c = document.getElementById('sky'), x = c.getContext('2d'), stars = [];
+    function build() {
+      var w = c.width = window.innerWidth, h = c.height = window.innerHeight;
+      var n = Math.round(w * h / 5000);
+      stars = [];
+      for (var i = 0; i < n; i++) {
+        var b = Math.random();
+        stars.push({ x: Math.random() * w, y: Math.random() * h, r: 0.3 + 0.6 * b, a: 0.2 + 0.7 * b });
+      }
+      draw();
+    }
+    function draw() {
+      x.clearRect(0, 0, c.width, c.height);
+      for (var i = 0; i < stars.length; i++) {
+        var s = stars[i];
+        x.beginPath();
+        x.fillStyle = 'rgba(223,246,255,' + s.a.toFixed(3) + ')';
+        x.arc(s.x, s.y, s.r, 0, 6.2832);
+        x.fill();
+      }
+    }
+    window.addEventListener('resize', build);
+    build();
+  })();
+""".trimIndent()
 
 private fun TBODY.reportRow(id: String, r: CollectedRecord) = tr {
     td { +(r.deviceName ?: NA) }
     td { +(r.securityLevel ?: NA) }
-    td(classes = if (r.verified) "ok" else "bad") { +r.result }
+    td(classes = "result " + if (r.verified) "ok" else "bad") {
+        div("rw") {
+            attributes["title"] = r.result; +r.result
+        }
+    }
     td { +(r.osAndPatch ?: NA) }
     td { +(r.avb ?: NA) }
     td { +((r.packageName ?: NA) + ", v" + (r.packageVersion ?: NA)) }
-    td("mono") {  +(r.certValidityStart); br {};  +(r.certValidityEnd) }
+    td("mono") { +(r.certValidityStart); br {}; +(r.certValidityEnd) }
     td { +(r.provisioning ?: NA) }
     td("mono") { +(r.createdOnDevice ?: NA) }
     td("mono") { +Instant.fromEpochMilliseconds(r.submittedAtEpochMs).toString() }

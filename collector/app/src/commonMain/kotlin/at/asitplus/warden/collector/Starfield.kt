@@ -95,15 +95,17 @@ fun StarfieldBackground(
                 val px = cx + (star.x / star.pz) * scale
                 val py = cy + (star.y / star.pz) * scale
                 drawLine(
-                    color = streakColor.copy(alpha = (0.25f + 0.75f * brightness) * (0.4f + 0.6f * sp)),
+                    // Brighter trails during warp (alpha ramps toward full as speed/brightness rise).
+                    color = streakColor.copy(alpha = ((0.55f + 0.45f * brightness) * (0.65f + 0.35f * sp)).coerceAtMost(1f)),
                     start = Offset(px, py),
                     end = Offset(sx, sy),
-                    strokeWidth = 1f + 2.5f * brightness,
+                    strokeWidth = 2f + 3f * brightness,
                 )
             } else {
                 drawCircle(
                     color = starColor.copy(alpha = 0.2f + 0.7f * brightness),
-                    radius = 0.6f + 1.7f * brightness,
+                    // Twice the diameter of the previous static field.
+                    radius = 1.2f + 3.4f * brightness,
                     center = Offset(sx, sy),
                 )
             }
