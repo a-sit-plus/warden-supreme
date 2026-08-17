@@ -8,6 +8,8 @@ import platform.UIKit.UIApplication
 @Composable
 actual fun rememberPlatformActions(): PlatformActions = remember {
     object : PlatformActions {
+        override val appVersionCode: Long = Long.MAX_VALUE
+
         override fun toast(message: String) {
             // iOS has no toast; the iOS target here is build-only.
         }

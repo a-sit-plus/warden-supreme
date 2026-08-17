@@ -1,0 +1,54 @@
+name: Build Collector APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      keystore-path:
+        description: Keystore path relative to the repository root
+        required: true
+        default: collector/androidApp/signer.p12
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      COLLECTOR_KEYSTORE_PATH: ${{ inputs.keystore-path }}
+      COLLECTOR_KEYSTORE_PASSWORD: ${{ secrets.COLLECTOR_KEYSTORE_PASSWORD }}
+      COLLECTOR_KEY_ALIAS: ${{ secrets.COLLECTOR_KEY_ALIAS }}
+      COLLECTOR_KEY_PASSWORD: ${{ secrets.COLLECTOR_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Build signed APK
+        run: |
+          : "${COLLECTOR_KEYSTORE_PASSWORD:?Missing COLLECTOR_KEYSTORE_PASSWORD secret}"
+          : "${COLLECTOR_KEY_ALIAS:?Missing COLLECTOR_KEY_ALIAS secret}"
+          : "${COLLECTOR_KEY_PASSWORD:?Missing COLLECTOR_KEY_PASSWORD secret}"
+          test -f "$COLLECTOR_KEYSTORE_PATH"
+          ./gradlew :collector-android:assembleRelease
+
+      - name: Publish APK release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp collector/androidApp/build/outputs/apk/release/collector-android-release.apk collector.apk
+          version_code="$(sed -n 's/^collector.versionCode=//p' gradle.properties)"
+          tag="collector-v${version_code}"
+          gh release create "$tag" collector.apk \
+            --target "$GITHUB_SHA" \
+            --title "Collector v${version_code}" \
+            --notes "Signed collector APK from ${GITHUB_SHA}." \
+            --latest
+          echo "### [Download signed collector APK](https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/collector.apk)" >> "$GITHUB_STEP_SUMMARY"

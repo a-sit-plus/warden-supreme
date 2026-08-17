@@ -29,14 +29,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +64,8 @@ import at.asitplus.warden.collector.generated.resources.Res
 import at.asitplus.warden.collector.generated.resources.warden
 import at.asitplus.warden.collector.shared.DemoAttestation
 import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Url
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -80,14 +85,47 @@ fun App() {
         val scope = rememberCoroutineScope()
         val actions = rememberPlatformActions()
         val endpointStore = rememberEndpointStore()
-        val defaultEndpoint = "http://10.0.2.2:8080" + DemoAttestation.CHALLENGE_PATH
+        val defaultEndpoint = "http://10.0.2.2:8080"
         // Persisted across launches; falls back to the emulator default.
         var endpoint by remember { mutableStateOf(endpointStore.get() ?: defaultEndpoint) }
-        var status by remember { mutableStateOf("Enter the backend challenge URL and press Attest.") }
+        var status by remember { mutableStateOf("Enter the backend domain and press Attest.") }
         var attestationJson by remember { mutableStateOf<JsonElement?>(null) }
         var debugJson by remember { mutableStateOf<JsonElement?>(null) }
         var rawDetail by remember { mutableStateOf<String?>(null) }
         var busy by remember { mutableStateOf(false) }
+        var update by remember { mutableStateOf<Pair<String, Long>?>(null) }
+
+        LaunchedEffect(endpoint) {
+            delay(500)
+            val host = backendHost(endpoint) ?: return@LaunchedEffect
+            catchingUnwrapped {
+                val client = HttpClient()
+                try {
+                    client.get(host + DemoAttestation.VERSION_PATH).bodyAsText().trim().toLong()
+                } finally {
+                    client.close()
+                }
+            }.getOrNull()?.takeIf { it > actions.appVersionCode }?.let {
+                update = host to it
+            }
+        }
+
+        update?.let { (host, version) ->
+            AlertDialog(
+                onDismissRequest = { update = null },
+                title = { Text("Update available") },
+                text = { Text("Version $version is available. Install it now?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        update = null
+                        actions.openUrl(host + DemoAttestation.DOWNLOAD_PATH)
+                    }) { Text("Update") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { update = null }) { Text("Ignore") }
+                },
+            )
+        }
 
         Box(
             modifier = Modifier
@@ -113,7 +151,7 @@ fun App() {
                 OutlinedTextField(
                     value = endpoint,
                     onValueChange = { endpoint = it; endpointStore.set(it) },
-                    label = { Text("Backend challenge URL") },
+                    label = { Text("Backend domain") },
                     singleLine = true,
                     enabled = !busy,
                     trailingIcon = {
@@ -143,7 +181,8 @@ fun App() {
                                 withContext(Dispatchers.Default) {
                                     PlatformSigningProvider.deleteSigningKey(ALIAS)
                                     val client = AttestationClient(HttpClient())
-                                    val challengeUrl = Url(endpoint)
+                                    val host = backendHost(endpoint) ?: error("Invalid backend domain")
+                                    val challengeUrl = Url(host + DemoAttestation.CHALLENGE_PATH)
                                     val challenge = client.getChallenge(challengeUrl).getOrThrow()
                                     val proof = challenge.createAttestationProof(ALIAS) { emptyList() }.getOrThrow()
                                     // Submit the proof to the SAME origin the challenge came from — not the
@@ -275,6 +314,14 @@ fun App() {
         }
     }
 }
+
+internal fun backendHost(value: String): String? = catchingUnwrapped {
+    val host = value.trim().trimEnd('/').let { if ("://" in it) it else "https://$it" }
+    val url = Url(host)
+    require(url.protocol.name == "http" || url.protocol.name == "https")
+    require((url.encodedPath.isEmpty() || url.encodedPath == "/") && url.parameters.isEmpty())
+    host
+}.getOrNull()
 
 @Composable
 private fun WardenLogo(modifier: Modifier, padding: Dp = 24.dp, onClick: () -> Unit = {}) {

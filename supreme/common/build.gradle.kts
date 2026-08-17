@@ -60,7 +60,6 @@ kotlin {
         jvmMain.dependencies {
             api(libs.yamltk)
             api(serialization("json"))
-            implementation(bouncycastle("bcpkix"))
         }
 
         jvmTest.dependencies {

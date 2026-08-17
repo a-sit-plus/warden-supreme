@@ -12,6 +12,9 @@ actual fun rememberPlatformActions(): PlatformActions {
     val context = LocalContext.current
     return remember(context) {
         object : PlatformActions {
+            override val appVersionCode: Long =
+                context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode
+
             override fun toast(message: String) {
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             }

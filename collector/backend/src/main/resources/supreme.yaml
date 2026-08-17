@@ -19,7 +19,7 @@ android:
   applications:
     - packageName: at.asitplus.warden.collector
       signerFingerprints:
-        - 'a3:e5:5b:a9:45:7d:e2:90:0f:e8:63:03:a5:d5:56:c4:96:b6:91:af:ff:2c:0d:d5:04:88:be:d3:e4:00:cc:6b'
+        - '1b:a6:4e:45:74:00:4b:9f:ab:2b:07:3f:16:fb:3b:0d:36:bb:1c:2f:45:7c:a2:f0:3f:5a:28:00:93:7c:1d:da'
   enableSoftwareAttestation: true
   supremeParser: true
   enforceFactoryProvisionedChainValidity: false

@@ -1,5 +1,6 @@
 import at.asitplus.gradle.datetime
 import at.asitplus.gradle.ktor
+import org.gradle.language.jvm.tasks.ProcessResources
 
 plugins {
     kotlin("jvm")
@@ -32,4 +33,14 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(ktor("server-test-host"))
+}
+
+tasks.named<ProcessResources>("processResources") {
+    dependsOn(":collector-android:assembleRelease")
+    from(project(":collector-android").layout.buildDirectory.file("outputs/apk/release/collector-android-release.apk")) {
+        rename { "collector.apk" }
+    }
+    filesMatching("collector-version.txt") {
+        expand("collectorVersionCode" to providers.gradleProperty("collector.versionCode").get())
+    }
 }

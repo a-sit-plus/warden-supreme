@@ -53,13 +53,24 @@ private fun Application.loadVerifier(): AttestationVerifier {
 
 fun Application.configureRouting() {
     val verifier = loadVerifier()
-    val publicBaseUrl =
-        environment.config.propertyOrNull("collector.publicBaseUrl")?.getString() ?: "http://10.0.2.2:8080"
+    val publicBaseUrl = System.getenv("BASE_URL")?.ifBlank { null }
+        ?: environment.config.propertyOrNull("collector.publicBaseUrl")?.getString()
+        ?: "http://10.0.2.2:8080"
     val attestEndpoint = publicBaseUrl.trimEnd('/') + DemoAttestation.ATTEST_PATH
-    val outputDir = File(environment.config.propertyOrNull("collector.outputDir")?.getString() ?: "./collected-proofs")
+    val outputDir = File(
+        System.getenv("OUTPUT_DIR")?.ifBlank { null }
+            ?: environment.config.propertyOrNull("collector.outputDir")?.getString()
+            ?: "./collected-proofs"
+    )
     val store = CollectorStore(outputDir)
+    val collectorVersionCode = this::class.java.classLoader.getResource("collector-version.txt")
+        ?.readText()?.trim() ?: error("collector-version.txt not found on the classpath")
 
     routing {
+
+        get("/health") {
+            call.respondText("OK")
+        }
 
         // The app fetches a challenge here; the challenge embeds `attestEndpoint` so the app knows
         // where to submit its proof.
@@ -70,6 +81,10 @@ fun Application.configureRouting() {
                     timeZone = TimeZone.currentSystemDefault(),
                 )
             )
+        }
+
+        get(DemoAttestation.VERSION_PATH) {
+            call.respondText(collectorVersionCode)
         }
 
         // The app submits the DER-encoded proof (octet-stream). We verify, persist the collected
@@ -158,6 +173,15 @@ fun Application.configureRouting() {
         }
         get("/logo.png") {
             call.respondResource("supreme-horz.png")
+        }
+        get("/collector.css") {
+            call.respondResource("collector.css")
+        }
+        get(DemoAttestation.DOWNLOAD_PATH) {
+            call.respondRedirect(
+                "https://github.com/a-sit-plus/warden-supreme/releases/download/" +
+                    "collector-v$collectorVersionCode/collector.apk"
+            )
         }
 
         // Downloads (chain.der, proof.der, debug-statement.json, attestation.json) are the files

@@ -31,17 +31,19 @@ android {
         // minSdk matches the repo-wide android.minSdk (30) so it satisfies :collector-app.
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
+        versionCode = providers.gradleProperty("collector.versionCode").get().toInt()
         versionName = "1.0"
     }
     signingConfigs {
         // Sign with the SAME keystore as the supreme-client android test APK so the installed app's
         // signing-cert digest matches `signerFingerprints` in the backend's supreme.yaml.
         create("attest") {
-            storeFile = rootProject.file("supreme/client/keystore.p12")
-            storePassword = "123456"
-            keyAlias = "key0"
-            keyPassword = "123456"
+            storeFile = rootProject.file(
+                System.getenv("COLLECTOR_KEYSTORE_PATH")?.ifBlank { null } ?: "supreme/client/keystore.p12"
+            )
+            storePassword = System.getenv("COLLECTOR_KEYSTORE_PASSWORD") ?: "123456"
+            keyAlias = System.getenv("COLLECTOR_KEY_ALIAS") ?: "key0"
+            keyPassword = System.getenv("COLLECTOR_KEY_PASSWORD") ?: "123456"
             storeType = "PKCS12"
         }
     }

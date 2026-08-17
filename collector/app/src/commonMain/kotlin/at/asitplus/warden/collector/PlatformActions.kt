@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 
 /** Platform integrations that have no common Compose equivalent. */
 interface PlatformActions {
+    /** Version code of the installed app, or a sentinel on platforms without Android packages. */
+    val appVersionCode: Long
+
     /** Shows a short, transient message (a real Toast on Android; no-op where unsupported). */
     fun toast(message: String)
 

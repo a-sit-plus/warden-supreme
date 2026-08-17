@@ -1,0 +1,12 @@
+.git
+.gradle
+.gradle-user-home
+.idea
+.kotlin
+**/build
+collected-proofs
+debug-statements.txt
+debug_statements.csv
+docs
+local.properties
+.DS_Store
