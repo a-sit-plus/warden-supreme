@@ -30,6 +30,13 @@ RUN git init --quiet dependencies/android-key-attestation \
 
 FROM sources AS build
 RUN --mount=type=cache,target=/root/.gradle \
+    if [ -f .env ]; then \
+        while IFS='=' read -r key value; do \
+            case "$key" in \
+                BASE_URL|COLLECTOR_KEYSTORE_PATH|COLLECTOR_KEYSTORE_PASSWORD|COLLECTOR_KEY_ALIAS|COLLECTOR_KEY_PASSWORD) export "$key=$value" ;; \
+            esac; \
+        done < .env; \
+    fi; \
     ./gradlew --no-daemon --max-workers=2 \
     -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=768m" \
     :collector-backend:buildFatJar
