@@ -178,10 +178,7 @@ fun Application.configureRouting() {
             call.respondResource("collector.css")
         }
         get(DemoAttestation.DOWNLOAD_PATH) {
-            call.respondRedirect(
-                "https://github.com/a-sit-plus/warden-supreme/releases/download/" +
-                    "collector-v$collectorVersionCode/collector.apk"
-            )
+            call.respondResource("collector.apk")
         }
 
         // Downloads (chain.der, proof.der, debug-statement.json, attestation.json) are the files

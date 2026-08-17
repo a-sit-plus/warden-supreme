@@ -11,6 +11,9 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        <meta-data
+            android:name="at.asitplus.warden.collector.BASE_URL"
+            android:value="${collectorBaseUrl}" />
         <activity
             android:exported="true"
             android:name=".MainActivity">

@@ -18,6 +18,19 @@ application {
     mainClass = "io.ktor.server.cio.EngineMain"
 }
 
+val collectorVersionCode = providers.gradleProperty("collector.versionCode")
+val generatedCollectorVersion = layout.buildDirectory.file("generated/collector-resources/collector-version.txt")
+val generateCollectorVersion = tasks.register("generateCollectorVersion") {
+    inputs.property("collectorVersionCode", collectorVersionCode)
+    outputs.file(generatedCollectorVersion)
+    doLast {
+        generatedCollectorVersion.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(collectorVersionCode.get())
+        }
+    }
+}
+
 dependencies {
     implementation(project(":collector-shared"))
     implementation(project(":supreme-verifier"))
@@ -35,12 +48,14 @@ dependencies {
     testImplementation(ktor("server-test-host"))
 }
 
+sourceSets.main {
+    resources.exclude("collector-version.txt", "collector-android-release.apk")
+}
+
 tasks.named<ProcessResources>("processResources") {
-    dependsOn(":collector-android:assembleRelease")
+    dependsOn(":collector-android:assembleRelease", generateCollectorVersion)
     from(project(":collector-android").layout.buildDirectory.file("outputs/apk/release/collector-android-release.apk")) {
         rename { "collector.apk" }
     }
-    filesMatching("collector-version.txt") {
-        expand("collectorVersionCode" to providers.gradleProperty("collector.versionCode").get())
-    }
+    from(generatedCollectorVersion)
 }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 
 /** Tiny persistent store for the backend URL, so it survives app restarts. */
 interface EndpointStore {
+    val defaultEndpoint: String
     fun get(): String?
     fun set(value: String)
 }

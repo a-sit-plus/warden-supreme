@@ -8,6 +8,7 @@ import platform.Foundation.NSUserDefaults
 actual fun rememberEndpointStore(): EndpointStore = remember {
     val defaults = NSUserDefaults.standardUserDefaults
     object : EndpointStore {
+        override val defaultEndpoint: String = "https://attestation-collector.sliplane.app"
         override fun get(): String? = defaults.stringForKey("endpoint")
         override fun set(value: String) = defaults.setObject(value, forKey = "endpoint")
     }

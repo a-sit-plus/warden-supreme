@@ -1,7 +1,6 @@
 package at.asitplus.warden
 
 import io.ktor.client.request.get
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.config.MapApplicationConfig
@@ -31,12 +30,7 @@ class ServerTest {
                 assertEquals(HttpStatusCode.OK, client.get("/collector.css").status)
                 val version = client.get(DemoAttestation.VERSION_PATH).bodyAsText()
                 assertTrue(version.toLong() > 0)
-                val download = createClient { followRedirects = false }.get(DemoAttestation.DOWNLOAD_PATH)
-                assertEquals(HttpStatusCode.Found, download.status)
-                assertEquals(
-                    "https://github.com/a-sit-plus/warden-supreme/releases/download/collector-v$version/collector.apk",
-                    download.headers[HttpHeaders.Location],
-                )
+                assertEquals(HttpStatusCode.OK, client.get(DemoAttestation.DOWNLOAD_PATH).status)
             }
         } finally {
             outputDir.deleteRecursively()

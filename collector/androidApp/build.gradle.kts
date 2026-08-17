@@ -28,6 +28,8 @@ android {
 
     defaultConfig {
         applicationId = "at.asitplus.warden.collector"
+        manifestPlaceholders["collectorBaseUrl"] =
+            System.getenv("BASE_URL")?.ifBlank { null } ?: "https://attestation-collector.sliplane.app"
         // minSdk matches the repo-wide android.minSdk (30) so it satisfies :collector-app.
         minSdk = 30
         targetSdk = 36

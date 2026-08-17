@@ -18,7 +18,7 @@ object DemoAttestation {
     /** GET endpoint exposing the version code of the bundled Android app. */
     const val VERSION_PATH: String = "/api/v1/version"
 
-    /** Backend path redirecting to the matching versioned GitHub Release APK. */
+    /** Download path of the release APK embedded in the backend. */
     const val DOWNLOAD_PATH: String = "/collector.apk"
 
     /** POST endpoint the app submits the attestation proof to (embedded in the challenge by the backend). */
