@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM ghcr.io/cirruslabs/android-sdk:36 AS build
 
 RUN apt-get update \
@@ -5,7 +6,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /workspace
 COPY . .
-RUN ./gradlew --no-daemon :collector-backend:buildFatJar
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew --no-daemon --max-workers=2 \
+    -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=768m" \
+    :collector-backend:buildFatJar
 
 FROM eclipse-temurin:17-jre-jammy
 
