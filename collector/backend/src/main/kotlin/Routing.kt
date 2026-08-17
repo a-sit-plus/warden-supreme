@@ -21,7 +21,6 @@ import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.warden.collector.shared.DemoAttestation
-import io.ktor.http.ContentType
 import io.ktor.server.application.*
 import io.ktor.server.html.respondHtml
 import io.ktor.server.http.content.staticFiles
@@ -54,6 +53,7 @@ private fun Application.loadVerifier(): AttestationVerifier {
 fun Application.configureRouting() {
     val verifier = loadVerifier()
     val publicBaseUrl = System.getenv("BASE_URL")?.ifBlank { null }
+        ?: System.getenv("SLIPLANE_DOMAIN")?.ifBlank { null }?.let { "https://$it" }
         ?: environment.config.propertyOrNull("collector.publicBaseUrl")?.getString()
         ?: "http://10.0.2.2:8080"
     val attestEndpoint = publicBaseUrl.trimEnd('/') + DemoAttestation.ATTEST_PATH

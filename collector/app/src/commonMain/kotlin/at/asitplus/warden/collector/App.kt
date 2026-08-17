@@ -85,7 +85,7 @@ fun App() {
         val scope = rememberCoroutineScope()
         val actions = rememberPlatformActions()
         val endpointStore = rememberEndpointStore()
-        val defaultEndpoint = "http://10.0.2.2:8080"
+        val defaultEndpoint = "https://attestation-collector.sliplane.app"
         // Persisted across launches; falls back to the emulator default.
         var endpoint by remember { mutableStateOf(endpointStore.get() ?: defaultEndpoint) }
         var status by remember { mutableStateOf("Enter the backend domain and press Attest.") }

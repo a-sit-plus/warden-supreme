@@ -6,6 +6,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /workspace
 COPY . .
+RUN mkdir -p .git/objects .git/refs \
+    && git config core.repositoryformatversion 0 \
+    && git config remote.origin.url https://github.com/a-sit-plus/warden-supreme.git \
+    && git submodule update --init --recursive --force \
+    && git submodule foreach --recursive 'test -z "$(git status --porcelain)"'
 RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew --no-daemon --max-workers=2 \
     -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=768m" \
