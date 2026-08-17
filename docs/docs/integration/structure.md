@@ -1,11 +1,12 @@
 # Project Structure
 
-The repository contains four module groups:
+The repository contains five module groups:
 
 1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2.
 2. `/serverside` contains the server-side foundations with all the low-level logic to verify attestations.
 3. `/utils` contains unpublished utility helpers aimed at aiding analysis of attestation errors. These are meant to be used inside an IDE with an attached debugger.
 4. `/dependencies` contains external dependencies that are not published to Maven Central or anywhere else and are thus compiled into group&nbsp;2 or used for testing.
+5. `/collector` contains the source code for the [Attestation Collector](../collector.md).
 
 !!! tip "Quick navigation"
     - For the recommended end-to-end flow (mobile client + verifier + unified wire format), start at the [Integration Guide](supreme.md).
@@ -58,3 +59,12 @@ for remotely establishing trust in Android devices. These artefacts are unavaila
 Supreme includes them as Git submodules and compiles them into _Warden roboto_.
 
 The group also contains an HTTP proxy used for testing. It is not included in release artefacts.
+
+## /collector
+
+This group contains the source code for the [Attestation Collector](../collector.md): a quick-and-dirty Compose
+Multiplatform (CMP) app and its Ktor-based back-end. The collector makes it easy to produce and inspect an Android
+attestation without first integrating Warden Supreme into another app and back end.
+
+The collector is currently Android-only because iOS apps cannot be deployed outside Apple's App Store. iOS app
+sources exist in the repository, but the collector's business logic is currently implemented only for Android.
