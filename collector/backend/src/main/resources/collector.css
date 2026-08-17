@@ -27,7 +27,7 @@ td.ok { color: #2FB170; font-weight: 600; }
 td.bad { color: #E6695B; }
 /* Auto table-layout squeezes the only wrappable column to its longest word; a fixed-width inner
    block box the cell can't shrink below is the reliable fix. */
-td.result div.rw { width: 300px; white-space: normal; overflow-wrap: normal; word-break: normal; }
+td.result.bad div.rw { width: 300px; white-space: normal; overflow-wrap: normal; word-break: normal; }
 a { color: #00C1FF; }
 .empty { padding: 24px; color: #9FB2C2; }
 td.att { vertical-align: top; max-width: 640px; }
