@@ -1,13 +1,9 @@
 # SupremeConfiguration for the collector backend (attestation verifier).
 #
-# Android: software attestation (Android emulator can't do hardware attestation), matching
-# supreme/verifier/src/jvmTest/kotlin/main.kt:
+# Android uses Warden Supreme's default trust policy:
 #   - packageName        = the collector launcher applicationId (:collector-android)
-#   - signerFingerprints = SHA-256 of the `key0` cert in supreme/client/keystore.p12
-#                          (the same keystore the launcher APK is signed with)
-#   - softwareTrustedRoots = the software-attestation root PUBLIC KEY of the test emulator image
-#                            (Pixel 4, API 30, aosp). If your emulator differs, replace this PEM
-#                            with your image's software-attestation root public key.
+#   - signerFingerprints = SHA-256 of the collector APK's signing certificate
+#   - hardware attestation, a locked bootloader, and vendor-managed OEM verified boot are required
 #
 # iOS: App Attest in the sandbox/development environment. teamIdentifier is a placeholder (10 chars);
 # replace it with your real Apple Team ID when you build & deploy on a device. bundleIdentifier must
@@ -20,9 +16,7 @@ android:
     - packageName: at.asitplus.warden.collector
       signerFingerprints:
         - '1b:a6:4e:45:74:00:4b:9f:ab:2b:07:3f:16:fb:3b:0d:36:bb:1c:2f:45:7c:a2:f0:3f:5a:28:00:93:7c:1d:da'
-  enableSoftwareAttestation: true
   supremeParser: true
-  enforceFactoryProvisionedChainValidity: false
 ios:
   applications:
     - teamIdentifier: ABCDE12345

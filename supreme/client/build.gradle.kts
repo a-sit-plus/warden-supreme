@@ -48,7 +48,6 @@ kotlin {
             resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
             resources.excludes.add("META-INF/licenses/*")
             resources.excludes.add("META-INF/LICENSE.md")
-            resources.excludes.add("META-INF/LICENSE.md")
         }
     }
 

@@ -162,6 +162,43 @@
     text-align: center;
 }
 
+.collector-launch {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 1rem 0;
+}
+
+.collector-launch figure {
+    margin: 0;
+    text-align: center;
+    width: 9rem;
+}
+
+.collector-launch figure > .md-button {
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    height: 9rem;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    width: 9rem;
+}
+
+.collector-launch img {
+    display: block;
+    width: 9rem;
+    height: 9rem;
+}
+
+@media (max-width: 40rem) {
+    .collector-launch {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
 /* Hide the first (top-level) group label inside the active tab's sidebar */
 @media (min-width: 76.25em) {
     .md-nav--primary > .md-nav__list > .md-nav__item > .md-nav__link {

@@ -13,20 +13,29 @@ import at.asitplus.signum.indispensable.pki.leaf
 import at.asitplus.warden.collector.shared.DemoAttestation
 import at.asitplus.warden.collector.shared.androidAttestationJson
 import kotlinx.html.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.selects.select
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
+import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.random.Random
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 private val json = Json { ignoreUnknownKeys = true }
 private val prettyJson = Json { prettyPrint = true }
+private val logger = LoggerFactory.getLogger(CollectorStore::class.java)
+const val DEBUG_STATEMENTS_ARCHIVE_PATH = "/debug-statements.zip"
 
 /**
  * One collected attestation, fully pre-extracted at collection time so the report never re-parses.
@@ -56,10 +65,21 @@ data class CollectedRecord(
 )
 
 /** Filesystem store: one directory per collected attestation under [dir]. */
-class CollectorStore(private val dir: File) {
+class CollectorStore(private val dir: File) : AutoCloseable {
+    private sealed interface ArchiveCommand {
+        data object StatementsChanged : ArchiveCommand
+        data class Get(val result: CompletableDeferred<File>) : ArchiveCommand
+    }
+
+    private val debugStatementsArchive = File(dir, DEBUG_STATEMENTS_ARCHIVE_PATH.removePrefix("/"))
+    private val archiveCommands = Channel<ArchiveCommand>(Channel.UNLIMITED)
+    private val archiveRequests = Channel<Unit>(Channel.CONFLATED)
+    private val archiveScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     init {
         dir.mkdirs()
         runBlocking { replayStoredStatements() }
+        archiveScope.launch { runArchiveWorker() }
     }
 
     /**
@@ -76,20 +96,115 @@ class CollectorStore(private val dir: File) {
     ): String {
         val id = "$submittedAtEpochMs-${Random.nextInt(0x10000, 0x100000).toString(16)}"
         val recordDir = File(dir, id).apply { mkdirs() }
+        try {
+            File(recordDir, "proof.der").writeBytes(proofBytes)
 
-        File(recordDir, "proof.der").writeBytes(proofBytes)
+            val debugStatement = statement?.let(WardenDebugAttestationStatement::deserializeCompact)
+            debugStatement?.let { File(recordDir, "debug-statement.json").writeText(it.serialize()) }
+            writeDerivedFiles(
+                recordDir = recordDir,
+                submittedAtEpochMs = submittedAtEpochMs,
+                deviceName = deviceName,
+                result = result,
+                verified = verified,
+                statement = debugStatement,
+            )
+            if (debugStatement != null) {
+                archiveCommands.trySend(ArchiveCommand.StatementsChanged)
+            }
+            logger.info("Stored attestation proof; success=true; path={}", recordDir.absolutePath)
+            return id
+        } catch (exception: Exception) {
+            logger.info(
+                "Stored attestation proof; success=false; path={}; reason={}",
+                recordDir.absolutePath,
+                exception.message,
+            )
+            throw exception
+        }
+    }
 
-        val debugStatement = statement?.let(WardenDebugAttestationStatement::deserializeCompact)
-        debugStatement?.let { File(recordDir, "debug-statement.json").writeText(it.serialize()) }
-        writeDerivedFiles(
-            recordDir = recordDir,
-            submittedAtEpochMs = submittedAtEpochMs,
-            deviceName = deviceName,
-            result = result,
-            verified = verified,
-            statement = debugStatement,
-        )
-        return id
+    /** Requests one ZIP build; concurrent requests await the already-running build instead of scheduling another. */
+    suspend fun debugStatementsArchive(): File {
+        val result = CompletableDeferred<File>()
+        archiveCommands.send(ArchiveCommand.Get(result))
+        return result.await()
+    }
+
+    private suspend fun runArchiveWorker() {
+        var dirty = true
+        val waiters = mutableListOf<CompletableDeferred<File>>()
+        try {
+            while (currentCoroutineContext().isActive) {
+                select<Unit> {
+                    archiveCommands.onReceive { command ->
+                        when (command) {
+                            ArchiveCommand.StatementsChanged -> dirty = true
+                            is ArchiveCommand.Get -> {
+                                if (!dirty && debugStatementsArchive.isFile) {
+                                    command.result.complete(debugStatementsArchive)
+                                } else {
+                                    waiters += command.result
+                                    archiveRequests.trySend(Unit)
+                                }
+                            }
+                        }
+                    }
+                    archiveRequests.onReceive {
+                        runCatching { buildDebugStatementsArchive() }
+                            .onSuccess { archive ->
+                                dirty = false
+                                waiters.forEach { it.complete(archive) }
+                            }
+                            .onFailure { failure -> waiters.forEach { it.completeExceptionally(failure) } }
+                        waiters.clear()
+                    }
+                }
+            }
+        } finally {
+            waiters.forEach { it.cancel() }
+        }
+    }
+
+    private fun buildDebugStatementsArchive(): File {
+        val statements = dir.listFiles { file -> file.isDirectory }
+            ?.sortedBy { it.name }
+            ?.mapNotNull { recordDir ->
+                if (!File(recordDir, "record.json").isFile) return@mapNotNull null
+                File(recordDir, "debug-statement.json").takeIf { it.isFile }
+                    ?.let { recordDir.name to it }
+            }
+            ?: emptyList()
+
+        val temporary = File.createTempFile("debug-statements-", ".zip", dir)
+        try {
+            ZipOutputStream(temporary.outputStream().buffered()).use { zip ->
+                statements.forEach { (recordId, statement) ->
+                    zip.putNextEntry(ZipEntry("$recordId/debug-statement.json"))
+                    statement.inputStream().buffered().use { it.copyTo(zip) }
+                    zip.closeEntry()
+                }
+            }
+            Files.move(
+                temporary.toPath(),
+                debugStatementsArchive.toPath(),
+                StandardCopyOption.REPLACE_EXISTING,
+            )
+            logger.info(
+                "Generated debug statements archive; statements={}; path={}",
+                statements.size,
+                debugStatementsArchive.absolutePath,
+            )
+            return debugStatementsArchive
+        } finally {
+            temporary.delete()
+        }
+    }
+
+    override fun close() {
+        archiveCommands.close()
+        archiveRequests.close()
+        archiveScope.cancel()
     }
 
     private suspend fun replayStoredStatements() {
@@ -275,7 +390,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
 
             span {
                 a {
-                    href = "https://a-sit-plus.github.io"
+                    href = "https://a-sit-plus.github.io/warden-supreme/"
                     target = "_blank"
                     +"Learn more"
                 }
@@ -286,6 +401,15 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                     href = DemoAttestation.DOWNLOAD_PATH
                     target = "_blank"
                     +"⬇ Download Collector APK ⬇"
+                }
+            }
+            if (records.any { it.second.hasStatement }) {
+                span {
+                    classes += "download"
+                    a {
+                        href = DEBUG_STATEMENTS_ARCHIVE_PATH
+                        +"⬇ Download all debug statements ⬇"
+                    }
                 }
             }
         }

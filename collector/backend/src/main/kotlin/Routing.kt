@@ -22,6 +22,7 @@ import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.warden.collector.shared.DemoAttestation
 import io.ktor.server.application.*
+import io.ktor.http.HttpHeaders
 import io.ktor.server.html.respondHtml
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.request.*
@@ -63,6 +64,7 @@ fun Application.configureRouting() {
             ?: "./collected-proofs"
     )
     val store = CollectorStore(outputDir)
+    monitor.subscribe(ApplicationStopped) { store.close() }
     val collectorVersionCode = this::class.java.classLoader.getResource("collector-version.txt")
         ?.readText()?.trim() ?: error("collector-version.txt not found on the classpath")
 
@@ -92,6 +94,7 @@ fun Application.configureRouting() {
         // certificate chain over the attested key and return it as JSON.
         post(DemoAttestation.ATTEST_PATH) {
             val proofBytes = call.receive<ByteArray>()
+            log.info("Received attestation proof; bytes={}", proofBytes.size)
             val proof = verifier.decodeAttestationProof(proofBytes).getOrThrow()
 
             val submittedAt = Clock.System.now().toEpochMilliseconds()
@@ -179,6 +182,10 @@ fun Application.configureRouting() {
         }
         get(DemoAttestation.DOWNLOAD_PATH) {
             call.respondResource("collector.apk")
+        }
+        get(DEBUG_STATEMENTS_ARCHIVE_PATH) {
+            call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"debug-statements.zip\"")
+            call.respondFile(store.debugStatementsArchive())
         }
 
         // Downloads (chain.der, proof.der, debug-statement.json, attestation.json) are the files

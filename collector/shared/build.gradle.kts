@@ -18,6 +18,10 @@ kotlin {
     iosSimulatorArm64()
     android {
         namespace = "at.asitplus.warden.collector.shared"
+        packaging {
+            resources.excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            resources.excludes.add("META-INF/LICENSE.md")
+        }
     }
 
     sourceSets {

@@ -146,7 +146,7 @@ fun App() {
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("Warden Supreme Collector", style = MaterialTheme.typography.headlineSmall)
+                Text("Supreme Attestation Collector", style = MaterialTheme.typography.headlineSmall)
 
                 OutlinedTextField(
                     value = endpoint,

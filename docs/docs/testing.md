@@ -16,7 +16,7 @@ real devices across staging environments.
 
 Load tests and monitors must exercise attestation end to end without weakening production policy. Use a test app whose
 cryptographic identity is distinct from the production app and admit it under a dedicated trust anchor.
-[testing.md](testing.md)
+
 - Configure a second app entry (e.g., `AndroidAttestationConfiguration.AppData`) with:
     - A different `packageName`
     - A deliberately obvious, non‑production signing certificate digest
@@ -77,6 +77,11 @@ user data. These tags should not alter the core trust decision.
 End-to-end testing starts after the unit and integration suites pass. Warden Supreme already tests captured evidence from
 real devices alongside generated cases. Service integrators should then deploy release-candidate builds to physical
 phones that can reach the staged service.
+
+!!! tip "Attestation Collector"
+    The [Attestation Collector](collector.md) is also useful for quickly exploring what an individual Android device
+    produces. It is a public diagnostic service using Warden Supreme's defaults, not a replacement for testing your own app,
+    signing identity, backend, and production policy.
 
 Early testing benefits from the broadest available device pool: team devices, partner devices, and the devices already
 used for compatibility testing. Most failures should match documented [quirks](technical/quirks.md), but the fleet may
