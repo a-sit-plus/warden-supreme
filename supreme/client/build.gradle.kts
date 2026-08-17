@@ -47,6 +47,8 @@ kotlin {
             resources.excludes.add("win32-x86/attach_hotspot_windows.dll")
             resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
             resources.excludes.add("META-INF/licenses/*")
+            resources.excludes.add("META-INF/LICENSE.md")
+            resources.excludes.add("META-INF/LICENSE.md")
         }
     }
 

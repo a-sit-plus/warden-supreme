@@ -14,3 +14,6 @@ collector:
   # Optional path to an external SupremeConfiguration YAML. If unset, the bundled resource
   # `supreme.yaml` is used.
   # supremeConfig: "/path/to/supreme.yaml"
+  # Directory where each collected attestation (WARDEN debug statement + metadata) is written,
+  # and which the /collected report reads from.
+  outputDir: "./collected-proofs"

@@ -57,6 +57,7 @@ subprojects {
 allprojects {
     apply(plugin = "org.jetbrains.dokka")
     group = rootProject.group
+    repositories { mavenLocal() }
 }
 
 tasks.register<Copy>("copyChangelog") {

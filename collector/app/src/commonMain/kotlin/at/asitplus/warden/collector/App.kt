@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -52,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import at.asitplus.attestation.supreme.AttestationClient
 import at.asitplus.attestation.supreme.AttestationResponse
-import at.asitplus.attestation.supreme.performAttestationFlow
+import at.asitplus.attestation.supreme.createAttestationProof
 import at.asitplus.catchingUnwrapped
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
@@ -78,7 +79,10 @@ fun App() {
     WardenTheme {
         val scope = rememberCoroutineScope()
         val actions = rememberPlatformActions()
-        var endpoint by remember { mutableStateOf("http://10.0.2.2:8080" + DemoAttestation.CHALLENGE_PATH) }
+        val endpointStore = rememberEndpointStore()
+        val defaultEndpoint = "http://10.0.2.2:8080" + DemoAttestation.CHALLENGE_PATH
+        // Persisted across launches; falls back to the emulator default.
+        var endpoint by remember { mutableStateOf(endpointStore.get() ?: defaultEndpoint) }
         var status by remember { mutableStateOf("Enter the backend challenge URL and press Attest.") }
         var attestationJson by remember { mutableStateOf<JsonElement?>(null) }
         var debugJson by remember { mutableStateOf<JsonElement?>(null) }
@@ -108,10 +112,20 @@ fun App() {
 
                 OutlinedTextField(
                     value = endpoint,
-                    onValueChange = { endpoint = it },
+                    onValueChange = { endpoint = it; endpointStore.set(it) },
                     label = { Text("Backend challenge URL") },
                     singleLine = true,
                     enabled = !busy,
+                    trailingIcon = {
+                        if (endpoint != defaultEndpoint) {
+                            IconButton(
+                                enabled = !busy,
+                                onClick = { endpoint = defaultEndpoint; endpointStore.set(defaultEndpoint) },
+                            ) {
+                                Text("⟲") // reset to default
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 )
 
@@ -129,7 +143,17 @@ fun App() {
                                 withContext(Dispatchers.Default) {
                                     PlatformSigningProvider.deleteSigningKey(ALIAS)
                                     val client = AttestationClient(HttpClient())
-                                    client.performAttestationFlow(ALIAS, Url(endpoint)) { emptyList() }
+                                    val challengeUrl = Url(endpoint)
+                                    val challenge = client.getChallenge(challengeUrl).getOrThrow()
+                                    val proof = challenge.createAttestationProof(ALIAS) { emptyList() }.getOrThrow()
+                                    // Submit the proof to the SAME origin the challenge came from — not the
+                                    // attestationEndpoint embedded in the challenge (the backend's publicBaseUrl,
+                                    // e.g. the 10.0.2.2 emulator address), which is unreachable from a real device.
+                                    val attestUrl = Url(
+                                        "${challengeUrl.protocol.name}://${challengeUrl.host}:${challengeUrl.port}" +
+                                            DemoAttestation.ATTEST_PATH
+                                    )
+                                    client.attest(proof, attestUrl)
                                 }
                             }
                             val localAttestation = withContext(Dispatchers.Default) { localAttestationExtensionJson(ALIAS) }

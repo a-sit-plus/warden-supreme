@@ -26,6 +26,7 @@ dependencies {
     implementation(ktor("server-cio"))
     implementation(ktor("server-config-yaml"))
     implementation(ktor("server-content-negotiation"))
+    implementation(ktor("server-html-builder"))
     implementation(ktor("serialization-kotlinx-json"))
     implementation(libs.logback.classic)
 
