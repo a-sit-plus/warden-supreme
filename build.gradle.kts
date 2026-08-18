@@ -1,4 +1,6 @@
 import groovy.json.JsonSlurper
+import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.tasks.bundling.Jar
 
 plugins {
@@ -73,6 +75,11 @@ val publishedProjects = listOf(
     project(":config-hoplite"),
     project(":config-spring"),
 )
+
+listOf(project(":collector-app"), project(":collector-backend"), project(":collector-shared")).forEach {
+    it.tasks.withType<PublishToMavenLocal>().configureEach { enabled = false }
+    it.tasks.withType<PublishToMavenRepository>().configureEach { enabled = false }
+}
 
 publishedProjects.forEach { moduleProject ->
     moduleProject.tasks.register<Jar>("javadocRedirectJar") {
