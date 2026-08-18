@@ -390,7 +390,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
 
                     span {
                         a {
-                            href = "https://a-sit-plus.github.io/warden-supreme/collector/"
+                            href = "https://a-sit-plus.github.io/warden-supreme/latest/collector/"
                             target = "_blank"
                             +"Learn more"
                         }
