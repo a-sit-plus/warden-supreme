@@ -16,6 +16,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -31,10 +32,13 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,6 +55,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
@@ -59,12 +65,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import at.asitplus.attestation.supreme.AttestationClient
 import at.asitplus.attestation.supreme.AttestationResponse
+import at.asitplus.attestation.supreme.attestationEndpointUrl
 import at.asitplus.attestation.supreme.createAttestationProof
 import at.asitplus.catchingUnwrapped
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.warden.collector.generated.resources.Res
 import at.asitplus.warden.collector.generated.resources.warden
+import at.asitplus.warden.collector.shared.CollectorPolicy
 import at.asitplus.warden.collector.shared.DemoAttestation
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -97,6 +105,9 @@ fun App() {
         var rawDetail by remember { mutableStateOf<String?>(null) }
         var busy by remember { mutableStateOf(false) }
         var update by remember { mutableStateOf<Pair<String, Long>?>(null) }
+        var policy by remember { mutableStateOf(CollectorPolicy.DEFAULT) }
+        var policyMenuExpanded by remember { mutableStateOf(false) }
+        var showPolicyHelp by remember { mutableStateOf(false) }
 
         LaunchedEffect(endpoint) {
             delay(500)
@@ -130,6 +141,19 @@ fun App() {
             )
         }
 
+        if (showPolicyHelp) {
+            AlertDialog(
+                onDismissRequest = { showPolicyHelp = false },
+                title = { Text("Attestation policies") },
+                text = {
+                    Text(CollectorPolicy.entries.joinToString("\n\n") { "${it.label}: ${it.description}" })
+                },
+                confirmButton = {
+                    TextButton(onClick = { showPolicyHelp = false }) { Text("Close") }
+                },
+            )
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -151,25 +175,56 @@ fun App() {
             ) {
                 Text("Supreme Attestation Collector", style = MaterialTheme.typography.headlineSmall)
 
-                OutlinedTextField(
-                    value = endpoint,
-                    onValueChange = { endpoint = it; endpointStore.set(it) },
-                    label = { Text("Backend domain") },
-                    singleLine = true,
-                    enabled = !busy,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    trailingIcon = {
-                        if (endpoint != defaultEndpoint) {
-                            IconButton(
-                                enabled = !busy,
-                                onClick = { endpoint = defaultEndpoint; endpointStore.set(defaultEndpoint) },
-                            ) {
-                                Text("⟲") // reset to default
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OutlinedTextField(
+                        value = endpoint,
+                        onValueChange = { endpoint = it; endpointStore.set(it) },
+                        label = { Text("Backend domain") },
+                        singleLine = true,
+                        enabled = !busy,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                        trailingIcon = {
+                            if (endpoint != defaultEndpoint) {
+                                IconButton(
+                                    enabled = !busy,
+                                    onClick = { endpoint = defaultEndpoint; endpointStore.set(defaultEndpoint) },
+                                ) {
+                                    Text("⟲") // reset to default
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                    )
+                    Box {
+                        OutlinedButton(
+                            enabled = !busy,
+                            onClick = { policyMenuExpanded = true },
+                        ) {
+                            Text("${policy.shortLabel} ▾")
+                        }
+                        DropdownMenu(
+                            expanded = policyMenuExpanded,
+                            onDismissRequest = { policyMenuExpanded = false },
+                        ) {
+                            CollectorPolicy.entries.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option.label) },
+                                    onClick = {
+                                        policy = option
+                                        policyMenuExpanded = false
+                                    },
+                                )
                             }
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                    }
+                    IconButton(
+                        onClick = { showPolicyHelp = true },
+                        modifier = Modifier.semantics { contentDescription = "Explain attestation policies" },
+                    ) { Text("?") }
+                }
 
                 Button(
                     enabled = !busy,
@@ -186,17 +241,10 @@ fun App() {
                                     PlatformSigningProvider.deleteSigningKey(ALIAS)
                                     val client = AttestationClient(HttpClient())
                                     val host = backendHost(endpoint) ?: error("Invalid backend domain")
-                                    val challengeUrl = Url(host + DemoAttestation.CHALLENGE_PATH)
+                                    val challengeUrl = Url(host + policy.challengePath)
                                     val challenge = client.getChallenge(challengeUrl).getOrThrow()
                                     val proof = challenge.createAttestationProof(ALIAS) { emptyList() }.getOrThrow()
-                                    // Submit the proof to the SAME origin the challenge came from — not the
-                                    // attestationEndpoint embedded in the challenge (the backend's publicBaseUrl,
-                                    // e.g. the 10.0.2.2 emulator address), which is unreachable from a real device.
-                                    val attestUrl = Url(
-                                        "${challengeUrl.protocol.name}://${challengeUrl.host}:${challengeUrl.port}" +
-                                            DemoAttestation.ATTEST_PATH
-                                    )
-                                    client.attest(proof, attestUrl)
+                                    client.attest(proof, challenge.attestationEndpointUrl)
                                 }
                             }
                             val localAttestation = withContext(Dispatchers.Default) { localAttestationExtensionJson(ALIAS) }

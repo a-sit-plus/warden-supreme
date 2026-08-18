@@ -22,7 +22,7 @@ attestation extension.
 
 1. Open the collector and download the Android APK.
 2. Install the APK on the device you want to examine.
-3. Keep the preconfigured backend domain and select **Attest**.
+3. Keep the preconfigured backend domain, select a verification policy, and select **Attest**.
 4. Inspect the result in the app or the collected-attestations table in your browser.
 
 The collector creates a fresh attested key and evaluates its proof with Warden Supreme. Successful and failed results
@@ -59,18 +59,20 @@ also change the application ID, update the recorded package-name configuration b
 
 ## Interpreting Results
 
-The public collector deliberately uses Warden Supreme's Android defaults, except for already using our home-grown 
-attestation extension parser. A successful result therefore requires:
+The public collector uses Warden Supreme's Android defaults, except for already using our home-grown attestation
+extension parser. Its selectable policies are:
 
-- hardware-backed attestation
-- a locked bootloader
-- vendor-managed OEM verified boot
-- a chain anchored in the default Google hardware-attestation roots
+- **Default** requires timely certificate chains, hardware-backed attestation, a locked bootloader, vendor-managed OEM
+  verified boot, and a chain anchored in the default Google hardware-attestation roots.
+- **Trust old factory certs** additionally accepts expired factory-provisioned certificate chains.
+- **Unlocked BL** also permits unlocked bootloaders. Verified boot state and boot-key checks are skipped for this policy.
+- **GrapheneOS** accepts expired factory-provisioned chains and locked devices using either OEM verified boot or one of
+  the pinned GrapheneOS verified boot keys.
+- **StrongBox only** uses the default policy and additionally requires the attested key to be backed by StrongBox.
 
-**The result describes this collector policy, not every valid attestation policy!** For example, Warden Supreme can be
-configured to trust selected hardened custom-ROM boot keys, such as GrapheneOS but the public collector does not do so. Patch-level,
-minimum Android-version, StrongBox, and application-specific production requirements also depend on the policy of the
-service performing verification. The default configuration is very generic/lax in this regard.
+**The result describes the selected collector policy, not every valid attestation policy!** Patch-level, minimum
+Android-version, StrongBox, and application-specific production requirements also depend on the policy of the service
+performing verification. The default configuration is very generic/lax in this regard.
 
 !!! warning "Public Diagnostic Data"
     Submitted attestation details and downloadable diagnostic artefacts appear in the collector's public table. Use it
