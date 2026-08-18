@@ -1,0 +1,313 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>at.asitplus.attestation.supreme</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.1.1
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":supreme-verifier/jvmMain">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":supreme-verifier/jvmMain" data-filter=":supreme-verifier/jvmMain">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageids="supreme-verifier::at.asitplus.attestation.supreme////PointingToDeclaration//-726908095">
+  <div class="breadcrumbs"><a href="../index.html">supreme-verifier</a><span class="delimiter">/</span><span class="current">at.asitplus.attestation.supreme</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-647792254%2FClasslikes%2F-726908095" anchor-label="AttestationChallengeValidator" id="-647792254%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attestation-challenge-validator/index.html"><span>Attestation</span><wbr><span>Challenge</span><wbr><span><span>Validator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-647792254%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-attestation-challenge-validator/index.html">AttestationChallengeValidator</a> : <a href="-challenge-validator/index.html">ChallengeValidator</a></div><div class="brief "><p class="paragraph">Invoked from <a href="-attestation-verifier/verify-attestation.html">AttestationVerifier.verifyAttestation</a>. Useful to match against in-transit attestation processes. Most probably, this will check against a nonce cache and evict any matched nonce from the cache. <strong>Implementing this function in a meaningful manner is absolutely crucial</strong>, since this is the actual challenge matching, ensuring freshness! Challenge nonces are sensitive replay-protection material: implementations and operators should avoid logging them, avoid exposing them across sessions or callers, and rely on protected transport plus caller-aware controls outside the nonce cache when needed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="208030395%2FClasslikes%2F-726908095" anchor-label="AttestationVerifier" id="208030395%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attestation-verifier/index.html"><span>Attestation</span><wbr><span><span>Verifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="208030395%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-attestation-verifier/index.html">AttestationVerifier</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>makoto<span class="token operator">: </span><a href="../../makoto/at.asitplus.attestation/-makoto/index.html">Makoto</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationProofOID<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span><span class="token operator"> = </span>WardenDefaults.OIDs.ATTESTATION_PROOF<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>genericDeviceNameOID<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/ObjectIdentifier///PointingToDeclaration/">ObjectIdentifier</span><span class="token operator">?</span><span class="token operator"> = </span>WardenDefaults.OIDs.DEVICE_NAME<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>defaultKeyConstraints<span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-key-constraints/index.html">KeyConstraints</a><span class="token operator">?</span><span class="token operator"> = </span>WardenDefaults.KeyConstraints.p256Signer<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>nonceValidity<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator"> = </span>makoto.longestValidityDuration
+        ?: IosAttestationConfiguration.DEFAULT_VALIDITY_SECONDS.seconds<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>toBeAttestedAttributes<span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/-certification-request-attribute-attestation-descriptor/index.html">AttestationChallenge.CertificationRequestAttributeAttestationDescriptor</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dataAuth<span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-data-authentication/index.html">DataAuthentication</a><span class="token operator"> = </span>DataAuthentication.Signature<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>maxAttestationPayloadBytes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES<span class="token punctuation">, </span></span><span class="parameter ">nonceGenerator<span class="token operator">: </span><a href="-nonce-generator/index.html">NonceGenerator</a><span class="token operator"> = </span>WardenDefaults.nonceGenerator<span class="token punctuation">, </span></span><span class="parameter ">challengeValidator<span class="token operator">: </span><a href="-challenge-validator/index.html">ChallengeValidator</a><span class="token operator"> = </span>InMemoryChallengeCache(
+        makoto.clock,
+        -makoto.verificationTimeOffset
+    )</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Verifies attestation statements and issues certificates on success. Expects a preconfigured <a href="../../makoto/at.asitplus.attestation/-makoto/index.html">Makoto</a> instance defining which apps and devices are considered trustworthy.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1162500241%2FClasslikes%2F-726908095" anchor-label="CertificateIssuer" id="1162500241%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-certificate-issuer/index.html"><span>Certificate</span><wbr><span><span>Issuer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1162500241%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="-certificate-issuer/index.html"><strike>CertificateIssuer</strike></a><span class="token operator"> = </span><span class="token keyword">suspend </span><a href="../../makoto/at.asitplus.attestation/-attestation-result/-verified/index.html">AttestationResult.Verified</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequest///PointingToDeclaration/">Pkcs10CertificationRequest</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/CertificateChain///PointingToDeclaration/">CertificateChain</span></div><div class="brief "><p class="paragraph">Compatibility issuer for the signature-only API. Receives the signed CSR after it was thoroughly checked and verified. At this point, the CSR's signature has been verified, the challenge checked, and the public key attested. Hence, a certificate can be issued and the whole certificate chain (from newly issued certificate up to the CA) shall be returned.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1045407896%2FClasslikes%2F-726908095" anchor-label="ChallengeValidationResult" id="-1045407896%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-challenge-validation-result/index.html"><span>Challenge</span><wbr><span>Validation</span><wbr><span><span>Result</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1045407896%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-challenge-validation-result/index.html">ChallengeValidationResult</a></div><div class="brief "><p class="paragraph">Result of matching and consuming the challenge referenced by received client data.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="77561170%2FClasslikes%2F-726908095" anchor-label="ChallengeValidator" id="77561170%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-challenge-validator/index.html"><span>Challenge</span><wbr><span><span>Validator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="77561170%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-challenge-validator/index.html"><strike>ChallengeValidator</strike></a></div><div class="brief "><p class="paragraph">Invoked from <a href="-attestation-verifier/verify-attestation.html">AttestationVerifier.verifyAttestation</a>. Required to match against in-transit attestation processes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-405768388%2FClasslikes%2F-726908095" anchor-label="InMemoryChallengeCache" id="-405768388%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-in-memory-challenge-cache/index.html"><span>In</span><wbr><span>Memory</span><wbr><span>Challenge</span><wbr><span><span>Cache</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-405768388%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-in-memory-challenge-cache/index.html">InMemoryChallengeCache</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clock<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-clock/index.html">Clock</a><span class="token punctuation">, </span></span><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>maxChallenges<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>DEFAULT_MAX_IN_MEMORY_CHALLENGES</span></span><span class="token punctuation">)</span> : <a href="-attestation-challenge-validator/index.html">AttestationChallengeValidator</a></div><div class="brief "><p class="paragraph">Caches issued challenges in memory in a coroutine-safe way. Requires a <span data-unresolved-link="at.asitplus.attestation.supreme/InMemoryChallengeCache//#kotlin.time.Clock#kotlin.time.Duration#kotlin.Int/PointingToCallableParameters(0)/">clock</span> and an <span data-unresolved-link="at.asitplus.attestation.supreme/InMemoryChallengeCache//#kotlin.time.Clock#kotlin.time.Duration#kotlin.Int/PointingToCallableParameters(1)/">offset</span>. The <a href="-attestation-verifier/index.html">AttestationVerifier</a> passes <a href="../../makoto/at.asitplus.attestation/-makoto/index.html">Makoto</a>'s clock and the inverse of <a href="../../makoto/at.asitplus.attestation/-makoto/verification-time-offset.html">Makoto.verificationTimeOffset</a>, since these two values are also encoded into issues challenges.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1990017405%2FClasslikes%2F-726908095" anchor-label="NonceGenerator" id="1990017405%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-nonce-generator/index.html"><span>Nonce</span><wbr><span><span>Generator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1990017405%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="-nonce-generator/index.html">NonceGenerator</a><span class="token operator"> = </span><span class="token keyword">suspend </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Generates a fresh challenge nonce.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-270378938%2FClasslikes%2F-726908095" anchor-label="PreAttestationError" id="-270378938%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-pre-attestation-error/index.html"><span>Pre</span><wbr><span>Attestation</span><wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-270378938%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-pre-attestation-error/index.html">PreAttestationError</a></div><div class="brief "><p class="paragraph">High-level verifier errors exposed to <a href="-attestation-verifier/verify-attestation.html">AttestationVerifier.verifyAttestation</a>'s <code class="lang-kotlin">onPreAttestationError</code> callback.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1923571777%2FClasslikes%2F-726908095" anchor-label="ProofToChain" id="-1923571777%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-proof-to-chain/index.html"><span>Proof</span><wbr><span>To</span><wbr><span><span>Chain</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1923571777%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">typealias </span><a href="-proof-to-chain/index.html">ProofToChain</a><span class="token operator"> = </span><span class="token keyword">suspend </span><a href="../../makoto/at.asitplus.attestation/-attestation-result/-verified/index.html">AttestationResult.Verified</a><span class="token punctuation">.</span><span class="token punctuation">(</span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-proof/index.html">AttestationProof</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/CertificateChain///PointingToDeclaration/">CertificateChain</span></div><div class="brief "><p class="paragraph">Receives the signed CSR or unsigned TBS CSR from the mobile client after it was thoroughly checked and verified. At this point, the selected authentication mode has been verified, the challenge checked, requested attributes validated, and the public key matched to the attestation statement. Hence, a certificate can be issued and the whole certificate chain (from newly issued certificate up to the CA) shall be returned.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-816079836%2FClasslikes%2F-726908095" anchor-label="SupremeConfiguration" id="-816079836%2FClasslikes%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-supreme-configuration/index.html"><span>Supreme</span><wbr><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-816079836%2FClasslikes%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-supreme-configuration/index.html">SupremeConfiguration</a> : <a href="../../supreme-common/at.asitplus.attestation/-attestation-configuration/index.html">AttestationConfiguration</a></div><div class="brief "><p class="paragraph">Integrated attestation configuration for the Supreme attestation verifier</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1480119891%2FFunctions%2F-726908095" anchor-label="decodeAttestationProof" id="1480119891%2FFunctions%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="decode-attestation-proof.html"><span>decode</span><wbr><span>Attestation</span><wbr><span><span>Proof</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1480119891%2FFunctions%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-attestation-verifier/index.html">AttestationVerifier</a><span class="token punctuation">.</span><a href="decode-attestation-proof.html"><span class="token function">decodeAttestationProof</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">payload<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-proof/index.html">AttestationProof</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Decodes an HTTP attestation-proof payload after enforcing <a href="-attestation-verifier/max-attestation-payload-bytes.html">AttestationVerifier.maxAttestationPayloadBytes</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1932168645%2FFunctions%2F-726908095" anchor-label="invoke" id="1932168645%2FFunctions%2F-726908095" data-filterable-set=":supreme-verifier/jvmMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-verifier/jvmMain" data-filterable-set=":supreme-verifier/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="invoke.html"><span><span>invoke</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1932168645%2FFunctions%2F-726908095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-verifier/jvmMain"><div class="symbol monospace"><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="../../makoto/at.asitplus.attestation/-makoto/-companion/index.html">Makoto.Companion</a><span class="token punctuation">.</span><a href="invoke.html"><span class="token function">invoke</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configuration<span class="token operator">: </span><a href="-supreme-configuration/index.html">SupremeConfiguration</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../makoto/at.asitplus.attestation/-makoto/index.html">Makoto</a></div><div class="brief "><p class="paragraph">Convenience extension to create a <a href="../../makoto/at.asitplus.attestation/-makoto/index.html">Makoto</a> instance from <a href="invoke.html">configuration</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>validateAssertion</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.1.1
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":makoto/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":makoto/main" data-filter=":makoto/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="member" id="content" pageids="makoto::at.asitplus.attestation/AttestationService.IOS/validateAssertion/ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator##ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation#kotlin.ByteArray#kotlin.ByteArray#kotlin.ByteArray#kotlin.Long#kotlin.Long/PointingToDeclaration//-1695809997">
+  <div class="breadcrumbs"><a href="../../../index.html">makoto</a><span class="delimiter">/</span><a href="../../index.html">at.asitplus.attestation</a><span class="delimiter">/</span><a href="../index.html">AttestationService</a><span class="delimiter">/</span><a href="index.html">IOS</a><span class="delimiter">/</span><span class="current">validateAssertion</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>validate</span><wbr><span><span>Assertion</span></span></h1>
+  </div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":makoto/main"><div class="symbol monospace"><span class="token keyword">context</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">validator<span class="token operator">: </span><span data-unresolved-link="ch.veehait.devicecheck.appattest.assertion/AssertionChallengeValidator///PointingToDeclaration/">AssertionChallengeValidator</span></span></span><span class="token punctuation">)</span><br><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="validate-assertion.html"><span class="token function">validateAssertion</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">validatedAttestation<span class="token operator">: </span><span data-unresolved-link="ch.veehait.devicecheck.appattest.attestation/ValidatedAttestation///PointingToDeclaration/">ValidatedAttestation</span><span class="token punctuation">, </span></span><span class="parameter ">assertion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">referenceClientData<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">expectedChallenge<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">lastSeenCounter<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter ">maxCounterAdvance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span>Long.MAX_VALUE</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/index.html">Result</a><span class="token operator">&lt;</span><span data-unresolved-link="ch.veehait.devicecheck.appattest.assertion/Assertion///PointingToDeclaration/">Assertion</span><span class="token operator">&gt;</span><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/a-sit-plus/warden-supreme/tree/main/serverside/makoto/src/main/kotlin/AttestationService.kt#L376">source</a>)</span></span></div><p class="paragraph">Verifies an assertion over arbitrary client data, tied to a previously stored attestation.</p><p class="paragraph"><a href="validate-assertion.html">referenceClientData</a> must contain the exact, unhashed bytes whose SHA-256 digest the client passed to <code class="lang-kotlin">generateAssertion</code>. App Attest assertions do not contain those bytes. Signature verification proves their integrity, while <a href="validate-assertion.html">validator</a> is responsible for parsing them and verifying that they contain <a href="validate-assertion.html">expectedChallenge</a>. The caller must obtain the expected challenge from trusted server-side state and enforce its expiry and single use.</p><p class="paragraph"><strong>The attestation is not verified again!</strong> There is no timeliness guarantee of any kind, so manually verify the freshness of the challenge <strong>before</strong> calling this function</p><p class="paragraph"><strong>A Note on Counters:</strong><br> AppAttest only checks whether the signature counter is <i>higher</i> than <i>the last seen counter</i>*. That is, a value of <code class="lang-kotlin">0L</code> will always work. Warden Supreme also allows specifying how much the counter may at most have advanced since the <a href="validate-assertion.html">lastSeenCounter</a> (i.e. since the signaure count of the last seen valid assertion), hence <a href="validate-assertion.html">maxCounterAdvance</a>.<br></p><p class="paragraph">Example:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">// calling for the very first time, an assertion is received:<br>with(validator) {<br>  validateAssertion(attestation, assertion, clientData, challenge,<br>    lastSeenCounter = 0L, //No signatures have been created<br>    maxCounterAdvance = 1L //Make sure that this is the first signature to be created<br>}</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h4 class="tableheader">Context Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":makoto/main" data-filterable-set=":makoto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>validator</span></span></u></div></span></div><div><div class="title"><p class="paragraph">an <span data-unresolved-link="ch.veehait.devicecheck.appattest.assertion/AssertionChallengeValidator///PointingToDeclaration/">AssertionChallengeValidator</span> that extracts and verifies <a href="validate-assertion.html">expectedChallenge</a> in <a href="validate-assertion.html">referenceClientData</a></p></div></div></div></div></div><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":makoto/main" data-filterable-set=":makoto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>validated</span><wbr><span><span>Attestation</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the previously validated attestation</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":makoto/main" data-filterable-set=":makoto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>assertion</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the assertions to validate</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":makoto/main" data-filterable-set=":makoto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>reference</span><wbr><span>Client</span><wbr><span><span>Data</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the exact client data cryptographically bound to <a href="validate-assertion.html">assertion</a></p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":makoto/main" data-filterable-set=":makoto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>expected</span><wbr><span><span>Challenge</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the server-issued challenge that <a href="validate-assertion.html">validator</a> must find in <a href="validate-assertion.html">referenceClientData</a></p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":makoto/main" data-filterable-set=":makoto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>last</span><wbr><span>Seen</span><wbr><span><span>Counter</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the counter of the last recorded assertion; the current <a href="validate-assertion.html">assertion</a> counter must be &gt;<a href="validate-assertion.html">lastSeenCounter</a>. That is, a value of <code class="lang-kotlin">0L</code> will always work.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":makoto/main" data-filterable-set=":makoto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>max</span><wbr><span>Counter</span><wbr><span><span>Advance</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the maximum the counter is allowed to have advanced since the last validated assertion.</p></div></div></div></div></div></div></div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
