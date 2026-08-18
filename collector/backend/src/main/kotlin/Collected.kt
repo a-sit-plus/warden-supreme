@@ -375,40 +375,43 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
     body {
         canvas { id = "sky" }
         header {
-            h1 {
-                img(
-                    alt = "Warden Supreme",
-                    src = "/logo.png"
-                )
-                span {
-                    +"Collected Attestations"
-                }
-            }
-            div("count") { +"${records.size} collected" }
-
-            span {
-                a {
-                    href = "https://a-sit-plus.github.io/warden-supreme/"
-                    target = "_blank"
-                    +"Learn more"
-                }
-            }
-            span {
-                classes += "download"
-                a {
-                    href = DemoAttestation.DOWNLOAD_PATH
-                    target = "_blank"
-                    +"⬇ Download Collector APK ⬇"
-                }
-            }
-            if (records.any { it.second.hasStatement }) {
-                span {
-                    classes += "download"
-                    a {
-                        href = DEBUG_STATEMENTS_ARCHIVE_PATH
-                        +"⬇ Download all debug statements ⬇"
+            div("header-main") {
+                h1 {
+                    img(
+                        alt = "Warden Supreme",
+                        src = "/logo.png"
+                    )
+                    span {
+                        +"Collected Attestations"
                     }
                 }
+                div("count") { +"${records.size} collected" }
+
+                span {
+                    a {
+                        href = "https://a-sit-plus.github.io/warden-supreme/"
+                        target = "_blank"
+                        +"Learn more"
+                    }
+                }
+                if (records.any { it.second.hasStatement }) {
+                    span {
+                        classes += "download"
+                        a {
+                            href = DEBUG_STATEMENTS_ARCHIVE_PATH
+                            +"⬇ Download all debug statements ⬇"
+                        }
+                    }
+                }
+            }
+            a(classes = "qr") {
+                href = DemoAttestation.DOWNLOAD_PATH
+                target = "_blank"
+                img(
+                    alt = "QR code to download the Collector APK",
+                    src = "/collector-apk-qr.svg"
+                )
+                span { +"Click or Scan to download APK" }
             }
         }
 
@@ -423,7 +426,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
             }
         }
         footer {
-            +"© 2026 A-SIT Plus · "
+            +"Copyright © 2026 A-SIT Plus · "
             a {
                 href = "https://plus.a-sit.at/imprint.html"
                 target = "_blank"

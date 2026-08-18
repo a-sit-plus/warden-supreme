@@ -180,6 +180,9 @@ fun Application.configureRouting() {
         get("/collector.css") {
             call.respondResource("collector.css")
         }
+        get("/collector-apk-qr.svg") {
+            call.respondResource("collector-apk-qr.svg")
+        }
         get(DemoAttestation.DOWNLOAD_PATH) {
             call.respondResource("collector.apk")
         }
