@@ -1,6 +1,7 @@
 # Changelog
 
 ## NEXT
+* Fix: Include the Android revocation-list snapshot used during certificate-chain validation in debug statements and reuse it during replay.
 
 ## 1.1.1
 * Fix: Use StrongBox by default where available

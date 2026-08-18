@@ -4,6 +4,7 @@ package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
+import at.asitplus.attestation.android.ConfigWithList
 import at.asitplus.io.MultiBase
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
@@ -51,6 +52,7 @@ internal constructor(
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val clientData: ByteArray? = null,
     @Serializable(with = InstantLongSerializer::class) val verificationTime: Instant,
     val verificationTimeOffset: Duration = Duration.ZERO,
+    val revocationLists: List<ConfigWithList> = emptyList(),
     override val version: String,
 ) : DebugStatement<Any> {
 
@@ -71,19 +73,26 @@ internal constructor(
     fun createWarden(): Makoto {
         require(androidAttestationConfiguration != null || iosAttestationConfiguration != null) { "At least one attestation configuration (iOS or Android) must be provided" }
 
-        return if (androidAttestationConfiguration == null)
+        val androidConfiguration = androidAttestationConfiguration?.let { configuration ->
+            if (revocationLists.isEmpty()) configuration
+            else configuration.copy(
+                revocation = revocationLists.map { AndroidRevocationList.InMemoryLoader.Configuration(it.list) }
+            )
+        }
+
+        return if (androidConfiguration == null)
             Makoto(
                 iosAttestationConfiguration = iosAttestationConfiguration!!,
                 FixedTimeClock(verificationTime),
                 verificationTimeOffset
             ) else if (iosAttestationConfiguration == null)
             Makoto(
-                androidAttestationConfiguration,
+                androidConfiguration,
                 FixedTimeClock(verificationTime),
                 verificationTimeOffset
             )
         else Makoto(
-            androidAttestationConfiguration,
+            androidConfiguration,
             iosAttestationConfiguration,
             FixedTimeClock(verificationTime),
             verificationTimeOffset
@@ -172,6 +181,7 @@ internal constructor(
         if (!clientData.contentEquals(other.clientData)) return false
         if (verificationTime != other.verificationTime) return false
         if (verificationTimeOffset != other.verificationTimeOffset) return false
+        if (revocationLists != other.revocationLists) return false
         if (version != other.version) return false
 
         return true
@@ -187,6 +197,7 @@ internal constructor(
         result = 31 * result + (clientData?.contentHashCode() ?: 0)
         result = 31 * result + verificationTime.hashCode()
         result = 31 * result + verificationTimeOffset.hashCode()
+        result = 31 * result + revocationLists.hashCode()
         result = 31 * result + (version.hashCode() ?: 0)
         return result
     }

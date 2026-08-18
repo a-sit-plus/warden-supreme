@@ -49,7 +49,12 @@ class AndroidDebugAttestationStatement(
         require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
     }
 
-    fun checkerFromConfig(): Roboto = Roboto(configuration)
+    fun checkerFromConfig(): Roboto = Roboto(
+        if (revocationLists.isEmpty()) configuration
+        else configuration.copy(
+            revocation = revocationLists.map { AndroidRevocationList.InMemoryLoader.Configuration(it.list) }
+        )
+    )
 
     override suspend fun replay() =
         checkerFromConfig().verify(attestationStatement, verificationTime, challenge)
@@ -81,7 +86,7 @@ class AndroidDebugAttestationStatement(
             verificationTime,
             challenge,
             attestationStatement,
-            verifier.revocationListsFromLastCall()
+            verifier.revocationListsForChallenge(challenge)
         )
 
         override fun deserialize(string: String): AndroidDebugAttestationStatement =

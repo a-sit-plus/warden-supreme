@@ -4,12 +4,11 @@ import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
+import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import com.android.keyattestation.verifier.SecurityLevel
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.android.keyattestation.verifier.provider.KeyAttestationProvider
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.security.Security
 import java.security.cert.*
 import java.util.*
@@ -34,16 +33,26 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
     }
 
 
-    private val revocationMutex = Mutex()
-    private var revocationListsFromLastCall = listOf<ConfigWithList>()
-    override suspend fun revocationListsFromLastCall() = revocationMutex.withLock { revocationListsFromLastCall }
-
-
     @Throws(CertificateInvalidException::class, RevocationException::class)
     override suspend fun List<X509Certificate>.verifyCertificateChain(
         verificationDate: Date,
         actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
+    ): CertificateChainValidation<KeyAttestationCertPath> {
+        var revocationLists = emptyList<ConfigWithList>()
+        val verdict = catching {
+            verifyCertificateChainAndCollect(verificationDate, actualTrustAnchors, requireRKP) {
+                revocationLists = it
+            }
+        }
+        return CertificateChainValidation(verdict, revocationLists)
+    }
+
+    private suspend fun List<X509Certificate>.verifyCertificateChainAndCollect(
+        verificationDate: Date,
+        actualTrustAnchors: Collection<TrustedRoot>,
+        requireRKP: Boolean,
+        onRevocationLists: (List<ConfigWithList>) -> Unit,
     ): KeyAttestationCertPath {
 
         val verifyTimelyValidity =
@@ -73,7 +82,8 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                 parent,
                 verificationDate,
                 verifyTimelyValidity,
-                fullChainForDebugging = certificateChain
+                fullChainForDebugging = certificateChain,
+                onRevocationLists = onRevocationLists,
             )
         }
 
@@ -116,7 +126,8 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         parent: X509Certificate,
         verificationDate: Date,
         verifyTimelyValidity: Boolean,
-        fullChainForDebugging: List<X509Certificate>
+        fullChainForDebugging: List<X509Certificate>,
+        onRevocationLists: (List<ConfigWithList>) -> Unit,
     ) {
         catchingUnwrapped {
             if (verifyTimelyValidity) certificate.checkValidity(verificationDate)
@@ -130,7 +141,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                 invalidCertificate = certificate
             )
         }
-        if (revocationCheckers.isNotEmpty()) revocationMutex.withLock {
+        if (revocationCheckers.isNotEmpty()) {
             catchingUnwrapped {
                 revocationCheckers.map { (cfg, loader) ->
                     ConfigWithList(
@@ -139,7 +150,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                     )
                 }
             }.onSuccess { revocationLists ->
-                revocationListsFromLastCall = revocationLists
+                onRevocationLists(revocationLists)
                 revocationLists.forEach {
                     it.list.find(certificate.serialNumber)?.let { entry ->
                         throw RevocationException.Revoked(

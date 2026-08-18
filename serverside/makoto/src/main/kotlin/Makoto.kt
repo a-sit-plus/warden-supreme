@@ -220,6 +220,15 @@ class Makoto
 
     }
 
+    private fun revocationListsFor(attestationProof: List<ByteArray>, challenge: ByteArray) =
+        if (attestationProof.size > 2) androidAttestationVerifier?.revocationListsForChallenge(challenge).orEmpty()
+        else emptyList()
+
+    private fun revocationListsFor(attestationProof: Attestation, challenge: ByteArray) =
+        if (attestationProof is AndroidKeystoreAttestation)
+            androidAttestationVerifier?.revocationListsForChallenge(challenge).orEmpty()
+        else emptyList()
+
     private val iosSetup = catchingUnwrapped {
         iosAttestationConfiguration?.let { IosSetup(it, clock, verificationTimeOffset) }
     }.getOrElse { throw AttestationException.Configuration(Platform.IOS, it.message, it) }
@@ -378,6 +387,7 @@ class Makoto
         clientData = clientData,
         verificationTime = clock.now(),
         verificationTimeOffset = verificationTimeOffset,
+        revocationLists = revocationListsFor(attestationProof, challenge),
         version = version
     )
 
@@ -405,6 +415,7 @@ class Makoto
         clientData = publicKey.encoded,
         verificationTime = clock.now(),
         verificationTimeOffset = verificationTimeOffset,
+        revocationLists = revocationListsFor(attestationProof, challenge),
         version = version
     )
 
@@ -432,6 +443,7 @@ class Makoto
         clientData = rawPublicKey,
         verificationTime = clock.now(),
         verificationTimeOffset = verificationTimeOffset,
+        revocationLists = revocationListsFor(attestationProof, challenge),
         version = version
     )
 
@@ -455,6 +467,7 @@ class Makoto
         challenge = challenge,
         verificationTime = clock.now(),
         verificationTimeOffset = verificationTimeOffset,
+        revocationLists = revocationListsFor(attestationProof, challenge),
         version = version
     )
 
