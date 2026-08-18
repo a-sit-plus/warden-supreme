@@ -22,7 +22,7 @@ application-provided attributes that are authenticated by either mode.
 
 !!! tip "Explore Attestation"
     The [Attestation Collector](collector.md) produces and displays a real Android attestation without requiring an
-    integration. Its verdict applies Warden Supreme's default hardware-backing requirement, locked-bootloader, and OEM verified-boot policy.
+    integration.
 
 
 The platform libraries underneath Warden Supreme answer whether an Android or Apple attestation artefact is valid.
