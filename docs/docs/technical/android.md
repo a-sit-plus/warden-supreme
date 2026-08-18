@@ -9,8 +9,7 @@ Android requires no special attestation setup comparable to App Attest on iOS. S
 
 !!! tip "Inspect a Real Attestation"
     Use the [Attestation Collector](../collector.md) to produce and explore the parsed Android attestation from your own
-    device. Its verification result uses Warden Supreme's default hardware-backing, locked-bootloader, and OEM verified-boot
-    requirements.
+    device.
 
 <figure>
 <picture>

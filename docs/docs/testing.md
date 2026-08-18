@@ -80,8 +80,8 @@ phones that can reach the staged service.
 
 !!! tip "Attestation Collector"
     The [Attestation Collector](collector.md) is also useful for quickly exploring what an individual Android device
-    produces. It is a public diagnostic service using Warden Supreme's defaults, not a replacement for testing your own app,
-    signing identity, backend, and production policy.
+    produces. It is a public diagnostic service, not a replacement for testing your own app, signing identity, backend,
+    and production policy.
 
 Early testing benefits from the broadest available device pool: team devices, partner devices, and the devices already
 used for compatibility testing. Most failures should match documented [quirks](technical/quirks.md), but the fleet may
