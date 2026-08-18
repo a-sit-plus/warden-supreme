@@ -1,0 +1,38 @@
+# SupremeConfiguration for the collector backend (attestation verifier).
+#
+# Android uses Warden Supreme's default trust policy:
+#   - packageName        = the collector launcher applicationId (:collector-android)
+#   - signerFingerprints = SHA-256 of the collector APK's signing certificate
+#   - hardware attestation, a locked bootloader, and vendor-managed OEM verified boot are required
+#
+# iOS: App Attest in the sandbox/development environment. teamIdentifier is a placeholder (10 chars);
+# replace it with your real Apple Team ID when you build & deploy on a device. bundleIdentifier must
+# match the iosApp bundle id (see collector/iosApp/Configuration/Config.xcconfig).
+#
+# Verification uses real system time (clock defaults to `system`); the default verificationTimeOffset
+# leeway absorbs normal client/server clock skew.
+android:
+  applications:
+    - packageName: at.asitplus.warden.collector
+      signerFingerprints:
+        - '1b:a6:4e:45:74:00:4b:9f:ab:2b:07:3f:16:fb:3b:0d:36:bb:1c:2f:45:7c:a2:f0:3f:5a:28:00:93:7c:1d:da'
+  supremeParser: true
+ios:
+  applications:
+    - teamIdentifier: ABCDE12345
+      bundleIdentifier: at.asitplus.warden.collector.AttestationCollector
+      sandbox: true
+genericDeviceNameOID: 2.25.161066711659881035499644753588417948207
+defaultKeyConstraints:
+  algorithmParameters:
+    type: EC
+    value:
+      curve: 'P-256'
+      digests:
+        - SHA256
+      allowKeyAgreement: false
+      allowSigning: true
+  keyProtection: null
+dataAuthentication:
+  type: HASH
+  algorithm: SHA256

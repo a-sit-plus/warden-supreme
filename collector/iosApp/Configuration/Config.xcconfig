@@ -1,0 +1,14 @@
+// Placeholder Apple Team ID (valid 10-char format). Replace with your real Team ID before you
+// build & deploy on a device — it must match `teamIdentifier` in the backend's supreme.yaml.
+TEAM_ID=ABCDE12345
+
+PRODUCT_NAME=Attestation Collector
+// Accurate bundle id; must match `bundleIdentifier` in the backend's supreme.yaml. (No $(TEAM_ID)
+// suffix — the wizard's default appended the team id, which is not a real bundle id.)
+PRODUCT_BUNDLE_IDENTIFIER=at.asitplus.warden.collector.AttestationCollector
+
+// App Attest entitlement (relative to the iosApp source root / $SRCROOT).
+CODE_SIGN_ENTITLEMENTS=iosApp/iosApp.entitlements
+
+CURRENT_PROJECT_VERSION=1
+MARKETING_VERSION=1.0

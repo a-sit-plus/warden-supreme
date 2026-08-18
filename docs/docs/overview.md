@@ -20,6 +20,11 @@ into one attestation format and a single client and server API.
 Each challenge can require a signed proof of possession or hash-bind an unsigned TBS CSR, and can request typed
 application-provided attributes that are authenticated by either mode.
 
+!!! tip "Explore Attestation"
+    The [Attestation Collector](collector.md) produces and displays a real Android attestation without requiring an
+    integration. Its verdict applies Warden Supreme's default hardware-backing requirement, locked-bootloader, and OEM verified-boot policy.
+
+
 The platform libraries underneath Warden Supreme answer whether an Android or Apple attestation artefact is valid.
 Warden Supreme supplies the substantially larger system around that decision that makes the difference between verifying
 an attestation artefact and a production-grade, ready-to-deploy solution:

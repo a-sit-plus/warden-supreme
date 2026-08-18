@@ -5,8 +5,8 @@ kotlin = "2.4.10"
 
 guava = "33.5.0-jre"
 autovalue = "1.11.0"
-signum = "3.25.0"
-supreme = "0.15.0"
+signum = "3.26.0"
+supreme = "0.16.0"
 agp = "9.1.1"
 cbor = "0.9"
 gson = "2.13.2"
@@ -32,6 +32,16 @@ asp = "20260722"
 sbombastic ="0.0.3"
 pitest = "1.19.0-rc.3"
 pitest-junit5 = "1.2.2"
+
+# collector (KMP/CMP app + Ktor backend) — see collector/*
+compose = "1.11.1"
+material3 = "1.11.0-alpha07"
+androidx-lifecycle = "2.11.0-beta01"
+androidx-activity = "1.13.0"
+logback = "1.5.35"
+# Ktor Gradle plugin (run/EngineMain/fat-jar); Ktor libraries themselves come from the conventions ktor("...") helper.
+# Keep aligned with the Ktor runtime version the conventions plugin resolves.
+ktorPlugin = "3.5.0"
 
 
 [libraries]
@@ -66,8 +76,27 @@ schemakenerator-core = { group = "io.github.smiley4", name = "schema-kenerator-c
 schemakenerator-serialization = { group = "io.github.smiley4", name = "schema-kenerator-serialization", version.ref = "schemakenerator" }
 schemakenerator-jsonschema = { group = "io.github.smiley4", name = "schema-kenerator-jsonschema", version.ref = "schemakenerator" }
 
+# collector app (Compose Multiplatform)
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
+compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
+androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+# collector androidApp launcher
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+# collector backend (Ktor)
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
 [plugins]
 asp = { id = "at.asitplus.gradle.conventions", version.ref = "asp" }
 agp = { id = "com.android.kotlin.multiplatform.library", version.ref= "agp"}
 sbombastic = { id = "at.asitplus.gradle.sbombastic", version.ref= "sbombastic"}
 pitest = { id = "info.solidsoft.pitest", version.ref = "pitest" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktorPlugin" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }
