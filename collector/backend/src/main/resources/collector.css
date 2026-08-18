@@ -10,10 +10,15 @@ header { padding: 20px 24px; border-bottom: 1px solid #243441; display: flex; al
 .qr { align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #01f9fe; font-weight: bold; text-align: center; flex: 0 0 auto; }
 .qr img { flex: 1 1 auto; min-height: 90px; max-height: 240px; width: auto; aspect-ratio: 1 / 1; border-radius: 6px; }
 .qr span { line-height: 1.15; white-space: nowrap; }
-h1 { margin: 0; font-size: 3.25rem; color: #01f9fe; font-weight: 600; display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
-h1 > span { align-self: center; white-space: nowrap; line-height: 1; padding-left: 1rem; }
+h1 { margin: 0; font-size: 3.25rem; color: #01f9fe; font-weight: 600; display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+h1 > span { line-height: 1; }
 h1 > img { display: block; }
 .count { color: #9FB2C2; font-size: .85rem; margin-top: 4px; }
+.intro { max-width: 900px; padding: 16px 24px 0; line-height: 1.5; }
+.intro p { margin: 0 0 12px; }
+.intro ol { margin: 0 0 12px; padding-left: 24px; }
+.intro .notice { color: #C9D6E2; }
+.intro .warning { color: #E6695B; }
 .scroll { overflow-x: auto; padding: 16px 24px 32px; }
 table { border-collapse: collapse; width: 100%; font-size: .82rem; white-space: nowrap; }
 th, td { padding: 8px 12px; border-bottom: 1px solid #1E242A; text-align: left; }

@@ -359,7 +359,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
     head {
         meta(charset = "utf-8")
         meta(name = "viewport", content = "width=device-width, initial-scale=1")
-        title { +"Warden Supreme — Collected Attestations" }
+        title { +"Warden Supreme — Public Attestation Testing Service" }
         link {
             rel = "stylesheet"
             href = "/collector.css"
@@ -382,7 +382,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                         src = "/logo.png"
                     )
                     span {
-                        +"Collected Attestations"
+                        +"Public Attestation Testing Service"
                     }
                 }
                 div("header-meta") {
@@ -421,11 +421,39 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                     alt = "QR code to download the Collector APK",
                     src = "/collector-apk-qr.svg"
                 )
-                span { +"Click or Scan to download APK" }
+                span { +"Click or scan to download APK" }
             }
         }
 
-
+        section("intro") {
+            p {
+                +"This opt-in service lets you create an attestation on a test device, verify it with Warden Supreme, "
+                +"and inspect how it was processed. Submitted attestation statements, verification results, metadata, "
+                +"and diagnostic artifacts are retained and published here to establish a diverse real-world test dataset."
+            }
+            p("notice") {
+                strong {
+                    +"The Attestation Collector app and this public service are completely separate from applications "
+                    +"and services that integrate Warden Supreme. Integrating Warden Supreme does not register with, "
+                    +"connect to, or transmit data to this service. The service receives data only when someone "
+                    +"deliberately submits an attestation using the Attestation Collector app."
+                }
+            }
+            ol {
+                li { +"Download and install the Attestation Collector APK." }
+                li { +"Open the app and select Attest to create and submit an attestation statement." }
+                li {
+                    +"Review the verification result, metadata, parsed attestation, and raw diagnostic data in the "
+                    +"public table below."
+                }
+            }
+            p("warning") {
+                strong {
+                    +"Never configure a production deployment to send attestations to this service. This is a public "
+                    +"testing endpoint: submitted attestation data and diagnostic artifacts may be stored and published."
+                }
+            }
+        }
 
         if (records.isEmpty()) {
             p("empty") { +"No attestations collected yet." }
