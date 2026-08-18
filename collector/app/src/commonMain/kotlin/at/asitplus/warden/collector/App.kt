@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -309,6 +310,15 @@ fun App() {
                         .fillMaxWidth()
                         .weight(logoWeight),
                 )
+
+                Text(
+                    text = "More open source by A-SIT Plus",
+                    style = MaterialTheme.typography.bodySmall,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clickable { actions.openUrl("https://plus.a-sit.at/open-source.html") },
+                )
             }
             }
         }
@@ -354,7 +364,7 @@ private fun WardenLogo(modifier: Modifier, padding: Dp = 24.dp, onClick: () -> U
         }
         Image(
             painter = painterResource(Res.drawable.warden),
-            contentDescription = "WARDEN Supreme",
+            contentDescription = "Warden Supreme",
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxSize()

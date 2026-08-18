@@ -385,21 +385,23 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                         +"Collected Attestations"
                     }
                 }
-                div("count") { +"${records.size} collected" }
+                div("header-meta") {
+                    div("count") { +"${records.size} collected" }
 
-                span {
-                    a {
-                        href = "https://a-sit-plus.github.io/warden-supreme/"
-                        target = "_blank"
-                        +"Learn more"
-                    }
-                }
-                if (records.any { it.second.hasStatement }) {
                     span {
-                        classes += "download"
                         a {
-                            href = DEBUG_STATEMENTS_ARCHIVE_PATH
-                            +"⬇ Download all debug statements ⬇"
+                            href = "https://a-sit-plus.github.io/warden-supreme/"
+                            target = "_blank"
+                            +"Learn more"
+                        }
+                    }
+                    if (records.any { it.second.hasStatement }) {
+                        span {
+                            classes += "download"
+                            a {
+                                href = DEBUG_STATEMENTS_ARCHIVE_PATH
+                                +"⬇ Download all debug statements ⬇"
+                            }
                         }
                     }
                 }
@@ -432,6 +434,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                 target = "_blank"
                 +"Imprint"
             }
+            span { +" (Yes, we know it looks like a GeoCities page. There are no mistakes, just happy accidents.)" }
         }
         script { unsafe { +starfieldJs } }
     }
