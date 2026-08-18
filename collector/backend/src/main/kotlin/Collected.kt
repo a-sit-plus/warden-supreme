@@ -390,9 +390,17 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
 
                     span {
                         a {
-                            href = "https://a-sit-plus.github.io/warden-supreme/"
+                            href = "https://a-sit-plus.github.io/warden-supreme/collector/"
                             target = "_blank"
                             +"Learn more"
+                        }
+                    }
+                    span {
+                        classes += "download"
+                        a {
+                            href = "https://a-sit-plus.github.io/warden-supreme/"
+                            target = "_blank"
+                            +"About Warden Supreme"
                         }
                     }
                     if (records.any { it.second.hasStatement }) {
@@ -434,7 +442,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                 target = "_blank"
                 +"Imprint"
             }
-            span { +" (Yes, we know it looks like a GeoCities page. There are no mistakes, just happy accidents.)" }
+            span { +" · (Yes, we know it looks like a GeoCities page. There are no mistakes, just happy accidents.)" }
         }
         script { unsafe { +starfieldJs } }
     }
