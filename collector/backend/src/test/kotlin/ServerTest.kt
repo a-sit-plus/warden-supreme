@@ -11,11 +11,45 @@ import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import java.io.File
 import kotlin.test.*
 import kotlin.io.path.createTempDirectory
 import java.util.zip.ZipInputStream
 
 class ServerTest {
+
+    @Test
+    fun `replay failure keeps stored state`() {
+        val outputDir = createTempDirectory("collector-replay-test").toFile()
+        try {
+            val recordDir = File(outputDir, "1234-dead").apply { mkdirs() }
+            val oldFiles = mapOf(
+                "record.json" to """{
+                    "submittedAtEpochMs": 1234,
+                    "result": "original",
+                    "verified": false,
+                    "certValidityStart": "old-start",
+                    "certValidityEnd": "old-end",
+                    "hasChain": true,
+                    "hasStatement": true
+                }""".trimIndent().encodeToByteArray(),
+                "debug-statement.json" to "invalid debug statement".encodeToByteArray(),
+                "proof.der" to byteArrayOf(1, 2, 3),
+                "chain.der" to byteArrayOf(4, 5, 6),
+            )
+            oldFiles.forEach { (name, contents) -> File(recordDir, name).writeBytes(contents) }
+
+            CollectorStore(outputDir).use { store ->
+                assertEquals("original", store.list().single().second.result)
+            }
+
+            oldFiles.forEach { (name, contents) ->
+                assertContentEquals(contents, File(recordDir, name).readBytes())
+            }
+        } finally {
+            outputDir.deleteRecursively()
+        }
+    }
 
     @Test
     fun `test root endpoint`() {

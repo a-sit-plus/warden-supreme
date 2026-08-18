@@ -210,29 +210,38 @@ class CollectorStore(private val dir: File) : AutoCloseable {
             val statementFile = File(recordDir, "debug-statement.json")
             if (!statementFile.isFile) return@forEach
 
-            val oldRecord = catchingUnwrapped {
-                json.decodeFromString<CollectedRecord>(File(recordDir, "record.json").readText())
-            }.getOrNull()
-            val statement = WardenDebugAttestationStatement.deserialize(statementFile.readText())
-            val replay = statement.replay()
-            val replayResult = when (replay) {
-                is KeyAttestation<*> -> replay.details
-                is AttestationResult -> replay
-                else -> error("Unsupported replay result ${replay::class.qualifiedName}")
-            }
-            val verified = replayResult is AttestationResult.Verified
-            val result = if (verified) "Verified"
-            else "TRUST: ${(replayResult as AttestationResult.Error).explanation}"
+            try {
+                val oldRecord = catchingUnwrapped {
+                    json.decodeFromString<CollectedRecord>(File(recordDir, "record.json").readText())
+                }.getOrNull()
+                val statement = WardenDebugAttestationStatement.deserialize(statementFile.readText())
+                val replay = statement.replay()
+                val replayResult = when (replay) {
+                    is KeyAttestation<*> -> replay.details
+                    is AttestationResult -> replay
+                    else -> error("Unsupported replay result ${replay::class.qualifiedName}")
+                }
+                val verified = replayResult is AttestationResult.Verified
+                val result = if (verified) "Verified"
+                else "TRUST: ${(replayResult as AttestationResult.Error).explanation}"
 
-            writeDerivedFiles(
-                recordDir = recordDir,
-                submittedAtEpochMs = oldRecord?.submittedAtEpochMs
-                    ?: recordDir.name.substringBefore('-').toLong(),
-                deviceName = oldRecord?.deviceName,
-                result = result,
-                verified = verified,
-                statement = statement,
-            )
+                writeDerivedFiles(
+                    recordDir = recordDir,
+                    submittedAtEpochMs = oldRecord?.submittedAtEpochMs
+                        ?: recordDir.name.substringBefore('-').toLong(),
+                    deviceName = oldRecord?.deviceName,
+                    result = result,
+                    verified = verified,
+                    statement = statement,
+                )
+            } catch (exception: Exception) {
+                if (exception is CancellationException) throw exception
+                logger.error(
+                    "Failed to replay stored attestation; retaining existing files; path={}",
+                    recordDir.absolutePath,
+                    exception,
+                )
+            }
         }
     }
 
@@ -390,7 +399,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
 
                     span {
                         a {
-                            href = "https://a-sit-plus.github.io/warden-supreme/collector/"
+                            href = "https://a-sit-plus.github.io/warden-supreme/latest/collector/"
                             target = "_blank"
                             +"Learn more"
                         }
