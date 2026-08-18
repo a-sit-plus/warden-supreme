@@ -31,12 +31,13 @@ met the policy.
 
 ## Interpreting Results
 
-The public collector deliberately uses Warden Supreme's Android defaults. A successful result therefore requires:
+The public collector deliberately uses Warden Supreme's Android defaults, except for already using our home-grown 
+attestation extension parser. A successful result therefore requires:
 
-- hardware-backed attestation;
-- a locked bootloader;
-- vendor-managed OEM verified boot; and
-- a chain anchored in the default Google hardware-attestation roots.
+- hardware-backed attestation
+- a locked bootloader
+- vendor-managed OEM verified boot
+- a chain anchored in the default Google hardware-attestation roots
 
 **The result describes this collector policy, not every valid attestation policy!** For example, Warden Supreme can be
 configured to trust selected hardened custom-ROM boot keys, such as GrapheneOS but the public collector does not do so. Patch-level,
