@@ -4,8 +4,7 @@ Attestation failures often depend on the exact certificate chain, configuration,
 verification. Warden Supreme can capture these inputs and replay the failed check offline.
 
 For an interactive look at real-world Android attestation data before building an integration, use the
-[Attestation Collector](../collector.md). It displays the parsed statement and verification result produced under the
-default policy.
+[Attestation Collector](../collector.md). It displays the parsed statement and verification result.
 
 The approach is the same whether you use Warden Supreme's integrated attestation flow or the raw _makoto_ or _roboto_
 attestation checkers (see [Usage without Integrated Clients](raw.md)):
