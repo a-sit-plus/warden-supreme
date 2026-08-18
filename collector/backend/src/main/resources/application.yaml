@@ -1,0 +1,20 @@
+ktor:
+  deployment:
+    port: ${PORT:8080}
+  application:
+    modules:
+      - at.asitplus.warden.SerializationKt.configureSerialization
+      - at.asitplus.warden.RoutingKt.configureRouting
+
+collector:
+  # Externally reachable base URL of THIS backend, as the device/emulator sees it. Overridden by the
+  # BASE_URL environment variable in deployments. The backend embeds "<publicBaseUrl><attest-path>"
+  # into each challenge so the app knows where to POST the proof.
+  # 10.0.2.2 is the host loopback as seen from the Android emulator.
+  publicBaseUrl: "http://10.0.2.2:8080"
+  # Optional path to an external SupremeConfiguration YAML. If unset, the bundled resource
+  # `supreme.yaml` is used.
+  # supremeConfig: "/path/to/supreme.yaml"
+  # Directory where each collected attestation (WARDEN debug statement + metadata) is written.
+  # Overridden by the OUTPUT_DIR environment variable in deployments.
+  outputDir: "./collected-proofs"

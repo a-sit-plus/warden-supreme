@@ -1,0 +1,16 @@
+.git
+.gradle
+.gradle-user-home
+.idea
+.kotlin
+**/build
+collected-proofs
+debug-statements.txt
+debug_statements.csv
+docs
+dependencies/android-key-attestation
+dependencies/http-proxy
+dependencies/keyattestation
+release-1.0.2
+local.properties
+.DS_Store

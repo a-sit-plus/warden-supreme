@@ -8,6 +8,7 @@ import at.asitplus.signum.indispensable.asn1.KnownOIDs
 import at.asitplus.signum.indispensable.asn1.serialNumber
 import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.*
+import at.asitplus.signum.supreme.dsl.PREFERRED
 import at.asitplus.signum.supreme.hash.digest
 import at.asitplus.signum.supreme.dsl.PREFERRED
 import at.asitplus.signum.supreme.os.PlatformSigningProvider

@@ -59,6 +59,7 @@ extra:
     android_security_bulletin: https://source.android.com/docs/security/bulletin
     github_google_android_key_attestation: https://github.com/google/android-key-attestation
     github_android_keyattestation: https://github.com/android/keyattestation
+    attestation_collector: https://attestation-collector.sliplane.app
 
     ios_devicecheck: https://developer.apple.com/documentation/devicecheck
     ios_validating_apps: https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server
@@ -145,6 +146,7 @@ nav:
             - iOS DeviceCheck &amp; App&nbsp;Attest: technical/ios.md
             - Quirks and Hints: technical/quirks.md
         - Testing: testing.md
+        - Exploring Attestations: collector.md
         - References: refs.md
     - Integration Guide:
         - Integrating Warden Supreme:

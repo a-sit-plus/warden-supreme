@@ -2,6 +2,10 @@
 
 ## NEXT
 
+## 1.1.1
+* Fix: Use StrongBox by default where available
+* Add Attestation collector
+
 ## 1.1.0
 * Remove Deprecations schedules for removal in 1.1
 * Deprecate APIs with rough edges (will be removed in Warden Supreme 1.3)
