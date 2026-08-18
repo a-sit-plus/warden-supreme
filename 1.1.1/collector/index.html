@@ -1746,7 +1746,7 @@ attestation extension.</p>
 <ol>
 <li>Open the collector and download the Android APK.</li>
 <li>Install the APK on the device you want to examine.</li>
-<li>Keep the preconfigured backend domain and select <strong>Attest</strong>.</li>
+<li>Keep the preconfigured backend domain, select a verification policy, and select <strong>Attest</strong>.</li>
 <li>Inspect the result in the app or the collected-attestations table in your browser.</li>
 </ol>
 <p>The collector creates a fresh attested key and evaluates its proof with Warden Supreme. Successful and failed results
@@ -1778,18 +1778,20 @@ attestation evidence. If the package name remains <code>at.asitplus.warden.colle
 the replay proceed beyond the otherwise unavoidable signer mismatch and expose the deliberately triggered error. If you
 also change the application ID, update the recorded package-name configuration before replaying.</p>
 <h2 id="interpreting-results">Interpreting Results</h2>
-<p>The public collector deliberately uses Warden Supreme's Android defaults, except for already using our home-grown 
-attestation extension parser. A successful result therefore requires:</p>
+<p>The public collector uses Warden Supreme's Android defaults, except for already using our home-grown attestation
+extension parser. Its selectable policies are:</p>
 <ul>
-<li>hardware-backed attestation</li>
-<li>a locked bootloader</li>
-<li>vendor-managed OEM verified boot</li>
-<li>a chain anchored in the default Google hardware-attestation roots</li>
+<li><strong>Default</strong> requires timely certificate chains, hardware-backed attestation, a locked bootloader, vendor-managed OEM
+  verified boot, and a chain anchored in the default Google hardware-attestation roots.</li>
+<li><strong>Trust old factory certs</strong> additionally accepts expired factory-provisioned certificate chains.</li>
+<li><strong>Unlocked BL</strong> also permits unlocked bootloaders. Verified boot state and boot-key checks are skipped for this policy.</li>
+<li><strong>GrapheneOS</strong> accepts expired factory-provisioned chains and locked devices using either OEM verified boot or one of
+  the pinned GrapheneOS verified boot keys.</li>
+<li><strong>StrongBox only</strong> uses the default policy and additionally requires the attested key to be backed by StrongBox.</li>
 </ul>
-<p><strong>The result describes this collector policy, not every valid attestation policy!</strong> For example, Warden Supreme can be
-configured to trust selected hardened custom-ROM boot keys, such as GrapheneOS but the public collector does not do so. Patch-level,
-minimum Android-version, StrongBox, and application-specific production requirements also depend on the policy of the
-service performing verification. The default configuration is very generic/lax in this regard.</p>
+<p><strong>The result describes the selected collector policy, not every valid attestation policy!</strong> Patch-level, minimum
+Android-version, StrongBox, and application-specific production requirements also depend on the policy of the service
+performing verification. The default configuration is very generic/lax in this regard.</p>
 <div class="admonition warning">
 <p class="admonition-title">Public Diagnostic Data</p>
 <p>Submitted attestation details and downloadable diagnostic artefacts appear in the collector's public table. Use it
