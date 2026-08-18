@@ -1,7 +1,7 @@
 [versions]
 
 ## do not track latest and greatest for better downstream compat
-kotlin = "2.4.10"
+kotlin = "2.4.20-RC"
 
 guava = "33.5.0-jre"
 autovalue = "1.11.0"
