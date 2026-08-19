@@ -13,7 +13,7 @@
 </div>
 
 > [!TIP]
-> Need help tailored to your needs? See our [💎 Services](https://a-sit-plus.github.io/warden-supreme/services/).
+> Need help tailored to your needs? See our [💎 Services](https://a-sit-plus.github.io/warden-supreme/latest/services/).
 
 _Warden Supreme_ is a fully integrated key and app attestation suite consisting of:
 
@@ -28,18 +28,14 @@ The original server-side-only key and app attestation library is still available
 of the pillars supporting Warden Supreme. It now lives on as [Warden makoto](serverside/makoto) and continues to be
 published to Maven Central.
 
-> [!WARNING]
-> **Warden Supreme changed some defaults compared to previous WARDEN / WARDEN-roboto**
->
-> Most prominently, there is no Nougat hybrid attestation any more and trust anchor management was completely revamped.  
-> Do check out the [full migration guide](https://a-sit-plus.github.io/warden-supreme/integration/migration/).
->
-> **Ignoring these changes can result in a total security failure if you do not ensure freshness by feeding random cryptographic nonces into attestation statement creation and properly checking them.**
-
 ## 0. About this Document
 
-This README provides only a brief overview. **Warden Supreme's [extensive documentation hub](https://a-sit-plus.github.io/warden-supreme) is a comprehensive one-stop shop covering
-all topics regarding key and app attestation.**
+This README provides only a brief overview. 
+
+> [!TIP] 
+> **Warden Supreme's [extensive documentation hub](https://a-sit-plus.github.io/warden-supreme) is a comprehensive one-stop shop covering
+all topics regarding key and app attestation.**  
+> It is accompanied by an end-to-end [integration guide](https://a-sit-plus.github.io/warden-supreme/latest/integration/supreme).
 
 The documentation hub explains the basic concepts, how to apply them, and provides
 a detailed write-up on how Android and iOS implement them.
@@ -51,7 +47,7 @@ including hiccups, glitches, and outright failures due to non-compliant vendor i
 **The remainder of this document assumes familiarity with all topics covered by the full documentation**, and serves
 as a quick-start guide to integrate Warden Supreme to remotely establish trust in mobile clients.
 
-Full API docs are available [here](https://a-sit-plus.github.io/warden-supreme/dokka/).
+Full API docs are available [here](https://a-sit-plus.github.io/warden-supreme/latest/dokka/).
 
 ## 1. Using Warden Supreme in your Projects
 
@@ -67,7 +63,7 @@ Warden Supreme targets Android and iOS clients and JVM-based back-ends.
   ```
 
 > [!TIP]
-> Check out **Warden Supreme's [integration guide](https://a-sit-plus.github.io/warden-supreme/integration/supreme)** for a step-by-step
+> Check out **Warden Supreme's [integration guide](https://a-sit-plus.github.io/warden-supreme/latest/integration/supreme)** for a step-by-step
 > integration tutorial and a minimum working example. The guide includes code samples and minimum and exhaustive configuration examples.
 
 Warden Supreme currently supports only HTTP as its communication protocol and relies on [Ktor](https://ktor.io/) on mobile clients.
@@ -144,6 +140,7 @@ This project is structured into four groups:
 2. `/serverside` contains the server-side foundations with all low-level logic to verify attestations
 3. `/utils` contains unpublished utilities for investigating attestation errors; these are intended to be used inside an IDE with a debugger attached
 4. `/dependencies` contains external dependencies that are not published to Maven Central (or anywhere else) and are thus compiled into group&nbsp;2 or used for testing
+5. `/collector` contains the attestation collector app and backend sources.
 
 ### 3.1 `/supreme`
 
@@ -173,6 +170,16 @@ Teams at Google released reference Android attestation parsers (not full attesta
 They did not, however, publish these artifacts to Maven Central. Hence, Warden Supreme integrates them as git submodules and compiles them into _Warden roboto_.
 
 In addition, an HTTP proxy is included to facilitate testing. It is not, however, shipped with any artifact.
+
+### 3.5 `/collector`
+
+This group contains the source code for the Attestation Collector: a quick-and-dirty Compose
+Multiplatform (CMP) app and its Ktor-based back-end. The collector makes it easy to produce and inspect an Android
+attestation without first integrating Warden Supreme into another app and back end.
+
+The collector is currently Android-only because iOS apps cannot be deployed outside Apple's App Store. iOS app
+sources exist in the repository, but the collector's business logic is currently implemented only for Android.
+
 
 ## Contributing
 
