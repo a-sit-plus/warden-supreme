@@ -15,8 +15,8 @@ val myCustomRoots = APPLE_DEFAULT_TRUSTED_ROOTS
 // --8<-- [start:makoto-config]
 val makoto = Makoto(
     androidAttestationConfiguration = AndroidAttestationConfiguration(
-        applications = listOf(
-         /*(1)!*/AndroidAttestationConfiguration.AppData(
+     /*(1)!*/applications = listOf(
+            AndroidAttestationConfiguration.AppData(
                 packageName = "at.asitplus.attestation_client",
                 signerFingerprints = setOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()),
             ),
@@ -44,10 +44,10 @@ val makoto = Makoto(
         ),
      /*(12)!*/requireRollbackResistance = false, //DEFAULT
      /*(13)!*/ignoreLeafValidity = false, // defaults to true
-        hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS, //DEFAULT
+     /*(14)!*/hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS, //DEFAULT
         softwareTrustedRoots = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12, //DEFAULT
-        verificationSecondsOffset = 0, //DEFAULT
-     /*(14)!*/disableHardwareAttestation = false,
+        verificationSecondsOffset = 0, //DEFAULT; Android-only clock-drift adjustment in seconds
+        disableHardwareAttestation = false,
         enableSoftwareAttestation = false, //DEFAULT
      /*(15)!*/attestationStatementValiditySeconds = null, // DEFAULT; no validity time checks!
      /*(16)!*/revocation = listOf(
@@ -59,8 +59,8 @@ val makoto = Makoto(
     ),
 
     iosAttestationConfiguration = IosAttestationConfiguration(
-        applications = listOf(
-         /*(19)!*/IosAttestationConfiguration.AppData(
+     /*(19)!*/applications = listOf(
+            IosAttestationConfiguration.AppData(
                 teamIdentifier = "9CYHJNG644",
                 bundleIdentifier = "at.asitplus.attestation-client",
              /*(20)!*/iosVersionOverride = OsVersions("16.0", "20A10"),

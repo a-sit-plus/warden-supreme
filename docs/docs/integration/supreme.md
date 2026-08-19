@@ -155,7 +155,7 @@ property; the expandable example below shows them together.
 
 <div id="config-options-example"></div>
 
-??? example "Comprehensive example of Makoto config options"
+!!! example "Comprehensive example of Makoto config options"
     The below config illustrates configuring two different Android apps: a regular one for the masses and a second one
     with much tighter security constraints. This makes no sense when Warden Supreme is integrated into a back-end.
     If, however, a dedicated attestation service is deployed that is then used to issue certificates for apps used by different services, this can be legitimate. 
@@ -169,41 +169,57 @@ property; the expandable example below shows them together.
     --8<-- "Readme-Config.kt:makoto-config"
     ```
     
-    1. The basic application for the masses
-    2. A second, experimental high-security app
+    1. The ordered list may contain more than one app. Each Android entry requires a package name and one or more
+       SHA-256 signer fingerprints. For production apps distributed through Google Play, use the fingerprint of the
+       Google cloud signing certificate.
+    2. A second, experimental high-security app demonstrates configuring multiple applications.
     3. Different package name from the first app
-    4. Enforce minimum version, Android 16, and up-to-date security patches
-    5. Allow for more leeway
+    4. These values set a minimum app version and replace the global minimum OS and security-patch requirements for this
+       app. Android major versions use steps of 10,000, so Android 16 is `160000`; patch levels use a four-digit year and
+       numeric month.
+    5. Security patch levels this many months in the future are tolerated.
     6. Only remote key provisioning is considered trustworthy for this app
-    7. Only the RKP trust anchor is considered trustworthy
-    8. We want our app to have a dedicated HSM
-    9. We want to mark the hardened app. We an use a `Map<String,String>` to attach arbitrary properties to the attestation configuration.
-    10. By default, Android 13 with a somewhat recent patch level will be required without enforcing the most recent security patches or StrongBox to reach a wider audience.
-       This concerns the first app, since the second one overrides these values.
+    7. The global hardware and software trust anchors are discarded for this app; only the configured RKP root is
+       trusted here.
+    8. The app's key is required to use Android StrongBox.
+    9. We want to mark the hardened app. We can use a `Map<String,String>` to attach arbitrary properties to the attestation configuration.
+    10. These are the global defaults. Here Android 13 with a minimum December 2023 patch level is required, while
+        StrongBox remains optional. The second app overrides these values.
     11. Allow OEM-managed `VERIFIED` boot and one pinned `SELF_SIGNED` verified boot key for locked devices only.
         Omit `OEM` if you want to trust only explicitly pinned custom ROM keys. This has no effect once unlocked
         bootloaders are allowed.
-    12. This is rarely used in practice and shows the default
-    13. This is rather optimistic, but the majority of devices running Android 13 should handle this correctly.
-    14. Usually, you will want hardware attestation, so you'd need to explicitly disable it
-    15. Warden Supreme does not need to enforce this because cryptographic nonces are used to ensure freshness.  
-       It is not recommended to set this value because many OEMs get this wrong.
+    12. Rollback resistance is unsupported by many devices and is disabled by default. See the
+        [Android documentation](https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance).
+    13. Timely leaf-certificate validity is ignored by default, because some implementations produce incorrectly dated
+        leaf certificates. Set the shown value to `false` to enforce it. Challenge validation still ensures freshness.
+    14. The two sets replace the global hardware and software trust anchors, respectively. Hardware verification can be
+        disabled; software-only attestation can be permitted as a fallback and is primarily useful for test devices and
+        emulators.
+    15. This limits the age of the statement, not the certificate. The default `null` disables this age check;
+        challenge validation still ensures freshness.
     16. Required if you run Warden behind a proxy to fetch revocation information from Google servers.
-    17. Factory-provisioned Android attestation chains are checked for timely certificate validity by default. Only
-        disable this for old devices with expired intermediate certificates after accepting the resulting risk.
+    17. Factory-provisioned Android attestation chains are checked for timely certificate validity by default.
+        It is safe to disable this when using the default Google hardware roots of trust as per the
+        [official documentation](https://developer.android.com/privacy-and-security/security-key-attestation#expired_factory_keys).
     18. We want to attach a `Map<String, String>` with a single entry. Can be extended arbitrarily.
-    19. A single iOS app for evaluation purposes.
-    20. `20A10` is a build number. For details see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/) by David Shayer.
-    21. Uses the test stage
-    22. Custom trusted root is set, to enable generating iOS attestation statements in software for evaluation purposes.
-    23. We want to mark the iOS app. We an use a `Map<String,String>` to attach arbitrary properties to the attestation configuration.
-    24. This could already be a production value, in preparation for the real iOS app
-    25. This is simply Apple's recommendation plus five minutes offset
-    26. Explicitly set production trusted roots as default
+    19. The ordered iOS list may also contain more than one app. Each entry is identified by its team and bundle
+        identifiers.
+    20. This sets the app's minimum iOS version using both a SemVer value and an Apple build number. For build-number
+        details, see [this explanation](https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/)
+        by David Shayer.
+    21. The shown value selects Apple's sandbox environment; production is the default.
+    22. The global Apple trust-anchor pairs are replaced for this app. Custom roots enable generating iOS attestation
+        statements in software for evaluation.
+    23. We want to mark the iOS app. We can use a `Map<String,String>` to attach arbitrary properties to the attestation configuration.
+    24. The global minimum iOS version also contains both a SemVer value and build number. The default `null` performs no
+        minimum-version check; an app-specific value takes precedence.
+    25. This sets the maximum accepted statement age. The default is Apple's recommendation plus five minutes.
+    26. These replace the global Apple attestation and receipt trust-anchor pairs; production roots are the default.
     27. We want to attach a `Map<String, String>` with a single entry. Can be extended arbitrarily.
-    28. Account for clock drift!
+    28. Account for clock drift throughout the integrated configuration. The Android-only configuration exposes the
+        same adjustment in seconds.
 
-    Note that revocation configuration has been revamped after 0.9.9999 (see below)!
+    Be sure to check out [Externalising Configuration](config.md#config-serialized) for serialized (YAML + JSON) configuration examples!
 
 
 !!! tip "Pinned `SELF_SIGNED` Android boot keys"

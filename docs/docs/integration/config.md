@@ -16,6 +16,11 @@ Warden Supreme configuration consists of two parts:
 All externalised configuration classes implement `AttestationConfiguration`, providing one serialisation and loading
 path across Android, iOS, and integrated setups.
 
+!!! tip "Configuration Property Semantics"
+    Canonical camel-case property names mirror the Kotlin properties. Their semantics are explained by the
+    [annotated configuration example](supreme.md#config-options-example); the generated YAML and JSON examples below
+    show the corresponding externalised structure and defaults.
+
 
 !!! note "Changed Fingerprint Format"
     Android signer fingerprints were previously Base64-URL encoded. This is still supported, but the preferred representation is hex-encoded (with or without whitespace and/or `:` separators).  
@@ -152,6 +157,8 @@ matched challenge—not the HTTP layer or client transport—selects the expecte
     `AttestationVerifier.decodeAttestationProof(…)`. Configure the same limit for the client and enforce it before an
      HTTP handler buffers or decodes a request body.  
      **Never use `Pkcs10CertificationRequest.decodeFromDer(…)` as advertised before Warden Supreme 1.0.3!** 
+
+<div id="config-serialized"></div>
 
 Both `AndroidAttestationConfiguration` and `IosAttestationConfiguration` are useful on their own if you don't opt for
 fully integrated attestation, which is why they also have canonical serialised representations (JSON and YAML) and
