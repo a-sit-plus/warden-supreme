@@ -8,6 +8,7 @@ import at.asitplus.signum.indispensable.asn1.KnownOIDs
 import at.asitplus.signum.indispensable.asn1.serialNumber
 import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.*
+import at.asitplus.signum.supreme.dsl.PREFERRED
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
@@ -213,6 +214,7 @@ suspend fun AttestationChallenge.createAttestationProof(
             }
         }
         hardware {
+            backing = PREFERRED
             attestation {
                 challenge = this@createAttestationProof.nonce
             }
