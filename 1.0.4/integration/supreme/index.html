@@ -1,0 +1,2815 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://a-sit-plus.github.io/warden-supreme/1.0.4/integration/supreme/">
+      
+      
+        <link rel="prev" href="../../refs/">
+      
+      
+        <link rel="next" href="../config/">
+      
+      
+      <link rel="icon" href="../../assets/images/icon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
+    
+    
+      
+        <title>End-to-End Integration - Warden Supreme</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+      
+        <meta  property="og:type"  content="website" >
+      
+        <meta  property="og:title"  content="End-to-End Integration - Warden Supreme" >
+      
+        <meta  property="og:description"  content="None" >
+      
+        <meta  property="og:image"  content="https://a-sit-plus.github.io/warden-supreme/1.0.4/assets/images/social/integration/supreme.png" >
+      
+        <meta  property="og:image:type"  content="image/png" >
+      
+        <meta  property="og:image:width"  content="1200" >
+      
+        <meta  property="og:image:height"  content="630" >
+      
+        <meta  property="og:url"  content="https://a-sit-plus.github.io/warden-supreme/1.0.4/integration/supreme/" >
+      
+        <meta  name="twitter:card"  content="summary_large_image" >
+      
+        <meta  name="twitter:title"  content="End-to-End Integration - Warden Supreme" >
+      
+        <meta  name="twitter:description"  content="None" >
+      
+        <meta  name="twitter:image"  content="https://a-sit-plus.github.io/warden-supreme/1.0.4/assets/images/social/integration/supreme.png" >
+      
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="asp-dark" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#warden-supreme-integration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+              </button>
+            
+            
+
+  <div class="md-announce__inner">
+    Need help tailored to your needs? See our <a href="https://a-sit-plus.github.io/warden-supreme/1.0.4services/">&ensp;💎 Services</a>.
+  </div>
+
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+<!-- Determine classes -->
+
+
+
+
+
+<!-- Header -->
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+    <nav
+            class="md-header__inner md-grid"
+            aria-label="Header"
+    >
+
+        <!-- Link to home -->
+        <a
+                href="../.."
+                title="Warden Supreme"
+                class="md-header__button md-logo"
+                aria-label="Warden Supreme"
+                data-md-component="logo"
+        >
+            
+  <img src="../../assets/images/icon.svg" alt="logo">
+
+        </a>
+
+        <!-- Button to open drawer -->
+        <label class="md-header__button md-icon" for="__drawer">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+        </label>
+
+        <!-- Header title -->
+        <div class="md-header__title" data-md-component="header-title">
+            <div class="md-header__ellipsis">
+                <div class="md-header__topic">
+         <!-- <span class="md-ellipsis">
+            Warden Supreme
+          </span>-->
+                </div>
+                <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              End-to-End Integration
+            
+          </span>
+                </div>
+            </div>
+        </div>
+
+        <iframe src="https://github.com/sponsors/a-sit-plus/button" title="Sponsor a-sit-plus" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+
+        <!-- Color palette toggle -->
+        
+        
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="asp-dark" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+        
+        
+
+        <!-- User preference: color palette -->
+        
+        <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+        
+
+        <!-- Site language selector -->
+        
+
+        <!-- Button to open search modal -->
+        
+        <label class="md-header__button md-icon" for="__search">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+
+        <!-- Search interface -->
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+
+        <!-- Repository information -->
+        
+        <div class="md-header__source">
+            <a href="https://github.com/a-sit-plus/warden-supreme" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    a-sit-plus/warden-supreme
+  </div>
+</a>
+        </div>
+        
+    </nav>
+
+    <!-- Navigation tabs (sticky) -->
+    
+    
+    
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../overview/" class="md-tabs__link">
+          
+  
+  Docs Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  Integration Guide
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sbom/" class="md-tabs__link">
+          
+  
+  SBOM
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../glossary/" class="md-tabs__link">
+        
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../dokka/" class="md-tabs__link">
+        
+  
+    
+  
+  API Docs
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="https://attestation-collector.sliplane.app" class="md-tabs__link">
+        
+  
+    
+  
+  Attestation Collector
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../hardening/" class="md-tabs__link">
+        
+  
+    
+  
+  Security Policy and Hardening
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../services/" class="md-tabs__link">
+        
+  
+    
+  
+  💎 Services
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+    
+</header>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<!-- Determine classes -->
+
+
+
+
+
+
+<!-- Navigation -->
+<nav
+        class="md-nav md-nav--primary md-nav--lifted"
+        aria-label="Navigation"
+        data-md-level="0"
+>
+
+    <!-- Site title -->
+    <label class="md-nav__title" for="__drawer">
+        <a
+                href="../.."
+                title="Warden Supreme"
+                class="md-nav__button md-logo"
+                aria-label="Warden Supreme"
+                data-md-component="logo"
+        >
+            
+  <img src="../../assets/images/icon.svg" alt="logo">
+
+        </a>
+    </label>
+
+    <!-- Repository information -->
+    
+    <div class="md-nav__source">
+        <a href="https://github.com/a-sit-plus/warden-supreme" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    a-sit-plus/warden-supreme
+  </div>
+</a>
+    </div>
+    
+
+    <!-- Navigation list -->
+    <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Docs Hub
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Docs Hub
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../why-supreme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Why Warden Supreme
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_3" id="__nav_1_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Background
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_3">
+            <span class="md-nav__icon md-icon"></span>
+            Background
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bg/primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Remote Attestation Primer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bg/platforms/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Platform Specifics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bg/threatmodels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Threat Models and Risks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bg/privacy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Privacy and Data Protection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_4" id="__nav_1_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Technical Deep Dive
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            Technical Deep Dive
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_4_1" id="__nav_1_4_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Android
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            Android
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Attestation Model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/android/leakedkeys/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Leaked Keyboxes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/ios/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    iOS DeviceCheck &amp; App&nbsp;Attest
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/quirks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quirks and Hints
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Testing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../refs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Integration Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Integration Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Integrating Warden Supreme
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            Integrating Warden Supreme
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    End-to-End Integration
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    End-to-End Integration
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#using-warden-supreme-in-your-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Warden Supreme in your Projects
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-attestation-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      High-Level Attestation Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#warden-supreme-step-by-step-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Warden Supreme Step-by-Step Guide
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Warden Supreme Step-by-Step Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attestation-policy-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attestation Policy Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attestation Policy Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#accepting-expired-non-rkp-certificate-chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accepting Expired Non-RKP Certificate Chains
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trusting-grapheneos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trusting GrapheneOS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attaching-custom-configuration-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attaching Custom Configuration Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flexible-android-revocation-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flexible Android Revocation Configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attestation-verifier-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attestation Verifier Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attestation Verifier Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additional-verification-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Verification Policy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Handling Requests
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#client-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Client Integration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#beyond-the-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Beyond the Basics
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Externalising Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errorhandling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error Handling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datamodel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Model and Schema
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Structure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Debugging
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../raw/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage without Integrated Clients
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration from WARDEN
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    SBOM
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            SBOM
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/makoto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Warden makoto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/roboto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Warden roboto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-common/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Common
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-verifier/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Verifier
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/config-hoplite/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Config Hoplite
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/config-spring/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Config Spring
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Glossary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dokka/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Docs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://attestation-collector.sliplane.app" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Attestation Collector
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../hardening/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Security Policy and Hardening
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../services/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    💎 Services
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+    </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#using-warden-supreme-in-your-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Warden Supreme in your Projects
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-attestation-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      High-Level Attestation Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#warden-supreme-step-by-step-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Warden Supreme Step-by-Step Guide
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Warden Supreme Step-by-Step Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attestation-policy-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attestation Policy Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attestation Policy Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#accepting-expired-non-rkp-certificate-chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accepting Expired Non-RKP Certificate Chains
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trusting-grapheneos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trusting GrapheneOS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attaching-custom-configuration-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attaching Custom Configuration Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flexible-android-revocation-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flexible Android Revocation Configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attestation-verifier-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attestation Verifier Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attestation Verifier Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additional-verification-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Verification Policy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Handling Requests
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#client-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Client Integration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#beyond-the-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Beyond the Basics
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="warden-supreme-integration">Warden Supreme Integration</h1>
+<p><a href="https://a-sit-plus.github.io"><img alt="A-SIT Plus Official" src="https://img.shields.io/badge/A--SIT_Plus-official-005b79?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDMuNzYyODYgMTg0LjgxOTk5Ij48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiIGNsaXBQYXRoVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMCA1OTUuMjhoODQxLjg5VjBIMFoiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyBjbGlwLXBhdGg9InVybCgjYSkiIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMyAwIDAgLTEuMzMzMzMzMyAtNDgyLjI1IDUxNy41MykiPjxwYXRoIGZpbGw9IiMwMDViNzkiIGQ9Ik00MTUuNjcgMjQ5LjUzYy03LjE1LjA4LTEzLjk0IDEtMjAuMTcgMi43NWE1Mi4zMyA1Mi4zMyAwIDAgMC0xNy40OCA4LjQ2IDQwLjQzIDQwLjQzIDAgMCAwLTExLjk2IDE0LjU2Yy0yLjY4IDUuNDEtNC4xNCAxMS44NC00LjM1IDE5LjA5bC0uMDIgNi4xMnYyLjE3YS43MS43MSAwIDAgMCAuNy43M2gxNi41MmMuMzkgMCAuNy0uMzIuNzEtLjdsLjAxLTIuMmMwLTIuNi4wMi01LjgyLjAzLTYuMDcuMi00LjYgMS4yNC04LjY2IDMuMDgtMTIuMDZhMjguNTIgMjguNTIgMCAwIDEgOC4yMy05LjU4IDM1LjI1IDM1LjI1IDAgMCAxIDExLjk2LTUuNTggNTUuMzggNTUuMzggMCAwIDEgMTIuNTgtMS43NmM0LjMyLjEgOC42LjcgMTIuNzQgMS44YTM1LjA3IDM1LjA3IDAgMCAxIDExLjk2IDUuNTcgMjguNTQgMjguNTQgMCAwIDEgOC4yNCA5LjU3YzEuOTYgMy42NCAzIDguMDIgMy4xMiAxMy4wMnYyNC4wOUgzNjIuNGEuNy43IDAgMCAwLS43MS43VjMzNWMwIDguNDMuMDEgOC4wNS4wMSA4LjE0LjIgNy4zIDEuNjcgMTMuNzcgNC4zNiAxOS4yMmE0MC40MyA0MC40MyAwIDAgMCAxMS45NiAxNC41N2M1IDMuNzYgMTAuODcgNi42MSAxNy40OCA4LjQ2YTc3LjUgNzcuNSAwIDAgMCAyMC4wMiAyLjc3YzcuMTUtLjA3IDEzLjk0LTEgMjAuMTctMi43NGE1Mi4zIDUyLjMgMCAwIDAgMTcuNDgtOC40NiA0MC40IDQwLjQgMCAwIDAgMTEuOTUtMTQuNTdjMS42Mi0zLjI2IDMuNzctMTAuMDQgMy43Ny0xNC42OCAwLS4zOC0uMTctLjc0LS41NC0uODJsLTE2Ljg5LS40Yy0uMi0uMDQtLjM0LjM0LS4zNC41NCAwIC4yNy0uMDMuNC0uMDYuNi0uNSAyLjgyLTEuMzggNS40LTIuNjEgNy42OWEyOC41MyAyOC41MyAwIDAgMS04LjI0IDkuNTggMzUuMDEgMzUuMDEgMCAwIDEtMTEuOTYgNS41NyA1NS4yNSA1NS4yNSAwIDAgMS0xMi41NyAxLjc3Yy00LjMyLS4xLTguNjEtLjcxLTEyLjc1LTEuOGEzNS4wNSAzNS4wNSAwIDAgMS0xMS45Ni01LjU3IDI4LjUyIDI4LjUyIDAgMCAxLTguMjMtOS41OGMtMS44Ni0zLjQ0LTIuOS03LjU1LTMuMDktMTIuMmwtLjAxLTcuNDdoODkuMTZhLjcuNyAwIDAgMCAuNy0uNzJ2LTM5LjVjLS4xLTcuNjUtMS41OC0xNC40LTQuMzgtMjAuMDZhNDAuNCA0MC40IDAgMCAwLTExLjk1LTE0LjU2IDUyLjM3IDUyLjM3IDAgMCAwLTE3LjQ4LTguNDcgNzcuNTYgNzcuNTYgMCAwIDAtMjAuMDEtMi43N1oiLz48cGF0aCBmaWxsPSIjY2U0OTJlIiBkPSJNNDE5LjM4IDI4MC42M2gtNy41N2EuNy43IDAgMCAwLS43MS43MXYxNS40MmE4LjE3IDguMTcgMCAwIDAtMy43OCA2LjkgOC4yOCA4LjI4IDAgMCAwIDE2LjU0IDAgOC4yOSA4LjI5IDAgMCAwLTMuNzYtNi45di0xNS40MmEuNy43IDAgMCAwLS43Mi0uNzEiLz48L2c%2BPC9zdmc%2B&amp;logoColor=white&amp;labelColor=white" /></a>
+<a href="http://www.apache.org/licenses/LICENSE-2.0"><img alt="GitHub license" src="https://img.shields.io/badge/license-Apache%20License%202.0-brightgreen.svg?style=flat" /></a>
+<a href="http://kotlinlang.org"><img alt="Kotlin" src="https://img.shields.io/badge/kotlin-2.4.0-blue.svg?logo=kotlin" /></a>
+<img alt="Java" src="https://img.shields.io/badge/java-17-blue.svg?logo=OPENJDK" />
+<a href="https://mvnrepository.com/artifact/at.asitplus.warden/"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/at.asitplus.warden/supreme-common" /></a></p>
+<p><em>Warden Supreme</em> is a fully integrated key and app attestation suite consisting of:</p>
+<ol>
+<li>A mobile client library (iOS and Android) to generate attestation statements</li>
+<li>A unified server-side key and app attestation verification library</li>
+<li>Agnostic communication logic for process flows and the wire format</li>
+</ol>
+<div class="admonition bug inline end">
+<p class="admonition-title">Bugs Ahead!</p>
+<p>Several devices and OS versions in the field come with bugs and quirks. Warden Supreme's docs hub discusses them <a href="../../technical/quirks/">here</a>.
+Be sure to read up on them <strong>before</strong> integrating attestation into your services.</p>
+</div>
+<p>Put differently, Warden Supreme is the evolution of the <a href="https://github.com/a-sit-plus/warden">WARDEN</a> server-side key and app attestation library,
+paired with Signum's <a href="https://a-sit-plus.github.io/signum/supreme/"><em>Supreme</em> KMP crypto provider</a> for a consistent UX across Android and iOS.
+The original server-side-only key and app attestation library is still available and actively maintained, as it is one
+of the pillars supporting Warden Supreme.
+It now lives on as <a href="https://github.com/a-sit-plus/warden-supreme/tree/main/serverside/makoto">Warden makoto</a> and continues to be published to Maven Central.</p>
+<h2 id="using-warden-supreme-in-your-projects">Using Warden Supreme in your Projects</h2>
+<p>Warden Supreme targets Android and iOS clients and JVM-based back-ends.
+Warden Supreme currently supports HTTP as its communication protocol and relies on <a href="https://ktor.io/">Ktor</a> on mobile clients.
+The back-end, however, can also use <a href="https://spring.io/">Spring</a> or any other HTTP framework of your choice.</p>
+<ul>
+<li>On the back-end, add the <code>verifier</code> dependency:
+  <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">implementation</span><span class="p">(</span><span class="s">"at.asitplus.warden:supreme-verifier:</span><span class="si">$</span><span class="n">version</span><span class="s">"</span><span class="p">)</span>
+</span></code></pre></div></li>
+<li>On mobile clients, add the <code>client</code> dependency:
+  <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">implementation</span><span class="p">(</span><span class="s">"at.asitplus.warden:supreme-client:</span><span class="si">$</span><span class="n">version</span><span class="s">"</span><span class="p">)</span>
+</span></code></pre></div></li>
+</ul>
+<h2 id="high-level-attestation-flow">High-Level Attestation Flow</h2>
+<p>An attestation flow works as follows, in accordance with Figure&nbsp;1:</p>
+<ol>
+<li>The client fetches a challenge from the back-end.</li>
+<li>The client feeds the challenge into hardware-backed key generation to create an attestation statement.</li>
+<li>The client sends the attestation proof (CSR) back to the back-end.<ul>
+<li><strong>Wire-format-wise, this is a CSR with a custom attribute carrying the attestation statement payload</strong></li>
+<li>CSRs were chosen because their canonical encoding is precisely specified and because they inherently come with a proof of possession of the private key</li>
+<li>CSRs allow defining arbitrary extensions and attributes, which is a perfect fit for Warden Supreme's usage scenario</li>
+<li>Finally, the PKIX context is the natural habitat of a CSR</li>
+</ul>
+</li>
+<li>The back-end verifies the attestation statement against a predefined policy.<ul>
+<li>If the attestation is considered valid, the back-end issues a certificate for the attested key, thus vouching for the integrity of the client.</li>
+<li>If the attestation does not verify, the back-end records the reason for this failure.</li>
+</ul>
+</li>
+<li>The back-end responds either with the full certificate chain (success) or a detailed error reason (failure).</li>
+</ol>
+<figure>
+<picture>
+
+    <img
+        src="../../assets/images/flow-dark.png"
+        alt="Warden Supreme attestation flow"
+        style="width:100%;height:auto;" />
+
+</picture>
+
+<figcaption>Figure&nbsp;1: Remotely establishing trust in mobile clients</figcaption>
+</figure>
+
+<p>As shown in Figure&nbsp;1, the back-end needs to be configured before being able to assert the trustworthiness of a client.
+While the actual API is unified for Android and iOS (both for verifying attestation statements and on the mobile clients creating
+attestation statements), configuration needs to deal with each platform separately.</p>
+<h2 id="warden-supreme-step-by-step-guide">Warden Supreme Step-by-Step Guide</h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Warden Supreme verifier does not ship with a crypto provider! Still, this example assumes <a href="https://a-sit-plus.github.io/signum/supreme/">Signum Supreme</a> for brevity.</p>
+</div>
+<p>Warden Supreme integrates server-side and client-side logic into a lean interface.</p>
+<p>This section illustrates a complete end-to-end setup assuming a Ktor server on the back-end and a KMP client app.
+To get going, the following steps are required:</p>
+<ul>
+<li>Decide on HTTPS endpoints to issue challenges and verify attestation statements, and record the app identifiers and signer digests (Android) / team ID (iOS).</li>
+<li>Back-end:<ol>
+<li>Configure a <code>Makoto</code> instance based on your policy and app identifiers.</li>
+<li>Create an <code>AttestationVerifier</code> based on the configured <code>Makoto</code> instance, your CA certificate, and signing keys.</li>
+<li>Wire HTTPS endpoints to the <code>AttestationVerifier</code> and start an HTTP server.</li>
+</ol>
+</li>
+<li>Mobile app:<ol>
+<li>Wire the verifier to the HTTPS endpoints in an <code>AttestationClient</code>.</li>
+<li>Call the endpoints.</li>
+<li>Store the received certificate chain after a successful attestation.</li>
+</ol>
+</li>
+</ul>
+<div class="admonition tip inline end">
+<p class="admonition-title">Migration Info</p>
+<p>Warden Supreme 0.9.99 revamped trust anchor management and thus changed configuration parameters.</p>
+</div>
+<h3 id="attestation-policy-configuration">Attestation Policy Configuration</h3>
+<p>Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
+The following snippet shows an MWE that also accounts for five minutes of clock drift:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">makoto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Makoto</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">androidAttestationConfiguration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AndroidAttestationConfiguration</span><span class="p">(</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">     </span><span class="cm">/*(1)!*/</span><span class="n">AndroidAttestationConfiguration</span><span class="p">.</span><span class="na">AppData</span><span class="p">(</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">            </span><span class="n">packageName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"at.asitplus.attestation_client"</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">            </span><span class="n">signerFingerprints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span><span class="s">"34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec"</span><span class="p">.</span><span class="na">parseHex</span><span class="p">())</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="p">)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="p">),</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="n">iosAttestationConfiguration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">IosAttestationConfiguration</span><span class="p">(</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">     </span><span class="cm">/*(2)!*/</span><span class="n">IosAttestationConfiguration</span><span class="p">.</span><span class="na">AppData</span><span class="p">(</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">            </span><span class="n">teamIdentifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"9CYHJNG644"</span><span class="p">,</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">            </span><span class="n">bundleIdentifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"at.asitplus.attestation-client"</span><span class="p">,</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">        </span><span class="p">)</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>At least package identifier and a single signer digest need to be configured for an Android application to be attested.<ul>
+<li>The combination of package identifier and signature digest fully identify an Android application and make it possible to attest its authenticity.</li>
+<li>For production apps distributed through the Google Play Store, this is the digest of a Google cloud signing certificate.</li>
+</ul>
+</li>
+<li>An iOS application is uniquely identified by a bundle identifier and a team ID.<br />
+   This combination makes it possible to attest its authenticity.</li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">With great power comes great responsibility!</p>
+<p>The above really is a minimum working example! 
+Many more configuration properties exist, and it is recommended to explicitly set <strong>all those that are relevant to your specific scenario</strong>,
+as the value of every single one should very much be the result of careful consideration.
+In the end, a strongly informed decision about every property is required to reflect the intended audience and the required security properties.</p>
+<p><strong>Warden Supreme, by definition, cannot take these decisions from you!</strong></p>
+</div>
+<p>The full details on the configuration can be found in the <a href="../../dokka/makoto/at.asitplus.attestation/-makoto/">API documentation</a> and a comprehensive example can be expanded below.
+<strong>Be sure to read up on <a href="../../technical/quirks/#clock-drifts-and-temporal-validity">Clock drift issues</a> before tweaking properties!</strong></p>
+<div id="config-options-example"></div>
+
+<div class="admonition example">
+<p class="admonition-title">Comprehensive example of Makoto config options</p>
+<p>The below config illustrates configuring two different Android apps: a regular one for the masses and a second one
+with much tighter security constraints. This makes no sense when Warden Supreme is integrated into a back-end.
+If, however, a dedicated attestation service is deployed that is then used to issue certificates for apps used by different services, this can be legitimate. 
+A single iOS-app is configured for test purposes only. In this example, the iOS app has not yet launched and is purely simulated.
+To still be able to test the attestation code path for iOS, custom trusted roots are set and all iOS attestation statements
+sent to the back-end are created in software, purely for evaluation purposes.</p>
+<p><strong>Be sure to check the annotations!</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">makoto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Makoto</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">androidAttestationConfiguration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AndroidAttestationConfiguration</span><span class="p">(</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">     </span><span class="cm">/*(1)!*/</span><span class="n">applications</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">            </span><span class="n">AndroidAttestationConfiguration</span><span class="p">.</span><span class="na">AppData</span><span class="p">(</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">                </span><span class="n">packageName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"at.asitplus.attestation_client"</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">                </span><span class="n">signerFingerprints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span><span class="s">"34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec"</span><span class="p">.</span><span class="na">parseHex</span><span class="p">()),</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">            </span><span class="p">),</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">         </span><span class="cm">/*(2)!*/</span><span class="n">AndroidAttestationConfiguration</span><span class="p">.</span><span class="na">AppData</span><span class="p">(</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">             </span><span class="cm">/*(3)!*/</span><span class="n">packageName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"at.asitplus.attestation_client-hardened"</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">                </span><span class="n">signerFingerprints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span><span class="s">"34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec"</span><span class="p">.</span><span class="na">parseHex</span><span class="p">()),</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">             </span><span class="cm">/*(4)!*/</span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">             </span><span class="cm">/*(5)!*/</span><span class="n">androidVersionOverride</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">160000</span><span class="p">,</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">                </span><span class="n">patchLevelOverride</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PatchLevel</span><span class="p">(</span><span class="n">year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2025</span><span class="p">,</span><span class="w"> </span><span class="n">month</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">9</span><span class="p">,</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">                 </span><span class="cm">/*(6)!*/</span><span class="n">maxFuturePatchLevelMonths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">                </span><span class="p">),</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">             </span><span class="cm">/*(7)!*/</span><span class="n">requireRemoteKeyProvisioningOverride</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">             </span><span class="cm">/*(8)!*/</span><span class="n">trustedRootOverrides</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span><span class="n">GOOGLE_RKP_EC_ROOT</span><span class="p">),</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">             </span><span class="cm">/*(9)!*/</span><span class="n">requireStrongBoxOverride</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">             </span><span class="cm">/*(10)!*/</span><span class="n">customProperties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapOf</span><span class="p">(</span><span class="s">"an app flag"</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s">"is present"</span><span class="p">),</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">            </span><span class="p">)</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">        </span><span class="p">),</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">     </span><span class="cm">/*(11)!*/</span><span class="n">androidVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">130000</span><span class="p">,</span><span class="w"> </span><span class="n">patchLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PatchLevel</span><span class="p">(</span><span class="m">2023</span><span class="p">,</span><span class="w"> </span><span class="m">12</span><span class="p">),</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">        </span><span class="n">requireStrongBox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">        </span><span class="n">allowBootloaderUnlock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">     </span><span class="cm">/*(12)!*/</span><span class="n">verifiedBootKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">linkedSetOf</span><span class="p">(</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">            </span><span class="n">VerifiedBootKey</span><span class="p">.</span><span class="na">OEM</span><span class="p">,</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">            </span><span class="n">VerifiedBootKey</span><span class="p">.</span><span class="na">Digest</span><span class="p">(</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">                </span><span class="s">"00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff"</span><span class="p">.</span><span class="na">parseHex</span><span class="p">()</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">            </span><span class="p">)</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">        </span><span class="p">),</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">     </span><span class="cm">/*(13)!*/</span><span class="n">requireRollbackResistance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">     </span><span class="cm">/*(14)!*/</span><span class="n">ignoreLeafValidity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// defaults to true</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">     </span><span class="cm">/*(15)!*/</span><span class="n">hardwareTrustedRoots</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">        </span><span class="n">softwareTrustedRoots</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="w">        </span><span class="n">verificationSecondsOffset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT; Android-only clock-drift adjustment in seconds</span>
+</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span class="w">        </span><span class="n">disableHardwareAttestation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-3-37"><a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a><span class="w">        </span><span class="n">enableSoftwareAttestation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-38"><a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a><span class="w">     </span><span class="cm">/*(16)!*/</span><span class="n">attestationStatementValiditySeconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="c1">// DEFAULT; no validity time checks!</span>
+</span><span id="__span-3-39"><a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a><span class="w">     </span><span class="cm">/*(17)!*/</span><span class="n">revocation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+</span><span id="__span-3-40"><a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a><span class="w">            </span><span class="n">AndroidRevocationList</span><span class="p">.</span><span class="na">GoogleDefaultLoaderConfig</span><span class="p">.</span><span class="na">withHttpProxy</span><span class="p">(</span><span class="s">"https://192.168.178.74:8000"</span><span class="p">)</span>
+</span><span id="__span-3-41"><a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a><span class="w">        </span><span class="p">),</span>
+</span><span id="__span-3-42"><a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a><span class="w">        </span><span class="n">requireRemoteKeyProvisioning</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-43"><a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a><span class="w">     </span><span class="cm">/*(18)!*/</span><span class="n">enforceFactoryProvisionedChainValidity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-44"><a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a><span class="w">     </span><span class="cm">/*(19)!*/</span><span class="n">customProperties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapOf</span><span class="p">(</span><span class="s">"an Android flag"</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s">"is present"</span><span class="p">)</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-45"><a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a><span class="w">    </span><span class="p">),</span>
+</span><span id="__span-3-46"><a id="__codelineno-3-46" name="__codelineno-3-46" href="#__codelineno-3-46"></a>
+</span><span id="__span-3-47"><a id="__codelineno-3-47" name="__codelineno-3-47" href="#__codelineno-3-47"></a><span class="w">    </span><span class="n">iosAttestationConfiguration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">IosAttestationConfiguration</span><span class="p">(</span>
+</span><span id="__span-3-48"><a id="__codelineno-3-48" name="__codelineno-3-48" href="#__codelineno-3-48"></a><span class="w">     </span><span class="cm">/*(20)!*/</span><span class="n">applications</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
+</span><span id="__span-3-49"><a id="__codelineno-3-49" name="__codelineno-3-49" href="#__codelineno-3-49"></a><span class="w">            </span><span class="n">IosAttestationConfiguration</span><span class="p">.</span><span class="na">AppData</span><span class="p">(</span>
+</span><span id="__span-3-50"><a id="__codelineno-3-50" name="__codelineno-3-50" href="#__codelineno-3-50"></a><span class="w">                </span><span class="n">teamIdentifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"9CYHJNG644"</span><span class="p">,</span>
+</span><span id="__span-3-51"><a id="__codelineno-3-51" name="__codelineno-3-51" href="#__codelineno-3-51"></a><span class="w">                </span><span class="n">bundleIdentifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"at.asitplus.attestation-client"</span><span class="p">,</span>
+</span><span id="__span-3-52"><a id="__codelineno-3-52" name="__codelineno-3-52" href="#__codelineno-3-52"></a><span class="w">             </span><span class="cm">/*(21)!*/</span><span class="n">iosVersionOverride</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OsVersions</span><span class="p">(</span><span class="s">"16.0"</span><span class="p">,</span><span class="w"> </span><span class="s">"20A10"</span><span class="p">),</span>
+</span><span id="__span-3-53"><a id="__codelineno-3-53" name="__codelineno-3-53" href="#__codelineno-3-53"></a><span class="w">             </span><span class="cm">/*(22)!*/</span><span class="n">sandbox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="c1">//defaults to false</span>
+</span><span id="__span-3-54"><a id="__codelineno-3-54" name="__codelineno-3-54" href="#__codelineno-3-54"></a><span class="w">             </span><span class="cm">/*(23)!*/</span><span class="n">trustedRootOverrides</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">myCustomRoots</span><span class="p">,</span>
+</span><span id="__span-3-55"><a id="__codelineno-3-55" name="__codelineno-3-55" href="#__codelineno-3-55"></a><span class="w">             </span><span class="cm">/*(24)!*/</span><span class="w"> </span><span class="n">customProperties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapOf</span><span class="p">(</span><span class="s">"and iOS flag"</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s">"is present"</span><span class="p">),</span>
+</span><span id="__span-3-56"><a id="__codelineno-3-56" name="__codelineno-3-56" href="#__codelineno-3-56"></a><span class="w">            </span><span class="p">)</span>
+</span><span id="__span-3-57"><a id="__codelineno-3-57" name="__codelineno-3-57" href="#__codelineno-3-57"></a><span class="w">        </span><span class="p">),</span>
+</span><span id="__span-3-58"><a id="__codelineno-3-58" name="__codelineno-3-58" href="#__codelineno-3-58"></a><span class="w">                </span><span class="cm">/* Same as 17.0 ↘↘ */</span>
+</span><span id="__span-3-59"><a id="__codelineno-3-59" name="__codelineno-3-59" href="#__codelineno-3-59"></a><span class="w">     </span><span class="cm">/*(25)!*/</span><span class="n">iosVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OsVersions</span><span class="p">(</span><span class="s">"17"</span><span class="p">,</span><span class="w"> </span><span class="s">"21A36"</span><span class="p">),</span><span class="w"> </span><span class="c1">//defaults to null (= no version check)</span>
+</span><span id="__span-3-60"><a id="__codelineno-3-60" name="__codelineno-3-60" href="#__codelineno-3-60"></a><span class="w">     </span><span class="cm">/*(26)!*/</span><span class="n">attestationStatementValiditySeconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">600</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-61"><a id="__codelineno-3-61" name="__codelineno-3-61" href="#__codelineno-3-61"></a><span class="w">     </span><span class="cm">/*(27)!*/</span><span class="n">trustedRoots</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">APPLE_DEFAULT_TRUSTED_ROOTS</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-62"><a id="__codelineno-3-62" name="__codelineno-3-62" href="#__codelineno-3-62"></a><span class="w">     </span><span class="cm">/*(28)!*/</span><span class="n">customProperties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapOf</span><span class="p">(</span><span class="s">"a global iOS flag"</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s">"is present"</span><span class="p">),</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-63"><a id="__codelineno-3-63" name="__codelineno-3-63" href="#__codelineno-3-63"></a><span class="w">    </span><span class="p">),</span>
+</span><span id="__span-3-64"><a id="__codelineno-3-64" name="__codelineno-3-64" href="#__codelineno-3-64"></a><span class="w">    </span><span class="n">clock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Clock</span><span class="p">.</span><span class="na">System</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-3-65"><a id="__codelineno-3-65" name="__codelineno-3-65" href="#__codelineno-3-65"></a><span class="w"> </span><span class="cm">/*(29)!*/</span><span class="n">verificationTimeOffset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5.</span><span class="n">minutes</span><span class="p">,</span><span class="w"> </span><span class="c1">//OPTIONAL, defaults shown</span>
+</span><span id="__span-3-66"><a id="__codelineno-3-66" name="__codelineno-3-66" href="#__codelineno-3-66"></a><span class="p">)</span>
+</span><span id="__span-3-67"><a id="__codelineno-3-67" name="__codelineno-3-67" href="#__codelineno-3-67"></a>
+</span><span id="__span-3-68"><a id="__codelineno-3-68" name="__codelineno-3-68" href="#__codelineno-3-68"></a><span class="kd">val</span><span class="w"> </span><span class="nv">androidFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">.</span><span class="na">androidAttestationConfiguration</span>
+</span><span id="__span-3-69"><a id="__codelineno-3-69" name="__codelineno-3-69" href="#__codelineno-3-69"></a><span class="w">    </span><span class="o">?.</span><span class="na">customProperties</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"an Android flag"</span><span class="p">)</span>
+</span><span id="__span-3-70"><a id="__codelineno-3-70" name="__codelineno-3-70" href="#__codelineno-3-70"></a><span class="kd">val</span><span class="w"> </span><span class="nv">androidAppFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">.</span><span class="na">androidAttestationConfiguration</span>
+</span><span id="__span-3-71"><a id="__codelineno-3-71" name="__codelineno-3-71" href="#__codelineno-3-71"></a><span class="w">    </span><span class="o">?.</span><span class="na">applications</span>
+</span><span id="__span-3-72"><a id="__codelineno-3-72" name="__codelineno-3-72" href="#__codelineno-3-72"></a><span class="w">    </span><span class="o">?.</span><span class="na">firstOrNull</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">packageName</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"at.asitplus.attestation_client-hardened"</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-73"><a id="__codelineno-3-73" name="__codelineno-3-73" href="#__codelineno-3-73"></a><span class="w">    </span><span class="o">?.</span><span class="na">customProperties</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"an app flag"</span><span class="p">)</span>
+</span><span id="__span-3-74"><a id="__codelineno-3-74" name="__codelineno-3-74" href="#__codelineno-3-74"></a>
+</span><span id="__span-3-75"><a id="__codelineno-3-75" name="__codelineno-3-75" href="#__codelineno-3-75"></a><span class="kd">val</span><span class="w"> </span><span class="nv">iosFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">.</span><span class="na">iosAttestationConfiguration</span>
+</span><span id="__span-3-76"><a id="__codelineno-3-76" name="__codelineno-3-76" href="#__codelineno-3-76"></a><span class="w">    </span><span class="o">?.</span><span class="na">customProperties</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"a global iOS flag"</span><span class="p">)</span>
+</span><span id="__span-3-77"><a id="__codelineno-3-77" name="__codelineno-3-77" href="#__codelineno-3-77"></a><span class="kd">val</span><span class="w"> </span><span class="nv">iosAppFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">.</span><span class="na">iosAttestationConfiguration</span>
+</span><span id="__span-3-78"><a id="__codelineno-3-78" name="__codelineno-3-78" href="#__codelineno-3-78"></a><span class="w">    </span><span class="o">?.</span><span class="na">applications</span>
+</span><span id="__span-3-79"><a id="__codelineno-3-79" name="__codelineno-3-79" href="#__codelineno-3-79"></a><span class="w">    </span><span class="o">?.</span><span class="na">firstOrNull</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">bundleIdentifier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"at.asitplus.attestation-client"</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-80"><a id="__codelineno-3-80" name="__codelineno-3-80" href="#__codelineno-3-80"></a><span class="w">    </span><span class="o">?.</span><span class="na">customProperties</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"and iOS flag"</span><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>The ordered list may contain more than one app. Each Android entry requires a package name and one or more
+   SHA-256 signer fingerprints. For production apps distributed through Google Play, use the fingerprint of the
+   Google cloud signing certificate.</li>
+<li>A second, experimental high-security app demonstrates configuring multiple applications.</li>
+<li>Different package name from the first app</li>
+<li>Enforce a minimum app version.</li>
+<li>These values replace the global minimum OS and security-patch requirements for this app. Android major versions
+   use steps of 10,000, so Android 16 is <code>160000</code>; patch levels use a four-digit year and numeric month.</li>
+<li>Security patch levels this many months in the future are tolerated.</li>
+<li>Only remote key provisioning is considered trustworthy for this app</li>
+<li>The global hardware and software trust anchors are discarded for this app; only the configured RKP root is
+   trusted here.</li>
+<li>The app's key is required to use Android StrongBox.</li>
+<li>We want to mark the hardened app. We can use a <code>Map&lt;String,String&gt;</code> to attach arbitrary properties to the attestation configuration.
+    See <a href="#attaching-custom-configuration-properties">below</a> for an example that reads those out.</li>
+<li>These are the global defaults. Here Android 13 with a minimum December 2023 patch level is required, while
+    StrongBox remains optional. The second app overrides these values.</li>
+<li>Allow OEM-managed <code>VERIFIED</code> boot and one pinned <code>SELF_SIGNED</code> verified boot key for locked devices only.
+    Omit <code>OEM</code> if you want to trust only explicitly pinned custom ROM keys. This has no effect once unlocked
+    bootloaders are allowed.</li>
+<li>Rollback resistance is unsupported by many devices and is disabled by default. See the
+    <a href="https://source.android.com/docs/security/features/keystore/implementer-ref#rollback_resistance">Android documentation</a>.</li>
+<li>Timely leaf-certificate validity is ignored by default, because some implementations produce incorrectly dated
+    leaf certificates. Set the shown value to <code>false</code> to enforce it. Challenge validation still ensures freshness.</li>
+<li>The two sets replace the global hardware and software trust anchors, respectively. Hardware verification can be
+    disabled; software-only attestation can be permitted as a fallback and is primarily useful for test devices and
+    emulators.</li>
+<li>This limits the age of the statement, not the certificate. The default <code>null</code> disables this age check;
+    challenge validation still ensures freshness.</li>
+<li>Required if you run Warden behind a proxy to fetch revocation information from Google servers.</li>
+<li>Factory-provisioned Android attestation chains are checked for timely certificate validity by default.
+    It is safe to disable this when using the default Google hardware roots of trust as per the
+    <a href="https://developer.android.com/privacy-and-security/security-key-attestation#expired_factory_keys">official documentation</a>.</li>
+<li>We want to attach a <code>Map&lt;String, String&gt;</code> with a single entry. Can be extended arbitrarily.
+    See <a href="#attaching-custom-configuration-properties">below</a> for an example that reads those out.</li>
+<li>The ordered iOS list may also contain more than one app. Each entry is identified by its team and bundle
+    identifiers.</li>
+<li>This sets the app's minimum iOS version using both a SemVer value and an Apple build number. For build-number
+    details, see <a href="https://tidbits.com/2020/07/08/how-to-decode-apple-version-and-build-numbers/">this explanation</a>
+    by David Shayer.</li>
+<li>The shown value selects Apple's sandbox environment; production is the default.</li>
+<li>The global Apple trust-anchor pairs are replaced for this app. Custom roots enable generating iOS attestation
+    statements in software for evaluation.</li>
+<li>We want to mark the iOS app. We can use a <code>Map&lt;String,String&gt;</code> to attach arbitrary properties to the attestation configuration.
+    See <a href="#attaching-custom-configuration-properties">below</a> for an example that reads those out.</li>
+<li>The global minimum iOS version also contains both a SemVer value and build number. The default <code>null</code> performs no
+    minimum-version check; an app-specific value takes precedence.</li>
+<li>This sets the maximum accepted statement age. The default is Apple's recommendation plus five minutes.</li>
+<li>These replace the global Apple attestation and receipt trust-anchor pairs; production roots are the default.</li>
+<li>We want to attach a <code>Map&lt;String, String&gt;</code> with a single entry. Can be extended arbitrarily.</li>
+<li>Account for clock drift throughout the integrated configuration. iOS checks use the clock plus this offset.
+    Android checks use the clock plus this offset <strong>and</strong> the Android-specific offset in seconds; the offsets
+    are added together.</li>
+</ol>
+<p>Be sure to check out <a href="../config/#config-serialized">Externalising Configuration</a> for serialized (YAML + JSON) configuration examples!</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Pinned <code>SELF_SIGNED</code> Android boot keys</p>
+<p>If you need to trust a known-good custom Android build, configure <code>verifiedBootKeys</code>. The default <code>[OEM]</code> accepts
+vendor-managed <code>VERIFIED</code> boot, <code>[OEM, "&lt;hex&gt;"]</code> accepts either vendor-managed <code>VERIFIED</code> boot or an explicitly
+whitelisted <code>SELF_SIGNED</code> key, and <code>["&lt;hex&gt;"]</code> accepts only explicitly whitelisted <code>SELF_SIGNED</code> keys. Keep
+<code>allowBootloaderUnlock = false</code>, otherwise bootloader-lock, verified boot state, and verified boot key checks are
+skipped entirely.</p>
+</div>
+<p>It is possible to configure attestation only for iOS or only for Android by simply omitting
+either the <code>androidAttestationConfiguration</code> or the <code>iosAttestationConfiguration</code>, respectively.<br />
+In such cases, trying to verify an attestation statement for the not-configured platform will always return an error.
+The shorthand <code>AttestationVerifier</code> constructor that directly accepts <code>androidAttestationConfiguration</code> and <code>iosAttestationConfiguration</code> properties
+instead of a pre-configured <code>Makoto</code> instance does not support such omissions.</p>
+<h4 id="accepting-expired-non-rkp-certificate-chains">Accepting Expired Non-RKP Certificate Chains</h4>
+<p>As of May 2026, the intermediate certificates and roots of some <strong>old</strong> non-RKP devices — that is, devices no longer receiving security updates — have expired.
+Warden Supreme considers such devices insecure by default, which is consistent with its checking timely certificate validity by default.
+For some devices there is no way to update these certificate chains to fix the validity issue; for others, the OEMs simply don't care.
+If you must support these devices, you can disable timely certificate validity checks <strong>for non-RKP devices only</strong>.
+To do so, set <code>enforceFactoryProvisionedChainValidity = false</code> in the <code>AndroidAttestationConfiguration</code>. See the <a href="#config-options-example"><code>full example of Makoto config options</code></a> for details.</p>
+<div class="admonition note">
+<p class="admonition-title">Google Pixel 6 Series</p>
+<p>As of July 2026, the Google Pixel 6 series still received security updates, but still ships with an expired certificate chain.</p>
+</div>
+<h4 id="trusting-grapheneos">Trusting GrapheneOS</h4>
+<p>A practical example of pinning <code>SELF_SIGNED</code> verified boot keys is trusting GrapheneOS, as shown below.<br />
+To obtain current GrapheneOS verified boot key hashes, use GrapheneOS's
+<a href="https://grapheneos.org/attestation.json"><code>attestation.json</code></a> and verify it against the detached signature at
+<a href="https://grapheneos.org/attestation.json.sig"><code>attestation.json.sig</code></a>.</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">grapheneOsVerifiedBootKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="s">"d8f879d10419eddc9fcda6280718be763f6bf12299e1f72df3ea8ad8a8eb7f80"</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="s">"55a2d44103e56d5ec65496399c417987ba77730e6488fc60ba058d09fc3caee3"</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="s">"141d7fc32af7958a416f2661b37cf6f27bfb376fb5ce616aeaa27a82c7a04f74"</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="s">"4e8ee8f717754052198ca6d2d3aaa232e2461b4293c0d6f297e519cc778de093"</span><span class="p">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="s">"3f7415ea26f5df5b14ea6d153256071a7a1af9ce7b0970b7311cc463c7ea02c7"</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="s">"0508de44ee00bfb49ece32c418af1896391abde0f05b64f41bc9a2dfb589445b"</span><span class="p">,</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="s">"af4d2c6e62be0fec54f0271b9776ff061dd8392d9f51cf6ab1551d346679e24c"</span><span class="p">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="s">"55d3c2323db91bb91f20d38d015e85112d038f6b6b5738fe352c1a80dba57023"</span><span class="p">,</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="s">"f729cab861da1b83fdfab402fc9480758f2ae78ee0b61c1f2137dd1ab7076e86"</span><span class="p">,</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="s">"9e6a8f3e0d761a780179f93acd5721ba1ab7c8c537c7761073c0a754b0e932de"</span><span class="p">,</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="s">"096b8bd6d44527a24ac1564b308839f67e78202185cbff9cfdcb10e63250bc5e"</span><span class="p">,</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="s">"896db2d09d84e1d6bb747002b8a114950b946e5825772a9d48ba7eb01d118c1c"</span><span class="p">,</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="s">"cd7479653aa88208f9f03034810ef9b7b0af8a9d41e2000e458ac403a2acb233"</span><span class="p">,</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="s">"ee0c9dfef6f55a878538b0dbf7e78e3bc3f1a13c8c44839b095fe26dd5fe2842"</span><span class="p">,</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="s">"94df136e6c6aa08dc26580af46f36419b5f9baf46039db076f5295b91aaff230"</span><span class="p">,</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="s">"508d75dea10c5cbc3e7632260fc0b59f6055a8a49dd84e693b6d8899edbb01e4"</span><span class="p">,</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span><span class="s">"bc1c0dd95664604382bb888412026422742eb333071ea0b2d19036217d49182f"</span><span class="p">,</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">    </span><span class="s">"3efe5392be3ac38afb894d13de639e521675e62571a8a9b3ef9fc8c44fd17fa1"</span><span class="p">,</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">    </span><span class="s">"08c860350a9600692d10c8512f7b8e80707757468e8fbfeea2a870c0a83d6031"</span><span class="p">,</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">    </span><span class="s">"439b76524d94c40652ce1bf0d8243773c634d2f99ba3160d8d02aa5e29ff925c"</span><span class="p">,</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">    </span><span class="s">"f0a890375d1405e62ebfd87e8d3f475f948ef031bbf9ddd516d5f600a23677e8"</span>
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="p">).</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">VerifiedBootKey</span><span class="p">.</span><span class="na">Digest</span><span class="p">(</span><span class="nb">it</span><span class="p">.</span><span class="na">parseHex</span><span class="p">())</span><span class="w"> </span><span class="p">}.</span><span class="na">toSet</span><span class="p">()</span><span class="w"> </span><span class="cm">/*(1)!*/</span>
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="kd">val</span><span class="w"> </span><span class="nv">grapheneOsConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SupremeConfiguration</span><span class="p">(</span>
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">    </span><span class="n">AndroidAttestationConfiguration</span><span class="p">(</span>
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">        </span><span class="n">AndroidAttestationConfiguration</span><span class="p">.</span><span class="na">AppData</span><span class="p">(</span>
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">            </span><span class="n">packageName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">androidAppPackage</span><span class="p">,</span>
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">            </span><span class="n">signerFingerprints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span><span class="n">appSignerFingerprint</span><span class="p">)</span>
+</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">        </span><span class="p">),</span>
+</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">        </span><span class="n">verifiedBootKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">grapheneOsVerifiedBootKeys</span>
+</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">                         </span><span class="o">+</span><span class="w"> </span><span class="n">VerifiedBootKey</span><span class="p">.</span><span class="na">OEM</span><span class="w"> </span><span class="cm">/*(2)!*/</span>
+</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">        </span><span class="p">,</span>
+</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="w">        </span><span class="n">allowBootloaderUnlock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="cm">/*(3)!*/</span>
+</span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>Order is irrelevant, and Warden Supreme makes this explicit by forcing a <code>Set</code> of verified boot key hashes</li>
+<li>Also keep <code>OEM</code> so stock/vendor Android trusted, while pinning all GrapheneOS verified boot keys.</li>
+<li>Keep <code>allowBootloaderUnlock = false</code> (which is the default). Otherwise, bootloader-lock, verified boot state, and verified
+boot key checks are skipped entirely.</li>
+</ol>
+<p>The concrete digests pinned in the example above were retrieved on 2026-06-15. Do fetch and verify them yourself, if you
+want to trust GrapheneOS</p>
+<h4 id="attaching-custom-configuration-properties">Attaching Custom Configuration Properties</h4>
+<p>Warden Supreme defines a canonical configuration format with custom loaders for Spring Boot and Hoplite (see <a href="../config/">Externalising Configuration</a>).
+This removes the need for any custom configuration parsing. Still, you may want to attach
+arbitrary configuration properties to an application's attestation configuration, or globally to the configuration
+subtree dedicated to attestation configuration.</p>
+<p>To keep canonical parsing while still allowing such extensions, you can attach
+mappings of string keys to string values under <code>customProperties</code> at the following layers:</p>
+<ul>
+<li><code>AndroidAttestationConfiguration</code></li>
+<li><code>AndroidAttestationConfiguration.AppData</code></li>
+<li><code>IosAttestationConfiguration</code></li>
+<li><code>IosAttestationConfiguration.AppData</code></li>
+</ul>
+<p>A map of string keys to string values has well-defined parsing behaviour and can be extended at will. If you need to attach complex structures, serialise them to a string and
+deserialise them before use.</p>
+<div class="admonition tip">
+<p class="admonition-title">Reading Custom Properties</p>
+<p>Read them like any other Kotlin map. Select the matching application before reading app-specific values:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">androidFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">.</span><span class="na">androidAttestationConfiguration</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="o">?.</span><span class="na">customProperties</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"an Android flag"</span><span class="p">)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">androidAppFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">.</span><span class="na">androidAttestationConfiguration</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="o">?.</span><span class="na">applications</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="o">?.</span><span class="na">firstOrNull</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">packageName</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"at.asitplus.attestation_client-hardened"</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="o">?.</span><span class="na">customProperties</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"an app flag"</span><span class="p">)</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">iosFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">.</span><span class="na">iosAttestationConfiguration</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="o">?.</span><span class="na">customProperties</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"a global iOS flag"</span><span class="p">)</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="kd">val</span><span class="w"> </span><span class="nv">iosAppFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">.</span><span class="na">iosAttestationConfiguration</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="o">?.</span><span class="na">applications</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="o">?.</span><span class="na">firstOrNull</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">bundleIdentifier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"at.asitplus.attestation-client"</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="o">?.</span><span class="na">customProperties</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"and iOS flag"</span><span class="p">)</span>
+</span></code></pre></div>
+<p>A missing configuration, application, or key produces <code>null</code> in this example.</p>
+</div>
+<details class="note">
+<summary>A Note on Android Attestation</summary>
+<p>This library allows combining different flavours of Android attestation, ranging from full hardware attestation
+to (rather useless in practice) software-only attestation, which can be useful for testing using an Android emulator.
+Hardware attestation is enabled by default, while hybrid and software-only attestation needs to be explicitly enabled.
+Doing so will chain the corresponding
+<code>AndroidAttestationChecker</code>s from the strictest (hardware) to the least strict (software-only).
+Verification succeeds when any enabled checker accepts the attestation. Therefore, enabling software attestation
+makes software-only attestation an accepted fallback even when hardware attestation remains enabled; it does not
+require hardware backing as well. Enable it only in environments where software-only devices, such as emulators in
+test stages, are acceptable.
+Hardware attestation can be disabled with <code>disableHardwareAttestation = true</code>, which is primarily useful for testing.</p>
+</details>
+<h4 id="flexible-android-revocation-configuration">Flexible Android Revocation Configuration</h4>
+<p>Warden Supreme 1.0.0 and later completely revamp revocation handling.
+Instead of hardcoding a check against the official Google revocation list, it is now possible to configure an arbitrary number of
+revocation list loaders. Configuring an empty list completely disables revocation checks.
+Warden Supreme ships with three loaders by default:</p>
+<ol>
+<li><code>HttpLoader</code></li>
+<li><code>FileLoader</code></li>
+<li><code>InMemoryLoader</code></li>
+</ol>
+<p>The first two handle caching by simply re-serving a previously loaded list until it expires.
+The format conforms to the <a href="https://developer.android.com/privacy-and-security/security-key-attestation">revocation list schema specified by Google</a>
+with the addition of <code>date</code>, <code>expires</code>, and <code>lastModified</code> fields.
+This allows for encoding freshness information directly into the revocation list, which is relevant when serving from the
+file system, instead of an HTTP server, where HTTP headers are used to encode this info.<br />
+The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.</p>
+<h3 id="attestation-verifier-setup">Attestation Verifier Setup</h3>
+<p>First, an <code>AttestationVerifier</code> instance needs to be created based on a <code>Makoto</code> instance:</p>
+<details class="info inline end">
+<summary>Important Nonce Info</summary>
+<p>Under the hood, the attestation verifier needs a source to generate attestation challenges, track them, invalidate them, and match them against incoming attestation requests.
+Warden Supreme provides a secure nonce generation service and uses a bounded in-memory challenge cache by default.
+The default cache allows up to <code>100_000</code> unexpired in-flight challenges per verifier instance. Once full, it prunes expired entries and then throws <code>InMemoryChallengeCache.ChallengeCacheFullException</code> instead of evicting active challenges.
+Challenge nonces are sensitive replay-protection material. Treat them as bearer values for their short lifetime: do not log them, do not expose them across sessions or callers, serve them only over protected transport, and bind/rate-limit callers in your HTTP layer when your service needs that context.
+Map that exception at your HTTP layer to <code>429 Too Many Requests</code> and, if useful, a <code>Retry-After</code> header.
+The cache deliberately does not implement backoff; caller-aware rate limiting needs IP, account, tenant, or device context and should live outside Warden Supreme.
+For horizontally scaled or high-volume deployments, use a distributed TTL-backed <code>ChallengeValidator</code> instead (Redis, for example).</p>
+</details>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">verifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AttestationVerifier</span><span class="p">(</span><span class="n">makoto</span><span class="p">)</span><span class="cm">/*(1)!*/</span>
+</span></code></pre></div>
+<ol>
+<li>Yes, it really is that simple 99% of the time! Sane defaults are set, including instructions (<code>KeyConstraints</code>) for the client
+   to create a hardware-backed P-256 key.</li>
+</ol>
+<details class="example">
+<summary>Comprehensive list of Verifier options</summary>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">verifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AttestationVerifier</span><span class="p">(</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">makoto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makoto</span><span class="p">,</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w"> </span><span class="cm">/*(1)!*/</span><span class="n">attestationProofOID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serviceSpecificOID</span><span class="p">,</span><span class="w"> </span><span class="c1">//override default</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w"> </span><span class="cm">/*(2)!*/</span><span class="n">genericDeviceNameOID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="c1">//WardenDefaults.OIDs.DEVICE_NAME by default</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w"> </span><span class="cm">/*(3)!*/</span><span class="n">defaultKeyConstraints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KeyConstraints</span><span class="p">(</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">        </span><span class="n">algorithmParameters</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AlgorithmParameters</span><span class="p">.</span><span class="na">EC</span><span class="p">(</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">            </span><span class="n">curve</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ECCurve</span><span class="p">.</span><span class="na">SECP_256_R_1</span><span class="p">,</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">            </span><span class="n">digests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span><span class="n">ECCurve</span><span class="p">.</span><span class="na">SECP_256_R_1</span><span class="p">.</span><span class="na">nativeDigest</span><span class="p">),</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">            </span><span class="n">allowKeyAgreement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">        </span><span class="p">),</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w"> </span><span class="cm">/*(4)!*/</span><span class="n">keyProtection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KeyProtection</span><span class="p">(</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">            </span><span class="n">timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">30.</span><span class="n">seconds</span><span class="p">,</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">            </span><span class="n">deviceLock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">            </span><span class="n">biometry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">            </span><span class="n">allowNewBiometricFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">        </span><span class="p">)</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">    </span><span class="p">),</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">    </span><span class="n">nonceValidity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5.</span><span class="n">minutes</span><span class="p">,</span><span class="w"> </span><span class="c1">//DEFAULT</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">    </span><span class="n">nonceGenerator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">suspend</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">CryptoRand</span><span class="p">.</span><span class="na">nextBytes</span><span class="p">(</span><span class="n">ByteArray</span><span class="p">(</span><span class="cm">/*(5)!*/</span><span class="m">128</span><span class="p">))</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w"> </span><span class="cm">/*(6)!*/</span><span class="n">challengeValidator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">redisBacked</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>We want Warden Supreme to convey the attestation statement payload inside the CSR using a custom OID.</li>
+<li>We don't care about device names in this example.</li>
+<li>We explicitly specify the key we want to have created on the client.<br />
+   The values shown here correspond to the defaults, as this is supported by Android and iOS.</li>
+<li>We require user authentication to use the private key:<ul>
+<li>Protected by biometric auth</li>
+<li>Usable for 30 seconds without reauthentication</li>
+<li>Enrolling new biometric factors will invalidate the key</li>
+</ul>
+</li>
+<li>We want extra long nonces (default: 64 bytes; max: 128 bytes).</li>
+<li>Checking and invalidating challenges is handled by a Redis-backed cache (not shown here; roll your own). This is the recommended approach when multiple verifier instances issue challenges.</li>
+</ol>
+</details>
+<p>Instead of passing parameters programmatically, it is also possible to externalise configuration (see <a href="../config/">Externalising Configuration</a>).
+As such, an <code>AttestationVerifier</code> can also be created by passing a <code>SupremeConfiguration</code> which contains iOS and Android
+attestation policies, as well as everything needed on top (object identifiers, etc.):</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">verifierFromConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AttestationVerifier</span><span class="p">(</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="n">configuration</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w"> </span><span class="cm">/*(1)!*/</span><span class="n">WardenDefaults</span><span class="p">.</span><span class="na">nonceGenerator</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="cm">/*(2)!*/</span><span class="n">clock</span><span class="p">,</span><span class="w"> </span><span class="n">offset</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">InMemoryChallengeCache</span><span class="p">(</span><span class="n">clock</span><span class="p">,</span><span class="w"> </span><span class="n">offset</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li>Default, secure nonce generator.</li>
+<li>Default bounded in-memory challenge validator.</li>
+</ol>
+<h4 id="additional-verification-policy">Additional Verification Policy</h4>
+<p><code>Makoto</code> verifies the generic platform and app attestation policy: challenge freshness, attestation statement validity,
+trust anchors, app identifiers, signer digests, boot state, OS and app version constraints, and similar platform-specific
+properties. Some back-ends also need service-specific checks on top of that policy, for example tenant binding, account
+state, risk engine decisions, device inventory rules, or values carried in <code>AttestationChallenge.additionalPayload</code>.</p>
+<p>Use <code>additionalVerifications</code> for such checks:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">verifier</span><span class="p">.</span><span class="na">verifyAttestation</span><span class="p">(</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w"> </span><span class="cm">/*(1)!*/</span><span class="n">csr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">csr</span><span class="p">,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w"> </span><span class="cm">/*(2)!*/</span><span class="n">additionalVerifications</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">receivedCsr</span><span class="p">,</span><span class="w"> </span><span class="n">verifiedAttestation</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">tenant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/*(3)!*/</span><span class="n">additionalPayload</span><span class="o">?.</span><span class="na">get</span><span class="p">(</span><span class="s">"tenant"</span><span class="p">)</span><span class="o">?.</span><span class="na">toString</span><span class="p">()</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tenant</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">expectedTenant</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">         </span><span class="cm">/*(4)!*/</span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">(</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">                </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">CONTENT</span><span class="p">,</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">                </span><span class="s">"Attestation challenge does not match tenant policy"</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">            </span><span class="p">)</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">         </span><span class="cm">/*(5)!*/</span><span class="kc">null</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w"> </span><span class="cm">/*(6)!*/</span><span class="n">certificateIssuer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">verifiedCsr</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">        </span><span class="n">issueCertificateChain</span><span class="p">(</span><span class="n">verifiedCsr</span><span class="p">)</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>This is the verified CSR from the client.</li>
+<li><code>additionalVerifications</code> runs after challenge validation, attestation verification, and CSR signature verification.
+   The validated <code>AttestationChallenge</code> is the receiver; the CSR and verified attestation result are parameters.</li>
+<li>Challenge payload can carry service context that is not part of generic platform attestation policy.</li>
+<li>Return an <code>AttestationResponse.Failure</code> to stop the flow with your own failure kind and explanation.</li>
+<li>Return <code>null</code> to continue to certificate issuance.</li>
+<li>Certificate issuance only runs if generic attestation and all additional checks succeed.</li>
+</ol>
+<p>Do not throw from this lambda; if an exception escapes, Warden Supreme maps it to an <code>INTERNAL</code> failure and does not call
+the certificate issuer.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Warden Supreme does not check whether a device has biometrics enrolled. If you choose to bind a to-be-attested key
+to biometric auth, you need to check device capa&shy;bili&shy;ties beforehand.<br />
+<strong>&rarr;&nbsp;<a href="https://github.com/a-sit-plus/AuthCheckKit">AuthCheckKit</a>
+provides a unified multiplatform API for that.</strong></p>
+</div>
+<h3 id="handling-requests">Handling Requests</h3>
+<p>This example assumes Ktor. Since this is an example environment, TLS is omitted for brevity.</p>
+<div class="admonition danger">
+<p class="admonition-title">Bound Attestation Proof Reads!</p>
+<p>Always decode received attestation proofs using <code>attestationVerifier.decodeAttestationProof(…)</code> as it checks the total
+size of the payload and refuses to decode anything larger than the configured <code>maxAttestationPayloadBytes</code>, which
+defaults to 1MB.</p>
+</div>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">caCert</span><span class="p">:</span><span class="w"> </span><span class="n">X509Certificate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">embeddedServer</span><span class="p">(</span><span class="n">Netty</span><span class="p">,</span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8080</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">   </span><span class="cm">/*(1)!*/</span><span class="n">install</span><span class="p">(</span><span class="n">ContentNegotiation</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">json</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span><span class="n">routing</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">     </span><span class="cm">/*(2)!*/</span><span class="k">get</span><span class="p">(</span><span class="n">PATH_CHALLENGE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">           </span><span class="n">call</span><span class="p">.</span><span class="na">respond</span><span class="p">(</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">              </span><span class="cm">/*(3)!*/</span><span class="n">verifier</span><span class="p">.</span><span class="na">issueChallenge</span><span class="p">(</span><span class="cm">/*(4)!*/</span><span class="s">"</span><span class="si">$</span><span class="n">publicEndpoint</span><span class="s">/</span><span class="si">$</span><span class="n">PATH_ATTEST</span><span class="s">"</span><span class="p">)</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">            </span><span class="p">)</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">     </span><span class="cm">/*(5)!*/</span><span class="n">post</span><span class="p">(</span><span class="n">PATH_ATTEST</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">         </span><span class="cm">/*(6)!*/</span><span class="kd">val</span><span class="w"> </span><span class="nv">proof</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">verifier</span><span class="p">.</span><span class="na">decodeAttestationProof</span><span class="p">(</span><span class="n">call</span><span class="p">.</span><span class="na">receive</span><span class="o">&lt;</span><span class="n">ByteArray</span><span class="o">&gt;</span><span class="p">()).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">            </span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">verifier</span><span class="p">.</span><span class="na">verifyAttestation</span><span class="p">(</span><span class="n">proof</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">received</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">                </span><span class="kd">val</span><span class="w"> </span><span class="nv">tbsCsr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">received</span><span class="p">.</span><span class="na">tbsCsr</span>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">             </span><span class="cm">/*(7)!*/</span><span class="kd">val</span><span class="w"> </span><span class="nv">leafCertificate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">signer</span><span class="p">.</span><span class="na">sign</span><span class="p">(</span>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">                 </span><span class="cm">/*(8)!*/</span><span class="n">TbsCertificate</span><span class="p">(</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">                      </span><span class="cm">/*(9)!*/</span><span class="n">serialNumber</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Random</span><span class="p">.</span><span class="na">nextBytes</span><span class="p">(</span><span class="m">32</span><span class="p">),</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">                      </span><span class="cm">/*(10)!*/</span><span class="n">publicKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tbsCsr</span><span class="p">.</span><span class="na">publicKey</span><span class="p">,</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="w">                         </span><span class="n">signatureAlgorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">signer</span><span class="p">.</span><span class="na">signatureAlgorithm</span><span class="p">.</span><span class="na">toX509SignatureAlgorithm</span><span class="p">().</span><span class="na">getOrThrow</span><span class="p">(),</span>
+</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="w">                         </span><span class="n">validFrom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Asn1Time</span><span class="p">(</span><span class="n">Clock</span><span class="p">.</span><span class="na">System</span><span class="p">.</span><span class="na">now</span><span class="p">()),</span>
+</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="w">                         </span><span class="n">validUntil</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Asn1Time</span><span class="p">(</span><span class="n">Clock</span><span class="p">.</span><span class="na">System</span><span class="p">.</span><span class="na">now</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">10.</span><span class="n">days</span><span class="p">),</span>
+</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="w">                         </span><span class="n">issuerName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">issuerName</span><span class="p">,</span>
+</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="w">                         </span><span class="n">subjectName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">subjectName</span><span class="p">,</span>
+</span><span id="__span-10-25"><a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span class="w">                    </span><span class="p">)</span>
+</span><span id="__span-10-26"><a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span class="w">                </span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-10-27"><a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span class="w">             </span><span class="cm">/*(11)!*/</span><span class="n">listOf</span><span class="p">(</span><span class="n">leafCertificate</span><span class="p">,</span><span class="w"> </span><span class="n">caCert</span><span class="p">)</span>
+</span><span id="__span-10-28"><a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-10-29"><a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a><span class="w">         </span><span class="cm">/*(12)!*/</span><span class="n">call</span><span class="p">.</span><span class="na">respond</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</span><span id="__span-10-30"><a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-10-31"><a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-10-32"><a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a><span class="p">}.</span><span class="na">start</span><span class="p">(</span><span class="n">wait</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>We're using JSON to transmit the challenge and the final response.</li>
+<li>Endpoint to serve challenges to clients</li>
+<li>It does nothing but issue challenges. In production, catch <code>InMemoryChallengeCache.ChallengeCacheFullException</code> here and return <code>429 Too Many Requests</code>; apply caller-aware rate limiting outside the verifier.</li>
+<li>The full URL to post the attestation proof to</li>
+<li>Endpoint expecting CSRs containing attestation statement payloads</li>
+<li>Read the raw CSR from the HTTP body</li>
+<li>Here, inside the <code>verifyAttestation</code> lambda, we already have a verified attestation according to the configured <code>makoto</code> instance.</li>
+<li>Signing a <code>TbsCertificate</code> automatically creates an X.509 certificate</li>
+<li>The contents of your leaf certificate are up to you! What follows is just an example.</li>
+<li><code>it</code> is the CSR. Remember: The key from the CSR is already attested here!</li>
+<li>Build the full certificate chain</li>
+<li>Finally, respond with the result:<ul>
+<li>On success, the certificate chain produced above will be returned.</li>
+<li>On failure, an explanation about what failed will be returned.</li>
+</ul>
+</li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Android <code>ATTEST_KEY</code> Is Intentionally Unsupported</p>
+<p>Warden Supreme currently only supports Android key binding when the <strong>leaf certificate is itself the attestation
+certificate</strong>.</p>
+<p>Using Android's <code>ATTEST_KEY</code> purpose to create subordinate keys or certificates below an attested key is
+intentionally unsupported for now. Supporting that safely would make certificate-chain validation more complex, and
+Warden will only consider it after thorough investigation to ensure length-extension attacks remain prohibited.</p>
+<p>If you need that use case, the supported approach is:</p>
+<ol>
+<li>create and attest the would-be issuing key through Warden's regular flow</li>
+<li>issue a certificate for that key on your CA infrastructure</li>
+<li>manually set the appropriate CA-related extensions and key-usage flags so it becomes a legitimate intermediate CA certificate allowed to sign subordinate certificates</li>
+</ol>
+<p>In other words: manual issuance work is currently required for attested intermediate CAs.</p>
+</div>
+<h3 id="client-integration">Client Integration</h3>
+<div class="admonition warning inline end">
+<p class="admonition-title">Key Management</p>
+<p>Trying to create a key for an existing alias will cause an error! Key management is your responsibility!</p>
+</div>
+<p>On the client, Warden Supreme is even easier to integrate. In contrast to the verifier, it is tailored around Ktor for its KMP goodness.
+Doing so allows for obtaining a certificate chain for an attested key in literally three short lines of code, if the challenge already
+specifies key constraints:</p>
+<div class="admonition warning">
+<p class="admonition-title">Trust the Challenge Endpoint</p>
+<p>The client deserializes the challenge before it can validate its contents, so the verifier/challenge endpoint is a
+trust boundary. Fetch challenges only over HTTPS from a verifier you trust, and configure certificate pinning on the
+supplied Ktor client where appropriate. The initial challenge fetch is unauthenticated; a malicious or compromised
+endpoint must be treated as a compromise of the attestation flow.</p>
+</div>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="cm">/*(1)!*/</span><span class="kd">val</span><span class="w"> </span><span class="nv">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AttestationClient</span><span class="p">(</span><span class="n">ktorClient</span><span class="p">)</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="cm">/*(2)!*/</span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">performAttestationFlow</span><span class="p">(</span><span class="n">ALIAS</span><span class="p">,</span><span class="w"> </span><span class="n">Url</span><span class="p">(</span><span class="n">ENDPOINT_CHALLENGE</span><span class="p">)))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">       </span><span class="k">is</span><span class="w"> </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="cm">/*(3)!*/</span><span class="n">myCertStore</span><span class="p">.</span><span class="na">store</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">certificateChain</span><span class="p">)</span><span class="w"> </span><span class="c1">//&lt;-- You're golden!</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">       </span><span class="k">is</span><span class="w"> </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">        </span><span class="cm">/*(4)!*/</span><span class="k">when</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">kind</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">               </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">TRUST</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">               </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">TIME</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">               </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">CONTENT</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">               </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">INTERNAL</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">           </span><span class="p">}</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">       </span><span class="p">}</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">   </span><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li>Create an <code>AttestationClient</code> from a <a href="https://ktor.io/">Ktor</a> client.</li>
+<li>Perform the fully integrated attestation flow <strong>iff key constraints are defined in the challenge</strong> consisting of the following steps:<ol>
+<li>Fetches the challenge from <code>ENDPOINT_CHALLENGE</code> </li>
+<li>Automatically creates a key for <code>ALIAS</code> and an accompanying attestation statement payload. <strong>Beware:</strong> if a key for this alias exists, this will fail!</li>
+<li>Creates and signs a CSR, feeding the challenge and attestation statement payload into it.</li>
+<li>Sends it to the endpoint encoded in the received challenge.</li>
+</ol>
+</li>
+<li>If everything worked out, store the received certificate chain using whatever storage approach you choose</li>
+<li>The kind of error tells you what went wrong. An <code>AttestationResponse.Failure</code> <strong>may</strong> also contain a string explaining further details.</li>
+</ol>
+<p>This really is it! If you've made it this far, you have successfully issued certificates to mobile clients that fulfil your policy.
+The <code>AttestationClient</code> doesn't even come with any configuration options.</p>
+<details>
+<summary>Lower-level APIs</summary>
+<p>If you need more control, you can also manually perform individual steps, as shown below</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="w">     </span><span class="n">authPromptCancelText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Abort"</span><span class="p">,</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">     </span><span class="cm">/*additional extensions and attributes go here*/</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">     </span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span><span class="w"> </span><span class="c1">//handle error</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w"> </span><span class="cm">/*(4)!*/</span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">attest</span><span class="p">(</span><span class="n">csr</span><span class="p">,</span><span class="w"> </span><span class="n">challenge</span><span class="p">.</span><span class="na">attestationEndpointUrl</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">        </span><span class="k">is</span><span class="w"> </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">         </span><span class="cm">/*(5)!*/</span><span class="n">myCertStore</span><span class="p">.</span><span class="na">store</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">certificateChain</span><span class="p">)</span><span class="w"> </span><span class="c1">//&lt;-- You're golden!</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">        </span><span class="k">is</span><span class="w"> </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">         </span><span class="cm">/*(6)!*/</span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">kind</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">                </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">TRUST</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="w">                </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">TIME</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">                </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">CONTENT</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">                </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">INTERNAL</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>
+</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>
+</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>
+</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li>Create an <code>AttestationClient</code> from a <a href="https://ktor.io/">Ktor</a> client.</li>
+<li>Fetch the challenge</li>
+<li>Create a local attestation proof (a signed CSR) to be sent to the verifier</li>
+<li>Send it to the verifier endpoint contained in the challenge</li>
+<li>Store the received certificate chain on success</li>
+<li>Handle errors based on what went wrong</li>
+</ol>
+<p>In addition, even more low-level access is possible by directly using Signum Supreme:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="cm">/*(1)!*/</span><span class="kd">val</span><span class="w"> </span><span class="nv">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AttestationClient</span><span class="p">(</span><span class="n">ktorClient</span><span class="p">)</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="cm">/*(2)!*/</span><span class="kd">val</span><span class="w"> </span><span class="nv">serverChallenge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">getChallenge</span><span class="p">(</span><span class="n">Url</span><span class="p">(</span><span class="n">ENDPOINT_CHALLENGE</span><span class="p">)).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="cm">/*(3)!*/</span><span class="kd">val</span><span class="w"> </span><span class="nv">signer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PlatformSigningProvider</span><span class="p">.</span><span class="na">createSigningKey</span><span class="p">(</span><span class="n">ALIAS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">       </span><span class="n">ec</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">           </span><span class="n">curve</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ECCurve</span><span class="p">.</span><span class="na">SECP_256_R_1</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">           </span><span class="n">purposes</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">               </span><span class="n">signing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">               </span><span class="n">keyAgreement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">           </span><span class="p">}</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">       </span><span class="p">}</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">       </span><span class="n">hardware</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="w">           </span><span class="n">backing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">REQUIRED</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">           </span><span class="n">attestation</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">            </span><span class="cm">/*(4)!*/</span><span class="n">challenge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serverChallenge</span><span class="p">.</span><span class="na">nonce</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">           </span><span class="p">}</span>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">           </span><span class="n">protection</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="w">               </span><span class="n">factors</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="w">                   </span><span class="n">biometry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="w">               </span><span class="p">}</span>
+</span><span id="__span-13-21"><a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a><span class="w">               </span><span class="n">timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">30.</span><span class="n">seconds</span>
+</span><span id="__span-13-22"><a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="w">           </span><span class="p">}</span>
+</span><span id="__span-13-23"><a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="w">       </span><span class="p">}</span>
+</span><span id="__span-13-24"><a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="w">   </span><span class="p">}.</span><span class="na">getOrThrow</span><span class="p">()</span><span class="w"> </span><span class="c1">//handle error</span>
+</span><span id="__span-13-25"><a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a>
+</span><span id="__span-13-26"><a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a><span class="cm">/*(5)!*/</span><span class="kd">val</span><span class="w"> </span><span class="nv">csr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">signer</span><span class="p">.</span><span class="na">createCsr</span><span class="p">(</span><span class="n">serverChallenge</span><span class="p">,</span>
+</span><span id="__span-13-27"><a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a><span class="w">    </span><span class="cm">/*optional SubjectName, extns, attributes go here*/</span>
+</span><span id="__span-13-28"><a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a><span class="w">    </span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-13-29"><a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a>
+</span><span id="__span-13-30"><a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a><span class="cm">/*(6)!*/</span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">attest</span><span class="p">(</span><span class="n">csr</span><span class="p">,</span><span class="w"> </span><span class="n">serverChallenge</span><span class="p">.</span><span class="na">attestationEndpointUrl</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-31"><a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a><span class="w">       </span><span class="k">is</span><span class="w"> </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-32"><a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a><span class="w">        </span><span class="cm">/*(7)!*/</span><span class="n">myCertStore</span><span class="p">.</span><span class="na">store</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">certificateChain</span><span class="p">)</span><span class="w"> </span><span class="c1">//&lt;-- You're golden!</span>
+</span><span id="__span-13-33"><a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a><span class="w">       </span><span class="p">}</span>
+</span><span id="__span-13-34"><a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a>
+</span><span id="__span-13-35"><a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="w">       </span><span class="k">is</span><span class="w"> </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-36"><a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a><span class="w">        </span><span class="cm">/*(8)!*/</span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">kind</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-37"><a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a><span class="w">               </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">TRUST</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-13-38"><a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a><span class="w">               </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">TIME</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-13-39"><a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a><span class="w">               </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">CONTENT</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-13-40"><a id="__codelineno-13-40" name="__codelineno-13-40" href="#__codelineno-13-40"></a><span class="w">               </span><span class="n">AttestationResponse</span><span class="p">.</span><span class="na">Failure</span><span class="p">.</span><span class="na">Type</span><span class="p">.</span><span class="na">INTERNAL</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-13-41"><a id="__codelineno-13-41" name="__codelineno-13-41" href="#__codelineno-13-41"></a><span class="w">           </span><span class="p">}</span>
+</span><span id="__span-13-42"><a id="__codelineno-13-42" name="__codelineno-13-42" href="#__codelineno-13-42"></a><span class="w">       </span><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li>Create an <code>AttestationClient</code> from a <a href="https://ktor.io/">Ktor</a> client.</li>
+<li>Fetch the challenge</li>
+<li>Create and configure a signer using Signum Supreme based on your demands<br />
+   This means that you can also override any client hints from the received challenge</li>
+<li>Don't forget to pass the nonce to enable attestation!</li>
+<li>Create the CSR as desired</li>
+<li>Send it to the verifier endpoint contained in the challenge</li>
+<li>Store the received certificate chain on success</li>
+<li>Handle errors based on what went wrong</li>
+</ol>
+</details>
+<h2 id="beyond-the-basics">Beyond the Basics</h2>
+<p>The step-by-step guide above illustrates the intended ways of using Warden Supreme, bolting down as many moving parts as possible.
+Reality, though, is a complex beast and sometimes a little more control is needed. In particular, logging is often not only desirable, but essential.
+Hence, the verifier allows for hooking into every possible outcome of an attestation verification.
+This also allows for customising the explanations sent to clients.</p>
+<div class="admonition tip inline end">
+<p class="admonition-title">Error Handling and Debugging</p>
+<p>Head over to the dedicated <a href="../debugging/">debugging page</a> to learn how to debug attestation issues. For how to handle and interpret
+Warden Supreme's attestation errors, see the <a href="../errorhandling/">error handling page</a>.</p>
+</div>
+<p>The Supreme attestation verifier only returns an enum indicating the reason for an error, with the option to attach a custom explanatory string.
+This is by design, as it is generally undesirable to expose the internals of a back-end to clients.</p>
+<p>On the back-end, however, attestation issues typically need to be analysed. Hence, the Supreme attestation verifier provides
+four callbacks to analyse challenge validation, attestation errors, and success (without side effects):</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">verifier</span><span class="p">.</span><span class="na">verifyAttestation</span><span class="p">(</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w"> </span><span class="cm">/*(1)!*/</span><span class="n">csr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">csr</span><span class="p">,</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w"> </span><span class="cm">/*(2)!*/</span><span class="n">onChallengeValidated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">csr</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">customPayload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">additionalPayload</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">        </span><span class="n">logger</span><span class="p">.</span><span class="na">log</span><span class="p">(</span><span class="n">Level</span><span class="p">.</span><span class="na">FINE</span><span class="p">,</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">            </span><span class="s">"Challenge validated (payload=</span><span class="si">$</span><span class="n">customPayload</span><span class="s">) based on nonce </span><span class="si">${</span><span class="n">csr</span><span class="p">.</span><span class="na">tbsCsr</span><span class="p">.</span><span class="na">nonce</span><span class="si">}</span><span class="s"> from CSR"</span><span class="p">)</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w"> </span><span class="cm">/*(3)!*/</span><span class="n">onPreAttestationError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">        </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">PreAttestationError</span><span class="p">.</span><span class="na">AttestationStatementExtraction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">PreAttestationError</span><span class="p">.</span><span class="na">ChallengeExtraction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">PreAttestationError</span><span class="p">.</span><span class="na">ChallengeVerification</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">PreAttestationError</span><span class="p">.</span><span class="na">OperationalError</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">     </span><span class="cm">/*(4)!*/</span><span class="kc">null</span>
+</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="w"> </span><span class="cm">/*(5)!*/</span><span class="n">onAttestationError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">debugStatement</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">attestationException</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cause</span>
+</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">reason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">explanation</span>
+</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="w">     </span><span class="cm">/*(6)!*/</span><span class="n">logger</span><span class="p">.</span><span class="na">log</span><span class="p">(</span><span class="n">Level</span><span class="p">.</span><span class="na">WARNING</span><span class="p">,</span><span class="s">"Attestation failed due to </span><span class="si">$</span><span class="n">reason</span><span class="s">. "</span>
+</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="w">            </span><span class="o">+</span><span class="w"> </span><span class="n">debugStatement</span><span class="p">.</span><span class="na">serializeCompact</span><span class="p">(),</span><span class="w"> </span><span class="n">attestationException</span><span class="p">)</span>
+</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="w">     </span><span class="cm">/*(7)!*/</span><span class="kc">null</span>
+</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="w"> </span><span class="cm">/*(8)!*/</span><span class="n">onAttestationSuccess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">attestedKey</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-14-25"><a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a><span class="w">        </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-26"><a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">AttestationResult</span><span class="p">.</span><span class="na">Android</span><span class="p">.</span><span class="na">Verified</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-14-27"><a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">AttestationResult</span><span class="p">.</span><span class="na">IOS</span><span class="p">.</span><span class="na">Verified</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">()</span>
+</span><span id="__span-14-28"><a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-14-29"><a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a>
+</span><span id="__span-14-30"><a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-14-31"><a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a><span class="p">)</span><span class="cm">/*(9)!*/</span><span class="p">{</span><span class="w"> </span><span class="n">csr</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-14-32"><a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a><span class="w">    </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span></code></pre></div>
+<ol>
+<li>This is simply the CSR from the client, as in the minimal example</li>
+<li><code>onChallengeValidated</code> is called after the CSR’s challenge binding was validated. It has the validated challenge as receiver and the CSR as parameter.</li>
+<li><code>onPreAttestationError</code> is called in case of operational/internal errors, or if the attestation statement cannot
+   be extracted from a CSR. Different side-effect-free handling strategies can be employed based on error type.</li>
+<li>At the end of <code>onPreAttestationError</code>, it is possible to return a custom error explanation to the client (can be null).</li>
+<li><code>onAttestationError</code> is called if the attestation statement fails to verify. This includes an invalid bootloader lock state, wrong package identifier, etc.
+   See <a href="../errorhandling/">the dedicated error handling guide</a> for more details!</li>
+<li>This logs a debug statement that can be used to replicate and debug the attestation process. <strong>Beware of privacy implications!</strong> See the <a href="../debugging/">Debugging</a> page.</li>
+<li>Again, a custom error message can be sent to the client</li>
+<li><code>onAttestationSuccess</code> is called right before an <code>AttestationResponse.Success</code> is returned. It has a verified attestation statement as its receiver and the associated public key as parameter.
+   This can be useful for statistical analyses, for example.</li>
+<li>This is the certificate signing lambda, also having a fully verified attestation result as receiver.
+   In contrast to <code>onAttestationSuccess</code>, it is not side-effect-free, but is expected to return a certificate chain, whose
+   leaf certifies the attested key. As such, it receives the fully verified CSR as a parameter.</li>
+</ol>
+<p>The step-by-step guide <a href="#warden-supreme-step-by-step-guide">above</a> will cover most use cases perfectly well.
+While extensive configurations were also included alongside the basic ones, Warden Supreme is, in fact, more flexible:</p>
+<ul>
+<li>Instead of always using the defaults, it is possible to specify challenge properties manually for each challenge issued</li>
+<li>Key constraints need not be specified. In that case, it is up to the client to create a key that is desired by the back-end and sign a CSR manually.<br />
+  (This is still very smooth, as can be seen in the <a href="../../dokka/supreme-client/at.asitplus.attestation.supreme/#110236803%2FFunctions%2F-1347999820">API docs</a>.)</li>
+<li>By default, a device identifier is always encoded into the CSR; this can be toggled.</li>
+</ul>
+<p>For more details, refer to the API docs on the <a href="../dokka/supreme-verifier/at.asitplus.attestation.supreme/-attestation-verifier/">verifier</a> and on the <a href="../dokka/supreme-client/at.asitplus.attestation.supreme/-attestation-client/">client</a>!</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025-2026 A-SIT Plus GmbH &bull; <a href="https://plus.a-sit.at/imprint.html" target="_blank">Imprint</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://plus.a-sit.at/" target="_blank" rel="noopener" title="plus.a-sit.at" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="m57.7 193 9.4 16.4c8.3 14.5 21.9 25.2 38 29.8l57.9 16.5c17.2 4.9 29 20.6 29 38.5v39.9c0 11 6.2 21 16 25.9s16 14.9 16 25.9v39c0 15.6 14.9 26.9 29.9 22.6 16.1-4.6 28.6-17.5 32.7-33.8l2.8-11.2c4.2-16.9 15.2-31.4 30.3-40l8.1-4.6c15-8.5 24.2-24.5 24.2-41.7v-8.3c0-12.7-5.1-24.9-14.1-33.9l-3.9-3.9c-9-9-21.2-14.1-33.9-14.1H257c-11.1 0-22.1-2.9-31.8-8.4l-34.5-19.7c-4.3-2.5-7.6-6.5-9.2-11.2-3.2-9.6 1.1-20 10.2-24.5l5.9-3c6.6-3.3 14.3-3.9 21.3-1.5l23.2 7.7c8.2 2.7 17.2-.4 21.9-7.5 4.7-7 4.2-16.3-1.2-22.8l-13.6-16.3c-10-12-9.9-29.5.3-41.3l15.7-18.3c8.8-10.3 10.2-25 3.5-36.7l-2.4-4.2c-3.5-.2-6.9-.3-10.4-.3-92.8 0-171.5 60.9-198.2 145M464 256c0-36.8-9.6-71.4-26.4-101.5L412 164.8c-15.7 6.3-23.8 23.8-18.5 39.8l16.9 50.7c3.5 10.4 12 18.3 22.6 20.9l29.1 7.3c1.2-9 1.8-18.2 1.8-27.5zM0 256a256 256 0 1 1 512 0 256 256 0 1 1-512 0"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:<opensource@a-sit.at>" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M498.1 5.6c10.1 7 15.4 19.1 13.5 31.2l-64 416c-1.5 9.7-7.4 18.2-16 23s-18.9 5.4-28 1.6L284 427.7l-68.5 74.1c-8.9 9.7-22.9 12.9-35.2 8.1S160 493.2 160 480v-83.6c0-4 1.5-7.8 4.2-10.8l167.6-182.8c5.8-6.3 5.6-16-.4-22s-15.7-6.4-22-.7L106 360.8l-88.3-44.2C7.1 311.3.3 300.7 0 288.9s5.9-22.8 16.1-28.7l448-256c10.7-6.1 23.9-5.5 34 1.4"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "search.suggest", "search.highlight", "content.code.annotate", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  </body>
+</html>

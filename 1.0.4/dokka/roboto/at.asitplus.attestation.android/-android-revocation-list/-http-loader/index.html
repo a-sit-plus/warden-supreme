@@ -1,0 +1,303 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>HttpLoader</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.0.4
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":roboto/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":roboto/main" data-filter=":roboto/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="roboto::at.asitplus.attestation.android/AndroidRevocationList.HttpLoader///PointingToDeclaration//2122162949">
+  <div class="breadcrumbs"><a href="../../../index.html">roboto</a><span class="delimiter">/</span><a href="../../index.html">at.asitplus.attestation.android</a><span class="delimiter">/</span><a href="../index.html">AndroidRevocationList</a><span class="delimiter">/</span><span class="current">HttpLoader</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Http</span><wbr><span><span>Loader</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">HttpLoader</a><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator"> : </span><span data-unresolved-link="io.ktor.client.engine/HttpClientEngineConfig///PointingToDeclaration/">HttpClientEngineConfig</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">engineFactory<span class="token operator">: </span><span data-unresolved-link="io.ktor.client.engine/HttpClientEngineFactory///PointingToDeclaration/">HttpClientEngineFactory</span><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>url<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fallbackRevocationListValiditySeconds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter ">preferHeaderBasedExpiry<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClientConfig///PointingToDeclaration/">HttpClientConfig</span><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span> : <a href="../-caching-loader/index.html">AndroidRevocationList.CachingLoader</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/a-sit-plus/warden-supreme/tree/main/serverside/roboto/src/main/kotlin/AndroidRevocationList.kt#L336">source</a>)</span></span></div><p class="paragraph">HTTP <a href="../-caching-loader/index.html">CachingLoader</a> that fetches an <a href="../index.html">AndroidRevocationList</a> over HTTP. This class uses an <span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span> to perform requests and parses the fetched JSON content into the revocation list format.</p><h2 class="">Expiry resolution</h2><p class="paragraph">The loader computes an effective expiry instant and stores it into <a href="../expires.html">AndroidRevocationList.expires</a>. It always starts by parsing the JSON body; invalid JSON (including an invalid <code class="lang-kotlin">expires</code> value in the JSON) will fail the request.</p><p class="paragraph">When <code class="lang-kotlin">preferHeaderBasedExpiry = true</code> (default), the effective validity is chosen as:</p><ol><li><p class="paragraph">A validity derived from HTTP caching headers (see below), if parseable.</p></li><li><p class="paragraph">Otherwise the JSON <code class="lang-kotlin">expires</code>, if present.</p></li><li><p class="paragraph">Otherwise <span data-unresolved-link="at.asitplus.attestation.android/AndroidRevocationList.HttpLoader//#io.ktor.client.engine.HttpClientEngineFactory[TypeParam(bounds=[io.ktor.client.engine.HttpClientEngineConfig])]#kotlin.String#kotlin.Long#kotlin.Boolean#kotlin.Function1[io.ktor.client.HttpClientConfig[TypeParam(bounds=[io.ktor.client.engine.HttpClientEngineConfig])],kotlin.Unit]/PointingToCallableParameters(2)/">fallbackRevocationListValiditySeconds</span>.</p></li></ol><p class="paragraph">When <code class="lang-kotlin">preferHeaderBasedExpiry = false</code>, the effective validity is chosen as:</p><ol><li><p class="paragraph">The JSON <code class="lang-kotlin">expires</code>, if present (short-circuit: no expiry-related HTTP header parsing is performed; however,     <span data-unresolved-link="io.ktor.http/HttpHeaders/Date/#/PointingToDeclaration/">HttpHeaders.Date</span>/<span data-unresolved-link="io.ktor.http/HttpHeaders/LastModified/#/PointingToDeclaration/">HttpHeaders.LastModified</span> may still be read to fill missing metadata).</p></li><li><p class="paragraph">Otherwise a validity derived from HTTP caching headers (see below), if parseable.</p></li><li><p class="paragraph">Otherwise <span data-unresolved-link="at.asitplus.attestation.android/AndroidRevocationList.HttpLoader//#io.ktor.client.engine.HttpClientEngineFactory[TypeParam(bounds=[io.ktor.client.engine.HttpClientEngineConfig])]#kotlin.String#kotlin.Long#kotlin.Boolean#kotlin.Function1[io.ktor.client.HttpClientConfig[TypeParam(bounds=[io.ktor.client.engine.HttpClientEngineConfig])],kotlin.Unit]/PointingToCallableParameters(2)/">fallbackRevocationListValiditySeconds</span>.</p></li></ol><h3 class="">Header-derived validity</h3><ul><li><p class="paragraph"><span data-unresolved-link="io.ktor.http/HttpHeaders/CacheControl/#/PointingToDeclaration/">HttpHeaders.CacheControl</span>: all values are joined, then:</p></li><li><p class="paragraph"><code class="lang-kotlin">no-cache</code> or <code class="lang-kotlin">no-store</code> forces a validity of <code class="lang-kotlin">0s</code>.</p></li><li><p class="paragraph"><code class="lang-kotlin">max-age=&lt;seconds&gt;</code> is parsed (non-negative integers only). If multiple <code class="lang-kotlin">max-age</code> directives are present,      the smallest value is used (conservative).</p></li><li><p class="paragraph">If no usable directive is present, Cache-Control is treated as absent/malformed.</p></li><li><p class="paragraph"><span data-unresolved-link="io.ktor.http/HttpHeaders/Expires/#/PointingToDeclaration/">HttpHeaders.Expires</span>: only used if there is exactly one value and it is RFC1123-parseable; otherwise it is treated as absent/malformed.</p></li><li><p class="paragraph">If both Cache-Control validity and Expires are parseable, Cache-Control wins.</p></li><li><p class="paragraph">Malformed/unsupported header values never hard-fail the load; they are ignored and the loader falls back according to the precedence rules above.</p></li></ul><p class="paragraph">If the response provides <span data-unresolved-link="io.ktor.http/HttpHeaders/Date/#/PointingToDeclaration/">HttpHeaders.Date</span> or <span data-unresolved-link="io.ktor.http/HttpHeaders/LastModified/#/PointingToDeclaration/">HttpHeaders.LastModified</span>, these values are used to fill missing <a href="../date.html">AndroidRevocationList.date</a> and <a href="../last-modified.html">AndroidRevocationList.lastModified</a> fields when they are not present in the JSON.</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>engine</span><wbr><span><span>Factory</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The factory responsible for creating the engine used for the HTTP client.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>url</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The URL from which the revocation list will be fetched. Defaults to the official Google attestation revocation list URL.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>prefer</span><wbr><span>Header</span><wbr><span>Based</span><wbr><span><span>Expiry</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Controls whether HTTP header-derived expiry should be preferred over a JSON <code class="lang-kotlin">expires</code> value (see "Expiry resolution" for full details). Google explicitly mentions Cache-Control to communicate expiry times, most probably because it will work as expected regardless of clock drifts.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>config</span></span></u></div></span></div><div><div class="title"><p class="paragraph">An optional HTTP client configuration lambda that allows customization of the client's behaviour. Note that fixed defaults for caching, content-negotiation, and deserialization may override parts of the provided config.</p></div></div></div></div></div><h4 class="tableheader">Type Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>T</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The type of the <span data-unresolved-link="io.ktor.client.engine/HttpClientEngineConfig///PointingToDeclaration/">HttpClientEngineConfig</span> to configure the HTTP engine.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-181885342%2FConstructors%2F2122162949" anchor-label="HttpLoader" id="-181885342%2FConstructors%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-http-loader.html"><span>Http</span><wbr><span><span>Loader</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-181885342%2FConstructors%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">engineFactory<span class="token operator">: </span><span data-unresolved-link="io.ktor.client.engine/HttpClientEngineFactory///PointingToDeclaration/">HttpClientEngineFactory</span><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">url<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fallbackRevocationListValiditySeconds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter ">preferHeaderBasedExpiry<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClientConfig///PointingToDeclaration/">HttpClientConfig</span><span class="token operator">&lt;</span><a href="index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-1350125253%2FClasslikes%2F2122162949" anchor-label="Companion" id="-1350125253%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1350125253%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1732638831%2FClasslikes%2F2122162949" anchor-label="Configuration" id="-1732638831%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-configuration/index.html"><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1732638831%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-configuration/index.html">Configuration</a> : <a href="../-loader/-configuration/index.html">AndroidRevocationList.Loader.Configuration</a><span class="token operator">&lt;</span><a href="index.html">AndroidRevocationList.HttpLoader</a><span class="token operator">&lt;</span><span data-unresolved-link="io.ktor.client.engine/HttpClientEngineConfig///PointingToDeclaration/">HttpClientEngineConfig</span><span class="token operator">&gt;</span><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-520721840%2FClasslikes%2F2122162949" anchor-label="Generic" id="-520721840%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-generic/index.html"><span><span>Generic</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-520721840%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"http"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-generic/index.html">Generic</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>url<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>GOOGLE_OFFICIAL_REVOCATION_LIST<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fallbackRevocationListValiditySeconds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>preferHeaderBasedExpiry<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>proxyConfig<span class="token operator">: </span><a href="-configuration/-proxy-config/index.html">AndroidRevocationList.HttpLoader.Configuration.ProxyConfig</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="-configuration/index.html">AndroidRevocationList.HttpLoader.Configuration</a></div><div class="brief "><p class="paragraph">Generic HTTP loader configuration. See <a href="index.html">HttpLoader</a> for details on caching behaviour regarding validity calculation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1645624425%2FClasslikes%2F2122162949" anchor-label="GoogleOfficial" id="-1645624425%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-google-official/index.html"><span>Google</span><wbr><span><span>Official</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1645624425%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/SerialName///PointingToDeclaration/"><span class="token annotation builtin">SerialName</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"google"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-google-official/index.html">GoogleOfficial</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>fallbackRevocationListValiditySeconds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span><span class="token constant">60</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>proxyConfig<span class="token operator">: </span><a href="-configuration/-proxy-config/index.html">AndroidRevocationList.HttpLoader.Configuration.ProxyConfig</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="-configuration/index.html">AndroidRevocationList.HttpLoader.Configuration</a></div><div class="brief "><p class="paragraph">Uses the official Google revocation list and always prefers header-derived expiry. See <a href="index.html">HttpLoader</a> for details on caching behaviour regarding validity calculation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="664257573%2FProperties%2F2122162949" anchor-label="fallbackRevocationListValiditySeconds" id="664257573%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fallback-revocation-list-validity-seconds.html"><span>fallback</span><wbr><span>Revocation</span><wbr><span>List</span><wbr><span>Validity</span><wbr><span><span>Seconds</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="664257573%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="fallback-revocation-list-validity-seconds.html">fallbackRevocationListValiditySeconds</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1469317797%2FProperties%2F2122162949" anchor-label="url" id="1469317797%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="url.html"><span><span>url</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1469317797%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="url.html">url</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1906715003%2FFunctions%2F2122162949" anchor-label="fetch" id="1906715003%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch.html"><span><span>fetch</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1906715003%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="fetch.html"><span class="token function">fetch</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">now<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">AndroidRevocationList</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2019236744%2FFunctions%2F2122162949" anchor-label="load" id="-2019236744%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-caching-loader/load.html"><span><span>load</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2019236744%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="../-caching-loader/load.html"><span class="token function">load</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">now<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">AndroidRevocationList</a></div><div class="brief "><p class="paragraph">Loads an <a href="../index.html">AndroidRevocationList</a>, which provides information about revoked or suspended devices as per the official specification. The implementation details, such as the source of the revocation list, may vary depending on the specific implementation of the <code class="lang-kotlin">Loader</code> interface.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="77646258%2FFunctions%2F2122162949" anchor-label="loadBlocking" id="77646258%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-loader/load-blocking.html"><span>load</span><wbr><span><span>Blocking</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="77646258%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-loader/load-blocking.html"><span class="token function">loadBlocking</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">now<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">AndroidRevocationList</a></div><div class="brief "><p class="paragraph">Loads an <a href="../index.html">AndroidRevocationList</a> in a blocking manner.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1338843920%2FFunctions%2F2122162949" anchor-label="shutdown" id="1338843920%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="shutdown.html"><span><span>shutdown</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1338843920%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="shutdown.html"><span class="token function">shutdown</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Shuts down the HTTP client instance associated with the loader.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

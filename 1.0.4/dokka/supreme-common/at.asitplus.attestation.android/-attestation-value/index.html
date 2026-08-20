@@ -1,0 +1,494 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AttestationValue</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.0.4
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":supreme-common/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":supreme-common/commonMain" data-filter=":supreme-common/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="supreme-common::at.asitplus.attestation.android/AttestationValue///PointingToDeclaration//-8504598">
+  <div class="breadcrumbs"><a href="../../index.html">supreme-common</a><span class="delimiter">/</span><a href="../index.html">at.asitplus.attestation.android</a><span class="delimiter">/</span><span class="current">AttestationValue</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Attestation</span><wbr><span><span>Value</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="index.html">AttestationValue</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html">A</a><span class="token operator"> : </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Encodable///PointingToDeclaration/">Asn1Encodable</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span> : <a href="../-authorization-list/-tagged/-with-tag/index.html">AuthorizationList.Tagged.WithTag</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span><span class="token operator">&gt; </span>, <a href="../-pretty-printable/index.html">PrettyPrintable</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/a-sit-plus/warden-supreme/tree/main/supreme/common/src/commonMain/kotlin/parser/AttestationValue.kt#L26">source</a>)</span></span></div><p class="paragraph">Either type containing:</p><ul><li><p class="paragraph"><strong>on success:</strong> the parsed <a href="-success/value.html">Success.value</a> with semantics attached</p></li><li><p class="paragraph"><strong>on failure:</strong> the <a href="-failure/raw-asn1-value.html">Failure.rawAsn1Value</a>, which is a deep copy of the non-parsable source element</p></li></ul><h4 class="tableheader">Type Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>A</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the type of the parsed <span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Encodable///PointingToDeclaration/">Asn1Encodable</span></p></div></div></div></div></div><h4 class="tableheader">See also</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/"><span><span>Asn1Element</span></span></span></div></span></div><div></div></div></div></div><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-success/index.html">Success</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-failure/index.html">Failure</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-1835544358%2FClasslikes%2F-8504598" anchor-label="Failure" id="-1835544358%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-failure/index.html"><span><span>Failure</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1835544358%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-failure/index.html">Failure</a><span class="token operator">&lt;</span><a href="-failure/index.html">E</a><span class="token operator"> : </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span><span class="token operator">&gt;</span> : <a href="index.html">AttestationValue</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Encodable///PointingToDeclaration/">Asn1Encodable</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-310195071%2FClasslikes%2F-8504598" anchor-label="Success" id="-310195071%2FClasslikes%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-success/index.html"><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-310195071%2FClasslikes%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-success/index.html">Success</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="-success/index.html">T</a><span class="token operator"> : </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Encodable///PointingToDeclaration/">Asn1Encodable</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span> : <a href="index.html">AttestationValue</a><span class="token operator">&lt;</span><a href="-success/index.html">T</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1924353915%2FProperties%2F-8504598" anchor-label="tagged" id="-1924353915%2FProperties%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-tagged/-with-tag/tagged.html"><span><span>tagged</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1924353915%2FProperties%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="../-authorization-list/-tagged/-with-tag/tagged.html">tagged</a><span class="token operator">: </span><a href="../-authorization-list/-tagged/index.html">AuthorizationList.Tagged</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1972909093%2FFunctions%2F-8504598" anchor-label="doPrettyPrint" id="-1972909093%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pretty-printable/do-pretty-print.html"><span>do</span><wbr><span>Pretty</span><wbr><span><span>Print</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1972909093%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../-pretty-printable/do-pretty-print.html"><span class="token function">doPrettyPrint</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">indent<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="856282084%2FFunctions%2F-8504598" anchor-label="encodeToDer" id="856282084%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-module-hash/index.html#856282084%2FFunctions%2F-8504598"><span>encode</span><wbr><span>To</span><wbr><span><span>Der</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="856282084%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#856282084%2FFunctions%2F-8504598"><span class="token function">encodeToDer</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1674234950%2FFunctions%2F-8504598" anchor-label="encodeToDerOrNull" id="-1674234950%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-module-hash/index.html#-1674234950%2FFunctions%2F-8504598"><span>encode</span><wbr><span>To</span><wbr><span>Der</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1674234950%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#-1674234950%2FFunctions%2F-8504598"><span class="token function">encodeToDerOrNull</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="633127255%2FFunctions%2F-8504598" anchor-label="encodeToDerSafe" id="633127255%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-module-hash/index.html#633127255%2FFunctions%2F-8504598"><span>encode</span><wbr><span>To</span><wbr><span>Der</span><wbr><span><span>Safe</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="633127255%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#633127255%2FFunctions%2F-8504598"><span class="token function">encodeToDerSafe</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-659092585%2FFunctions%2F-8504598" anchor-label="encodeToTlv" id="-659092585%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-tagged/-with-tag/index.html#-659092585%2FFunctions%2F-8504598"><span>encode</span><wbr><span>To</span><wbr><span><span>Tlv</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-659092585%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../-authorization-list/-tagged/-with-tag/index.html#-659092585%2FFunctions%2F-8504598"><span class="token function">encodeToTlv</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2582227%2FFunctions%2F-8504598" anchor-label="encodeToTlvOrNull" id="-2582227%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-module-hash/index.html#-2582227%2FFunctions%2F-8504598"><span>encode</span><wbr><span>To</span><wbr><span>Tlv</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2582227%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#-2582227%2FFunctions%2F-8504598"><span class="token function">encodeToTlvOrNull</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1037100938%2FFunctions%2F-8504598" anchor-label="encodeToTlvSafe" id="1037100938%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-module-hash/index.html#1037100938%2FFunctions%2F-8504598"><span>encode</span><wbr><span>To</span><wbr><span>Tlv</span><wbr><span><span>Safe</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1037100938%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#1037100938%2FFunctions%2F-8504598"><span class="token function">encodeToTlvSafe</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1060134947%2FFunctions%2F-8504598" anchor-label="failureOrNull" id="-1060134947%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="failure-or-null.html"><span>failure</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1060134947%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="failure-or-null.html"><span class="token function">failureOrNull</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-failure/index.html">AttestationValue.Failure</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns the current instance as a <a href="-failure/index.html">Failure</a> if it represents a failure state. If the instance is not a failure, <code class="lang-kotlin">null</code> is returned.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1175469450%2FFunctions%2F-8504598" anchor-label="fold" id="-1175469450%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fold.html"><span><span>fold</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1175469450%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="fold.html">R</a><span class="token operator">&gt; </span><a href="fold.html"><span class="token function">fold</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">onSuccess<span class="token operator">: </span><span class="token punctuation">(</span><a href="index.html">A</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="fold.html">R</a><span class="token punctuation">, </span></span><span class="parameter ">onFailure<span class="token operator">: </span><span class="token punctuation">(</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="../-authorization-list/-tagged/index.html">AuthorizationList.Tagged</a><span class="token punctuation">, </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="fold.html">R</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="fold.html">R</a></div><div class="brief "><p class="paragraph">Runs <a href="fold.html">onSuccess</a> for <a href="-success/index.html">Success</a> or <a href="fold.html">onFailure</a> for <a href="-failure/index.html">Failure</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1621352443%2FFunctions%2F-8504598" anchor-label="get" id="1621352443%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get.html"><span><span>get</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1621352443%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="get.html"><span class="token function"><strike>get</strike></span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">A</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="969249425%2FFunctions%2F-8504598" anchor-label="getOrNull" id="969249425%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-or-null.html"><span>get</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="969249425%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-or-null.html"><span class="token function">getOrNull</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">A</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Retrieves the encapsulated value if this instance is of type <a href="-success/index.html">Success</a>, or <code class="lang-kotlin">null</code> otherwise.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1618740100%2FFunctions%2F-8504598" anchor-label="getOrThrow" id="-1618740100%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-or-throw.html"><span>get</span><wbr><span>Or</span><wbr><span><span>Throw</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1618740100%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-or-throw.html"><span class="token function">getOrThrow</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">A</a></div><div class="brief "><p class="paragraph">Returns the encapsulated value if this instance is of type <a href="-success/index.html">Success</a>, otherwise throws a <code class="lang-kotlin">NoSuchElementException</code> with details from <a href="-failure/index.html">Failure</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1312564591%2FFunctions%2F-8504598" anchor-label="isFailure" id="-1312564591%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-failure.html"><span>is</span><wbr><span><span>Failure</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1312564591%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="is-failure.html"><span class="token function">isFailure</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="212784696%2FFunctions%2F-8504598" anchor-label="isSuccess" id="212784696%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-success.html"><span>is</span><wbr><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="212784696%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="is-success.html"><span class="token function">isSuccess</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1213891512%2FFunctions%2F-8504598" anchor-label="onFailure" id="-1213891512%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-failure.html"><span>on</span><wbr><span><span>Failure</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1213891512%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="on-failure.html">R</a><span class="token operator">&gt; </span><a href="on-failure.html"><span class="token function"><strike>onFailure</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">onFailure<span class="token operator">: </span><span class="token punctuation">(</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="../-authorization-list/-tagged/index.html">AuthorizationList.Tagged</a><span class="token punctuation">, </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="on-failure.html">R</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="on-failure.html">R</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1447504944%2FFunctions%2F-8504598" anchor-label="onSuccess" id="-1447504944%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-success.html"><span>on</span><wbr><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1447504944%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="on-success.html">R</a><span class="token operator">&gt; </span><a href="on-success.html"><span class="token function"><strike>onSuccess</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">onSuccess<span class="token operator">: </span><span class="token punctuation">(</span><a href="index.html">A</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="on-success.html">R</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="on-success.html">R</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="133201209%2FFunctions%2F-8504598" anchor-label="prettyPrint" id="133201209%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../pretty-print.html"><span>pretty</span><wbr><span><span>Print</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="133201209%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-pretty-printable/index.html">PrettyPrintable</a><span class="token punctuation">.</span><a href="../pretty-print.html"><span class="token function">prettyPrint</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-589649064%2FFunctions%2F-8504598" anchor-label="prettyPrintAsn1" id="-589649064%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-module-hash/index.html#-589649064%2FFunctions%2F-8504598"><span>pretty</span><wbr><span>Print</span><wbr><span><span>Asn1</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-589649064%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#-589649064%2FFunctions%2F-8504598"><span class="token function">prettyPrintAsn1</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="335580196%2FFunctions%2F-8504598" anchor-label="toKmmResult" id="335580196%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-kmm-result.html"><span>to</span><wbr><span>Kmm</span><wbr><span><span>Result</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="335580196%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="to-kmm-result.html"><span class="token function">toKmmResult</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="index.html">A</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph"><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span> version of <a href="to-result.html">toResult</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1698842097%2FFunctions%2F-8504598" anchor-label="toResult" id="1698842097%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-result.html"><span>to</span><wbr><span><span>Result</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1698842097%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="to-result.html"><span class="token function">toResult</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/index.html">Result</a><span class="token operator">&lt;</span><a href="index.html">A</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Converts this instance to a <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/index.html">Result</a> object wrapping the success value or failure exception, depending on the instance state.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="374304225%2FFunctions%2F-8504598" anchor-label="withImplicitTag" id="374304225%2FFunctions%2F-8504598" data-filterable-set=":supreme-common/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-common/commonMain" data-filterable-set=":supreme-common/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-authorization-list/-module-hash/index.html#71482821%2FFunctions%2F-8504598"><span>with</span><wbr><span>Implicit</span><wbr><span><span>Tag</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="374304225%2FFunctions%2F-8504598"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-common/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#71482821%2FFunctions%2F-8504598"><span class="token function">withImplicitTag</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tag<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element.Tag///PointingToDeclaration/">Asn1Element.Tag</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#-746284779%2FFunctions%2F-8504598"><span class="token function">withImplicitTag</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">template<span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element.Tag.Template///PointingToDeclaration/">Asn1Element.Tag.Template</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="../-authorization-list/-module-hash/index.html#1984099281%2FFunctions%2F-8504598"><span class="token function">withImplicitTag</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tagValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-u-long/index.html">ULong</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.asn1/Asn1Element///PointingToDeclaration/">Asn1Element</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
