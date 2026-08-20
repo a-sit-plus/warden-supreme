@@ -46,8 +46,8 @@ import kotlin.time.Instant
  *
  * #### Structural Properties and Design Decisions
  * **Structurally, this data structure follows the ASN.1 schema _exactly_**, meaning that it is a structural 1:1 mapping
- * if the underlying ASN.1 structure.
- * This as both advantages and disadvantages. The main disadvantage is that it is a bit cumbersome to use. The benefits
+ * of the underlying ASN.1 structure.
+ * This has both advantages and disadvantages. The main disadvantage is that it is a tiny bit cumbersome to use. The benefits
  * far outweigh the shortcomings of this approach, though:
  * * Just check the schema, and you know what's what. That means that there are no booleans, but an object indicating
  * `true` or `false` is either present or absent.
@@ -66,6 +66,12 @@ import kotlin.time.Instant
  * - The public API still exposes these values as regular Kotlin [Set]s.
  * - When encoding, if such an order-preserving set is present, the produced ASN.1 SET preserves that iteration order
  *   (which may be non-DER-compliant). Otherwise, normal SET encoding is used.
+ *
+ * #### Repeated Tags
+ * Although the schema permits each tag only once, some Android 16 devices emit repeated singleton tags. When all
+ * occurrences encode the same value, the corresponding property returns that value. When they disagree, it returns an
+ * [AttestationValue.Failure] instead of selecting an arbitrary occurrence. Repeated set-valued tags follow the same
+ * rule: identical sets are returned, while conflicting sets produce a set containing a failure.
  *
  */
 data class AuthorizationList private constructor(

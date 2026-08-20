@@ -442,7 +442,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val enforceFactoryProvisionedChainValidity: Boolean = true,
 
     /**
-     * Flag to try out the new supreme parser
+     * Selects Warden Supreme's Android attestation parser instead of the legacy Google parser.
+     *
+     * The Supreme parser accepts repeated `AuthorizationList` tags when their values agree and reports conflicting
+     * values as failures instead of selecting an arbitrary occurrence. Enabling it is recommended, but this defaults to
+     * `false` for compatibility. The Supreme parser is planned to become the default in a future release.
      */
     val supremeParser: Boolean = false,
 
@@ -565,9 +569,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         enforceFactoryProvisionedChainValidity: Boolean = true,
 
-        /**
-         * Flag to try out the new supreme parser
-         */
+        /** @see AndroidAttestationConfiguration.supremeParser */
         supremeParser: Boolean = false,
 
         /**
@@ -714,9 +716,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         enforceFactoryProvisionedChainValidity: Boolean = true,
 
-        /**
-         * Flag to try out the new supreme parser
-         */
+        /** @see AndroidAttestationConfiguration.supremeParser */
         supremeParser: Boolean = false,
 
         /**
@@ -1186,9 +1186,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         fun enforceFactoryProvisionedChainValidity(enforce: Boolean) =
             apply { enforceFactoryProvisionedChainValidity = enforce }
 
-        /**
-         * Flag to try out the new supreme parser
-         */
+        /** @see AndroidAttestationConfiguration.supremeParser */
         fun supremeParser(supremeParser: Boolean) = apply { this.supremeParser = supremeParser }
 
 

@@ -12,6 +12,7 @@ const val androidAppPackage = "at.asitplus.atttest"
 
 
 
+// --8<-- [start:grapheneos-config]
 
 val grapheneOsVerifiedBootKeys = setOf(
     "d8f879d10419eddc9fcda6280718be763f6bf12299e1f72df3ea8ad8a8eb7f80",
@@ -49,3 +50,4 @@ val grapheneOsConfig = SupremeConfiguration(
         allowBootloaderUnlock = false /*(3)!*/
     )
 )
+// --8<-- [end:grapheneos-config]

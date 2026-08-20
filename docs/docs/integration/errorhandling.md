@@ -53,7 +53,7 @@ Note that the `onAttestationError` callback is side-effect-free except that it a
 to customise the error message/error code conveyed to the client.
 
 ```kotlin
---8<-- "Readme-Backend-errorhandling.kt:15:60"
+--8<-- "Readme-Backend-errorhandling.kt:attestation-error-handling"
 ```
 
 1. Refer to [Debugging](debugging.md)
@@ -104,7 +104,7 @@ Note that the `onPreAttestationError` callback is side-effect-free except that i
 to customise the error message/error code conveyed to the client.
 
 ```kotlin
---8<-- "Readme-Backend-preerrorhandling.kt:16:38"
+--8<-- "Readme-Backend-preerrorhandling.kt:pre-attestation-error-handling"
 ```
 
 1. The attestation statement could not be extracted from the received transport. New code receives

@@ -14,6 +14,7 @@ private val logger = Logger.getLogger("demo")
 private suspend fun foo() {
 
 
+    // --8<-- [start:attestation-error-handling]
     val result = verifier.verifyAttestation(
         csr = csr,
         onAttestationError = { debugStatement ->
@@ -48,6 +49,7 @@ private suspend fun foo() {
             }
         }
     ) { TODO("Refer to minimum example for certificate issuance") }
+    // --8<-- [end:attestation-error-handling]
 
 
 

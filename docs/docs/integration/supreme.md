@@ -1,7 +1,7 @@
 # Warden Supreme Integration
 [![A-SIT Plus Official](https://img.shields.io/badge/A--SIT_Plus-official-005b79?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDMuNzYyODYgMTg0LjgxOTk5Ij48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiIGNsaXBQYXRoVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMCA1OTUuMjhoODQxLjg5VjBIMFoiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyBjbGlwLXBhdGg9InVybCgjYSkiIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMyAwIDAgLTEuMzMzMzMzMyAtNDgyLjI1IDUxNy41MykiPjxwYXRoIGZpbGw9IiMwMDViNzkiIGQ9Ik00MTUuNjcgMjQ5LjUzYy03LjE1LjA4LTEzLjk0IDEtMjAuMTcgMi43NWE1Mi4zMyA1Mi4zMyAwIDAgMC0xNy40OCA4LjQ2IDQwLjQzIDQwLjQzIDAgMCAwLTExLjk2IDE0LjU2Yy0yLjY4IDUuNDEtNC4xNCAxMS44NC00LjM1IDE5LjA5bC0uMDIgNi4xMnYyLjE3YS43MS43MSAwIDAgMCAuNy43M2gxNi41MmMuMzkgMCAuNy0uMzIuNzEtLjdsLjAxLTIuMmMwLTIuNi4wMi01LjgyLjAzLTYuMDcuMi00LjYgMS4yNC04LjY2IDMuMDgtMTIuMDZhMjguNTIgMjguNTIgMCAwIDEgOC4yMy05LjU4IDM1LjI1IDM1LjI1IDAgMCAxIDExLjk2LTUuNTggNTUuMzggNTUuMzggMCAwIDEgMTIuNTgtMS43NmM0LjMyLjEgOC42LjcgMTIuNzQgMS44YTM1LjA3IDM1LjA3IDAgMCAxIDExLjk2IDUuNTcgMjguNTQgMjguNTQgMCAwIDEgOC4yNCA5LjU3YzEuOTYgMy42NCAzIDguMDIgMy4xMiAxMy4wMnYyNC4wOUgzNjIuNGEuNy43IDAgMCAwLS43MS43VjMzNWMwIDguNDMuMDEgOC4wNS4wMSA4LjE0LjIgNy4zIDEuNjcgMTMuNzcgNC4zNiAxOS4yMmE0MC40MyA0MC40MyAwIDAgMCAxMS45NiAxNC41N2M1IDMuNzYgMTAuODcgNi42MSAxNy40OCA4LjQ2YTc3LjUgNzcuNSAwIDAgMCAyMC4wMiAyLjc3YzcuMTUtLjA3IDEzLjk0LTEgMjAuMTctMi43NGE1Mi4zIDUyLjMgMCAwIDAgMTcuNDgtOC40NiA0MC40IDQwLjQgMCAwIDAgMTEuOTUtMTQuNTdjMS42Mi0zLjI2IDMuNzctMTAuMDQgMy43Ny0xNC42OCAwLS4zOC0uMTctLjc0LS41NC0uODJsLTE2Ljg5LS40Yy0uMi0uMDQtLjM0LjM0LS4zNC41NCAwIC4yNy0uMDMuNC0uMDYuNi0uNSAyLjgyLTEuMzggNS40LTIuNjEgNy42OWEyOC41MyAyOC41MyAwIDAgMS04LjI0IDkuNTggMzUuMDEgMzUuMDEgMCAwIDEtMTEuOTYgNS41NyA1NS4yNSA1NS4yNSAwIDAgMS0xMi41NyAxLjc3Yy00LjMyLS4xLTguNjEtLjcxLTEyLjc1LTEuOGEzNS4wNSAzNS4wNSAwIDAgMS0xMS45Ni01LjU3IDI4LjUyIDI4LjUyIDAgMCAxLTguMjMtOS41OGMtMS44Ni0zLjQ0LTIuOS03LjU1LTMuMDktMTIuMmwtLjAxLTcuNDdoODkuMTZhLjcuNyAwIDAgMCAuNy0uNzJ2LTM5LjVjLS4xLTcuNjUtMS41OC0xNC40LTQuMzgtMjAuMDZhNDAuNCA0MC40IDAgMCAwLTExLjk1LTE0LjU2IDUyLjM3IDUyLjM3IDAgMCAwLTE3LjQ4LTguNDcgNzcuNTYgNzcuNTYgMCAwIDAtMjAuMDEtMi43N1oiLz48cGF0aCBmaWxsPSIjY2U0OTJlIiBkPSJNNDE5LjM4IDI4MC42M2gtNy41N2EuNy43IDAgMCAwLS43MS43MXYxNS40MmE4LjE3IDguMTcgMCAwIDAtMy43OCA2LjkgOC4yOCA4LjI4IDAgMCAwIDE2LjU0IDAgOC4yOSA4LjI5IDAgMCAwLTMuNzYtNi45di0xNS40MmEuNy43IDAgMCAwLS43Mi0uNzEiLz48L2c%2BPC9zdmc%2B&logoColor=white&labelColor=white)](https://a-sit-plus.github.io)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-brightgreen.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![Kotlin](https://img.shields.io/badge/kotlin-2.4.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.4.10-blue.svg?logo=kotlin)](http://kotlinlang.org)
 ![Java](https://img.shields.io/badge/java-17-blue.svg?logo=OPENJDK)
 [![Maven Central](https://img.shields.io/maven-central/v/at.asitplus.warden/supreme-common)](https://mvnrepository.com/artifact/at.asitplus.warden/)
 
@@ -132,7 +132,7 @@ Since Android and iOS attestation require different configuration parameters, di
 The following snippet shows an MWE that also accounts for five minutes of clock drift:
 
 ```kotlin
---8<-- "Readme-Config-min.kt:8"
+--8<-- "Readme-Config-min.kt:minimal-makoto-config"
 ```
 
 1. At least package identifier and a single signer digest need to be configured for an Android application to be attested.
@@ -166,7 +166,7 @@ property; the expandable example below shows them together.
     **Be sure to check the annotations!**
     
     ```kotlin
-    --8<-- "Readme-Config.kt:15"
+    --8<-- "Readme-Config.kt:makoto-config"
     ```
     
     1. The ordered list may contain more than one app. Each Android entry requires a package name and one or more
@@ -257,7 +257,7 @@ boot key hashes, use GrapheneOS's
 [`attestation.json.sig`](https://grapheneos.org/attestation.json.sig).
 
 ```kotlin
---8<-- "Readme-Config-Graphene.kt:15"
+--8<-- "Readme-Config-Graphene.kt:grapheneos-config"
 ```
 
 1. Order is irrelevant, and Warden Supreme makes this explicit by forcing a `Set` of verified boot key hashes
@@ -339,19 +339,59 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
     the deprecated `ChallengeValidator` supports signed CSRs only.
 
 ```kotlin
---8<-- "Readme-Verifier-min.kt:3"
+--8<-- "Readme-Verifier-min.kt:minimal-verifier"
 ```
 
 1. This minimal setup covers most deployments. Defaults include instructions (`KeyConstraints`) for the client to create
    a hardware-backed P-256 key.
 
 ??? example "Comprehensive list of Verifier options"
+    Warden Supreme 1.1 transitions towards **configuration-based setup** and, as part of this, **deprecates the purely
+    programmatic approach** of instantiating an `AttestationVerifier`. The recommended way is therefore to assemble a
+    `SupremeConfiguration` — which bundles the iOS and Android attestation policies together with object identifiers, key
+    constraints, authentication mode, and requested attributes — and hand it to the verifier. This same configuration can
+    also be externalised entirely (see [Externalising Configuration](config.md)).
+    The deprecated, purely programmatic variant is still listed [further below](#migration-reference-deprecated-programmatic-setup)
+    as a migration reference.
+
     ```kotlin
-    --8<-- "Readme-Verifier.kt:30"
+    --8<-- "Readme-Verifier-config.kt:verifier-config-supreme"
+    ```
+
+    1. Android and iOS attestation policies. Here they are lifted from the `Makoto` instance configured above, but you can
+       equally construct the `AndroidAttestationConfiguration` and `IosAttestationConfiguration` directly or load them from
+       externalised configuration.
+    2. We want Warden Supreme to convey the attestation statement payload inside the TBS CSR using a custom OID.
+    3. We don't care about device names in this example and don't require it from the client.
+    4. We explicitly specify the key we want to have created on the client.  
+       The values shown here correspond to the defaults, as this is supported by Android and iOS.
+    5. We require user authentication to use the private key:
+        * Protected by biometric auth
+        * Usable for 30 seconds without reauthentication
+        * Enrolling new biometric factors will invalidate the key
+    6. Request two application-provided values under one dedicated attribute OID. `accountId` is required; `riskScore`
+       may be omitted as `null`. Order and type are part of the schema.
+    7. Authenticate the TBS CSR data by hashing it with SHA-256 and feeding the digest into platform attestation. Set
+       `DataAuthentication.Signature` (the default) when proof of possession is required.
+    8. A custom nonce generator passed to the verifier. The nonce generator and challenge validator are not part of the
+       `SupremeConfiguration`, since they are runtime services rather than policy.
+    9. We want extra long nonces (default: 64 bytes; max: 128 bytes).
+    10. Checking and invalidating challenges is handled by a Redis-backed `AttestationChallengeValidator` (not shown here;
+        roll your own). This is the recommended approach when multiple verifier instances issue challenges. Omit this
+        trailing lambda to use the default bounded in-memory challenge validator.
+
+    #### Migration reference: deprecated programmatic setup
+
+    Before configuration-based setup, the verifier was assembled by passing every parameter programmatically to the
+    `AttestationVerifier` constructor. This still works, but is deprecated as of Warden Supreme 1.1 and only shown here to
+    ease migration of existing integrations. Warden Supreme 1.3 will stop supporting it altogether.
+
+    ```kotlin
+    --8<-- "Readme-Verifier.kt:verifier-config"
     ```
     
     1. We want Warden Supreme to convey the attestation statement payload inside the TBS CSR using a custom OID.
-    2. We don't care about device names in this example.
+    2. We don't care about device names in this example and don't require it from the client.
     3. We explicitly specify the key we want to have created on the client.  
        The values shown here correspond to the defaults, as this is supported by Android and iOS.
     4. We require user authentication to use the private key:
@@ -364,14 +404,12 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
        may be omitted as `null`. Order and type are part of the schema.
     8. Authenticate the TBS CSR data by hashing it with SHA-256 and feeding the digest into platform attestation. Set
        `DataAuthentication.Signature` (the default) when proof of possession is required.
-    
 
-Instead of passing parameters programmatically, it is also possible to externalise configuration (see [Externalising Configuration](config.md)).
-As such, an `AttestationVerifier` can also be created by passing a `SupremeConfiguration` which contains iOS and Android
-attestation policies, as well as object identifiers, key constraints, authentication mode, and requested attributes:
+The minimal config-based counterpart to the [minimal `Makoto`-based verifier](#attestation-verifier-setup) above simply
+hands a `SupremeConfiguration` to the verifier and relies on the defaults for everything else:
 
 ```kotlin
---8<-- "Readme-Verifier-config-supreme.kt:15"
+--8<-- "Readme-Verifier-config-supreme.kt:verifier-from-supreme-config"
 ```
 
 1. Default, secure nonce generator.
@@ -388,7 +426,7 @@ server-controlled context sent to the client; it is not client evidence to valid
 Use `additionalVerifications` for such checks:
 
 ```kotlin
---8<-- "Readme-Backend-additional-verifications.kt:17:33"
+--8<-- "Readme-Backend-additional-verifications.kt:additional-verifications"
 ```
 
 1. This is the `AttestationProof` received from the client: a signed CSR or hash-authenticated TBS CSR.
@@ -422,7 +460,7 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
     defaults to 1MB.
 
 ```kotlin
---8<-- "Readme-Backend.kt:60"
+--8<-- "Readme-Backend.kt:backend-server"
 ```
 
 1. We're using JSON to transmit the challenge and the final response.
@@ -476,7 +514,7 @@ specifies key constraints:
     endpoint must be treated as a compromise of the attestation flow.
 
 ```kotlin
---8<-- "Readme-client-min.kt:19:40"
+--8<-- "Readme-client-min.kt:minimal-client-flow"
 ```
 
 1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
@@ -502,7 +540,7 @@ The `AttestationClient` doesn't even come with any configuration options.
     If you need more control, you can also manually perform individual steps, as shown below
     
     ```kotlin
-    --8<-- "Readme-client-step-by-step.kt:15:45"
+    --8<-- "Readme-client-step-by-step.kt:step-by-step-client-flow"
     ```
     
     1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
@@ -517,7 +555,7 @@ The `AttestationClient` doesn't even come with any configuration options.
     creating a proof with different semantics:
 
     ```kotlin
-    --8<-- "Readme-client-manual-lowlevel.kt:31:82"
+    --8<-- "Readme-client-manual-lowlevel.kt:manual-client-flow"
     ```
     
     1. Create an `AttestationClient` from a [Ktor](https://ktor.io/) client.
@@ -554,7 +592,7 @@ The back-end still needs enough information to analyse failures. The Supreme att
 four side-effect-free callbacks for challenge validation, attestation errors, and successful verification:
 
 ```kotlin
---8<-- "Readme-Backend-callbacks.kt:18:56"
+--8<-- "Readme-Backend-callbacks.kt:verifier-callbacks"
 ```
 
 1. This is the `AttestationProof` from the client, as in the minimal example.

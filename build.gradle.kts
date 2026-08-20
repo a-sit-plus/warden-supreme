@@ -1,5 +1,5 @@
 import groovy.json.JsonSlurper
-import org.gradle.plugins.signing.Sign
+import org.gradle.api.tasks.bundling.Jar
 
 plugins {
     val kotlinVer = System.getenv("KOTLIN_VERSION_ENV")?.ifBlank { null } ?: libs.versions.kotlin.get()
@@ -70,6 +70,13 @@ val publishedProjects = listOf(
     project(":config-spring"),
 )
 
+publishedProjects.forEach { moduleProject ->
+    moduleProject.tasks.register<Jar>("javadocRedirectJar") {
+        archiveClassifier.set("javadoc")
+        from(rootProject.layout.projectDirectory.dir("docs/javadoc"))
+    }
+}
+
 val releasePublicationsByProject = linkedMapOf(
     ":makoto" to listOf("mavenJava"),
     ":roboto" to listOf("mavenJava"),
@@ -109,8 +116,6 @@ tasks.register("loaderMutationTest") {
     )
 }
 
-val signLocalRepoArtefacts = System.getenv("SIGN_LOCAL_REPO_ARTEFACTS")?.ifBlank { "false" } == "true"
-
 val syncSbomDocs by tasks.register("syncSbomDocs") {
     group = "documentation"
     description = "Exports CycloneDX SBOMs for all published Maven publications into the docs tree."
@@ -121,16 +126,21 @@ val syncSbomDocs by tasks.register("syncSbomDocs") {
     val sbomRendererFile = rootProject.layout.projectDirectory.file("docs/tools/render_sbom_pages.py")
     val sortedProjects = publishedProjects.sortedBy { it.name }
 
+    // Depend on the *Normalized* task, not the base one: `cyclonedx<Pub>PublicationBom` only emits `bom.raw.{json,xml}`;
+    // the normalized `bom.json` we parse below (the one carrying the `…?…&type=` purl) is produced by
+    // `…PublicationBomNormalized`. Depending on the base task left `bom.json` absent on clean CI checkouts, so `entries`
+    // came out empty and no module pages were rendered — which then failed the strict mkdocs build.
+    val bomJsonFiles = releasePublicationsByProject.flatMap { (projectPath, publicationNames) ->
+        publicationNames.map { publicationName ->
+            project(projectPath).layout.buildDirectory.file("reports/cyclonedx-publications/$publicationName/bom.json")
+        }
+    }
     dependsOn(releasePublicationsByProject.flatMap { (projectPath, publicationNames) ->
         publicationNames.map { publicationName ->
-            "$projectPath:cyclonedx${publicationName.replaceFirstChar { it.uppercase() }}PublicationBom"
+            "$projectPath:cyclonedx${publicationName.replaceFirstChar { it.uppercase() }}PublicationBomNormalized"
         }
     })
-    if (signLocalRepoArtefacts) {
-        dependsOn(sortedProjects.map { project ->
-            project.tasks.withType(Sign::class.java)
-        })
-    }
+    inputs.files(bomJsonFiles)
     inputs.file(sbomTemplateFile)
     inputs.file(sbomRendererFile)
     outputs.file(sbomIndexFile)
@@ -138,7 +148,6 @@ val syncSbomDocs by tasks.register("syncSbomDocs") {
 
     doLast {
         val jsonSlurper = JsonSlurper()
-        val repoRoot = rootProject.layout.projectDirectory.dir("repo").asFile
         val sbomPublicationsDir = sbomDocsDir.dir("publications").asFile
         val mavenCentralBaseUrl = "https://repo1.maven.org/maven2"
         val entries = sortedProjects.flatMap { moduleProject ->
@@ -146,7 +155,11 @@ val syncSbomDocs by tasks.register("syncSbomDocs") {
             releasePublicationsByProject[moduleProject.path].orEmpty().mapNotNull { publicationName ->
                 val publicationDir = publicationRoot.resolve(publicationName)
                 val bomJsonFile = publicationDir.resolve("bom.json")
-                if (!bomJsonFile.isFile) return@mapNotNull null
+                check(bomJsonFile.isFile) {
+                    "Expected normalized CycloneDX SBOM at $bomJsonFile for ${moduleProject.path} publication " +
+                        "'$publicationName', but it is missing. Ensure " +
+                        "cyclonedx${publicationName.replaceFirstChar { it.uppercase() }}PublicationBomNormalized ran."
+                }
 
                 @Suppress("UNCHECKED_CAST")
                 val bom = jsonSlurper.parse(bomJsonFile) as Map<String, Any?>
@@ -159,41 +172,11 @@ val syncSbomDocs by tasks.register("syncSbomDocs") {
                 val groupId = component["group"]?.toString().orEmpty()
                 val artifactId = component["name"]?.toString().orEmpty()
                 val version = component["version"]?.toString().orEmpty()
-                val artifactDir = repoRoot.resolve(groupId.replace('.', '/')).resolve(artifactId).resolve(version)
-                val packaging = artifactDir
-                    .listFiles()
-                    .orEmpty()
-                    .mapNotNull { artifactFile ->
-                        artifactFile.name
-                            .removePrefix("$artifactId-$version.")
-                            .takeIf {
-                                artifactFile.isFile &&
-                                        artifactFile.name.startsWith("$artifactId-$version.") &&
-                                        it !in setOf(
-                                    "pom",
-                                    "module",
-                                    "json",
-                                    "xml",
-                                    "jar.asc",
-                                    "aar.asc",
-                                    "klib.asc",
-                                    "module.asc",
-                                    "pom.asc",
-                                    "json.asc",
-                                    "xml.asc",
-                                    "javadoc.jar",
-                                    "sources.jar",
-                                    "kotlin-tooling-metadata.json",
-                                    "metadata.jar",
-                                ) &&
-                                        !artifactFile.name.endsWith(".md5") &&
-                                        !artifactFile.name.endsWith(".sha1") &&
-                                        !artifactFile.name.endsWith(".sha256") &&
-                                        !artifactFile.name.endsWith(".sha512")
-                            }
-                    }
-                    .firstOrNull()
-                    ?: ""
+                // Extrapolate the packaging from the CycloneDX purl (`…?…&type=jar|aar|klib`) rather than scanning the
+                // locally published `repo/` tree. We only ever *link* to the SBOMs published on Maven Central, so full
+                // docs can be generated without publishing (and therefore without signing) any artefacts locally.
+                val purl = component["purl"]?.toString().orEmpty()
+                val packaging = Regex("[?&]type=([^&]+)").find(purl)?.groupValues?.get(1).orEmpty()
 
                 val mavenCentralArtifactBase = buildString {
                     append(mavenCentralBaseUrl)
@@ -227,6 +210,11 @@ val syncSbomDocs by tasks.register("syncSbomDocs") {
                     "mavenCentralClassifier" to "cyclonedx",
                 )
             }
+        }
+        check(entries.isNotEmpty()) {
+            "No CycloneDX SBOMs were found for any published publication. The generated docs would reference module " +
+                "pages that are never created, failing the strict mkdocs build. Check that the cyclonedx…" +
+                "PublicationBomNormalized tasks produced reports/cyclonedx-publications/<publication>/bom.json."
         }
         val sbomModulesDir = sbomDocsDir.dir("modules").asFile
         sbomPublicationsDir.deleteRecursively()

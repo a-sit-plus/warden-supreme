@@ -62,7 +62,7 @@ while reflection-based approaches that bypass primary constructors can also bypa
     Loading like this accepts canonical camelCase, snake_case, UPPER_SNAKE_CASE, and kebap-case property names.
     
     ```kotlin
-    --8<-- "Readme-Config-Hoplite.kt:15:25"
+    --8<-- "Readme-Config-Hoplite.kt:hoplite-config-loader"
     ```
     
     **The decoder is required because Warden Supreme relies on kotlinx.serialization to sanitise, normalise, and parse

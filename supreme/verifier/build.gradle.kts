@@ -53,14 +53,15 @@ kotlin {
     }
 }
 
-val javadocJar = setupDokka(
+setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/supreme",
 )
+val javadocRedirectJar = tasks.named<Jar>("javadocRedirectJar")
 
 publishing {
     publications {
         withType<MavenPublication> {
-            if (this.name != "relocation") artifact(javadocJar)
+            if (this.name != "relocation") artifact(javadocRedirectJar)
             pom {
                 name.set("Warden Supreme Verifier")
                 description.set("Server-Side attestation verifier; part of the WARDEN Supreme integrated key attestation suite")

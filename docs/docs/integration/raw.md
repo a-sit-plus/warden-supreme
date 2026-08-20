@@ -135,7 +135,7 @@ Counter semantics are based on the value **before** creating the assertion:
 
 !!! example "Reference implementation (JSON + ASN.1/DER persistence and assertion validation)"
     ```kotlin
-    --8<-- "Readme-Raw-ios-assertion.kt:35:60"
+    --8<-- "Readme-Raw-ios-assertion.kt:ios-assertion-verification"
     ```
 
     1. Registers the incoming App Attest payload and verifies it against the registration challenge.

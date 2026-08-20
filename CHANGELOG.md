@@ -5,7 +5,7 @@
 * **Dependency Update:**
     * Signum 3.26.0 / Supreme 0.16.0, upgrading to Strongbox where available
 
-## NEXT
+## 1.1.0
 * Remove Deprecations schedules for removal in 1.1
 * Deprecate APIs with rough edges (will be removed in Warden Supreme 1.3)
 * **Rework iOS App Attest assertion validation**
@@ -37,8 +37,12 @@
     * Add `dataAuthentication` and human-readable `toBeAttestedAttributes` support to `SupremeConfiguration` JSON/YAML.
     * Expand client, verifier, property, and Android-emulator end-to-end coverage for both authentication modes and
       required/optional attribute combinations.
-    * Bump ChallengeVersion to 3, but still transmit 2, of DataAuthentication.Signature is used without any requested to-be-attested attributes
+    * Bump ChallengeVersion to 3, but still transmit 2, of DataAuthentication.Signature is used without any requested to-be-attested attributes  
+      **This keeps compatibility between non-aligned clients and verifiers across Warden Supreme 1.0 and 1.1.**
 * Add Supreme dependency to `supreme-common`
+* Dependency Updates:
+    * Bouncy Castle 1.85
+    * Signum Indispensable 3.25.0
 
 ## 1.0.3
 * Security hardening:

@@ -15,6 +15,7 @@ private suspend fun foo() {
 
 
 
+// --8<-- [start:verifier-callbacks]
 val result = verifier.verifyAttestation(
  /*(1)!*/attestationProof = proof,
  /*(2)!*/onChallengeValidated = { receivedProof ->
@@ -54,6 +55,7 @@ val result = verifier.verifyAttestation(
     }
     TODO("Refer to minimum example for certificate issuance")
 }
+// --8<-- [end:verifier-callbacks]
 
 
 

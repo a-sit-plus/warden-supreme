@@ -146,6 +146,22 @@ sourced from true randomness is recommended anyway (see [Clock Drifts and Tempor
 Some vendors even fail properly encoding DER BOOLEANs. Warden Supreme is lenient about this, but if you are using a strict
 DER decoder, this might trip it.
 
+#### Duplicate `AuthorizationList` Tags on Android 16
+Some Android 16 devices emit non-compliant attestation `AuthorizationList` structures containing multiple singleton
+entries with the same tag. The tried-and-true legacy Google parser, which Warden Supreme currently uses by default,
+rejects repeated singleton tags and therefore cannot verify affected devices.
+
+Warden Supreme's own _Supreme parser_ handles repeated tags without silently choosing one value:
+
+- If every entry with the same singleton tag has the same value, the parser reports that value.
+- If the entries disagree, reading that property returns an error instead of trusting an arbitrary entry.
+
+This behaviour prevents conflicting security-relevant values from overriding one another, as described in
+[GHSA-rxrw-2p38-wfmr](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-rxrw-2p38-wfmr), and
+was fixed in Warden Supreme 1.0.3. The Supreme parser is planned to become the default in a future release and can
+already be enabled by setting `supremeParser = true` in the Android attestation configuration. Enabling it is generally
+recommended; it remains disabled by default for compatibility.
+
 #### Patch Level Misencoding
 Date encoding should be unremarkable. Production certificates prove otherwise.
 
