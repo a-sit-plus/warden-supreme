@@ -1,5 +1,7 @@
 # Changelog
 
+## NEXT
+
 ## 1.1.2
 * Fix: Include the Android revocation-list snapshot used during certificate-chain validation in debug statements and reuse it during replay.
 
