@@ -1,0 +1,2128 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://a-sit-plus.github.io/warden-supreme/1.1.2/integration/datamodel/">
+      
+      
+        <link rel="prev" href="../errorhandling/">
+      
+      
+        <link rel="next" href="../structure/">
+      
+      
+      <link rel="icon" href="../../assets/images/icon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
+    
+    
+      
+        <title>Data Model and Schema - Warden Supreme</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+      
+        <meta  property="og:type"  content="website" >
+      
+        <meta  property="og:title"  content="Data Model and Schema - Warden Supreme" >
+      
+        <meta  property="og:description"  content="None" >
+      
+        <meta  property="og:image"  content="https://a-sit-plus.github.io/warden-supreme/1.1.2/assets/images/social/integration/datamodel.png" >
+      
+        <meta  property="og:image:type"  content="image/png" >
+      
+        <meta  property="og:image:width"  content="1200" >
+      
+        <meta  property="og:image:height"  content="630" >
+      
+        <meta  property="og:url"  content="https://a-sit-plus.github.io/warden-supreme/1.1.2/integration/datamodel/" >
+      
+        <meta  name="twitter:card"  content="summary_large_image" >
+      
+        <meta  name="twitter:title"  content="Data Model and Schema - Warden Supreme" >
+      
+        <meta  name="twitter:description"  content="None" >
+      
+        <meta  name="twitter:image"  content="https://a-sit-plus.github.io/warden-supreme/1.1.2/assets/images/social/integration/datamodel.png" >
+      
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="asp-dark" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-model-and-wire-format" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+              </button>
+            
+            
+
+  <div class="md-announce__inner">
+    Need help tailored to your needs? See our <a href="https://a-sit-plus.github.io/warden-supreme/1.1.2/services/">&ensp;💎 Services</a>.
+  </div>
+
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+<!-- Determine classes -->
+
+
+
+
+
+<!-- Header -->
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+    <nav
+            class="md-header__inner md-grid"
+            aria-label="Header"
+    >
+
+        <!-- Link to home -->
+        <a
+                href="../.."
+                title="Warden Supreme"
+                class="md-header__button md-logo"
+                aria-label="Warden Supreme"
+                data-md-component="logo"
+        >
+            
+  <img src="../../assets/images/icon.svg" alt="logo">
+
+        </a>
+
+        <!-- Button to open drawer -->
+        <label class="md-header__button md-icon" for="__drawer">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+        </label>
+
+        <!-- Header title -->
+        <div class="md-header__title" data-md-component="header-title">
+            <div class="md-header__ellipsis">
+                <div class="md-header__topic">
+         <!-- <span class="md-ellipsis">
+            Warden Supreme
+          </span>-->
+                </div>
+                <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data Model and Schema
+            
+          </span>
+                </div>
+            </div>
+        </div>
+
+        <iframe src="https://github.com/sponsors/a-sit-plus/button" title="Sponsor a-sit-plus" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+
+        <!-- Color palette toggle -->
+        
+        
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="asp-dark" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+        
+        
+
+        <!-- User preference: color palette -->
+        
+        <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+        
+
+        <!-- Site language selector -->
+        
+
+        <!-- Button to open search modal -->
+        
+        <label class="md-header__button md-icon" for="__search">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+
+        <!-- Search interface -->
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+
+        <!-- Repository information -->
+        
+        <div class="md-header__source">
+            <a href="https://github.com/a-sit-plus/warden-supreme" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    a-sit-plus/warden-supreme
+  </div>
+</a>
+        </div>
+        
+    </nav>
+
+    <!-- Navigation tabs (sticky) -->
+    
+    
+    
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../overview/" class="md-tabs__link">
+          
+  
+  Docs Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../supreme/" class="md-tabs__link">
+          
+  
+  Integration Guide
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sbom/" class="md-tabs__link">
+          
+  
+  SBOM
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../glossary/" class="md-tabs__link">
+        
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../dokka/" class="md-tabs__link">
+        
+  
+    
+  
+  API Docs
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="https://attestation-collector.sliplane.app" class="md-tabs__link">
+        
+  
+    
+  
+  Attestation Collector
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../hardening/" class="md-tabs__link">
+        
+  
+    
+  
+  Security Policy and Hardening
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../services/" class="md-tabs__link">
+        
+  
+    
+  
+  💎 Services
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+    
+</header>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<!-- Determine classes -->
+
+
+
+
+
+
+<!-- Navigation -->
+<nav
+        class="md-nav md-nav--primary md-nav--lifted"
+        aria-label="Navigation"
+        data-md-level="0"
+>
+
+    <!-- Site title -->
+    <label class="md-nav__title" for="__drawer">
+        <a
+                href="../.."
+                title="Warden Supreme"
+                class="md-nav__button md-logo"
+                aria-label="Warden Supreme"
+                data-md-component="logo"
+        >
+            
+  <img src="../../assets/images/icon.svg" alt="logo">
+
+        </a>
+    </label>
+
+    <!-- Repository information -->
+    
+    <div class="md-nav__source">
+        <a href="https://github.com/a-sit-plus/warden-supreme" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    a-sit-plus/warden-supreme
+  </div>
+</a>
+    </div>
+    
+
+    <!-- Navigation list -->
+    <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Docs Hub
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Docs Hub
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../why-supreme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Why Warden Supreme
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_3" id="__nav_1_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Background
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_3">
+            <span class="md-nav__icon md-icon"></span>
+            Background
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bg/primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Remote Attestation Primer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bg/platforms/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Platform Specifics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bg/threatmodels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Threat Models and Risks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bg/privacy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Privacy and Data Protection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_4" id="__nav_1_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Technical Deep Dive
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            Technical Deep Dive
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_4_1" id="__nav_1_4_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Android
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            Android
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Attestation Model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/android/leakedkeys/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Leaked Keyboxes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/ios/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    iOS DeviceCheck &amp; App&nbsp;Attest
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../technical/quirks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quirks and Hints
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Testing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../collector/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Exploring Attestations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../refs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Integration Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Integration Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Integrating Warden Supreme
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            Integrating Warden Supreme
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../supreme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    End-to-End Integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Externalising Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errorhandling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error Handling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Data Model and Schema
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Data Model and Schema
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-artefacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Artefacts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Artefacts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challenge-server-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Challenge (Server → Client)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Challenge (Server → Client)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additionalpayload" class="md-nav__link">
+    <span class="md-ellipsis">
+      additionalPayload
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transientdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      transientData
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proof-transport-client-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proof Transport (Client → Server)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Proof Transport (Client → Server)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requested-attested-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Requested Attested Attributes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-response-server-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Server Response (Server → Client)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Server Response (Server → Client)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#success" class="md-nav__link">
+    <span class="md-ellipsis">
+      Success
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Failure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-verification-ties-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      How Verification Ties Together
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Structure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Debugging
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../raw/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage without Integrated Clients
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration from WARDEN
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    SBOM
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            SBOM
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/makoto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Warden makoto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/roboto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Warden roboto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-common/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Common
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/supreme-verifier/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supreme Verifier
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/config-hoplite/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Config Hoplite
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sbom/modules/config-spring/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Config Spring
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Glossary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dokka/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Docs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://attestation-collector.sliplane.app" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Attestation Collector
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../hardening/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Security Policy and Hardening
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+        
+        
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../services/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    💎 Services
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+        
+    </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-artefacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Artefacts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Artefacts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challenge-server-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Challenge (Server → Client)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Challenge (Server → Client)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additionalpayload" class="md-nav__link">
+    <span class="md-ellipsis">
+      additionalPayload
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transientdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      transientData
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proof-transport-client-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proof Transport (Client → Server)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Proof Transport (Client → Server)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requested-attested-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Requested Attested Attributes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-response-server-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Server Response (Server → Client)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Server Response (Server → Client)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#success" class="md-nav__link">
+    <span class="md-ellipsis">
+      Success
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Failure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-verification-ties-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      How Verification Ties Together
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="data-model-and-wire-format">Data Model and Wire Format</h1>
+<p>Warden Supreme uses one representation for attestation challenges, proofs, and outcomes across platforms, based on
+<a href="https://a-sit-plus.github.io/signum/dokka/indispensable/at.asitplus.signum.indispensable/-attestation/index.html">Signum's multiplatform attestation data model</a>.
+This data model provides:</p>
+<ul>
+<li>One parsing and validation path for both Android and iOS.</li>
+<li>A single transport for challenges and proofs.</li>
+<li>Explicit, auditable success/failure responses.</li>
+</ul>
+<div class="admonition tip inline end">
+<p class="admonition-title">JSON Schemas</p>
+<ul>
+<li><a href="../../schemas/AttestationChallenge.json">AttestationChallenge</a></li>
+<li><a href="../../schemas/Attestation.json">Attestation</a></li>
+<li><a href="../../schemas/AttestationResponse.json">AttestationResponse</a></li>
+</ul>
+</div>
+<p>Warden Supreme does not prescribe a wire encoding. It provides a JSON representation for HTTP APIs and experimental,
+automatically generated schemas for third-party clients. The integrated clients and back-end verifier already share the
+same data types and require no schema-based integration.</p>
+<h2 id="core-artefacts">Core Artefacts</h2>
+<h3 id="challenge-server-client">Challenge (Server → Client)</h3>
+<p>The challenge binds a future attestation proof to a fresh, server-originating value and tells the client where and how
+to respond.</p>
+<p><strong>Fields:</strong></p>
+<ul>
+<li><code>issuedAt</code>: when the challenge was issued.</li>
+<li><code>validity</code>: how long the challenge is valid.</li>
+<li><code>timeZone</code>: optional server time zone (informational).</li>
+<li><code>nonce</code>: server-chosen nonce (≤128 bytes). This is sensitive replay-protection material. Treat it as a short-lived bearer value: do not log it, do not expose it across sessions or callers, and serve challenges only over protected transport.</li>
+<li><code>attestationEndpoint</code>: where the client submits the attestation proof.</li>
+<li><code>proofOID</code>: TBS CSR attribute identifier used to carry the attestation statement payload.</li>
+<li><code>genericDeviceNameOID</code>: whether to include a generic make/model (not user-assignable name) in the TBS CSR.</li>
+<li><code>version</code>: data format version.</li>
+<li><code>keyConstraints</code>: desired key parameters and protection policy for the client.</li>
+<li><code>dataAuth</code>: required proof authentication: signed PKCS#10 (<code>Signature</code>, the default) or hash-bound unsigned TBS CSR
+  (<code>hash</code> plus a digest algorithm).</li>
+<li><code>toBeAttestedAttributes</code>: optional OID plus an ordered list of named, typed client-provided values. Each value can be
+  required or optional.</li>
+<li><code>additionalPayload</code>: optional, service-defined key/value payload to piggyback along with the challenge (see below).</li>
+<li><code>transientData</code>: optional runtime-only attachment; not serialized and not part of the wire format.</li>
+</ul>
+<h4 id="additionalpayload"><code>additionalPayload</code></h4>
+<p>Some deployments carry extra server-side policy context with the challenge: a session id, tenant id, UI flow hints, or
+other metadata available again after the challenge is matched. This is not a client-attested value. Use
+<code>toBeAttestedAttributes</code> when the client must supply a value that is cryptographically bound to the ceremony.</p>
+<p><code>additionalPayload</code> is a nested map structure:
+- Keys are <code>String</code>.
+- Values are constrained to primitives (<code>Boolean</code>, <code>String</code>, numeric types, <code>Char</code>), nested maps, or <code>null</code>.</p>
+<p>Some serialisation formats omit default scalar values on the wire (e.g. they encode <code>0</code> as "field absent"). To avoid
+such ambiguity, each value is encoded internally as a small "typed envelope" that always carries a non-default
+discriminator. The payload therefore survives JSON, CBOR, and Protobuf-style encodings even when they apply
+default-elision optimisations.</p>
+<h4 id="transientdata"><code>transientData</code></h4>
+<p><code>transientData</code> exists for server-side convenience (e.g., attaching a database ID or request context to a challenge instance).
+It is annotated as transient, excluded from equality/hashing, and therefore never appears on the wire or in generated schemas.
+You may set it when constructing an <code>AttestationChallenge</code> on the server, to keep runtime-only state associated with the challenge.</p>
+<h3 id="proof-transport-client-server">Proof Transport (Client → Server)</h3>
+<p>The platform-specific attestation payload (Android Key/ID Attestation, iOS App Attest) is embedded into a PKCS#10
+CertificationRequestInfo (TBS CSR) attribute identified by <code>proofOID</code>, as a JSON-encoded UTF-8 string. The TBS CSR subject
+encodes the original server nonce in a <code>serialNumber</code> RDN. Extensions, the optional generic device name, and requested
+client-provided attributes are carried by the same TBS CSR.</p>
+<p><code>AttestationProof</code> makes the two possible transports explicit:</p>
+<ul>
+<li><code>Signed</code> carries a complete PKCS#10 CSR. The client signs the TBS CSR with the attested key, authenticating every field
+  and proving possession of the private key.</li>
+<li><code>Hashed</code> carries an unsigned TBS CSR. Before generating the attested key, the client DER-encodes an
+  <code>AttestationHashInput</code>: the future TBS CSR version, subject, extensions, and attributes, excluding only the not-yet-known
+  public key and attestation-proof attribute. It hashes that structure and uses the digest as the platform attestation
+  nonce. The verifier reconstructs and hashes the same structure and independently checks that the TBS CSR public key is
+  the attested key. This authenticates the included data but deliberately provides no proof of possession.</li>
+</ul>
+<p>The raw HTTP body is DER in both cases. <code>AttestationVerifier.decodeAttestationProof(…)r</code> distinguishes a complete CSR from a TBS CSR
+by their different ASN.1 structures; it does not need the challenge or a caller-supplied hash algorithm. The verifier then
+loads the matching challenge, obtains the expected authentication mode and digest algorithm from it, and rejects a
+signed/unsigned shape mismatch.</p>
+<p>In this documentation, "attestation statement" means the platform payload, "attestation proof" means either authenticated
+transport, and "attestation object" refers specifically to iOS App Attest.</p>
+<h4 id="requested-attested-attributes">Requested Attested Attributes</h4>
+<p><code>toBeAttestedAttributes</code> defines one dedicated CSR attribute OID and an ordered schema. Each value is encoded at its list
+position using <code>PrimitiveType</code>; optional missing values are represented as ASN.1 <code>NULL</code>. The client callback receives the
+schema and must return exactly one value per entry. Required values cannot be <code>null</code>.</p>
+<p>These values originate in application code and are therefore "software-attested": they are trustworthy only to the extent
+that the verified app and the selected authentication mode are trusted. They are bound by the CSR signature in signature
+mode and by <code>AttestationHashInput</code> in hash mode.</p>
+<h3 id="server-response-server-client">Server Response (Server → Client)</h3>
+<p>The response is an <code>either</code> type:</p>
+<h4 id="success">Success</h4>
+<p><code>Success</code> contains a single property: a <code>certificateChain</code> (X.509). Any application can consume it directly (mTLS, signed
+requests), regardless of platform specifics.</p>
+<ul>
+<li>The leaf is a binding certificate issued for the attested key by the back-end.</li>
+<li>The root is intended to be the root CA for the binding PKI configured at the back-end. However, the semantics can be adapted as desired.</li>
+</ul>
+<h4 id="failure">Failure</h4>
+<p><code>Failure</code> is a typed error with an optional explanation. These categories are the <strong>client-facing</strong> semantics; low-level
+attestation exceptions are mapped into one of these four buckets (see <a href="../errorhandling/">Error Handling</a> for the full mapping).</p>
+<ul>
+<li><code>TRUST</code>: trust or policy violations, such as:<ul>
+<li>Untrusted or mismatched root/intermediate (e.g., wrong environment or CA).</li>
+<li>App identity mismatch (Team ID / Bundle ID, package signature digest, etc.).</li>
+<li>Device state non-compliance (e.g., verified boot state, patch level, production vs. sandbox).</li>
+<li>The public key claimed by the CSR does not match the key proven by the attestation statement.</li>
+<li>The submitted transport does not provide the authentication mode required by the challenge.</li>
+</ul>
+</li>
+<li><code>TIME</code>: timing and validity issues, such as:<ul>
+<li>Challenge expired or not yet valid.</li>
+<li>Excessive clock skew between client and server.</li>
+<li>Certificate or attestation statement outside its validity window.</li>
+</ul>
+</li>
+<li><code>CONTENT</code>: malformed, missing, or semantically invalid input, such as:<ul>
+<li>CSR missing the expected attribute (<code>proofOID</code>) or an unparsable payload.</li>
+<li>Duplicate attribute or extension OIDs, malformed extension requests, or non-canonical DER attribute order.</li>
+<li>Missing, malformed, unexpected, or type-invalid requested attributes.</li>
+<li>Nonce binding absent, incorrect, or not issued by the server.</li>
+<li>Attestation statement fails policy checks (package name, signer digest, boot state, rollback resistance, OS/app version, security level).</li>
+<li>Platform configuration mismatch (e.g., statement received for a non-configured platform).</li>
+<li>Structurally invalid or nonsensical attestation statement content.</li>
+</ul>
+</li>
+<li><code>INTERNAL</code>: server-side processing failures, such as:<ul>
+<li>Deserialisation or I/O errors during verification.</li>
+<li>Transient infrastructure issues.</li>
+<li>Unexpected exceptions not attributable to client input.</li>
+</ul>
+</li>
+</ul>
+<h2 id="how-verification-ties-together">How Verification Ties Together</h2>
+<p>The server extracts the original challenge nonce from the TBS CSR subject and the attestation statement from the attribute
+identified by <code>proofOID</code>, then validates:</p>
+<ul>
+<li><strong>Challenge binding</strong>: the nonce must identify the exact server-issued, unexpired challenge.</li>
+<li><strong>Authentication mode</strong>: signed and hashed transports are not interchangeable.</li>
+<li><strong>Data binding</strong>: verify the CSR signature and proof of possession in signature mode, or recompute the canonical hash
+  input in hash mode.</li>
+<li><strong>Key binding</strong>: the TBS CSR public key must equal the key proven by platform attestation in both modes.</li>
+<li><strong>Requested attributes</strong>: the dedicated attribute must match the challenge's ordered types and required/optional rules.</li>
+<li><strong>Platform trust and policy</strong>: certificate chain, environment (prod/sandbox), app identity, device state, counters/continuity
+  (see <a href="../../technical/ios/">iOS deep dive</a>), boot/patch state (see <a href="../../technical/android/">Android deep dive</a>).</li>
+<li><strong>Time</strong>: issuance time and validity windows for replay protection. See also <a href="../../technical/quirks/#clock-drifts-and-temporal-validity">Clock Drifts and Temporal Validity</a>.</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025-2026 A-SIT Plus GmbH &bull; <a href="https://plus.a-sit.at/imprint.html" target="_blank">Imprint</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://plus.a-sit.at/" target="_blank" rel="noopener" title="plus.a-sit.at" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="m57.7 193 9.4 16.4c8.3 14.5 21.9 25.2 38 29.8l57.9 16.5c17.2 4.9 29 20.6 29 38.5v39.9c0 11 6.2 21 16 25.9s16 14.9 16 25.9v39c0 15.6 14.9 26.9 29.9 22.6 16.1-4.6 28.6-17.5 32.7-33.8l2.8-11.2c4.2-16.9 15.2-31.4 30.3-40l8.1-4.6c15-8.5 24.2-24.5 24.2-41.7v-8.3c0-12.7-5.1-24.9-14.1-33.9l-3.9-3.9c-9-9-21.2-14.1-33.9-14.1H257c-11.1 0-22.1-2.9-31.8-8.4l-34.5-19.7c-4.3-2.5-7.6-6.5-9.2-11.2-3.2-9.6 1.1-20 10.2-24.5l5.9-3c6.6-3.3 14.3-3.9 21.3-1.5l23.2 7.7c8.2 2.7 17.2-.4 21.9-7.5 4.7-7 4.2-16.3-1.2-22.8l-13.6-16.3c-10-12-9.9-29.5.3-41.3l15.7-18.3c8.8-10.3 10.2-25 3.5-36.7l-2.4-4.2c-3.5-.2-6.9-.3-10.4-.3-92.8 0-171.5 60.9-198.2 145M464 256c0-36.8-9.6-71.4-26.4-101.5L412 164.8c-15.7 6.3-23.8 23.8-18.5 39.8l16.9 50.7c3.5 10.4 12 18.3 22.6 20.9l29.1 7.3c1.2-9 1.8-18.2 1.8-27.5zM0 256a256 256 0 1 1 512 0 256 256 0 1 1-512 0"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:<opensource@a-sit.at>" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M498.1 5.6c10.1 7 15.4 19.1 13.5 31.2l-64 416c-1.5 9.7-7.4 18.2-16 23s-18.9 5.4-28 1.6L284 427.7l-68.5 74.1c-8.9 9.7-22.9 12.9-35.2 8.1S160 493.2 160 480v-83.6c0-4 1.5-7.8 4.2-10.8l167.6-182.8c5.8-6.3 5.6-16-.4-22s-15.7-6.4-22-.7L106 360.8l-88.3-44.2C7.1 311.3.3 300.7 0 288.9s5.9-22.8 16.1-28.7l448-256c10.7-6.1 23.9-5.5 34 1.4"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "search.suggest", "search.highlight", "content.code.annotate", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  </body>
+</html>

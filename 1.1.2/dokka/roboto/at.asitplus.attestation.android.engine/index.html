@@ -1,0 +1,264 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>at.asitplus.attestation.android.engine</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.1.2
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":roboto/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":roboto/main" data-filter=":roboto/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageids="roboto::at.asitplus.attestation.android.engine////PointingToDeclaration//2122162949">
+  <div class="breadcrumbs"><a href="../index.html">roboto</a><span class="delimiter">/</span><span class="current">at.asitplus.attestation.android.engine</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="704046458%2FClasslikes%2F2122162949" anchor-label="AndroidAttestationEngine" id="704046458%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-android-attestation-engine/index.html"><span>Android</span><wbr><span>Attestation</span><wbr><span><span>Engine</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="704046458%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-android-attestation-engine/index.html">AndroidAttestationEngine</a><span class="token operator">&lt;</span><a href="-android-attestation-engine/index.html">AttRecord</a><span class="token operator"> : </span><a href="../../supreme-common/at.asitplus.attestation.android/-attestation-extension/index.html">AttestationExtension</a><span class="token operator">&lt;</span><a href="-android-attestation-engine/index.html">AuthList</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="-android-attestation-engine/index.html">AuthList</a><span class="token operator"> : </span><a href="../../supreme-common/at.asitplus.attestation.android/-attestation-extension/-auth-list/index.html">AttestationExtension.AuthList</a><span class="token punctuation">, </span><a href="-android-attestation-engine/index.html">Cert</a><span class="token punctuation">, </span><a href="-android-attestation-engine/index.html">CertPath</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-393658264%2FClasslikes%2F2122162949" anchor-label="CertChainValidator" id="-393658264%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-cert-chain-validator/index.html"><span>Cert</span><wbr><span>Chain</span><wbr><span><span>Validator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-393658264%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-cert-chain-validator/index.html">CertChainValidator</a><span class="token operator">&lt;</span><a href="-cert-chain-validator/index.html">T</a><span class="token punctuation">, </span><a href="-cert-chain-validator/index.html">Path</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-356252294%2FClasslikes%2F2122162949" anchor-label="CertificateChainValidation" id="-356252294%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-certificate-chain-validation/index.html"><span>Certificate</span><wbr><span>Chain</span><wbr><span><span>Validation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-356252294%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-certificate-chain-validation/index.html">CertificateChainValidation</a><span class="token operator">&lt;</span><a href="-certificate-chain-validation/index.html">Path</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>verdict<span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="-certificate-chain-validation/index.html">Path</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>revocationLists<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../at.asitplus.attestation.android/-config-with-list/index.html">ConfigWithList</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="955000721%2FClasslikes%2F2122162949" anchor-label="GeneralizedSecurityLevel" id="955000721%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-generalized-security-level/index.html"><span>Generalized</span><wbr><span>Security</span><wbr><span><span>Level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="955000721%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-generalized-security-level/index.html">GeneralizedSecurityLevel</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-generalized-security-level/index.html">GeneralizedSecurityLevel</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-302784962%2FClasslikes%2F2122162949" anchor-label="GeneralizedVerifiedBootState" id="-302784962%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-generalized-verified-boot-state/index.html"><span>Generalized</span><wbr><span>Verified</span><wbr><span>Boot</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-302784962%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-generalized-verified-boot-state/index.html">GeneralizedVerifiedBootState</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-generalized-verified-boot-state/index.html">GeneralizedVerifiedBootState</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1314603345%2FClasslikes%2F2122162949" anchor-label="JvmCertChainValidator" id="-1314603345%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-jvm-cert-chain-validator/index.html"><span>Jvm</span><wbr><span>Cert</span><wbr><span>Chain</span><wbr><span><span>Validator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1314603345%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-jvm-cert-chain-validator/index.html">JvmCertChainValidator</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">attestationConfiguration<span class="token operator">: </span><a href="../at.asitplus.attestation.android/-android-attestation-configuration/index.html">AndroidAttestationConfiguration</a></span></span><span class="token punctuation">)</span> : <a href="-cert-chain-validator/index.html">CertChainValidator</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token punctuation">, </span><a href="../com.android.keyattestation.verifier.provider/-key-attestation-cert-path/index.html">KeyAttestationCertPath</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-963105808%2FClasslikes%2F2122162949" anchor-label="RtgAttestationEngine" id="-963105808%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rtg-attestation-engine/index.html"><span>Rtg</span><wbr><span>Attestation</span><wbr><span><span>Engine</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-963105808%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-rtg-attestation-engine/index.html">RtgAttestationEngine</a> : <a href="-android-attestation-engine/index.html">AndroidAttestationEngine</a><span class="token operator">&lt;</span><a href="../com.google.android.attestation/-parsed-attestation-record/index.html">ParsedAttestationRecord</a><span class="token punctuation">, </span><a href="../com.google.android.attestation/-authorization-list/index.html">AuthorizationList</a><span class="token punctuation">, </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token punctuation">, </span><a href="../com.android.keyattestation.verifier.provider/-key-attestation-cert-path/index.html">KeyAttestationCertPath</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Android attestation engine as reliable as a radioisotope thermoelectric generator (RTG). Uses the legacy attestation parser from Google, patched for resilience</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="512978148%2FClasslikes%2F2122162949" anchor-label="SupremeAttestationEngine" id="512978148%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-supreme-attestation-engine/index.html"><span>Supreme</span><wbr><span>Attestation</span><wbr><span><span>Engine</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="512978148%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-supreme-attestation-engine/index.html">SupremeAttestationEngine</a> : <a href="-android-attestation-engine/index.html">AndroidAttestationEngine</a><span class="token operator">&lt;</span><a href="../../supreme-common/at.asitplus.attestation.android/-attestation-key-description/index.html">AttestationKeyDescription</a><span class="token punctuation">, </span><a href="../../supreme-common/at.asitplus.attestation.android/-authorization-list/index.html">AuthorizationList</a><span class="token punctuation">, </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token punctuation">, </span><a href="../com.android.keyattestation.verifier.provider/-key-attestation-cert-path/index.html">KeyAttestationCertPath</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Modern, better, independent KMP-first Attestation engine based on in-house clean-room implementation of an attestation record parser that outperforms Google's legacy parser and Google's next-gen parser</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="274947837%2FFunctions%2F2122162949" anchor-label="toGeneralizedSecurityLevel" id="274947837%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-generalized-security-level.html"><span>to</span><wbr><span>Generalized</span><wbr><span>Security</span><wbr><span><span>Level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="274947837%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../com.android.keyattestation.verifier/-security-level/index.html">SecurityLevel</a><span class="token operator">?</span><span class="token punctuation">.</span><a href="to-generalized-security-level.html"><span class="token function">toGeneralizedSecurityLevel</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-generalized-security-level/index.html">GeneralizedSecurityLevel</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
