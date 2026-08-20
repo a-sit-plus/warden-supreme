@@ -80,17 +80,16 @@ internal constructor(
             )
         }
 
-        return if (androidConfiguration == null)
-            Makoto(
-                iosAttestationConfiguration = iosAttestationConfiguration!!,
-                FixedTimeClock(verificationTime),
-                verificationTimeOffset
-            ) else if (iosAttestationConfiguration == null)
-            Makoto(
-                androidConfiguration,
-                FixedTimeClock(verificationTime),
-                verificationTimeOffset
-            )
+        return if (androidConfiguration == null) Makoto(
+            iosAttestationConfiguration = iosAttestationConfiguration!!,
+            FixedTimeClock(verificationTime),
+            verificationTimeOffset
+        )
+        else if (iosAttestationConfiguration == null) Makoto(
+            androidConfiguration,
+            FixedTimeClock(verificationTime),
+            verificationTimeOffset
+        )
         else Makoto(
             androidConfiguration,
             iosAttestationConfiguration,

@@ -7,6 +7,8 @@ import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import java.security.KeyPairGenerator
+import kotlin.random.Random
+import kotlin.random.nextUInt
 import kotlin.time.Duration
 import kotlin.time.Instant
 
@@ -30,7 +32,7 @@ val DebugStatementSerializationRegressionTests by matrixSuite {
 
         val revocationList = AndroidRevocationList(
             mapOf(
-                "1234" to AndroidRevocationList.Entry(
+                Random.nextUInt().toString() to AndroidRevocationList.Entry(
                     AndroidRevocationList.RevocationStatus.REVOKED,
                     AndroidRevocationList.RevocationReason.KEY_COMPROMISE,
                 )
