@@ -1,13 +1,13 @@
 # Changelog
 
-Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as
-dedicated artefacts,
-this changelog also includes the original WARDEN changelog.
-
+## 1.0.4
+* **Fix:** Include the Android revocation-list snapshot used during certificate-chain validation in debug statements and reuse it during replay.
+* **Dependency Update:**
+    * Signum 3.26.0 / Supreme 0.16.0
 ## 1.0.3
 * Security hardening:
     * Verify Android attestation certificate chains before fully decoding their attacker-controlled attestation extensions.
-    * Use a narrowly scoped, size-limited application-ID extraction for per-application trust-anchor selection.
+    * Use a narrowly scoped, size-limited application-ID extraction for per-application trust-anchor selection ((GHSA-4r28-jj7j-g7v8)[https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-4r28-jj7j-g7v8])
     * Canonicalize Android application package information and signer digests with ordered collections rather than attacker-controlled hash sets.
     * Replace full-cache expiry scans in `InMemoryChallengeCache` with nonce- and expiry-ordered indexes ([GHSA-3chr-q239-rmpp](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-3chr-q239-rmpp)).
     * Bound payload sizes and recursion depth ([GHSA-qv7m-wr3r-hfg3](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-qv7m-wr3r-hfg3)) ([GHSA-3qj3-8wvm-fmcp](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-3qj3-8wvm-fmcp))
@@ -25,7 +25,7 @@ this changelog also includes the original WARDEN changelog.
 # 1.0.2
 * Ktor 3.5.1
 * kotlinx.datetime 0.8.0
-* Assert security level from certificate chain (Addresses GHSA-frpv-cj76-xm4r)
+* Assert security level from certificate chain ([GHSA-frpv-cj76-xm4r](https://github.com/a-sit-plus/warden-supreme/security/advisories/GHSA-frpv-cj76-xm4r))
     * **For Strongbox-requiring policies**, the attestation security level is now **derived from the certificate chain** and must match the level advertised in the attestation extension (`keymasterSecurityLevel`). A mismatch now fails verification.
     * **Impact on generated attestation chains (automated testing):** synthetic chains must now be shaped to match the claimed security level. Chains that previously passed (e.g. a three-certificate chain advertising a StrongBox extension) are now rejected — either with a certificate-trust error (wrong chain shape) or an `AttestationValueException` for the security-level mismatch (surfaced as `CONTENT`). Required shapes:
         * **StrongBox** (factory-provisioned): `ROOT → FACTORY_INTERMEDIATE → ATTESTATION → TARGET` (four certificates). The factory intermediate's subject must carry a serialNumber (OID `2.5.4.5`) **and** a title (OID `2.5.4.12`) of exactly `TEE` or `StrongBox`.
@@ -352,7 +352,17 @@ key and app attestation**, pinning down the last unnecessarily moving parts:
     * Update Kotlin to 2.2.20
     * Replace `kotlinx.datetime` with `kotlin.time`
 
-### WARDEN 2.0.0
+---
+
+# WARDEN changelog
+
+Since Warden Supreme is an evolution of WARDEN and continues to maintain and publish both WARDEN and WARDEN roboto as
+dedicated artefacts,
+this changelog also includes the original WARDEN changelog.
+
+---
+
+## WARDEN 2.0.0
 
 Breaking changes ahead!
 

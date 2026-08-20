@@ -76,7 +76,8 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     suspend fun verifyAttestation(
         certificates: List<Cert>,
         verificationDate: Instant,
-        expectedChallenge: ByteArray
+        expectedChallenge: ByteArray,
+        onRevocationLists: (List<ConfigWithList>) -> Unit = {},
     ): AttRecord {
         val actualVerificationDate =
             Date.from((verificationDate + attestationConfiguration.verificationSecondsOffset.seconds).toJavaInstant())
@@ -103,9 +104,11 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         val thisAppsTrustAnchors = attestedApp.trustedRootOverrides ?: trustAnchors
         val rkpRequired =
             attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
-        val certPath: CertPath = with(certChainValidator) {
+        val chainValidation = with(certChainValidator) {
             certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
         }
+        onRevocationLists(chainValidation.revocationLists)
+        val certPath = chainValidation.verdict.getOrThrow()
 
         val parsedAttestationRecord = catchingUnwrapped {
             certificates.attestationRecord ?: throw IllegalArgumentException("No attestation record present")

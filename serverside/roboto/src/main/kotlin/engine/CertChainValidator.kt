@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android.engine
 
+import at.asitplus.KmmResult
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.ConfigWithList
@@ -28,15 +29,19 @@ import java.util.Date
 import kotlin.time.ExperimentalTime
 import kotlin.time.toKotlinInstant
 
+data class CertificateChainValidation<Path>(
+    val verdict: KmmResult<Path>,
+    val revocationLists: List<ConfigWithList>,
+)
+
 interface CertChainValidator<T, Path> {
     @Throws(CertificateInvalidException::class, RevocationException::class)
     suspend fun List<T>.verifyCertificateChain(
         verificationDate: Date,
         actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
-    ): Path
+    ): CertificateChainValidation<Path>
     val revocationCheckers: List<Pair<AndroidRevocationList.Loader.Configuration<*>, AndroidRevocationList.Loader>>
-    suspend fun revocationListsFromLastCall():  List<ConfigWithList>
 
     val Path.generalizedSecurityLevel: GeneralizedSecurityLevel
 }

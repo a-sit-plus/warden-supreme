@@ -17,6 +17,7 @@ import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.coroutines.runBlocking
 import java.security.cert.X509Certificate
 import java.util.*
+import java.util.concurrent.LinkedBlockingDeque
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
@@ -34,7 +35,7 @@ const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
  * enabling software attestation accepts software-only attestations as a fallback even while hardware attestation remains
  * enabled. Keep software attestation disabled when hardware backing is required.
  */
-class Roboto
+class   Roboto
 @JvmOverloads
 constructor(
     val attestationConfiguration: AndroidAttestationConfiguration,
@@ -48,9 +49,27 @@ constructor(
         val version: String = wardenVersion
     }
 
-    //this works because all share the same config -> same revocation lists
-    internal suspend fun revocationListsFromLastCall() =
-        engines.first().certChainValidator.revocationListsFromLastCall()
+    private class RevocationSnapshot(
+        val challenge: ByteArray,
+        val revocationLists: List<ConfigWithList>,
+    )
+
+    private val revocationSnapshots = LinkedBlockingDeque<RevocationSnapshot>(100)
+
+    internal fun rememberRevocationLists(challenge: ByteArray, revocationLists: List<ConfigWithList>) {
+        if (revocationLists.isEmpty()) return
+        val snapshot = RevocationSnapshot(challenge.copyOf(), revocationLists)
+        if (!revocationSnapshots.offerLast(snapshot)) {
+            revocationSnapshots.pollFirst()
+            revocationSnapshots.offerLast(snapshot)
+        }
+    }
+
+    fun revocationListsForChallenge(challenge: ByteArray): List<ConfigWithList> {
+        val snapshot = revocationSnapshots.firstOrNull { it.challenge.contentEquals(challenge) } ?: return emptyList()
+        revocationSnapshots.remove(snapshot)
+        return snapshot.revocationLists
+    }
 
 
     private val engines = mutableListOf<AndroidAttestationEngine<*, *, X509Certificate, KeyAttestationCertPath>>().apply {
@@ -180,15 +199,17 @@ constructor(
         verificationDate: Instant = Clock.System.now(),
         expectedChallenge: ByteArray
     ): KmmResult<List<X509Certificate>> = catching {
+        var revocationLists = emptyList<ConfigWithList>()
         val results = engines.map {
             catchingUnwrapped {
                 it.verifyAttestation(
                     certificates,
                     verificationDate,
-                    expectedChallenge
-                )
+                    expectedChallenge,
+                ) { revocationLists = it }
             }
         }
+        rememberRevocationLists(expectedChallenge, revocationLists)
         if (results.filter { it.isFailure }.size == engines.size) {
             //if time is off, then we need to treat is separately
             results.firstOrNull {

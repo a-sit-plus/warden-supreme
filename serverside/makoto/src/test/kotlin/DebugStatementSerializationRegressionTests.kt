@@ -1,17 +1,21 @@
 package at.asitplus.attestation
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.AndroidRevocationList
+import at.asitplus.attestation.android.ConfigWithList
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
 import java.security.KeyPairGenerator
+import kotlin.random.Random
+import kotlin.random.nextUInt
 import kotlin.time.Duration
 import kotlin.time.Instant
 
 val DebugStatementSerializationRegressionTests by matrixSuite {
 
     "WardenDebugAttestationStatement.serializeCompact does not crash (TrustedRootSerializer init)" {
-        val keyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
+        val keyPair = KeyPairGenerator.getInstance("EC").apply { initialize(256) }.generateKeyPair()
         val trustedRoot = TrustedRoot.PublicKey(keyPair.public)
 
         val configuration = AndroidAttestationConfiguration(
@@ -26,6 +30,14 @@ val DebugStatementSerializationRegressionTests by matrixSuite {
             revocation = emptyList(),
         )
 
+        val revocationList = AndroidRevocationList(
+            mapOf(
+                Random.nextUInt().toString() to AndroidRevocationList.Entry(
+                    AndroidRevocationList.RevocationStatus.REVOKED,
+                    AndroidRevocationList.RevocationReason.KEY_COMPROMISE,
+                )
+            )
+        )
         val statement = WardenDebugAttestationStatement(
             method = WardenDebugAttestationStatement.Method.LEGACY,
             androidAttestationConfiguration = configuration,
@@ -36,10 +48,17 @@ val DebugStatementSerializationRegressionTests by matrixSuite {
             clientData = null,
             verificationTime = Instant.fromEpochMilliseconds(0),
             verificationTimeOffset = Duration.ZERO,
+            revocationLists = listOf(
+                ConfigWithList(AndroidRevocationList.InMemoryLoader.Configuration(revocationList), revocationList)
+            ),
             version = wardenVersion,
         )
 
         val compact = statement.serializeCompact()
-        WardenDebugAttestationStatement.deserializeCompact(compact) shouldBe statement
+        val decoded = WardenDebugAttestationStatement.deserializeCompact(compact)
+        decoded shouldBe statement
+        val replayConfiguration = decoded.createWarden().androidAttestationConfiguration!!
+        replayConfiguration.revocation.size shouldBe 1
+        replayConfiguration.revocation.single().createLoader().loadBlocking(Instant.DISTANT_FUTURE) shouldBe revocationList
     }
 }
