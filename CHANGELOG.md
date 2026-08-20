@@ -3,7 +3,8 @@
 ## 1.0.4
 * **Fix:** Include the Android revocation-list snapshot used during certificate-chain validation in debug statements and reuse it during replay.
 * **Dependency Update:**
-    * Signum 3.26.0 / Supreme 0.16.0
+    * Signum 3.26.0 / Supreme 0.16.0, upgrading to Strongbox where available
+
 ## 1.0.3
 * Security hardening:
     * Verify Android attestation certificate chains before fully decoding their attacker-controlled attestation extensions.
