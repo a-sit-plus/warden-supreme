@@ -1,6 +1,8 @@
 # Changelog
 
 ## NEXT
+* Fix: Preserve the meaningful Android attestation failure when both hardware and software verification fail, instead of masking it with a trust-anchor mismatch from the wrong verification engine.
+* Clarify debugging
 
 ## 1.1.2
 * Fix: Include the Android revocation-list snapshot used during certificate-chain validation in debug statements and reuse it during replay.
