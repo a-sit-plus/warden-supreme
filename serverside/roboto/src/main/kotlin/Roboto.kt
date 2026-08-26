@@ -184,8 +184,10 @@ constructor(
                         || (it.exceptionOrNull() is RevocationException)
             }?.exceptionOrNull()?.let { throw it }
 
-            throw results.last() //this way we are most lenient
-                .exceptionOrNull()!!
+            throw results.asReversed()
+                .mapNotNull { it.exceptionOrNull() }
+                .firstOrNull { it !is CertificateInvalidException.OtherMatchingRoot }
+                ?: results.last().exceptionOrNull()!!
         } else certificates
     }
 
