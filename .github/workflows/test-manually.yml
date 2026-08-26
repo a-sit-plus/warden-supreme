@@ -41,7 +41,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Build jar
-        run: ./gradlew :makoto:test :roboto:test assemble
+        run: ./gradlew test jvmTest assemble
       - name: Test Report
         uses: dorny/test-reporter@v2
         if: success() || failure()
