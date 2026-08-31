@@ -120,15 +120,6 @@ val ConfigurationExampleGenerator by matrixSuite(matrixConfig { execution = Exec
                     loaded shouldBe config
                 }
             }
-            "YAML (legacy)" {
-                val legacyYaml = readResource("examples/legacy/$name.yaml")
-                val loaded = when (name) {
-                    "android" -> AndroidAttestationConfiguration.fromYamlString(legacyYaml)
-                    "ios" -> IosAttestationConfiguration.fromYamlString(legacyYaml)
-                    else -> throw RuntimeException("Unknown config type: $name")
-                }
-                loaded shouldBe config
-            }
             "YAML (Hoplite)" {
                 val loader = ConfigLoaderBuilder.default()
                     .withExplicitSealedTypes()
@@ -238,11 +229,6 @@ val ConfigurationExampleGenerator by matrixSuite(matrixConfig { execution = Exec
                 val loaded = SupremeConfiguration.fromYamlString(reader.readText())
                 loaded shouldBe config
             }
-        }
-        "YAML (legacy)" {
-            val legacyYaml = readResource("examples/legacy/supreme.yaml")
-            val loaded = SupremeConfiguration.fromYamlString(legacyYaml)
-            loaded shouldBe SupremeConfiguration(androidAttestationConfiguration, iosAttestationConfiguration)
         }
         "YAML (Hoplite)" {
             val loader = ConfigLoaderBuilder.default()

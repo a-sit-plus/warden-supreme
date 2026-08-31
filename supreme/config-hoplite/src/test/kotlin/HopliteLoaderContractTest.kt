@@ -192,11 +192,13 @@ val HopliteLoaderContractTest by matrixSuite {
                 signerFingerprints:
                   - 34b9762c4d6c90d48431940c57bde7314258b26420ec
             hardwareTrustedRoots:
-              - |-
+              - - |-
 ${trustedRootPem(hardwareAnchor).prependIndent("                  ")}
+${"- false".prependIndent("                ")}
             softwareTrustedRoots:
-              - |-
+              - - |-
 ${trustedRootPem(softwareAnchor).prependIndent("                  ")}
+${"- false".prependIndent("                ")}
             revocation:
               - type: mem
                 list:

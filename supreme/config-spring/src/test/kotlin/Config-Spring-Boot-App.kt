@@ -288,11 +288,13 @@ val SpringBootConfigLoadingTest by matrixSuite(matrixConfig { execution = Execut
                         signerFingerprints:
                           - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
                     hardwareTrustedRoots:
-                      - |-
+                      - - |-
 ${trustedRootPem(hardwareAnchor).prependIndent("                          ")}
+${"- false".prependIndent("                        ")}
                     softwareTrustedRoots:
-                      - |-
+                      - - |-
 ${trustedRootPem(softwareAnchor).prependIndent("                          ")}
+${"- false".prependIndent("                        ")}
                     revocation:
                       - type: mem
                         list:

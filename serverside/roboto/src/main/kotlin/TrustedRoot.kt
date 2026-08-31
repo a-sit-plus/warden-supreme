@@ -25,6 +25,7 @@ import net.mamoe.yamlkt.YamlLiteral
 import java.security.MessageDigest
 import java.security.cert.TrustAnchor
 import javax.security.auth.x500.X500Principal
+import kotlin.io.encoding.Base64
 
 /**
  * Represents a trusted root entity, which can either be a public key or an X.509 certificate.
@@ -84,7 +85,9 @@ sealed interface TrustedRoot {
             publicKey: java.security.PublicKey,
             caName: X500Principal? = null,
             override val enforceFactoryProvisionedChainValidity: Boolean,
-        ) : PublicKey(publicKey, caName), TrustedRoot.AndroidSpecific
+        ) : PublicKey(publicKey, caName), TrustedRoot.AndroidSpecific {
+            override fun toString() = "[${super.toString()},  enforceFactoryProvisionedChainValidity=$enforceFactoryProvisionedChainValidity]"
+        }
 
         companion object {
             /** Constructs an Android-specific public-key trust root. */
@@ -109,7 +112,7 @@ sealed interface TrustedRoot {
         override val publicKey: java.security.PublicKey by lazy { certificate.publicKey }
         override val trustAnchor = TrustAnchor(certificate, null)
 
-        override fun toString(): String = derEncoded.encodeBase64()
+        override fun toString(): String = Base64.encode(derEncoded)
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -124,7 +127,10 @@ sealed interface TrustedRoot {
         class AndroidSpecific(
             certificate: java.security.cert.X509Certificate,
             override val enforceFactoryProvisionedChainValidity: Boolean,
-        ) : Certificate(certificate), TrustedRoot.AndroidSpecific
+        ) : Certificate(certificate), TrustedRoot.AndroidSpecific {
+
+            override fun toString() = "[${super.toString()},  enforceFactoryProvisionedChainValidity=$enforceFactoryProvisionedChainValidity]"
+        }
 
         companion object {
             /** Constructs an Android-specific certificate trust root. */
