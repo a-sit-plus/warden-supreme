@@ -1,15 +1,10 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.AttestationConfiguration
-import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonObject
-import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonString
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
-import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
-import at.asitplus.signum.indispensable.toJcaPublicKey
-import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
 import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
