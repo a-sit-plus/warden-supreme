@@ -41,6 +41,8 @@ td.bad { color: #E6695B; }
    block box the cell can't shrink below is the reliable fix. */
 td.result.bad div.rw { width: 300px; white-space: normal; overflow-wrap: normal; word-break: normal; }
 a { color: #00C1FF; }
+.chain-download, .chain-explore { display: block; }
+.chain-explore { margin-top: 1em; }
 .empty { padding: 24px; color: #9FB2C2; }
 td.att { vertical-align: top; max-width: 640px; }
 td.att > details.tree > summary { color: #00C1FF; cursor: pointer; }

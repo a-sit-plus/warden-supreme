@@ -482,6 +482,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
             span { +" · (Yes, we know it looks like a GeoCities page. There are no mistakes, just happy accidents.)" }
         }
         script { unsafe { +starfieldJs } }
+        script { unsafe { +chainExplorerJs } }
     }
 }
 
@@ -517,6 +518,35 @@ private val starfieldJs = """
   })();
 """.trimIndent()
 
+/** Fetches and base64url-encodes a chain in the browser before opening it in the ASN.1 viewer. */
+private val chainExplorerJs = """
+  (function () {
+    var viewerUrl = 'https://a-sit-plus.github.io/awesn1/viewer/#';
+    function base64Url(bytes) {
+      var binary = '', chunkSize = 0x8000;
+      for (var i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      }
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    document.addEventListener('click', function (event) {
+      var link = event.target.closest('a.chain-explore');
+      if (!link) return;
+      event.preventDefault();
+      var tab = window.open('about:blank', '_blank');
+      if (!tab) return;
+      tab.opener = null;
+      fetch(link.href)
+        .then(function (response) {
+          if (!response.ok) throw new Error('Could not load chain.der');
+          return response.arrayBuffer();
+        })
+        .then(function (buffer) { tab.location.replace(viewerUrl + base64Url(new Uint8Array(buffer))); })
+        .catch(function () { tab.close(); });
+    });
+  })();
+""".trimIndent()
+
 private fun TBODY.reportRow(id: String, r: CollectedRecord) = tr {
     td { +(r.deviceName ?: NA) }
     td { +(r.securityLevel ?: NA) }
@@ -532,7 +562,15 @@ private fun TBODY.reportRow(id: String, r: CollectedRecord) = tr {
     td { +(r.provisioning ?: NA) }
     td("mono") { +(r.createdOnDevice ?: NA) }
     td("mono") { +Instant.fromEpochMilliseconds(r.submittedAtEpochMs).toString() }
-    td { if (r.hasChain) a("/files/$id/chain.der") { +"chain.der" } else +NA }
+    td {
+        if (r.hasChain) {
+            a("/files/$id/chain.der", classes = "chain-download") { +"Download" }
+            a("/files/$id/chain.der", classes = "chain-explore") {
+                target = "_blank"
+                +"Explore"
+            }
+        } else +NA
+    }
     td { a("/files/$id/proof.der") { +"proof.der" } }
     td { if (r.hasStatement) a("/files/$id/debug-statement.json") { +"debug-statement.json" } else +NA }
     td("att") {
