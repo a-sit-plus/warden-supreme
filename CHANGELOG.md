@@ -1,6 +1,7 @@
 # Changelog
 
 ## NEXT
+* Per-Android-Trust-Anchor non-RKP cert chain validity checks
 
 ## 1.2.0
 * Add per-Android-trust-anchor factory-provisioned certificate-chain validity policies.
