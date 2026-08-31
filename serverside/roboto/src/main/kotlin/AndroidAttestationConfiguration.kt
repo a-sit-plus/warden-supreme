@@ -73,7 +73,7 @@ data class PatchLevel @JvmOverloads constructor(
 }
 
 
-val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate(
+val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
     X509Certificate.decodeFromPem(
         """
             -----BEGIN CERTIFICATE-----
@@ -91,7 +91,8 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate(
             uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
             -----END CERTIFICATE-----
             """.trimIndent()
-    ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+    ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+    enforceFactoryProvisionedChainValidity = true /*NOOP for an RKP root, but better safe than sorry*/
 )
 
 /**
@@ -278,7 +279,7 @@ private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
 
 /**
  * Default trust anchors used to verify software attestation working up to Android 12. Useful for testing.
- * If possible, use older Android images on emulators for testing, EVEN IF THEIR ATTTESTATION ROOT IS EXPIRED, because
+ * If possible, use older Android images on emulators for testing, EVEN IF THEIR ATTESTATION ROOT IS EXPIRED, because
  * it has a stable, fixed root cert.
  * Newer Android emulator image keys' are a moving target due to **utterly undocumented key rotation**
  */

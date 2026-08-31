@@ -33,7 +33,7 @@ const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
  * enabling software attestation accepts software-only attestations as a fallback even while hardware attestation remains
  * enabled. Keep software attestation disabled when hardware backing is required.
  */
-class   Roboto
+class Roboto
 @JvmOverloads
 constructor(
     val attestationConfiguration: AndroidAttestationConfiguration,

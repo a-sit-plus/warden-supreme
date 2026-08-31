@@ -1,6 +1,7 @@
 # Changelog
 
 ## NEXT
+* Per-Android-Trust-Anchor non-RKP cert chain validity checks
 
 ## 1.1.3
 * Fix: Preserve the meaningful Android attestation failure when both hardware and software verification fail, instead of masking it with a trust-anchor mismatch from the wrong verification engine.

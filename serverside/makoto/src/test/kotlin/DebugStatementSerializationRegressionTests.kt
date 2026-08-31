@@ -5,6 +5,7 @@ import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.ConfigWithList
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.testballoon.matrix.*
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import java.security.KeyPairGenerator
 import kotlin.random.Random
@@ -13,6 +14,20 @@ import kotlin.time.Duration
 import kotlin.time.Instant
 
 val DebugStatementSerializationRegressionTests by matrixSuite {
+
+    "iOS configuration rejects Android-specific trusted roots" {
+        val root = TrustedRoot.Certificate(
+            (APPLE_DEFAULT_TRUSTED_ROOTS.first().attestationRoot as TrustedRoot.Certificate).certificate,
+            enforceFactoryProvisionedChainValidity = false,
+        )
+
+        shouldThrow<AttestationException.Configuration> {
+            IosAttestationConfiguration(
+                applications = listOf(IosAttestationConfiguration.AppData("ABCDEFGHIJ", "at.asitplus.test")),
+                trustedRoots = setOf(TrustedRootPair(root, APPLE_DEFAULT_TRUSTED_ROOTS.first().receiptRoot)),
+            )
+        }
+    }
 
     "WardenDebugAttestationStatement.serializeCompact does not crash (TrustedRootSerializer init)" {
         val keyPair = KeyPairGenerator.getInstance("EC").apply { initialize(256) }.generateKeyPair()
