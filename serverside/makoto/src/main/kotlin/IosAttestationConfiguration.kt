@@ -77,6 +77,18 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
                 IllegalArgumentException()
             )
 
+        if ((trustedRoots + applications.flatMap { it.trustedRootOverrides.orEmpty() }).any { rootPair ->
+                rootPair.attestationRoot is TrustedRoot.AndroidSpecific ||
+                        rootPair.receiptRoot is TrustedRoot.AndroidSpecific
+            }
+        ) {
+            throw AttestationException.Configuration(
+                Platform.IOS,
+                "Android-specific trusted roots are not supported for iOS App Attest",
+                IllegalArgumentException(),
+            )
+        }
+
 
         if (applications.isEmpty())
             throw AttestationException.Configuration(Platform.IOS, "No apps configured", IllegalArgumentException())

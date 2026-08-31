@@ -1,6 +1,7 @@
 # Changelog
 
 ## NEXT
+* Per-Android-Trust-Anchor non-RKP cert chain validity checks
 
 ## 1.1.4
 * Fix Spring Boot config loading (which is more cursed than anticipated):

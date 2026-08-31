@@ -9,6 +9,7 @@ import at.asitplus.catchingUnwrapped
 import com.android.keyattestation.verifier.SecurityLevel
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.android.keyattestation.verifier.provider.KeyAttestationProvider
+import com.android.keyattestation.verifier.provider.ProvisioningMethod
 import java.security.Security
 import java.security.cert.*
 import java.util.*
@@ -55,11 +56,8 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         onRevocationLists: (List<ConfigWithList>) -> Unit,
     ): KeyAttestationCertPath {
 
-        val verifyTimelyValidity =
-            isRemoteKeyProvisioned() || attestationConfiguration.enforceFactoryProvisionedChainValidity
-
         val trustedRoot =
-            catchingUnwrapped { verifyRootCertificate(verificationDate, actualTrustAnchors, verifyTimelyValidity) }
+            catchingUnwrapped { verifyRootCertificate(actualTrustAnchors) }
                 .getOrElse {
                     throw if (it is CertificateInvalidException) it else CertificateInvalidException.InvalidRoot(
                         message = "could not verify root certificate (valid from: ${last().notBefore} to ${last().notAfter}), verification date: $verificationDate",
@@ -69,6 +67,24 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                         invalidCertificate = last()
                     )
                 }
+        val verifyTimelyValidity = when (KeyAttestationCertPath(this).provisioningMethod()) {
+            ProvisioningMethod.FACTORY_PROVISIONED ->
+                (trustedRoot as? TrustedRoot.AndroidSpecific)?.enforceFactoryProvisionedChainValidity
+                    ?: attestationConfiguration.enforceFactoryProvisionedChainValidity
+            ProvisioningMethod.REMOTELY_PROVISIONED,
+            ProvisioningMethod.UNKNOWN -> true
+        }
+        if (verifyTimelyValidity) {
+            catchingUnwrapped { last().checkValidity(verificationDate) }.getOrElse {
+                throw CertificateInvalidException.InvalidRoot(
+                    message = "could not verify root certificate (valid from: ${last().notBefore} to ${last().notAfter}), verification date: $verificationDate",
+                    cause = it,
+                    reason = CertificateInvalidException.Reason.TIME,
+                    certificateChain = this,
+                    invalidCertificate = last(),
+                )
+            }
+        }
         val certificateChain =
             if (attestationConfiguration.ignoreLeafValidity) mapIndexed { i, cert ->
                 if (i == 0) EternalX509Certificate(cert) else cert
@@ -173,12 +189,9 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
 
 
     private fun List<X509Certificate>.verifyRootCertificate(
-        verificationDate: Date,
         actualTrustAnchors: Collection<TrustedRoot>,
-        verifyTimelyValidity: Boolean
     ): TrustedRoot {
         val root = last()
-        if (verifyTimelyValidity) root.checkValidity(verificationDate)
         val matchingTrustAnchor = actualTrustAnchors.filter { it is TrustedRoot.Certificate }
             .firstOrNull { root.encoded.contentEquals(it.derEncoded) }
             ?: actualTrustAnchors.filter { it is TrustedRoot.PublicKey }
@@ -208,8 +221,11 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
             }
         root.verify(matchingTrustAnchor.publicKey)
         return matchingTrustAnchor.let {
-            if (it is TrustedRoot.PublicKey && it.caName == null) it.copy(caName = root.issuerX500Principal)
-            else it
+            if (it is TrustedRoot.PublicKey && it.caName == null) {
+                val androidPolicy = (it as? TrustedRoot.AndroidSpecific)?.enforceFactoryProvisionedChainValidity
+                if (androidPolicy == null) TrustedRoot.PublicKey(it.publicKey, root.issuerX500Principal)
+                else TrustedRoot.PublicKey(it.publicKey, root.issuerX500Principal, androidPolicy)
+            } else it
         }
     }
 
