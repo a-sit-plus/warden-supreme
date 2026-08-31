@@ -203,6 +203,42 @@ It is possible to add time sources other than the system clock and externalise t
 
 ## Android Configuration
 
+### Android Trusted-Root Validity Overrides
+
+`enforceFactoryProvisionedChainValidity` defaults to `true` and is the configuration-wide policy for
+factory-provisioned Android chains. A custom Android-specific trusted root may carry its own Boolean override; for a
+factory-provisioned chain, that override takes precedence over the global value. RKP chains always enforce timely
+validity, and the provisioning method is derived from the received certificate chain at verification time.
+
+!!! warning "Changed in Warden Supreme 1.2.0"
+    Warden Supreme's default Google factory-provisioned roots whose subject contains
+    `SERIALNUMBER=f92009e853b6b045`, and its bundled raw public-key roots, explicitly set
+    `enforceFactoryProvisionedChainValidity` to `false`. They therefore permit expired factory-provisioned chains
+    even though the global default is `true`. Other generic roots use the global setting.
+
+In YAML or JSON, a plain certificate or public-key PEM string is a generic root. Add a Boolean to the list form to
+make it Android-specific. Public-key roots may also contain a CA name; list item order is irrelevant.
+
+```yaml
+# Generic certificate root: uses enforceFactoryProvisionedChainValidity.
+hardwareTrustedRoots:
+  - |
+    -----BEGIN CERTIFICATE-----
+    ...
+    -----END CERTIFICATE-----
+
+# Android-specific public-key root: overrides the global setting for factory-provisioned chains.
+softwareTrustedRoots:
+  - - false
+    - CN=Example Attestation Root
+    - |
+      -----BEGIN PUBLIC KEY-----
+      ...
+      -----END PUBLIC KEY-----
+```
+
+Android-specific roots are rejected by `IosAttestationConfiguration`.
+
 ??? example "YAML for a Sample App"
     The below example shows every configuration property in YAML form.
     Applications aside, all properties show their default values, which means that a minimum configuration needs to contain only app information.

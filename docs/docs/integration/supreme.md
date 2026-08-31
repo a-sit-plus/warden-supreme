@@ -241,10 +241,23 @@ instead of a pre-configured `Makoto` instance does not support such omissions.
 
 #### Accepting Expired Non-RKP Certificate Chains
 As of May 2026, the intermediate certificates and roots of some **old** non-RKP devices — that is, devices no longer receiving security updates — have expired.
-Warden Supreme considers such devices insecure by default, which is consistent with its checking timely certificate validity by default.
-For some devices there is no way to update these certificate chains to fix the validity issue; for others, the OEMs simply don't care.
-If you must support these devices, you can disable timely certificate validity checks **for non-RKP devices only**.
-To do so, set `enforceFactoryProvisionedChainValidity = false` in the `AndroidAttestationConfiguration`. See the [`full example of Makoto config options`](#config-options-example) for details.
+Warden Supreme enforces timely validity for factory-provisioned chains by default. Set
+`enforceFactoryProvisionedChainValidity = false` in `AndroidAttestationConfiguration` to relax this for generic roots.
+
+!!! warning "Changed in Warden Supreme 1.2.0"
+    The default Google factory-provisioned roots with subject `SERIALNUMBER=f92009e853b6b045`, as well as the
+    bundled raw public-key roots, carry a per-root `enforceFactoryProvisionedChainValidity = false` override. They
+    accept expired factory-provisioned chains despite the global default of `true`. Other generic roots use the global
+    setting.
+
+An Android-specific trusted root can instead carry its own `enforceFactoryProvisionedChainValidity` value. For a
+factory-provisioned chain, that per-root value takes precedence over the configuration-wide value. For a generic root,
+the configuration-wide value applies. The provisioning method is derived from the received certificate chain at
+verification time, not from Google's published root lists. RKP chains always enforce timely validity, regardless of
+either setting.
+
+See [Externalising Configuration](config.md#android-trusted-root-validity-overrides) for the serialized trusted-root
+forms, or the [`full example of Makoto config options`](#config-options-example) for the global setting.
 
 !!! note "Google Pixel 6 Series"
     As of July 2026, the Google Pixel 6 series still received security updates, but still ships with an expired certificate chain.

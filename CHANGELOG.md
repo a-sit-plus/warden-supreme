@@ -1,7 +1,12 @@
 # Changelog
 
 ## NEXT
-* Per-Android-Trust-Anchor non-RKP cert chain validity checks
+
+## 1.2.0
+* Add per-Android-trust-anchor factory-provisioned certificate-chain validity policies.
+  `enforceFactoryProvisionedChainValidity` remains `true` globally, but Warden Supreme's default Google
+  factory-provisioned roots with subject `SERIALNUMBER=f92009e853b6b045`, and the bundled raw public-key roots,
+  explicitly permit expired factory-provisioned chains (`false`).
 
 ## 1.1.3
 * Fix: Preserve the meaningful Android attestation failure when both hardware and software verification fail, instead of masking it with a trust-anchor mismatch from the wrong verification engine.
