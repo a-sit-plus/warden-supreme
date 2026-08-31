@@ -1,10 +1,16 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.AttestationConfiguration
+import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonObject
+import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonString
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
+import at.asitplus.signum.indispensable.toJcaPublicKey
+import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
+import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -127,7 +133,8 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             w1IdYIg2Wxg7yHcQZemFQg==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        enforceFactoryProvisionedChainValidity = false
     ),
     //new Google EC Root
     GOOGLE_RKP_EC_ROOT,
@@ -167,7 +174,8 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             wDB5y0USicV3YgYGmi+NZfhA4URSh77Yd6uuJOJENRaNVTzk
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        enforceFactoryProvisionedChainValidity = false
     ),
 
     //old, but still valid
@@ -205,7 +213,8 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             ex0SdDrx+tWUDqG8At2JHA==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        enforceFactoryProvisionedChainValidity = false
     ),
 
     //old, but still valid
@@ -243,7 +252,8 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             mD/vFDkzF+wm7cyWpQpCVQ==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow()
+        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        enforceFactoryProvisionedChainValidity = false
     ),
 )
 
@@ -277,7 +287,12 @@ private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
  * Newer Android emulator image keys' are a moving target due to **utterly undocumented key rotation**
  */
 val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
-    GOOGLE_OLD_TRUST_ANCHORS.map { TrustedRoot.PublicKey(it) }.toSet()
+    GOOGLE_OLD_TRUST_ANCHORS.map {
+        TrustedRoot.PublicKey(
+            publicKey = it,
+            enforceFactoryProvisionedChainValidity = false
+        )
+    }.toSet()
 
 /**
  * Main Android attestation configuration class serving as ground truth for all key and app attestation verifications.
