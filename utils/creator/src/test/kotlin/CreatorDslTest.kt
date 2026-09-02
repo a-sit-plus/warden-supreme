@@ -5,7 +5,6 @@ package at.asitplus.attestation.creator
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.AuthorizationList
 import at.asitplus.attestation.android.androidAttestationExtension
-import at.asitplus.attestation.android.mangle
 import at.asitplus.signum.indispensable.asn1.Asn1Element
 import at.asitplus.signum.indispensable.asn1.encoding.Asn1
 import at.asitplus.signum.indispensable.misc.BitLength
@@ -142,6 +141,20 @@ val CreatorDslTest by matrixSuite {
         .flatMap { (index, statement) -> shapes.values.asSequence().map { Case(index, it.first, it.second, statement) } }
         .toList()
 
+    // One property at a time: a failure here names the offending tag instead of a 40-property diff.
+    val singleProperty = statementArb.samples(RandomSource.seeded(0x50524F5054594CL)).first().value.hardwareEnforced
+
+    data(
+        "every schema property survives the config round-trip on its own",
+        (0 until AuthorizationListRecipe.PROPERTY_COUNT).toList(),
+        nameFn = { "property-bit-$it" },
+    ) test { bit ->
+        val spec = attestationSpec { hardwareEnforced = singleProperty.only(bit).build() }
+        val decoded = CreatorConfig.fromJson(CreatorConfig(attestations = listOf(spec)).toJson())
+
+        decoded.attestations.single().keyDescription shouldBe spec.keyDescription
+    }
+
     val roundTripCases = cases(count = 250, seed = 0x415454455354L)
 
     data(
@@ -162,13 +175,10 @@ val CreatorDslTest by matrixSuite {
         val json = config.toJson()
         val decoded = CreatorConfig.fromJson(json)
 
-        // The ASN.1 encoding is what the creator promises to reproduce, so that is what is compared:
-        // two properties of the parser itself do not survive a decode as the same Kotlin object.
-        // See the note on parser defects at the bottom of this file.
+        decoded shouldBe config
+        // ... and byte-for-byte, which is the part the creator actually promises to reproduce.
         decoded.attestations.map { it.keyDescription.encodeToTlv().derEncoded.toHexString() } shouldBe
                 config.attestations.map { it.keyDescription.encodeToTlv().derEncoded.toHexString() }
-        decoded.attestations.map { it.createdAt } shouldBe config.attestations.map { it.createdAt }
-        decoded.copy(attestations = emptyList()) shouldBe config.copy(attestations = emptyList())
         decoded.toJson() shouldBe json
     }
 
@@ -288,6 +298,14 @@ private data class AuthorizationListRecipe(
 ) {
     private fun <T> pick(bit: Int, value: () -> T): T? = if (mask and (1L shl bit) != 0L) value() else null
 
+    /** The same recipe with [bit] as its only property, for isolating one property per test. */
+    fun only(bit: Int) = copy(mask = 1L shl bit)
+
+    companion object {
+        /** Number of schema properties [build] can emit; bit *n* selects the *n*th. */
+        const val PROPERTY_COUNT = 46
+    }
+
     fun build(): AuthorizationList = AuthorizationList(
         purpose = pick(0) { setOf(enums.purpose) },
         algorithm = pick(1) { enums.algorithm },
@@ -341,8 +359,7 @@ private data class AuthorizationListRecipe(
                 signatureDigests = setOf(blobs.signatureDigest),
             )
         },
-        // attestationIdBrand [710] is deliberately absent: decoding it throws, see the note below.
-        attestationIdProduct = pick(32) { AuthorizationList.AttestationId.Product(blobs.brand) },
+        attestationIdBrand = pick(32) { AuthorizationList.AttestationId.Brand(blobs.brand) },
         attestationIdDevice = pick(33) { AuthorizationList.AttestationId.Device(blobs.packageName) },
         attestationIdSerial = pick(34) { AuthorizationList.AttestationId.Serial(blobs.brand) },
         attestationIdImei = pick(35) { AuthorizationList.AttestationId.Imei(blobs.brand) },
@@ -359,6 +376,8 @@ private data class AuthorizationListRecipe(
         deviceUniqueAttestation = pick(40) { AuthorizationList.DeviceUniqueAttestation },
         attestationIdSecondImei = pick(41) { AuthorizationList.AttestationId.SecondImei(blobs.brand) },
         moduleHash = pick(42) { AuthorizationList.ModuleHash(blobs.moduleHash) },
+        attestationIdProduct = pick(44) { AuthorizationList.AttestationId.Product(blobs.packageName) },
+        attestationIdMeid = pick(45) { AuthorizationList.AttestationId.Meid(blobs.brand) },
         // A property outside the schema entirely: devices emit these, and they must round-trip untouched.
         trailingProperties = pick(43) {
             listOf<Asn1Element>(Asn1.ExplicitlyTagged(9998uL) { +Asn1.Int(numbers.usageCount) })
@@ -448,17 +467,3 @@ private fun IssuedAttestation.validateStrictPkix(at: Instant) {
     }
     CertPathValidator.getInstance("PKIX").validate(path, parameters)
 }
-
-/*
- * Defects in the parser (`supreme-common`) that this generator turned up. They are out of scope here
- * -- this module may not change those files -- but they shape what the assertions above can claim:
- *
- *  - `AuthorizationList.AttestationId.Brand.Tag` does not implement `Asn1Decodable`, so decoding any
- *    authorization list carrying `attestationIdBrand [710]` throws `ClassCastException`. Because
- *    `X509Certificate.androidAttestationExtension` swallows throwables, a real chain with an ID brand
- *    tag reads back as having no attestation extension at all.
- *
- *  - `AuthorizationList.UsageExpireDateTime.Tag` is declared `Asn1Decodable<Asn1Primitive,
- *    UsageCountLimit>` and its `doDecode` builds a `UsageCountLimit`, so `usageExpireDateTime [402]`
- *    decodes into the wrong type. The bytes are right, the object is not.
- */
