@@ -8,8 +8,8 @@
     * `enforceFactoryProvisionedChainValidity` remains `true` globally
     * Warden's default Google factory-provisioned roots with subject `SERIALNUMBER=f92009e853b6b045`, and the bundled raw public-key roots,
       explicitly permit expired factory-provisioned chains (`false`).  
-      ** THIS IS A BEHAVIOURAL CHANGE: ** whereas some checks might have failed with a certificate/time exceptions, they may now succeed by default or fail
-      due to attestation statement creation time, intead of expired/not-yet valid certificates
+      **THIS IS A BEHAVIOURAL CHANGE:** whereas some checks might have failed with a certificate/time exceptions, they may now succeed by default or fail
+      due to attestation statement creation time, instead of expired/not-yet valid certificates
 
 ## 1.1.4
 * Fix Spring Boot config loading (which is more cursed than anticipated):
