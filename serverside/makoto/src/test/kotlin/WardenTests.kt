@@ -5,7 +5,9 @@ package at.asitplus.attestation
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.exceptions.AttestationValueException
+import at.asitplus.attestation.android.isRemoteKeyProvisioned
 import at.asitplus.attestation.data.AttestationData
+import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
@@ -272,11 +274,11 @@ val WardenTest by matrixSuite {
                                         - 3000.days
                             ),
                         )
-                        attestationService.verifyAttestation(
+                        val attestationResult = attestationService.verifyAttestation(
                             recordedAttestation.attestationProof,
                             recordedAttestation.challenge
-                        ).shouldBeInstanceOf<AttestationResult.Error>()
-                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                        )
+
 
                         val dbg = attestationService.collectDebugInfo(
                             recordedAttestation.attestationProof,
@@ -287,9 +289,33 @@ val WardenTest by matrixSuite {
                                 .replayGenericAttestation()
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
                             .replay()
-                        replayGenericAttestation
-                            .shouldBeInstanceOf<AttestationResult.Error>()
-                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+
+                        if ((attestationResult as AttestationResult.Error).cause.platform == Platform.ANDROID) {
+                            if (recordedAttestation.attestationCertChain.isRemoteKeyProvisioned()) {
+                                attestationResult.shouldBeInstanceOf<AttestationResult.Error>()
+                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                                replayGenericAttestation
+                                    .shouldBeInstanceOf<AttestationResult.Error>()
+                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                            } else {
+                                attestationResult.shouldBeInstanceOf<AttestationResult.Error>().apply {
+                                    cause.shouldBeInstanceOf<AttestationException.Content.Android>()
+                                    cause.cause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe (AttestationValueException.Reason.STATEMENT_TIME)
+
+                                }
+                                replayGenericAttestation.shouldBeInstanceOf<AttestationResult.Error>().apply {
+                                    cause.shouldBeInstanceOf<AttestationException.Content.Android>()
+                                    cause.cause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe (AttestationValueException.Reason.STATEMENT_TIME)
+
+                                }
+                            }
+                        } else {
+                            attestationResult.shouldBeInstanceOf<AttestationResult.Error>()
+                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                            replayGenericAttestation
+                                .shouldBeInstanceOf<AttestationResult.Error>()
+                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                        }
 
                     }
 
@@ -305,11 +331,10 @@ val WardenTest by matrixSuite {
                                         + 3000.days
                             ),
                         )
-                        attestationService.verifyAttestation(
+                        val attestationResult = attestationService.verifyAttestation(
                             recordedAttestation.attestationProof,
                             recordedAttestation.challenge
-                        ).shouldBeInstanceOf<AttestationResult.Error>()
-                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                        )
 
                         val dbg = attestationService.collectDebugInfo(
                             recordedAttestation.attestationProof,
@@ -320,9 +345,34 @@ val WardenTest by matrixSuite {
                                 .replayGenericAttestation()
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
                             .replay()
-                        replayGenericAttestation
-                            .shouldBeInstanceOf<AttestationResult.Error>()
-                            .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+
+
+                        if ((attestationResult as AttestationResult.Error).cause.platform == Platform.ANDROID) {
+                            if (recordedAttestation.attestationCertChain.isRemoteKeyProvisioned()) {
+                                attestationResult.shouldBeInstanceOf<AttestationResult.Error>()
+                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                                replayGenericAttestation
+                                    .shouldBeInstanceOf<AttestationResult.Error>()
+                                    .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                            } else {
+                                attestationResult.shouldBeInstanceOf<AttestationResult.Error>().apply {
+                                    cause.shouldBeInstanceOf<AttestationException.Content.Android>()
+                                    cause.cause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe (AttestationValueException.Reason.STATEMENT_TIME)
+
+                                }
+                                replayGenericAttestation.shouldBeInstanceOf<AttestationResult.Error>().apply {
+                                    cause.shouldBeInstanceOf<AttestationException.Content.Android>()
+                                    cause.cause.shouldBeInstanceOf<AttestationValueException>().reason shouldBe (AttestationValueException.Reason.STATEMENT_TIME)
+
+                                }
+                            }
+                        } else {
+                            attestationResult.shouldBeInstanceOf<AttestationResult.Error>()
+                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                            replayGenericAttestation
+                                .shouldBeInstanceOf<AttestationResult.Error>()
+                                .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
+                        }
 
                     }
                 }

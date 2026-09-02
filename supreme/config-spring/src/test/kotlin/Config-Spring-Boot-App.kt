@@ -275,6 +275,29 @@ val SpringBootConfigLoadingTest by matrixSuite(matrixConfig { execution = Execut
         }
     }
 
+    "Spring Boot disables revocation checks when YAML explicitly configures no loaders" {
+        withTempConfigDir(
+            "application.yaml" to """
+                attestation:
+                  android:
+                    applications:
+                      - packageName: at.asitplus.no-revocation-checks
+                        signerFingerprints:
+                          - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+                    revocation: []
+            """.trimIndent(),
+        ) { configDir ->
+            runWithConfigDirectory(configDir.toString()).use { context ->
+                val config = AndroidAttestationConfiguration.fromSpringEnvironment(
+                    context.environment,
+                    "attestation.android"
+                )
+
+                config.revocation shouldBe emptyList()
+            }
+        }
+    }
+
     "Spring Boot loads multiline pem trust anchors and revocation config from yaml" {
         val hardwareAnchor = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.first()
         val softwareAnchor = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.first()

@@ -9,7 +9,6 @@ import at.asitplus.catchingUnwrapped
 import com.android.keyattestation.verifier.SecurityLevel
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.android.keyattestation.verifier.provider.KeyAttestationProvider
-import com.android.keyattestation.verifier.provider.ProvisioningMethod
 import java.security.Security
 import java.security.cert.*
 import java.util.*
@@ -67,13 +66,10 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                         invalidCertificate = last()
                     )
                 }
-        val verifyTimelyValidity = when (KeyAttestationCertPath(this).provisioningMethod()) {
-            ProvisioningMethod.FACTORY_PROVISIONED ->
-                (trustedRoot as? TrustedRoot.AndroidSpecific)?.enforceFactoryProvisionedChainValidity
-                    ?: attestationConfiguration.enforceFactoryProvisionedChainValidity
-            ProvisioningMethod.REMOTELY_PROVISIONED,
-            ProvisioningMethod.UNKNOWN -> true
-        }
+        val verifyTimelyValidity = isRemoteKeyProvisioned() ||
+                ((trustedRoot as? TrustedRoot.AndroidSpecific)?.enforceFactoryProvisionedChainValidity
+                    ?: attestationConfiguration.enforceFactoryProvisionedChainValidity)
+
         if (verifyTimelyValidity) {
             catchingUnwrapped { last().checkValidity(verificationDate) }.getOrElse {
                 throw CertificateInvalidException.InvalidRoot(
@@ -103,10 +99,16 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
             )
         }
 
+        // The KeyAttestation validator always rejects not-yet-valid certificates. For factory-provisioned
+        // chains whose resolved policy disables validity checks, pass delegating certificates with no-op
+        // validity checks to PKIX as well. Keep certificateChain unchanged for diagnostics and the result.
+        val certificateChainForPkix =
+            if (verifyTimelyValidity) certificateChain else certificateChain.map(::EternalX509Certificate)
+
         //now we double-check against the new validator to rule out manipulations of the certificate chain
         catchingUnwrapped {
             newPkixCertPathValidator.validate(
-                KeyAttestationCertPath(certificateChain),
+                KeyAttestationCertPath(certificateChainForPkix),
                 PKIXParameters(setOf(trustedRoot.trustAnchor)).apply {
                     date = verificationDate
                     isRevocationEnabled =
@@ -114,10 +116,19 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                 }
             )
         }.onFailure {
+            val certPathFailure = generateSequence(it) { cause -> cause.cause }
+                .filterIsInstance<CertPathValidatorException>()
+                .firstOrNull()
+            val reason = when (certPathFailure?.reason) {
+                CertPathValidatorException.BasicReason.EXPIRED,
+                CertPathValidatorException.BasicReason.NOT_YET_VALID -> CertificateInvalidException.Reason.TIME
+
+                else -> CertificateInvalidException.Reason.TRUST
+            }
             throw CertificateInvalidException(
                 message = "PKIX cert path validation failed",
                 it,
-                reason = CertificateInvalidException.Reason.TRUST, //we have ruled out time beforehand
+                reason = reason,
                 certificateChain = certificateChain,
                 invalidCertificate = null
             )
@@ -230,7 +241,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
     }
 
     override val KeyAttestationCertPath.generalizedSecurityLevel: GeneralizedSecurityLevel
-        get() = securityLevel()?.toGeneralizedSecurityLevel()?: GeneralizedSecurityLevel.SOFTWARE
+        get() = securityLevel()?.toGeneralizedSecurityLevel() ?: GeneralizedSecurityLevel.SOFTWARE
 }
 
 fun SecurityLevel?.toGeneralizedSecurityLevel(): GeneralizedSecurityLevel = when (this) {

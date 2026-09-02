@@ -248,7 +248,8 @@ Warden Supreme enforces timely validity for factory-provisioned chains by defaul
     The default Google factory-provisioned roots with subject `SERIALNUMBER=f92009e853b6b045`, as well as the
     bundled raw public-key roots, carry a per-root `enforceFactoryProvisionedChainValidity = false` override. They
     accept expired factory-provisioned chains despite the global default of `true`. Other generic roots use the global
-    setting.
+    setting. Consequently, attestations that previously failed because a certificate was expired or not yet valid may
+    now succeed, or may instead fail on the attestation statement's creation time.
 
 An Android-specific trusted root can instead carry its own `enforceFactoryProvisionedChainValidity` value. For a
 factory-provisioned chain, that per-root value takes precedence over the configuration-wide value. For a generic root,
@@ -323,6 +324,14 @@ deserialise them before use.
 Warden Supreme 1.0.0 and later completely revamp revocation handling.
 Instead of hardcoding a check against the official Google revocation list, it is now possible to configure an arbitrary number of
 revocation list loaders. Configuring an empty list completely disables revocation checks.
+To disable them in YAML, set the `revocation` property explicitly to an empty sequence under `android`:
+
+```yaml
+android:
+  revocation: []
+```
+
+Omitting `revocation` does **not** disable checks; it retains the default Google revocation-list loader.
 Warden Supreme ships with three loaders by default:
 
 1. `HttpLoader`
