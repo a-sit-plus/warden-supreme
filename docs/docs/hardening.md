@@ -1,14 +1,14 @@
 # Security Policy and Hardening
 
-This page provides an overview of Warden Supreme's official security policy, how we handle reports, and how we have
-hardened Warden Supreme against attacks.
+Found a vulnerability? Please report it privately. The first half of this page explains how; the second records flaws
+found in released versions and how long their fixes took to reach users.
 
 ## Security Policy
 
-Please do **not** report security issues **publicly**. Attackers might use such information to exploit
-vulnerabilities before a fix can be developed and deployed.
+Please do **not** open a public issue for a suspected vulnerability. A public proof of concept is also a handy set of
+instructions for attacking deployments that have not been patched yet.
 
-Instead, please use GitHub's [**private vulnerability reporting**](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/privately-reporting-a-security-vulnerability):
+Use GitHub's [**private vulnerability reporting**](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/privately-reporting-a-security-vulnerability):
 
 ---
 
@@ -20,7 +20,7 @@ Instead, please use GitHub's [**private vulnerability reporting**](https://docs.
 - Click *Report a vulnerability*.
 - Follow the private vulnerability reporting flow.
 
-**Please include:**
+**Please include enough information to reproduce and assess the problem:**
 
 - A description of the issue.
 - Affected versions, commits, or components.
@@ -34,24 +34,24 @@ Instead, please use GitHub's [**private vulnerability reporting**](https://docs.
 - Work on a fix or mitigation.
 - Coordinate disclosure responsibly.
 
-Response and remediation times may vary depending on report complexity, maintainer availability, and release timing.
+Response and remediation time depends on the scope of the issue, maintainer availability, and whether a coordinated
+upstream release is required.
 
 
 ## Hardening
 
-We believe in transparency. Therefore, we document flaws discovered in released versions, what we did to address them,
-and how long it took for fixes to reach a release.
+Security problems in released software belong in the public record. The tables below list what was found, what changed,
+and how long the fix took to reach a release.
 
-- Some discoveries also affected third-party libraries. We reported them upstream and coordinated releases to avoid
-  cross-project exposure.
-- Others affected only Warden Supreme; their remediation timelines were entirely our responsibility.
+- Findings that also affected a dependency were reported upstream and released in coordination with its maintainers.
+- Findings confined to Warden Supreme were entirely ours to fix and release.
 
 !!! tip inline end "Primary Advisory Source"
     [GitHub](https://github.com/a-sit-plus/warden-supreme/security/advisories) is the primary advisory source and may be
     updated a few hours before this page.
 
-We update this section as new discoveries are made. Always consult the latest published documentation for an up-to-date
-overview.
+New findings are added here as they are disclosed. GitHub remains the authoritative source if this page and an advisory
+briefly disagree during a release.
 
 ### Warden Supreme 1.1.0
 

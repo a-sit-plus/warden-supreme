@@ -107,7 +107,7 @@ that is invalidated once used.**
     * Completely disabling the validity checks on the leaf certificate and the encoded attestation statement validity period on Android.
 
 These defaults preserve the relevant security properties because Warden Supreme validates the challenge **before it
-parses the attestation proof**.
+extracts and verifies the platform attestation statement**.
 In addition, Warden Supreme communicates nonce validity periods to clients.
 The validity period encoded into challenges is shifted by the inverse verification time offset, because clients see the drift in the opposite direction.
 Communicating this information to clients has the inherent benefit that large clock drifts can be caught right away and communicated to the user.
