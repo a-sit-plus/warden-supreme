@@ -169,6 +169,8 @@ dependencies {
     implementation(libs.protobuf.javalite)
     api(libs.protobuf.kotlinlite)
 
+    // The fake attestation chains in src/test/kotlin/data are issued by the creator module.
+    testImplementation(project(":creator"))
     testImplementation(libs.slf4j.reload4j)
     testImplementation("io.netty:netty-all:4.1.94.Final")
     testImplementation("commons-cli:commons-cli:1.4")

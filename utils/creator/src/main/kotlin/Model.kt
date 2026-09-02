@@ -5,6 +5,8 @@ import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.AuthorizationList
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 /**
@@ -28,13 +30,22 @@ data class CreatorConfig(
     }
 }
 
-/** How the attestation CA chain below the root is shaped. */
+/**
+ * How the chain between root and attestation key is shaped, i.e. what
+ * `KeyAttestationCertPath.provisioningMethod()` will make of it.
+ *
+ * The shape is what a verifier reads the security level off, so it is not cosmetic: the subject names
+ * below follow Android's real chains.
+ */
 @Serializable
 enum class Provisioning {
-    /** A single factory-provisioned attestation CA directly under the root. */
+    /** No CA between root and attestation key: a software-backed chain, provisioning method unknown. */
+    SOFTWARE,
+
+    /** One factory-provisioned CA (`serialNumber=<hex>, title=TEE|StrongBox`) under the root. */
     FACTORY,
 
-    /** Remote key provisioning: `Droid CA2` and `Droid CA3` between root and attestation key. */
+    /** Remote key provisioning: `Droid CA2` and `Droid CA3`, both `O=Google LLC`, under the root. */
     RKP,
 }
 
@@ -51,6 +62,8 @@ data class IssuerSpec(
     /** Root to reuse, or `null` to generate a fresh EC P-256 root. */
     val root: RootSpec? = null,
     val issuedAt: @Serializable(InstantAsIso8601::class) Instant = Clock.System.now(),
+    /** How long every issued certificate stays valid, counted from when it was issued. */
+    val validity: @Serializable(DurationAsIso8601::class) Duration = 365.days,
 )
 
 /**
@@ -63,6 +76,11 @@ data class IssuerSpec(
 data class AttestationSpec(
     val keyDescription: @Serializable(KeyDescriptionAsSchema::class) AttestationKeyDescription = DefaultKeyDescription,
     val createdAt: @Serializable(InstantAsIso8601::class) Instant = Clock.System.now(),
+    /**
+     * Issues the attested leaf as a CA that may sign certificates. Real attested keys never can; this
+     * exists to build chain-extension attack vectors, where a leaf signs a certificate of its own.
+     */
+    val leafCanSignCertificates: Boolean = false,
 )
 
 /**

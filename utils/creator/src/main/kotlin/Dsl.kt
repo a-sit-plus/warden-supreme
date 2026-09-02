@@ -3,6 +3,7 @@ package at.asitplus.attestation.creator
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.AuthorizationList
+import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
@@ -33,6 +34,15 @@ class IssuerSpecBuilder internal constructor(defaults: IssuerSpec = IssuerSpec()
     var root: RootSpec? = defaults.root
     var issuedAt: Instant = defaults.issuedAt
 
+    /** How long every issued certificate stays valid. */
+    var validity: Duration = defaults.validity
+
+    /** A software-backed chain: the root signs attestation keys itself, with no CA in between. */
+    fun softwareBacked(level: SecurityLevel = SecurityLevel.SOFTWARE) {
+        provisioning = Provisioning.SOFTWARE
+        securityLevel = level
+    }
+
     fun factoryProvisioned(level: SecurityLevel = SecurityLevel.TRUSTED_ENVIRONMENT) {
         provisioning = Provisioning.FACTORY
         securityLevel = level
@@ -47,7 +57,7 @@ class IssuerSpecBuilder internal constructor(defaults: IssuerSpec = IssuerSpec()
         root = RootSpec(certificatePem, privateKeyPkcs8Pem)
     }
 
-    internal fun build() = IssuerSpec(provisioning, securityLevel, root, issuedAt)
+    internal fun build() = IssuerSpec(provisioning, securityLevel, root, issuedAt, validity)
 }
 
 fun attestationSpec(block: AttestationSpecBuilder.() -> Unit = {}): AttestationSpec =
@@ -77,6 +87,9 @@ class AttestationSpecBuilder internal constructor(defaults: AttestationSpec = At
     var softwareEnforced: AuthorizationList = default.softwareEnforced
     var hardwareEnforced: AuthorizationList = default.hardwareEnforced
 
+    /** Issues the attested leaf as a CA, for chain-extension attack vectors. Never true on a device. */
+    var leafCanSignCertificates: Boolean = defaults.leafCanSignCertificates
+
     internal fun build() = AttestationSpec(
         keyDescription = AttestationKeyDescription(
             attestationVersion = attestationVersion,
@@ -89,5 +102,6 @@ class AttestationSpecBuilder internal constructor(defaults: AttestationSpec = At
             hardwareEnforced = hardwareEnforced,
         ),
         createdAt = createdAt,
+        leafCanSignCertificates = leafCanSignCertificates,
     )
 }

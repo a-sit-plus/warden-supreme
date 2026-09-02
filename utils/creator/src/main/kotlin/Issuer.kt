@@ -27,7 +27,7 @@ import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.signum.supreme.sign.signerFor
 import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
@@ -40,9 +40,10 @@ import kotlin.time.Instant
  */
 class AndroidAttestationIssuer private constructor(
     val spec: IssuerSpec,
-    private val root: CertifiedKey,
-    /** Signs the per-issuance attestation key. Bottom-most CA of [caChain]. */
-    private val attestationCa: CertifiedKey,
+    /** The trust anchor of everything this issuer issues. */
+    val root: CertifiedKey,
+    /** Signs the per-issuance attestation key. Bottom-most CA of [caChain], or [root] itself. */
+    val attestationCa: CertifiedKey,
     /** The CA certificates between leaf and root, ordered leaf-most first. */
     private val caChain: List<X509Certificate>,
 ) {
@@ -55,14 +56,16 @@ class AndroidAttestationIssuer private constructor(
     ) = CreatorConfig(spec, attestations, outputDirectory)
 
     fun issue(attestation: AttestationSpec = AttestationSpec()): IssuedAttestation {
-        val validity = validityFrom(attestation.createdAt)
-        val attestationKey = attestationCa.certifySubordinateCa("Android Keystore Attestation", validity, pathLength = 0)
+        val validity = attestation.createdAt.validFor(spec.validity)
+        val attestationKey = attestationCa.certifySubordinateCa(spec.attestationSubject, validity, pathLength = 0)
         val leafKey = ephemeralEcP256Signer()
         val leaf = attestationKey.certify(
             subject = commonName("Android Keystore Key"),
             subjectKey = leafKey.publicKey,
             validity = validity,
-            role = Role.EndEntity,
+            // A leaf that may sign certificates is only ever wanted for chain-extension attack vectors.
+            role = if (attestation.leafCanSignCertificates) Role.CertificateAuthority(pathLength = 0)
+            else Role.EndEntity,
             extensions = listOf(attestation.keyDescription.asCertificateExtension()),
         )
         return IssuedAttestation(
@@ -77,20 +80,21 @@ class AndroidAttestationIssuer private constructor(
 
     companion object {
         fun from(spec: IssuerSpec): AndroidAttestationIssuer {
-            val validity = validityFrom(spec.issuedAt)
+            val validity = spec.issuedAt.validFor(spec.validity)
             val (root, rootSpec) = spec.root?.let { it.load() to it }
                 ?: selfSignedRoot(validity).let { it to it.export() }
             // Every CA below the root states exactly how many CA certificates may follow it: the
             // remaining intermediates plus the per-issuance attestation certificate.
-            val names = spec.caNames
-            val cas = names.foldIndexed(listOf<CertifiedKey>()) { index, chain, name ->
+            val subjects = spec.certificateAuthoritySubjects
+            val cas = subjects.foldIndexed(listOf<CertifiedKey>()) { index, chain, subject ->
                 chain + (chain.lastOrNull() ?: root)
-                    .certifySubordinateCa(name, validity, pathLength = names.size - index)
+                    .certifySubordinateCa(subject, validity, pathLength = subjects.size - index)
             }
             return AndroidAttestationIssuer(
                 spec = spec.copy(root = rootSpec),
                 root = root,
-                attestationCa = cas.last(),
+                // A software-backed chain has no CA below the root; the root signs attestation keys itself.
+                attestationCa = cas.lastOrNull() ?: root,
                 caChain = cas.asReversed().map { it.certificate },
             )
         }
@@ -112,10 +116,14 @@ data class IssuedAttestation(
 }
 
 /** Certificate validity: not-before and not-after. */
-internal typealias Validity = Pair<Asn1Time, Asn1Time>
+typealias Validity = Pair<Asn1Time, Asn1Time>
 
-/** A private key together with the certificate that binds it: the unit an issuer actually signs with. */
-internal class CertifiedKey(val certificate: X509Certificate, val signer: Signer) {
+/**
+ * A private key together with the certificate that binds it: the unit an issuer actually signs with.
+ *
+ * This is issuing material, private key included -- which is the point of a fake-attestation creator.
+ */
+class CertifiedKey(val certificate: X509Certificate, val signer: Signer) {
     val subject: List<RelativeDistinguishedName> get() = certificate.tbsCertificate.subjectName
 
     fun certify(
@@ -134,10 +142,13 @@ internal class CertifiedKey(val certificate: X509Certificate, val signer: Signer
     )
 
     /** Generates a fresh key and certifies it as a CA under this one. */
-    fun certifySubordinateCa(name: String, validity: Validity, pathLength: Int?): CertifiedKey =
-        ephemeralEcP256Signer().let {
-            CertifiedKey(certify(commonName(name), it.publicKey, validity, Role.CertificateAuthority(pathLength)), it)
-        }
+    fun certifySubordinateCa(
+        subject: List<RelativeDistinguishedName>,
+        validity: Validity,
+        pathLength: Int?,
+    ): CertifiedKey = ephemeralEcP256Signer().let {
+        CertifiedKey(certify(subject, it.publicKey, validity, Role.CertificateAuthority(pathLength)), it)
+    }
 
     /** This key as reusable configuration. */
     fun export() = RootSpec(
@@ -146,14 +157,52 @@ internal class CertifiedKey(val certificate: X509Certificate, val signer: Signer
     )
 }
 
-private val IssuerSpec.caNames: List<String>
+/**
+ * The CA certificates to place between root and attestation key, root-most first, named the way
+ * Android's real chains name them.
+ */
+private val IssuerSpec.certificateAuthoritySubjects: List<List<RelativeDistinguishedName>>
     get() = when (provisioning) {
-        Provisioning.FACTORY -> listOf("${securityLevel.caName} Attestation")
-        Provisioning.RKP -> listOf("Droid CA2", "Droid CA3")
+        Provisioning.SOFTWARE -> emptyList()
+        Provisioning.FACTORY -> listOf(factoryProvisioned(securityLevel))
+        Provisioning.RKP -> listOf(googleCa("Droid CA2"), googleCa("Droid CA3"))
     }
 
-private val AttestationKeyDescription.SecurityLevel.caName: String
+/**
+ * The subject of the per-issuance attestation certificate. On real devices this is where the security
+ * level is stated: as a `title` on factory-provisioned chains, as an `O` on remotely provisioned ones.
+ */
+private val IssuerSpec.attestationSubject: List<RelativeDistinguishedName>
+    get() = when (provisioning) {
+        Provisioning.SOFTWARE -> commonName("Android Keystore Attestation")
+        Provisioning.FACTORY -> factoryProvisioned(securityLevel)
+        Provisioning.RKP -> listOf(
+            relativeDistinguishedName(AttributeTypeAndValue.Organization(Asn1String.UTF8(securityLevel.androidName))),
+            relativeDistinguishedName(AttributeTypeAndValue.CommonName(Asn1String.UTF8(randomHex()))),
+        )
+    }
+
+/** `serialNumber=<hex>, title=TEE|StrongBox`, as factory-provisioned CAs and attestation keys carry. */
+private fun factoryProvisioned(securityLevel: AttestationKeyDescription.SecurityLevel) = listOf(
+    relativeDistinguishedName(AttributeTypeAndValue.Other(SERIAL_NUMBER, Asn1String.UTF8(randomHex()))),
+    relativeDistinguishedName(AttributeTypeAndValue.Other(TITLE, Asn1String.UTF8(securityLevel.androidName))),
+)
+
+/** `O=Google LLC, CN=<name>`, as the remote-provisioning CAs carry. */
+private fun googleCa(name: String) = listOf(
+    relativeDistinguishedName(AttributeTypeAndValue.Organization(Asn1String.UTF8("Google LLC"))),
+    relativeDistinguishedName(AttributeTypeAndValue.CommonName(Asn1String.UTF8(name))),
+)
+
+/** How Android spells the security level inside a subject name. */
+private val AttestationKeyDescription.SecurityLevel.androidName: String
     get() = if (this == AttestationKeyDescription.SecurityLevel.STRONGBOX) "StrongBox" else "TEE"
+
+private val SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
+private val TITLE = ObjectIdentifier("2.5.4.12")
+
+@OptIn(ExperimentalStdlibApi::class)
+private fun randomHex() = Random.nextBytes(16).toHexString()
 
 private fun RootSpec.load(): CertifiedKey {
     val certificate = X509Certificate.decodeFromPem(certificatePem).getOrThrow()
@@ -188,7 +237,7 @@ private fun selfSignedRoot(validity: Validity): CertifiedKey = ephemeralEcP256Si
  * Real attestation chains are ordinary, compliant X.509: without these, strict path validation
  * (OpenSSL's included) rejects the chain outright with *invalid CA certificate*.
  */
-internal sealed interface Role {
+sealed interface Role {
     /** @param pathLength how many CA certificates may follow; `null` leaves it unconstrained. */
     data class CertificateAuthority(val pathLength: Int?) : Role
 
@@ -254,9 +303,12 @@ private fun randomSerialNumber() = byteArrayOf(1) + Random.nextBytes(19)
 private fun ephemeralEcP256Signer() = Signer.Ephemeral { ec { } }.getOrThrow()
 
 private fun commonName(value: String) =
-    listOf(RelativeDistinguishedName(AttributeTypeAndValue.CommonName(Asn1String.UTF8(value))))
+    listOf(relativeDistinguishedName(AttributeTypeAndValue.CommonName(Asn1String.UTF8(value))))
 
-private fun validityFrom(start: Instant) = Asn1Time(start) to Asn1Time(start + 365.days)
+private fun relativeDistinguishedName(attribute: AttributeTypeAndValue) =
+    RelativeDistinguishedName(attribute)
+
+private fun Instant.validFor(duration: Duration) = Asn1Time(this) to Asn1Time(this + duration)
 
 private fun issueCertificate(
     issuer: List<RelativeDistinguishedName>,

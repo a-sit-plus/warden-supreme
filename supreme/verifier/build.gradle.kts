@@ -44,6 +44,7 @@ kotlin {
             // attestation chains used here stay in lock-step with the ones roboto/makoto verify.
             kotlin.srcDir("../../serverside/roboto/src/test/kotlin/data")
             dependencies {
+                implementation(project(":creator"))
                 implementation(project(":config-hoplite"))
                 implementation(libs.hoplite.core)
                 implementation(libs.hoplite.yaml)

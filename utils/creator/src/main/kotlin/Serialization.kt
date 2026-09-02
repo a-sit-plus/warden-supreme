@@ -18,6 +18,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
@@ -46,6 +47,13 @@ internal object InstantAsIso8601 : KSerializer<Instant> {
     override val descriptor = PrimitiveSerialDescriptor("creator.Instant", PrimitiveKind.STRING)
     override fun serialize(encoder: Encoder, value: Instant) = encoder.encodeString(value.toString())
     override fun deserialize(decoder: Decoder): Instant = Instant.parse(decoder.decodeString())
+}
+
+/** ISO-8601 duration, e.g. `PT1H` or `P365D`. */
+internal object DurationAsIso8601 : KSerializer<Duration> {
+    override val descriptor = PrimitiveSerialDescriptor("creator.Duration", PrimitiveKind.STRING)
+    override fun serialize(encoder: Encoder, value: Duration) = encoder.encodeString(value.toIsoString())
+    override fun deserialize(decoder: Decoder): Duration = Duration.parse(decoder.decodeString())
 }
 
 internal object ByteArrayAsHex : KSerializer<ByteArray> {
