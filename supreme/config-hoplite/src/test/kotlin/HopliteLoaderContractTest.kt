@@ -95,6 +95,23 @@ val HopliteLoaderContractTest by matrixSuite {
         supreme.genericDeviceNameOID.toString() shouldBe "1.2.3.4"
     }
 
+    "hoplite disables revocation checks when YAML explicitly configures no loaders" {
+        val config = loadYaml<SupremeConfiguration>(
+            """
+            android:
+              applications:
+                - packageName: at.asitplus.no-revocation-checks
+                  signerFingerprints:
+                    - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+              revocation: []
+            ios: null
+            clock: system
+            """.trimIndent()
+        )
+
+        config.android!!.revocation shouldBe emptyList()
+    }
+
     "hoplite relaxed property casings all load to the same equivalent config" {
         assertHopliteCasingsEquivalent(HopliteFixtures.androidMaximal)
         assertHopliteCasingsEquivalent(HopliteFixtures.iosMaximal)

@@ -343,6 +343,7 @@ file system, instead of an HTTP server, where HTTP headers are used to encode th
 The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.
 
 ### Attestation Verifier Setup
+
 First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
 
 ??? info inline end "Important Nonce Info"
