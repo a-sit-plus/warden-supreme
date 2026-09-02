@@ -9,6 +9,7 @@
       explicitly permit expired factory-provisioned chains (`false`).  
       ** THIS IS A BEHAVIOURAL CHANGE: ** whereas some checks might have failed with a certificate/time exceptions, they may now succeed by default or fail
       due to attestation statement creation time, intead of expired/not-yet valid certificates
+* Add a `platform` member to `AttestationResult` and `KeyAttestation`, making cas splits smoother
 
 ## 1.2.0
 * Add per-Android-trust-anchor factory-provisioned certificate-chain validity policies.
