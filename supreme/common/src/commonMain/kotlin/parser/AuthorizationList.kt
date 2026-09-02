@@ -965,6 +965,14 @@ data class AuthorizationList private constructor(
     }
 
     companion object : Asn1Decodable<Asn1Sequence, AuthorizationList> {
+        /**
+         * Reconstructs a list from its encoded entries without normalising their order or contents.
+         *
+         * This is primarily useful for test-vector tooling which needs to preserve deliberately
+         * malformed authorization-list properties.
+         */
+        fun fromElements(elements: List<Element>): AuthorizationList = AuthorizationList(elements)
+
         override fun doDecode(src: Asn1Sequence): AuthorizationList {
             val elements = buildList {
                 for (child in src.children) {
