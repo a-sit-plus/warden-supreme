@@ -290,7 +290,7 @@ val WardenTest by matrixSuite {
                         replayGenericAttestation shouldBe WardenDebugAttestationStatement.deserializeCompact(dbg)
                             .replay()
 
-                        if ((attestationResult as AttestationResult.Error).cause.platform == Platform.ANDROID) {
+                        if (attestationResult.platform == Platform.ANDROID) {
                             if (recordedAttestation.attestationCertChain.isRemoteKeyProvisioned()) {
                                 attestationResult.shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
@@ -347,7 +347,7 @@ val WardenTest by matrixSuite {
                             .replay()
 
 
-                        if ((attestationResult as AttestationResult.Error).cause.platform == Platform.ANDROID) {
+                        if (attestationResult.platform == Platform.ANDROID) {
                             if (recordedAttestation.attestationCertChain.isRemoteKeyProvisioned()) {
                                 attestationResult.shouldBeInstanceOf<AttestationResult.Error>()
                                     .cause.shouldBeInstanceOf<AttestationException.Certificate.Time>()
