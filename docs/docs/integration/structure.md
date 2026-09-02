@@ -4,7 +4,7 @@ The repository contains five module groups:
 
 1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2.
 2. `/serverside` contains the server-side foundations with all the low-level logic to verify attestations.
-3. `/utils` contains unpublished utility helpers aimed at aiding analysis of attestation errors. These are meant to be used inside an IDE with an attached debugger.
+3. `/utils` contains the [Attestation Generator](../generator.md) and unpublished helpers aimed at aiding analysis of attestation errors. The latter are meant to be used inside an IDE with an attached debugger.
 4. `/dependencies` contains external dependencies that are not published to Maven Central or anywhere else and are thus compiled into group&nbsp;2 or used for testing.
 5. `/collector` contains the source code for the [Attestation Collector](../collector.md).
 
@@ -51,7 +51,18 @@ If you come from the legacy projects:
 | **Maven:** `at.asitplus.warden:roboto`                                                                                                    | **Maven:** `at.asitplus.warden:makoto`                                                                                                                                                                                                                                                                                           |
 
 ## /utils
-This group contains the diagnostic utilities described in [Debugging](debugging.md).
+
+This group contains the diagnostic utilities described in [Debugging](debugging.md), which are not published, and the
+attestation generator, which is.
+
+### /utils/generator
+
+Creates Android key attestation statements and the certificate chains carrying them &mdash; factory-provisioned and
+remotely provisioned &mdash; for automated tests and for reproducing device quirks. Statements are built on the same
+types the verifier parses, so structurally invalid ones are expressible too.
+See [Attestation Generator](../generator.md), which also links the stand-alone command-line tool.
+
+**Maven:** `at.asitplus.warden:generator`
 
 ## /dependencies
 Google released reference Android attestation parsers and PKIX certificate-path validators, but not complete verifiers

@@ -1,8 +1,8 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AttestationValueException
-import at.asitplus.attestation.creator.Provisioning
-import at.asitplus.attestation.data.AttestationCreator
+import at.asitplus.attestation.generator.Provisioning
+import at.asitplus.attestation.data.FakeAttestations
 import at.asitplus.attestation.data.SecurityLevel
 import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
@@ -12,7 +12,7 @@ import javax.security.auth.x500.X500Principal
 
 /**
  * Fake attestations in the *remotely provisioned* chain shape, which the old test-only generator could
- * not produce: `root -> Droid CA2 -> Droid CA3 -> attestation -> leaf`, all issued by the creator module.
+ * not produce: `root -> Droid CA2 -> Droid CA3 -> attestation -> leaf`, all issued by the generator module.
  *
  * The shape is what a verifier reads: `Droid CA2, O=Google LLC` right below the root marks the chain as
  * remotely provisioned, and the attestation certificate's `O` states the security level -- unlike a
@@ -27,7 +27,7 @@ val FakeRkpAttestationTests by matrixSuite {
     val androidVersion = 11
     val patchLevel = PatchLevel(2021, 8)
 
-    fun fakeRkpChain(securityLevel: SecurityLevel = SecurityLevel.TEE) = AttestationCreator.createAttestation(
+    fun fakeRkpChain(securityLevel: SecurityLevel = SecurityLevel.TEE) = FakeAttestations.createAttestation(
         challenge = challenge,
         packageName = packageName,
         signatureDigest = signatureDigest,
@@ -46,7 +46,7 @@ val FakeRkpAttestationTests by matrixSuite {
         chain[chain.size - 2].subjectX500Principal.getName(X500Principal.RFC1779) shouldContain "Droid CA2"
         chain[1].subjectX500Principal.getName(X500Principal.RFC1779) shouldContain "TEE"
         // A factory-provisioned chain of the same security level is a different shape entirely.
-        AttestationCreator.createAttestation(
+        FakeAttestations.createAttestation(
             challenge = challenge,
             packageName = packageName,
             signatureDigest = signatureDigest,
@@ -90,7 +90,7 @@ val FakeRkpAttestationTests by matrixSuite {
         }
 
         "a factory-provisioned chain does not" {
-            val chain = AttestationCreator.createAttestation(
+            val chain = FakeAttestations.createAttestation(
                 challenge = challenge,
                 packageName = packageName,
                 signatureDigest = signatureDigest,

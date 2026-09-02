@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalStdlibApi::class)
 
-package at.asitplus.attestation.creator
+package at.asitplus.attestation.generator
 
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.AuthorizationList
@@ -36,7 +36,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
-val CreatorDslTest by matrixSuite {
+val GeneratorDslTest by matrixSuite {
     "DSL issues an Android Keystore shaped attestation" {
         val nonce = byteArrayOf(1, 2, 3, 4)
         val issued = androidAttestationIssuer { factoryProvisioned(SecurityLevel.TRUSTED_ENVIRONMENT) }.issue {
@@ -119,9 +119,9 @@ val CreatorDslTest by matrixSuite {
             .hardwareEnforced.encodeToTlv().derEncoded shouldBe
                 spec.keyDescription.hardwareEnforced.encodeToTlv().derEncoded
 
-        val json = CreatorConfig(attestations = listOf(spec)).toJson()
+        val json = GeneratorConfig(attestations = listOf(spec)).toJson()
         json.contains(mangledDer) shouldBe true
-        CreatorConfig.fromJson(json).attestations.single().keyDescription.encodeToTlv().derEncoded shouldBe
+        GeneratorConfig.fromJson(json).attestations.single().keyDescription.encodeToTlv().derEncoded shouldBe
                 spec.keyDescription.encodeToTlv().derEncoded
     }
 
@@ -150,7 +150,7 @@ val CreatorDslTest by matrixSuite {
         nameFn = { "property-bit-$it" },
     ) test { bit ->
         val spec = attestationSpec { hardwareEnforced = singleProperty.only(bit).build() }
-        val decoded = CreatorConfig.fromJson(CreatorConfig(attestations = listOf(spec)).toJson())
+        val decoded = GeneratorConfig.fromJson(GeneratorConfig(attestations = listOf(spec)).toJson())
 
         decoded.attestations.single().keyDescription shouldBe spec.keyDescription
     }
@@ -158,11 +158,11 @@ val CreatorDslTest by matrixSuite {
     val roundTripCases = cases(count = 250, seed = 0x415454455354L)
 
     data(
-        "creator configuration JSON round-trip",
+        "generator configuration JSON round-trip",
         roundTripCases,
         nameFn = { it.name },
     ) test { case ->
-        val config = CreatorConfig(
+        val config = GeneratorConfig(
             issuer = issuerSpec {
                 root = sharedRoot
                 if (case.rkp) rkp(case.level) else factoryProvisioned(case.level)
@@ -173,10 +173,10 @@ val CreatorDslTest by matrixSuite {
         )
 
         val json = config.toJson()
-        val decoded = CreatorConfig.fromJson(json)
+        val decoded = GeneratorConfig.fromJson(json)
 
         decoded shouldBe config
-        // ... and byte-for-byte, which is the part the creator actually promises to reproduce.
+        // ... and byte-for-byte, which is the part the generator actually promises to reproduce.
         decoded.attestations.map { it.keyDescription.encodeToTlv().derEncoded.toHexString() } shouldBe
                 config.attestations.map { it.keyDescription.encodeToTlv().derEncoded.toHexString() }
         decoded.toJson() shouldBe json

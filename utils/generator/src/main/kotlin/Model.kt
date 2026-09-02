@@ -1,4 +1,4 @@
-package at.asitplus.attestation.creator
+package at.asitplus.attestation.generator
 
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
@@ -18,15 +18,15 @@ import kotlin.time.Instant
  * crypto material lives in [AndroidAttestationIssuer] and [IssuedAttestation].
  */
 @Serializable
-data class CreatorConfig(
+data class GeneratorConfig(
     val issuer: IssuerSpec = IssuerSpec(),
     val attestations: List<AttestationSpec> = listOf(AttestationSpec()),
-    val outputDirectory: String = "creator-output",
+    val outputDirectory: String = "generator-output",
 ) {
-    fun toJson(): String = CreatorJson.encodeToString(this)
+    fun toJson(): String = GeneratorJson.encodeToString(this)
 
     companion object {
-        fun fromJson(json: String): CreatorConfig = CreatorJson.decodeFromString(json)
+        fun fromJson(json: String): GeneratorConfig = GeneratorJson.decodeFromString(json)
     }
 }
 
@@ -39,9 +39,6 @@ data class CreatorConfig(
  */
 @Serializable
 enum class Provisioning {
-    /** No CA between root and attestation key: a software-backed chain, provisioning method unknown. */
-    SOFTWARE,
-
     /** One factory-provisioned CA (`serialNumber=<hex>, title=TEE|StrongBox`) under the root. */
     FACTORY,
 
@@ -86,7 +83,7 @@ data class AttestationSpec(
 /**
  * The statement you get when nothing is specified: an empty KeyMint 4.0 statement in a TEE.
  *
- * The single source of the creator's defaults — [AttestationSpec], the DSL and the JSON codec all
+ * The single source of the generator's defaults — [AttestationSpec], the DSL and the JSON codec all
  * fall back to exactly these values.
  */
 val DefaultKeyDescription: AttestationKeyDescription = AttestationKeyDescription(

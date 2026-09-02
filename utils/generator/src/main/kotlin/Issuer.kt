@@ -1,6 +1,6 @@
 @file:OptIn(at.asitplus.signum.indispensable.SecretExposure::class)
 
-package at.asitplus.attestation.creator
+package at.asitplus.attestation.generator
 
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.signum.indispensable.CryptoPrivateKey
@@ -34,7 +34,7 @@ import kotlin.time.Instant
  * The runtime counterpart of [IssuerSpec]: a root, an attestation CA chain, and the keys to sign with.
  *
  * All crypto material lives here and nowhere else; [spec] is the configuration that produced it, with
- * a generated root filled back in, so `CreatorConfig(issuer.spec, …)` reproduces this issuer exactly.
+ * a generated root filled back in, so `GeneratorConfig(issuer.spec, …)` reproduces this issuer exactly.
  *
  * Every [issue] call mints a fresh attestation key and a fresh attested leaf key, as real devices do.
  */
@@ -52,8 +52,8 @@ class AndroidAttestationIssuer private constructor(
     /** The configuration reproducing this issuer, together with the attestations to create from it. */
     fun configuration(
         attestations: List<AttestationSpec> = listOf(AttestationSpec()),
-        outputDirectory: String = "creator-output",
-    ) = CreatorConfig(spec, attestations, outputDirectory)
+        outputDirectory: String = "generator-output",
+    ) = GeneratorConfig(spec, attestations, outputDirectory)
 
     fun issue(attestation: AttestationSpec = AttestationSpec()): IssuedAttestation {
         val validity = attestation.createdAt.validFor(spec.validity)
@@ -93,8 +93,7 @@ class AndroidAttestationIssuer private constructor(
             return AndroidAttestationIssuer(
                 spec = spec.copy(root = rootSpec),
                 root = root,
-                // A software-backed chain has no CA below the root; the root signs attestation keys itself.
-                attestationCa = cas.lastOrNull() ?: root,
+                attestationCa = cas.last(),
                 caChain = cas.asReversed().map { it.certificate },
             )
         }
@@ -121,7 +120,7 @@ typealias Validity = Pair<Asn1Time, Asn1Time>
 /**
  * A private key together with the certificate that binds it: the unit an issuer actually signs with.
  *
- * This is issuing material, private key included -- which is the point of a fake-attestation creator.
+ * This is issuing material, private key included -- which is the point of a fake-attestation generator.
  */
 class CertifiedKey(val certificate: X509Certificate, val signer: Signer) {
     val subject: List<RelativeDistinguishedName> get() = certificate.tbsCertificate.subjectName
@@ -163,7 +162,6 @@ class CertifiedKey(val certificate: X509Certificate, val signer: Signer) {
  */
 private val IssuerSpec.certificateAuthoritySubjects: List<List<RelativeDistinguishedName>>
     get() = when (provisioning) {
-        Provisioning.SOFTWARE -> emptyList()
         Provisioning.FACTORY -> listOf(factoryProvisioned(securityLevel))
         Provisioning.RKP -> listOf(googleCa("Droid CA2"), googleCa("Droid CA3"))
     }
@@ -174,7 +172,6 @@ private val IssuerSpec.certificateAuthoritySubjects: List<List<RelativeDistingui
  */
 private val IssuerSpec.attestationSubject: List<RelativeDistinguishedName>
     get() = when (provisioning) {
-        Provisioning.SOFTWARE -> commonName("Android Keystore Attestation")
         Provisioning.FACTORY -> factoryProvisioned(securityLevel)
         Provisioning.RKP -> listOf(
             relativeDistinguishedName(AttributeTypeAndValue.Organization(Asn1String.UTF8(securityLevel.androidName))),
@@ -216,7 +213,7 @@ private fun RootSpec.load(): CertifiedKey {
 
 /** Roots state `CA:TRUE` without a path-length constraint, the way Google's attestation root does. */
 private fun selfSignedRoot(validity: Validity): CertifiedKey = ephemeralEcP256Signer().let { signer ->
-    val subject = commonName("Creator Test Root")
+    val subject = commonName("Generator Test Root")
     val role = Role.CertificateAuthority(pathLength = null)
     CertifiedKey(
         issueCertificate(

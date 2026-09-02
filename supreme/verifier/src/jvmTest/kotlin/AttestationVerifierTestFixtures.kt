@@ -7,7 +7,7 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.attestation.data.AttestationCreator
+import at.asitplus.attestation.data.FakeAttestations
 import at.asitplus.attestation.data.CreatedAttestation
 import at.asitplus.attestation.data.ProvisioningAuthority
 import at.asitplus.attestation.data.SecurityLevel
@@ -340,7 +340,7 @@ internal fun generateAndroidFixture(): AndroidFixture {
 }
 
 /**
- * Adapts the shared [CreatedAttestation] (see roboto's `AttestationCreator`) to the
+ * Adapts the shared [CreatedAttestation] (see roboto's `FakeAttestations`) to the
  * [FakeAndroidAttestation] shape used across the verifier tests. Fake Android attestations are
  * always factory-provisioned (TEE), so a factory intermediate is expected to be present.
  */
@@ -362,7 +362,7 @@ internal fun createFakeAndroidAttestation(
     creationTime: Date = Date(fixedClock.now().toEpochMilliseconds()),
     deviceLocked: Boolean = true,
     verifiedBootState: BootState = BootState.VERIFIED,
-): FakeAndroidAttestation = AttestationCreator.createAttestationWithKeys(
+): FakeAndroidAttestation = FakeAttestations.createAttestationWithKeys(
     challenge = challenge,
     packageName = packageName,
     signatureDigest = signatureDigest,
@@ -385,7 +385,7 @@ internal fun createFakeAndroidAttestationWithRoots(
     rootCertificate: JcaX509Certificate,
     intermediateKeyPair: KeyPair,
     intermediateCertificate: JcaX509Certificate,
-): FakeAndroidAttestation = AttestationCreator.createAttestationWithKeys(
+): FakeAndroidAttestation = FakeAttestations.createAttestationWithKeys(
     challenge = challenge,
     packageName = packageName,
     signatureDigest = signatureDigest,

@@ -1,4 +1,4 @@
-package at.asitplus.attestation.creator
+package at.asitplus.attestation.generator
 
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
@@ -9,7 +9,7 @@ import kotlin.time.Instant
 /**
  * ### DSL
  *
- * The builders below produce nothing but [CreatorConfig] parts and hand them straight to
+ * The builders below produce nothing but [GeneratorConfig] parts and hand them straight to
  * [AndroidAttestationIssuer]. They add defaults and ergonomics — never fields, meaning, or a model of
  * their own. Authorization lists are not built here at all: the parser's own
  * [AuthorizationList] constructor is already a complete, type-safe, named-argument builder for the
@@ -17,7 +17,7 @@ import kotlin.time.Instant
  */
 
 @DslMarker
-annotation class CreatorDsl
+annotation class GeneratorDsl
 
 /** Builds an issuer, generating a fresh EC P-256 root and a factory-provisioned TEE CA by default. */
 fun androidAttestationIssuer(block: IssuerSpecBuilder.() -> Unit = {}): AndroidAttestationIssuer =
@@ -25,7 +25,7 @@ fun androidAttestationIssuer(block: IssuerSpecBuilder.() -> Unit = {}): AndroidA
 
 fun issuerSpec(block: IssuerSpecBuilder.() -> Unit = {}): IssuerSpec = IssuerSpecBuilder().apply(block).build()
 
-@CreatorDsl
+@GeneratorDsl
 class IssuerSpecBuilder internal constructor(defaults: IssuerSpec = IssuerSpec()) {
     var provisioning: Provisioning = defaults.provisioning
     var securityLevel: SecurityLevel = defaults.securityLevel
@@ -36,12 +36,6 @@ class IssuerSpecBuilder internal constructor(defaults: IssuerSpec = IssuerSpec()
 
     /** How long every issued certificate stays valid. */
     var validity: Duration = defaults.validity
-
-    /** A software-backed chain: the root signs attestation keys itself, with no CA in between. */
-    fun softwareBacked(level: SecurityLevel = SecurityLevel.SOFTWARE) {
-        provisioning = Provisioning.SOFTWARE
-        securityLevel = level
-    }
 
     fun factoryProvisioned(level: SecurityLevel = SecurityLevel.TRUSTED_ENVIRONMENT) {
         provisioning = Provisioning.FACTORY
@@ -64,7 +58,7 @@ fun attestationSpec(block: AttestationSpecBuilder.() -> Unit = {}): AttestationS
     AttestationSpecBuilder().apply(block).build()
 
 /** Builder for one KeyMint statement, i.e. one [AttestationKeyDescription] plus its issuance date. */
-@CreatorDsl
+@GeneratorDsl
 class AttestationSpecBuilder internal constructor(defaults: AttestationSpec = AttestationSpec()) {
     private val default = defaults.keyDescription
 

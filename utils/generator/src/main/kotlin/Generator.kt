@@ -1,17 +1,17 @@
-package at.asitplus.attestation.creator
+package at.asitplus.attestation.generator
 
 import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import java.io.File
 
 /**
- * CLI: `creator <config.json>`.
+ * CLI: `generator <config.json>`.
  *
  * Writes one certificate chain and one attested private key per [AttestationSpec], plus the root
- * certificate, into [CreatorConfig.outputDirectory].
+ * certificate, into [GeneratorConfig.outputDirectory].
  */
 fun main(args: Array<String>) {
-    require(args.size == 1) { "Usage: creator <config.json>" }
-    val config = CreatorConfig.fromJson(File(args.single()).readText())
+    require(args.size == 1) { "Usage: generator <config.json>" }
+    val config = GeneratorConfig.fromJson(File(args.single()).readText())
     val issuer = AndroidAttestationIssuer.from(config.issuer)
     val destination = File(config.outputDirectory).apply { mkdirs() }
 

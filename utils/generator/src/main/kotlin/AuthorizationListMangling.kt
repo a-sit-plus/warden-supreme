@@ -1,4 +1,4 @@
-package at.asitplus.attestation.creator
+package at.asitplus.attestation.generator
 
 import at.asitplus.attestation.android.AuthorizationList
 import at.asitplus.signum.indispensable.asn1.Asn1Element

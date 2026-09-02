@@ -1,5 +1,13 @@
 # Testing Strategy
 
+
+!!! tip "New in Warden Supreme 1.2.0"
+    Warden Supreme 1.2.0 adds the attestation generator, replacing the hand-rolled chain builders that integrators
+    used to write. It is the same code Warden Supreme's own test suite verifies against, published as
+    `at.asitplus.warden:generator`.  
+    See [Attestation Generator](generator.md) for details.
+
+
 A good attestation test strategy exercises the full pipeline without weakening production policy.
 Three things make that work: strict separation of trust, realistic artefacts for automation, and staged environments that mirror production behaviour.
 This splits into two layers: automated tests that run offline in CI against test identities, and end-to-end tests on
@@ -53,6 +61,13 @@ does not trust this root, generated proofs cannot validate there.
 
 This is the [Test Clients and Staging Pattern](#test-clients-and-staging-pattern) applied exhaustively: one generated proof per property (or combination) you care about, valid and invalid variants alike.
 
+!!! tip "Generating Attestation Statements"
+    Generated attestations are what makes the exhaustive part practical: one statement per property (or combination)
+    worth enforcing, valid and invalid alike, all anchored in the test root so none of them can validate on production.
+    Since Warden Supreme 1.2.0 they no longer have to be hand-rolled &mdash; the
+    [Attestation Generator](generator.md) mints statements and matching certificate chains from Kotlin or from the
+    command line, factory-provisioned and remotely provisioned chains included.
+
 <span id="attestation-security-level"></span>
 !!! warning "Generated chains must match the claimed security level"
     Starting with Warden Supreme 1.0.2, the verifier now **derives the attestation security level from the certificate chain when asserting `SecurityLevel.STRONGBOX`**  and requires it to match the level advertised in the attestation extension (`keymasterSecurityLevel`).
@@ -61,7 +76,7 @@ This is the [Test Clients and Staging Pattern](#test-clients-and-staging-pattern
     - **StrongBox** (factory-provisioned): `ROOT → FACTORY_INTERMEDIATE → ATTESTATION → TARGET` (four certificates).
         - The factory intermediate's subject must carry a serialNumber (OID `2.5.4.5`) **and** a title (OID `2.5.4.12`) of exactly or `StrongBox`.
         - The same is true for `TEE` Security level, but this is not hard-asserted, since the root will already indicate a proper hardware-backed attestation.
-        - RPK chains are also asserted as strictly, but cannot currently be generated, due to hard checks against the actual production certificate chain.
+        - RKP chains are asserted just as strictly. Since Warden Supreme 1.2.0 they can be generated too &mdash; see the [Attestation Generator](generator.md).
     - **Software-backed**: `ROOT → ATTESTATION → TARGET` (three certificates), with no such title on the intermediate.
         - This is not enforced by the verifier.
 

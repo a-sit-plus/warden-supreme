@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalStdlibApi::class)
 
-package at.asitplus.attestation.creator
+package at.asitplus.attestation.generator
 
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
@@ -22,12 +22,12 @@ import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
- * JSON codec for [CreatorConfig].
+ * JSON codec for [GeneratorConfig].
  *
  * Unknown keys are rejected: a config file that this tool does not fully understand would silently
  * produce a different attestation than intended.
  */
-internal val CreatorJson = Json {
+internal val GeneratorJson = Json {
     encodeDefaults = true
     ignoreUnknownKeys = false
     prettyPrint = true
@@ -36,7 +36,7 @@ internal val CreatorJson = Json {
 /**
  * ### Serializers
  *
- * The creator has exactly one domain model: the parser types from `supreme-common`. Nothing below
+ * The generator has exactly one domain model: the parser types from `supreme-common`. Nothing below
  * mirrors, wraps, or re-interprets them — these serializers only give those types a JSON form.
  * The ASN.1 encoding is authoritative in every case, so a config file round-trips to the very same
  * bytes that go into a certificate, including deliberately malformed ones.
@@ -44,27 +44,27 @@ internal val CreatorJson = Json {
 
 /** ISO-8601, because a config file is read by humans. */
 internal object InstantAsIso8601 : KSerializer<Instant> {
-    override val descriptor = PrimitiveSerialDescriptor("creator.Instant", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor("generator.Instant", PrimitiveKind.STRING)
     override fun serialize(encoder: Encoder, value: Instant) = encoder.encodeString(value.toString())
     override fun deserialize(decoder: Decoder): Instant = Instant.parse(decoder.decodeString())
 }
 
 /** ISO-8601 duration, e.g. `PT1H` or `P365D`. */
 internal object DurationAsIso8601 : KSerializer<Duration> {
-    override val descriptor = PrimitiveSerialDescriptor("creator.Duration", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor("generator.Duration", PrimitiveKind.STRING)
     override fun serialize(encoder: Encoder, value: Duration) = encoder.encodeString(value.toIsoString())
     override fun deserialize(decoder: Decoder): Duration = Duration.parse(decoder.decodeString())
 }
 
 internal object ByteArrayAsHex : KSerializer<ByteArray> {
-    override val descriptor = PrimitiveSerialDescriptor("creator.HexBytes", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor("generator.HexBytes", PrimitiveKind.STRING)
     override fun serialize(encoder: Encoder, value: ByteArray) = encoder.encodeString(value.toHexString())
     override fun deserialize(decoder: Decoder): ByteArray = decoder.decodeString().hexToByteArray()
 }
 
 /** A complete DER element as hex, tag and length included. */
 internal object Asn1ElementAsHex : KSerializer<Asn1Element> {
-    override val descriptor = PrimitiveSerialDescriptor("creator.HexDer", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor("generator.HexDer", PrimitiveKind.STRING)
     override fun serialize(encoder: Encoder, value: Asn1Element) = encoder.encodeString(value.derEncoded.toHexString())
     override fun deserialize(decoder: Decoder): Asn1Element = Asn1Element.parse(decoder.decodeString().hexToByteArray())
 }
@@ -76,7 +76,7 @@ internal object SecurityLevelAsName : KSerializer<SecurityLevel> {
         SecurityLevel.STRONGBOX to "STRONGBOX",
     )
 
-    override val descriptor = PrimitiveSerialDescriptor("creator.SecurityLevel", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor("generator.SecurityLevel", PrimitiveKind.STRING)
     override fun serialize(encoder: Encoder, value: SecurityLevel) = encoder.encodeString(names.getValue(value))
     override fun deserialize(decoder: Decoder): SecurityLevel = decoder.decodeString().let { name ->
         names.entries.firstOrNull { it.value == name }?.key

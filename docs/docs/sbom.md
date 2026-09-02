@@ -82,6 +82,7 @@ JSON/XML SBOM files and their detached signatures.
 - [Supreme Verifier](sbom/modules/supreme-verifier.md)
 - [Config Hoplite](sbom/modules/config-hoplite.md)
 - [Config Spring](sbom/modules/config-spring.md)
+- [Attestation Generator](sbom/modules/generator.md)
 
 ## Tooling
 

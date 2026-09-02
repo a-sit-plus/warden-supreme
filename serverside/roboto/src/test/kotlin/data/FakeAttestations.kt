@@ -4,12 +4,12 @@ package at.asitplus.attestation.data
 
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AuthorizationList
-import at.asitplus.attestation.creator.AndroidAttestationIssuer
-import at.asitplus.attestation.creator.CertifiedKey
-import at.asitplus.attestation.creator.Provisioning
-import at.asitplus.attestation.creator.RootSpec
-import at.asitplus.attestation.creator.androidAttestationIssuer
-import at.asitplus.attestation.creator.mangle
+import at.asitplus.attestation.generator.AndroidAttestationIssuer
+import at.asitplus.attestation.generator.CertifiedKey
+import at.asitplus.attestation.generator.Provisioning
+import at.asitplus.attestation.generator.RootSpec
+import at.asitplus.attestation.generator.androidAttestationIssuer
+import at.asitplus.attestation.generator.mangle
 import at.asitplus.signum.indispensable.CryptoPrivateKey
 import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.asn1.encoding.Asn1
@@ -26,24 +26,21 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 /**
- * Fake Android key attestation chains for tests, issued by the creator module (`:creator`).
+ * Fake Android key attestation chains for tests, issued by the generator module (`:generator`).
  *
  * This replaces the hand-rolled BouncyCastle chain builder that used to live here. The parameters and
  * the resulting chain shapes are unchanged, so the tests using them are unchanged too:
+ * [SecurityLevel.TEE] and [SecurityLevel.STRONGBOX] give `root -> factory CA -> attestation -> leaf`,
+ * where the factory CA and the attestation certificate carry `serialNumber` and `title=TEE|StrongBox`,
+ * which is what a verifier reads the security level off.
  *
- * - [SecurityLevel.SOFTWARE] gives `root -> attestation -> leaf`, with nothing in the chain that says
- *   how the key was provisioned.
- * - [SecurityLevel.TEE] / [SecurityLevel.STRONGBOX] give `root -> factory CA -> attestation -> leaf`,
- *   where the factory CA and the attestation certificate carry `serialNumber` and `title=TEE|StrongBox`,
- *   which is what a verifier reads the security level off.
- *
- * The creator names those certificates the way real Android chains do, rather than the way the old
+ * The generator names those certificates the way real Android chains do, rather than the way the old
  * generator did (`CN=Root`, `CN=Attestation`); everything a verifier keys on is the same.
  *
  * Passing [Provisioning] explicitly overrides that mapping -- most interestingly with
  * [Provisioning.RKP], which the old generator could not produce at all.
  */
-object AttestationCreator {
+object FakeAttestations {
 
     /** The chain only; the first certificate carries the attestation extension. */
     fun createAttestation(
@@ -106,7 +103,6 @@ object AttestationCreator {
             when (provisioning ?: securityLevel.impliedProvisioning) {
                 Provisioning.FACTORY -> factoryProvisioned(securityLevel.parsed)
                 Provisioning.RKP -> rkp(securityLevel.parsed)
-                Provisioning.SOFTWARE -> softwareBacked(securityLevel.parsed)
             }
             // Reusing an authority means staying under the same trust anchor; the CAs below it are
             // reissued, since nothing but the anchor is compared.
@@ -170,7 +166,7 @@ data class CreatedAttestation(
 ) {
     /**
      * The root + factory intermediate of this (factory-provisioned) chain, for issuing further
-     * attestations under the same trust anchor via [AttestationCreator.createAttestationWithKeys]'s
+     * attestations under the same trust anchor via [FakeAttestations.createAttestationWithKeys]'s
      * `reuse` parameter. `null` for software-backed chains, which have no factory intermediate.
      */
     val provisioningAuthority: ProvisioningAuthority?
@@ -193,9 +189,19 @@ enum class SecurityLevel(val value: Int) {
     TEE(1),
     STRONGBOX(2);
 
-    /** Software-backed keys have no provisioned attestation CA; hardware-backed ones are factory-provisioned. */
+    /**
+     * Android provisions attestation keys in the factory or remotely, and nothing else -- so that is
+     * all the generator builds. The old generator also had a software-backed shape with no attestation
+     * CA at all; nothing has ever asked for one, and inventing a third provisioning method to keep it
+     * would put a shape in the generator that Android does not have.
+     */
     internal val impliedProvisioning: Provisioning
-        get() = if (this == TEE || this == STRONGBOX) Provisioning.FACTORY else Provisioning.SOFTWARE
+        get() = when (this) {
+            TEE, STRONGBOX -> Provisioning.FACTORY
+            SOFTWARE, NULL -> throw IllegalArgumentException(
+                "No software-backed chains: pick TEE or STRONGBOX, or pass a Provisioning explicitly"
+            )
+        }
 
     internal val parsed: AttestationKeyDescription.SecurityLevel
         get() = when (this) {
