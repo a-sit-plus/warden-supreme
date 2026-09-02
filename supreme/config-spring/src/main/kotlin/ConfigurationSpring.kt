@@ -120,7 +120,22 @@ private fun mapToJsonElement(value: Map<*, *>): JsonElement {
     return buildJsonObject {
         value.forEach { (key, entry) ->
             require(key is String) { "Only string keys are supported when converting config maps to JSON" }
-            put(key, mapToJsonElement(entry))
+            // Spring represents an empty YAML sequence as null, a blank string, or a list containing a null item when
+            // binding it to Map<String, Any>.
+            // `revocation: []` must therefore remain distinguishable from an omitted property, which retains defaults.
+            put(
+                key,
+                if (key == "revocation" && entry.isSpringEmptyYamlSequence()) buildJsonArray {}
+                else mapToJsonElement(entry)
+            )
         }
     }
+}
+
+private fun Any?.isSpringEmptyYamlSequence(): Boolean = when (this) {
+    null -> true
+    is String -> isBlank()
+    is Iterable<*> -> all { it == null || it is String && it.isBlank() }
+    is Array<*> -> all { it == null || it is String && it.isBlank() }
+    else -> false
 }

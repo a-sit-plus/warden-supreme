@@ -3,9 +3,13 @@ package at.asitplus.attestation;
 import at.asitplus.attestation.android.AndroidAttestationConfiguration;
 import at.asitplus.attestation.supreme.SupremeConfiguration;
 import org.junit.jupiter.api.Assertions;
+import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.ByteArrayResource;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +18,7 @@ public final class JavaSpringInteropAssertions {
     private JavaSpringInteropAssertions() {
     }
 
-    public static void run() {
+    public static void run() throws IOException {
         Map<String, Object> springMap = Map.of(
                 "applications", List.of(
                         Map.of(
@@ -53,6 +57,32 @@ public final class JavaSpringInteropAssertions {
 
         Assertions.assertEquals("at.asitplus.java-env", fromEnvironment.getApplications().get(0).getPackageName());
         Assertions.assertEquals(1, fromEnvironment.getApplications().get(0).getSignerFingerprints().size());
+
+        String yaml = """
+                attestation:
+                  android:
+                    applications:
+                      - packageName: at.asitplus.java-empty-revocation
+                        signerFingerprints:
+                          - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
+                    revocation: []
+                """;
+        StandardEnvironment yamlEnvironment = new StandardEnvironment();
+        yamlEnvironment.getPropertySources().addFirst(
+                new YamlPropertySourceLoader().load(
+                        "java-empty-revocation",
+                        new ByteArrayResource(yaml.getBytes(StandardCharsets.UTF_8))
+                ).get(0)
+        );
+
+        AndroidAttestationConfiguration fromYamlEnvironment = JavaSpringConfigurationLoader.load(
+                yamlEnvironment,
+                "attestation.android",
+                AndroidAttestationConfiguration.class
+        );
+
+        Assertions.assertEquals("at.asitplus.java-empty-revocation", fromYamlEnvironment.getApplications().get(0).getPackageName());
+        Assertions.assertTrue(fromYamlEnvironment.getRevocation().isEmpty());
 
         Map<String, Object> iosSpringMap = Map.of(
                 "applications", List.of(
