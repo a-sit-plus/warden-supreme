@@ -26,3 +26,7 @@ local.properties
 /supreme/common/src/jvmTest/resources/security-level-regressions.csv
 /collector/backend/src/main/resources/collector-android-release.apk
 /collector/backend/src/main/resources/collector-version.txt
+debug-statements.*
+docs/docs/downloads/
+docs/docs/sbom/
+repo/ 

@@ -31,8 +31,6 @@ include("config-hoplite")
 project(":config-hoplite").projectDir = file("supreme/config-hoplite")
 include("config-spring")
 project(":config-spring").projectDir = file("supreme/config-spring")
-include("config-spring-test")
-project(":config-spring-test").projectDir = file("supreme/config-spring-test")
 
 include("collector-shared")
 include("collector-app")

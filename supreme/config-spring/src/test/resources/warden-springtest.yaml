@@ -1,0 +1,6 @@
+attestation:
+  android:
+    applications:
+      - packageName: at.asitplus.classpath
+        signerFingerprints:
+          - NLl2LE1skNSEMZQMV73nMUJYsmQg7A
