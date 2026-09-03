@@ -49,7 +49,7 @@ pitest {
     verbose.set(false)
 }
 
-val javadocJar = setupDokka(
+setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main",
 )
 
@@ -57,7 +57,7 @@ publishing {
     publications {
         register("mavenJava", MavenPublication::class) {
             from(components["java"])
-            artifact(javadocJar)
+            artifact(tasks.named<Jar>("javadocRedirectJar"))
             pom {
                 name.set("Warden Config Hoplite")
                 description.set("Hoplite integration helpers for Warden Supreme configuration")
@@ -88,7 +88,7 @@ publishing {
             }
         }
         withType<MavenPublication> {
-            if (this.name != "relocation" && this.name != "mavenJava") artifact(javadocJar)
+            if (this.name != "relocation" && this.name != "mavenJava") artifact(tasks.named<Jar>("javadocRedirectJar"))
             pom {
                 name.set("Warden Config Hoplite")
                 description.set("Hoplite integration helpers for Warden Supreme configuration")

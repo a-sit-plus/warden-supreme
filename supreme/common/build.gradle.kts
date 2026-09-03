@@ -73,14 +73,14 @@ kotlin {
     }
 }
 
-val javadocJar = setupDokka(
+setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/supreme",
 )
 
 publishing {
     publications {
         withType<MavenPublication> {
-            artifact(javadocJar)
+            artifact(tasks.named<Jar>("javadocRedirectJar"))
             pom {
                 name.set("Warden Supreme Commons")
                 description.set("Attestation datatypes and utilities; part of the WARDEN Supreme integrated key attestation suite")

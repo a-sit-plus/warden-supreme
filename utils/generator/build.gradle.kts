@@ -32,7 +32,7 @@ application {
 dependencies {
     // The DSL hands out parser types, certificates and signers, so both are part of the API.
     api(project(":supreme-common"))
-    api(libs.signum)
+    api(libs.supreme)
     implementation(coroutines())
     implementation(serialization("json"))
 }
@@ -40,7 +40,6 @@ dependencies {
 setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/utils",
 )
-val javadocRedirectJar = tasks.named<Jar>("javadocRedirectJar")
 
 /**
  * Only the plain library jar is published; the shaded CLI jar ships with the documentation instead.
@@ -56,11 +55,11 @@ publishing {
     publications {
         register("mavenJava", MavenPublication::class) {
             from(components["java"])
-            artifact(javadocRedirectJar)
+            artifact(tasks.named<Jar>("javadocRedirectJar"))
             pom { describeGenerator() }
         }
         withType<MavenPublication> {
-            if (this.name != "relocation" && this.name != "mavenJava") artifact(javadocRedirectJar)
+            if (this.name != "relocation" && this.name != "mavenJava") artifact(tasks.named<Jar>("javadocRedirectJar"))
             pom { describeGenerator() }
         }
     }

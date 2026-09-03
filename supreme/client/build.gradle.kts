@@ -148,14 +148,14 @@ tasks.matching { it.name.contains("installAndroidDeviceTest") }.configureEach {
     mustRunAfter(resignTestApk)
 }
 
-val javadocJar = setupDokka(
+setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/supreme",
 )
 
 publishing {
     publications {
         withType<MavenPublication> {
-            artifact(javadocJar)
+            artifact(tasks.named<Jar>("javadocRedirectJar"))
             pom {
                 name.set("Warden Supreme Client")
                 description.set("Attestation mobile client; part of the WARDEN Supreme integrated key attestation suite")

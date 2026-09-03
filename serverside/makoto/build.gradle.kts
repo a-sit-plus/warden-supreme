@@ -62,7 +62,7 @@ dependencies {
 }
 
 
-val javadocJar = setupDokka(
+setupDokka(
     baseUrl = "https://github.com/a-sit-plus/warden-supreme/tree/main/serverside",
 )
 
@@ -77,7 +77,7 @@ publishing {
         register("mavenJava", MavenPublication::class) {
             from(components["java"])
             if (this.name != "relocation") {
-                artifact(javadocJar.get())
+                artifact(tasks.named<Jar>("javadocRedirectJar"))
                 artifact(sourcesJar.get())
             }
             pom {

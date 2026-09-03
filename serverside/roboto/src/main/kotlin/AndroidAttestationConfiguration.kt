@@ -2,9 +2,12 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.AttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
+import at.asitplus.signum.indispensable.toJcaPublicKey
+import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -257,11 +260,10 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
 )
 val DEFAULT_HARDWARE_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("RSA")
-        .generatePublic(X509EncodedKeySpec(Base64.getDecoder().decode(GOOGLE_ROOT_CA_PUB_KEY))),
+        .generatePublic(X509EncodedKeySpec(Base64.decode(GOOGLE_ROOT_CA_PUB_KEY))),
     //new Google EC Root
     CryptoPublicKey.decodeFromDer(
-        Base64.getDecoder()
-            .decode("MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEI9ojcU7fPlsFCjxy6IRqzgeOoK0b+YsV9FPQywiyw8EQRTkJ9u3qwfnI4DGoSLlBqClTXJfgfCcZvs60FikNMHnu4fkRzObfgDkU2KNXezT9/RQ+XvNslxPHrHCowhGr")
+        Base64.decode("MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEI9ojcU7fPlsFCjxy6IRqzgeOoK0b+YsV9FPQywiyw8EQRTkJ9u3qwfnI4DGoSLlBqClTXJfgfCcZvs60FikNMHnu4fkRzObfgDkU2KNXezT9/RQ+XvNslxPHrHCowhGr")
     ).toJcaPublicKey().getOrThrow()
 
 )

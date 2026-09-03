@@ -110,6 +110,12 @@ tasks.register("loaderMutationTest") {
         ":config-spring:pitest",
     )
 }
+subprojects {
+    tasks.register<Jar>("javadocRedirectJar") {
+    archiveClassifier.set("javadoc")
+    from(rootProject.rootDir.absolutePath+"/docs/javadoc")
+}
+}
 
 val signLocalRepoArtefacts = System.getenv("SIGN_LOCAL_REPO_ARTEFACTS")?.ifBlank { "false" } == "true"
 
