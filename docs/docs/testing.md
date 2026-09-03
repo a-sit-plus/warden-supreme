@@ -1,8 +1,8 @@
 # Testing Strategy
 
 
-!!! tip "New in Warden Supreme 1.2.0"
-    Warden Supreme 1.2.0 adds the `at.asitplus.warden:generator` test utility. It replaces the home-grown certificate
+!!! tip "New since Warden Supreme 1.0.5/1.1.4"
+    Warden Supreme 1.0.5/1.1.4 add the `at.asitplus.warden:generator` test utility. It replaces the home-grown certificate
     chain builders previously needed for generated Android attestations and is exercised by Warden Supreme's own test
     suite. See [Attestation Generator](generator.md) for details.
 
@@ -62,7 +62,7 @@ This applies the [Test Clients and Staging Pattern](#test-clients-and-staging-pa
 each one acceptable values, rejected values, and the combinations worth keeping an eye on.
 
 !!! tip "Generating Attestation Statements"
-    The [Attestation Generator](generator.md), available since Warden Supreme 1.2.0, creates statements and matching
+    The [Attestation Generator](generator.md), available since Warden Supreme 1.0.5/1.1.4, creates statements and matching
     certificate chains from Kotlin or the command line. It supports factory-provisioned and remotely provisioned chains,
     along with valid and malformed statement properties. Point it at the test root and production will remain blissfully
     unaware of the resulting proofs.
@@ -75,7 +75,7 @@ each one acceptable values, rejected values, and the combinations worth keeping 
     - **StrongBox** (factory-provisioned): `ROOT → FACTORY_INTERMEDIATE → ATTESTATION → TARGET` (four certificates).
         - The factory intermediate's subject must carry a serial number (OID `2.5.4.5`) **and** the title `StrongBox` (OID `2.5.4.12`).
         - The same is true for `TEE` Security level, but this is not hard-asserted, since the root will already indicate a proper hardware-backed attestation.
-        - RKP chains are checked just as strictly. The [Attestation Generator](generator.md) can produce them since Warden Supreme 1.2.0.
+        - RKP chains are checked just as strictly. The [Attestation Generator](generator.md) can produce them since Warden Supreme 1.0.5/1.1.4.
     - **Software-backed**: `ROOT → ATTESTATION → TARGET` (three certificates), with no such title on the intermediate.
         - This is not enforced by the verifier.
 

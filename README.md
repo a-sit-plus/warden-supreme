@@ -180,6 +180,12 @@ attestation without first integrating Warden Supreme into another app and back e
 The collector is currently Android-only because iOS apps cannot be deployed outside Apple's App Store. iOS app
 sources exist in the repository, but the collector's business logic is currently implemented only for Android.
 
+### 3.6 `/generatdor`
+
+Contains an attestation generator that can be uses as a library. It is also published as a runnable jar.
+See [the official docs](https://a-sit-plus.github.io/warden-supreme/latest/generator/)
+
+
 
 ## Contributing
 

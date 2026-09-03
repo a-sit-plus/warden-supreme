@@ -4,7 +4,6 @@ package at.asitplus.attestation.data
 
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AuthorizationList
-import at.asitplus.attestation.generator.AndroidAttestationIssuer
 import at.asitplus.attestation.generator.CertifiedKey
 import at.asitplus.attestation.generator.Provisioning
 import at.asitplus.attestation.generator.RootSpec
