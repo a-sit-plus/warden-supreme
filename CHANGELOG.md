@@ -1,5 +1,7 @@
 # Changelog
 
+## NEXT
+
 ## 1.1.4
 * Fix Spring Boot config loading (which is more cursed than anticipated):
     * Add `revocation: DISABLED` as the canonical way to switch Android revocation checking off
