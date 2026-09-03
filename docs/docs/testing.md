@@ -1,9 +1,15 @@
 # Testing Strategy
 
-A good attestation test strategy exercises the full pipeline without weakening production policy.
-Three things make that work: strict separation of trust, realistic artefacts for automation, and staged environments that mirror production behaviour.
-This splits into two layers: automated tests that run offline in CI against test identities, and end-to-end tests on
-real devices across staging environments.
+
+!!! tip "New since Warden Supreme 1.0.5/1.1.4"
+    Warden Supreme 1.0.5/1.1.4 add the `at.asitplus.warden:generator` test utility. It replaces the home-grown certificate
+    chain builders previously needed for generated Android attestations and is exercised by Warden Supreme's own test
+    suite. See [Attestation Generator](generator.md) for details.
+
+
+Attestation tests should exercise the full pipeline without making production policy more permissive. Keep test trust
+anchors separate, generate realistic evidence for automation, and make non-production environments behave like
+production. Automated tests can then run offline in CI, while end-to-end tests cover real devices and staged services.
 
 ## Principles
 
@@ -47,11 +53,19 @@ Since the custom trust anchors live only on T and Q, any attestation proof minte
 
 ## Automated Attestation Tests
 
-In addition to replaying recorded inputs, T and Q should test every proof property enforced by policy. Test code mutates
-these properties, signs the resulting evidence, and wraps it in a valid chain rooted at the test trust anchor. Since P
-does not trust this root, generated proofs cannot validate there.
+Recorded evidence catches regressions against devices already seen in the wild. Generated evidence complements it by
+covering every property enforced by policy, including combinations that may be difficult to obtain from a real device.
+Each case is signed and placed in a valid chain below the test root. P cannot validate it because P does not trust this
+root.
 
-This is the [Test Clients and Staging Pattern](#test-clients-and-staging-pattern) applied exhaustively: one generated proof per property (or combination) you care about, valid and invalid variants alike.
+This applies the [Test Clients and Staging Pattern](#test-clients-and-staging-pattern) to individual policy checks: feed
+each one acceptable values, rejected values, and the combinations worth keeping an eye on.
+
+!!! tip "Generating Attestation Statements"
+    The [Attestation Generator](generator.md), available since Warden Supreme 1.0.5/1.1.4, creates statements and matching
+    certificate chains from Kotlin or the command line. It supports factory-provisioned and remotely provisioned chains,
+    along with valid and malformed statement properties. Point it at the test root and production will remain blissfully
+    unaware of the resulting proofs.
 
 <span id="attestation-security-level"></span>
 !!! warning "Generated chains must match the claimed security level"
@@ -59,9 +73,9 @@ This is the [Test Clients and Staging Pattern](#test-clients-and-staging-pattern
     Chain generators must therefore shape their output to match the claimed level:
     
     - **StrongBox** (factory-provisioned): `ROOT → FACTORY_INTERMEDIATE → ATTESTATION → TARGET` (four certificates).
-        - The factory intermediate's subject must carry a serialNumber (OID `2.5.4.5`) **and** a title (OID `2.5.4.12`) of exactly or `StrongBox`.
+        - The factory intermediate's subject must carry a serial number (OID `2.5.4.5`) **and** the title `StrongBox` (OID `2.5.4.12`).
         - The same is true for `TEE` Security level, but this is not hard-asserted, since the root will already indicate a proper hardware-backed attestation.
-        - RPK chains are also asserted as strictly, but cannot currently be generated, due to hard checks against the actual production certificate chain.
+        - RKP chains are checked just as strictly. The [Attestation Generator](generator.md) can produce them since Warden Supreme 1.0.5/1.1.4.
     - **Software-backed**: `ROOT → ATTESTATION → TARGET` (three certificates), with no such title on the intermediate.
         - This is not enforced by the verifier.
 

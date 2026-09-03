@@ -1,9 +1,8 @@
 # Attestation Collector
 
-The Attestation Collector lets you produce and inspect Android Key Attestation on
-a real device without integrating Warden Supreme into your own app or service. The result includes the attested
-security level, Android and patch version, verified-boot state, application identity, certificate chain, and the parsed
-attestation extension.
+The Attestation Collector produces and inspects Android Key Attestation on a real device without requiring an
+integration of your own. It shows the attested security level, Android and patch version, verified-boot state,
+application identity, certificate chain, and parsed attestation extension.
 
 <div class="collector-launch">
   <figure>
@@ -25,9 +24,9 @@ attestation extension.
 3. Keep the preconfigured backend domain, select a verification policy, and select **Attest**.
 4. Inspect the result in the app or the collected-attestations table in your browser.
 
-The collector creates a fresh attested key and evaluates its proof with Warden Supreme. Successful and failed results
-are both useful: the parsed statement shows what the device produced, while the verification result shows whether it
-met the policy.
+The collector creates a fresh attested key and sends its proof through Warden Supreme. The parsed statement shows what
+the device produced; the verification result shows whether the selected policy accepts it. Failures are often the more
+interesting half.
 
 !!! warning "Public Testing Only"
     **The Attestation Collector app and this public service are completely separate from applications and services that
@@ -44,7 +43,7 @@ You can build or deliberately modify the Attestation Collector app and submit at
 attestation can be created and uploaded, but online verification is expected to fail because locally built APKs are not
 signed with the certificate trusted for the official Collector release.
 
-This makes custom builds useful for exploring client behaviour and error conditions. After submitting:
+Custom builds are useful for exploring client behaviour and error conditions. After submitting an attestation:
 
 1. Download the resulting `debug-statement.json` from the public table.
 2. Replace the expected `signerFingerprints` in its recorded Android verification configuration with the fingerprint of
@@ -52,27 +51,29 @@ This makes custom builds useful for exploring client behaviour and error conditi
 3. Replay the modified debug statement locally as described in
    [Debugging, Recording, and Replaying Attestation Checks](integration/debugging.md).
 
-Changing `signerFingerprints` modifies only the recorded verification configuration; it does not alter or forge the
-attestation evidence. If the package name remains `at.asitplus.warden.collector`, replacing the signer fingerprint lets
-the replay proceed beyond the otherwise unavoidable signer mismatch and expose the deliberately triggered error. If you
-also change the application ID, update the recorded package-name configuration before replaying.
+Changing `signerFingerprints` affects the recorded verification configuration, not the attestation evidence. If the
+package name remains `at.asitplus.warden.collector`, replacing the signer fingerprint lets replay get past the expected
+signer mismatch and reach the error under investigation. A changed application ID also needs to be reflected in the
+recorded package-name configuration.
 
 ## Interpreting Results
 
 The public collector uses Warden Supreme's Android defaults, except for already using our home-grown attestation
 extension parser. Its selectable policies are:
 
-- **Default** requires timely certificate chains, hardware-backed attestation, a locked bootloader, vendor-managed OEM
-  verified boot, and a chain anchored in the default Google hardware-attestation roots.
-- **Trust old factory certs** additionally accepts expired factory-provisioned certificate chains.
+- **Default** requires hardware-backed attestation, a locked bootloader, vendor-managed OEM verified boot, and a chain
+  anchored in the default Google hardware-attestation roots. Certificate validity is enforced except where a bundled
+  factory root carries Warden Supreme's explicit per-root override.
+- **Trust old factory certs** disables the configuration-wide validity check for factory-provisioned chains. Per-root
+  overrides still take precedence, and RKP chains are still checked.
 - **Unlocked BL** also permits unlocked bootloaders. Verified boot state and boot-key checks are skipped for this policy.
 - **GrapheneOS** accepts expired factory-provisioned chains and locked devices using either OEM verified boot or one of
   the pinned GrapheneOS verified boot keys.
 - **StrongBox only** uses the default policy and additionally requires the attested key to be backed by StrongBox.
 
-**The result describes the selected collector policy, not every valid attestation policy!** Patch-level, minimum
-Android-version, StrongBox, and application-specific production requirements also depend on the policy of the service
-performing verification. The default configuration is very generic/lax in this regard.
+**The result describes the selected collector policy, not some universally correct attestation policy!** Patch-level,
+minimum Android-version, StrongBox, and application-specific requirements belong to the service performing verification.
+The collector defaults are intentionally generous in these areas.
 
 !!! warning "Public Diagnostic Data"
     Submitted attestation details and downloadable diagnostic artefacts appear in the collector's public table. Use it
