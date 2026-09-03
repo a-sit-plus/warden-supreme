@@ -118,6 +118,7 @@ markdown_extensions:
       dedent_subsections: true
       base_path:
         - ../supreme/verifier/src/jvmTest/kotlin/examples/
+        - ../utils/generator/src/test/kotlin/examples/
         - ../supreme/client/src/commonTest/kotlin/examples/
         - docs/examples/
         - ../supreme/config-spring/src/test/kotlin
@@ -166,8 +167,10 @@ nav:
         - Supreme Verifier: sbom/modules/supreme-verifier.md
         - Config Hoplite: sbom/modules/config-hoplite.md
         - Config Spring: sbom/modules/config-spring.md
+        - Attestation Generator: sbom/modules/generator.md
     - Glossary: glossary.md
     - API Docs: dokka/index.html
     - Attestation Collector: https://attestation-collector.sliplane.app
+    - Attestation Generator: generator.md
     - Security Policy and Hardening: hardening.md
     - 💎 Services: services.md

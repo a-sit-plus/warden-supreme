@@ -25,6 +25,8 @@ sealed class AttestationResult {
         return true
     }
 
+    abstract val platform: Platform
+
     override fun hashCode(): Int {
         return details.hashCode()
     }
@@ -46,6 +48,7 @@ sealed class AttestationResult {
     @Suppress("MemberVisibilityCanBePrivate")
     abstract class Android(val attestationCertificateChain: List<X509Certificate>) :
         AttestationResult() {
+        override val platform get() = Platform.ANDROID
 
         protected abstract val androidDetails: String
         override val details: String by lazy { "Android::$androidDetails" }
@@ -168,6 +171,7 @@ sealed class AttestationResult {
 
         abstract val iosDetails: String
         override val details: String by lazy { "iOS::$iosDetails" }
+        override val platform get() = Platform.IOS
 
         class Verified(
             val attestation: ValidatedAttestation,
@@ -222,6 +226,7 @@ sealed class AttestationResult {
 
             return true
         }
+        override val platform get() = cause.platform
 
         override fun hashCode(): Int {
             var result = explanation.hashCode()
@@ -244,6 +249,8 @@ data class KeyAttestation<T : PublicKey> internal constructor(
     val details: AttestationResult
 ) {
     val isSuccess get() = attestedPublicKey != null
+
+    val platform: Platform get() = details.platform
 
     override fun toString() = "Key$details"
 

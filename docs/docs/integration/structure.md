@@ -1,11 +1,12 @@
 # Project Structure
 
-Warden Supreme is structured into four groups:
+The repository contains five module groups:
 
 1. `/supreme` contains the _Supreme_ integrated key and app attestation suite, building upon group&nbsp;2.
 2. `/serverside` contains the server-side foundations with all the low-level logic to verify attestations.
-3. `/utils` contains unpublished utility helpers aimed at aiding analysis of attestation errors. These are meant to be used inside an IDE with an attached debugger.
+3. `/utils` contains the published [Attestation Generator](../generator.md) and the unpublished helpers used to analyse attestation errors in an IDE.
 4. `/dependencies` contains external dependencies that are not published to Maven Central or anywhere else and are thus compiled into group&nbsp;2 or used for testing.
+5. `/collector` contains the source code for the [Attestation Collector](../collector.md).
 
 !!! tip "Quick navigation"
     - For the recommended end-to-end flow (mobile client + verifier + unified wire format), start at the [Integration Guide](supreme.md).
@@ -37,7 +38,7 @@ See also [Externalising Configuration](config.md).
 
 ## /serverside
 
-The modules located here can be used on their own, in case the Supreme integrated attestation suite is not desired.
+These modules can be used without the integrated Supreme attestation suite.
 
 If you come from the legacy projects:
 **WARDEN → _Warden makoto_** (`at.asitplus.warden:makoto`, entry point `Makoto`) and
@@ -50,10 +51,31 @@ If you come from the legacy projects:
 | **Maven:** `at.asitplus.warden:roboto`                                                                                                    | **Maven:** `at.asitplus.warden:makoto`                                                                                                                                                                                                                                                                                           |
 
 ## /utils
-This group houses the debugging/examination utils described in [Debugging](debugging.md).
+
+This group contains the unpublished diagnostic utilities described in [Debugging](debugging.md), plus the published
+attestation generator.
+
+### /utils/generator
+
+Creates Android key attestation statements and matching factory-provisioned or remotely provisioned certificate chains.
+It is intended for automated tests, reproducing device quirks, and feeding malformed statements to the parser without
+having to convince a real device to produce them. See [Attestation Generator](../generator.md) for the Kotlin API and
+stand-alone command-line tool.
+
+**Maven:** `at.asitplus.warden:generator`
 
 ## /dependencies
-Google released reference Android attestation parsers (not full attestation checkers for remotely establishing trust in Android devices) and PKIX certificate path validators to complement parsing.
-They did not, however, publish those artefacts to Maven Central. Warden Supreme therefore integrates them as Git submodules and compiles them into _Warden roboto_.
+Google released reference Android attestation parsers and PKIX certificate-path validators, but not complete verifiers
+for remotely establishing trust in Android devices. These artefacts are unavailable from Maven Central, so Warden
+Supreme includes them as Git submodules and compiles them into _Warden roboto_.
 
-In addition, an HTTP proxy is present for testing. It is not, however, shipped with any release artefacts.
+The group also contains an HTTP proxy used for testing. It is not included in release artefacts.
+
+## /collector
+
+This group contains the source code for the [Attestation Collector](../collector.md): a quick-and-dirty Compose
+Multiplatform (CMP) app and its Ktor-based back-end. The collector makes it easy to produce and inspect an Android
+attestation without first integrating Warden Supreme into another app and back end.
+
+The collector is currently Android-only because iOS apps cannot be deployed outside Apple's App Store. iOS app
+sources exist in the repository, but the collector's business logic is currently implemented only for Android.

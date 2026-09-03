@@ -68,6 +68,7 @@ val publishedProjects = listOf(
     project(":supreme-verifier"),
     project(":config-hoplite"),
     project(":config-spring"),
+    project(":generator"),
 )
 
 val releasePublicationsByProject = linkedMapOf(
@@ -78,6 +79,7 @@ val releasePublicationsByProject = linkedMapOf(
     ":supreme-common" to listOf("android", "iosArm64", "iosSimulatorArm64", "jvm", "kotlinMultiplatform"),
     ":supreme-client" to listOf("android", "iosArm64", "iosSimulatorArm64", "kotlinMultiplatform"),
     ":supreme-verifier" to listOf("jvm", "kotlinMultiplatform"),
+    ":generator" to listOf("mavenJava"),
 )
 
 tasks.register("publishReleaseModulesToSonatype") {
@@ -275,6 +277,12 @@ val syncSbomDocs by tasks.register("syncSbomDocs") {
     }
 }
 
+/** The shaded CLI, shipped with the documentation so it can be downloaded from the Testing page. */
+val copyGeneratorCli = tasks.register<Copy>("copyGeneratorCli") {
+    from(project(":generator").tasks.named("shadowJar")) { rename { "attestation-generator.jar" } }
+    into(rootDir.resolve("docs/docs/downloads"))
+}
+
 tasks.register<Copy>("mkDocsPrepare") {
     dependsOn("dokkaGenerate")
     dependsOn("copyChangelog")
@@ -285,6 +293,10 @@ tasks.register<Copy>("mkDocsPrepare") {
     dependsOn(project(":supreme-verifier").tasks.named<Test>("jvmTest") {
         setTestNameIncludePatterns(listOf("examples.*"))
     }) //to generate config files
+    dependsOn(project(":generator").tasks.named<Test>("test") {
+        setTestNameIncludePatterns(listOf("examples.*"))
+    }) //to generate the attestation generator's example configurations
+    dependsOn(copyGeneratorCli)
     into(rootDir.resolve("docs/docs/dokka"))
     from(dokkaDir)
 }

@@ -14,6 +14,7 @@ local.properties
 /serverside/makoto/src/generated/
 /serverside/roboto/src/generated/
 /docs/docs/examples/
+/docs/docs/downloads/
 /supreme/common/src/jvmTest/resources/DebugStatements.csv
 */*/.classpath
 */*/.project

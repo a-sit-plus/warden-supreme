@@ -38,6 +38,28 @@
     --md-admonition-bg-color: var(--md-default-bg-color);
 }
 
+/*
+ * Outlined buttons in the dark scheme.
+ *
+ * Material paints `.md-button` with --md-primary-fg-color as its *foreground* (label plus a
+ * currentColor border). That colour is #005b79 in both schemes, which is meant to be a background:
+ * on the dark scheme's #0D1117 page it leaves the button at a 2.5:1 contrast ratio, below the 3:1
+ * WCAG minimum for text and UI components alike. The link and accent colours are the ones tuned for
+ * contrast against each background, so use those instead (6.1:1, and 9.1:1 while hovered).
+ *
+ * `.md-button--primary` is excluded: there the same teal is the background, with a white label.
+ */
+[data-md-color-scheme="asp-dark"] .md-typeset .md-button:not(.md-button--primary) {
+    color: var(--md-typeset-a-color);
+}
+
+[data-md-color-scheme="asp-dark"] .md-typeset .md-button:not(.md-button--primary):focus,
+[data-md-color-scheme="asp-dark"] .md-typeset .md-button:not(.md-button--primary):hover {
+    background-color: var(--md-accent-fg-color);
+    border-color: var(--md-accent-fg-color);
+    color: var(--md-default-bg-color);
+}
+
 [data-md-color-scheme="asp-dark"] img[src$="#only-light"],
 [data-md-color-scheme="asp-dark"] img[src$="#gh-light-mode-only"] {
     display: none; /* Hide light images in dark mode */

@@ -1,19 +1,19 @@
 # Software Bill of Materials
 
-Warden Supreme publishes CycloneDX SBOMs for every Maven publication of every published module.
+Warden Supreme publishes a CycloneDX software bill of materials for every Maven publication.
 
-Each SBOM describes one published Maven artifact, not just one Gradle project. For Kotlin Multiplatform modules that
-means there is usually one SBOM for the root `kotlinMultiplatform` publication and one SBOM for each concrete target
-publication such as `jvm`, `android`, `iosArm64`, or `iosSimulatorArm64`.
+SBOMs follow Maven publications rather than Gradle projects. A Kotlin Multiplatform module therefore usually produces
+one for its root `kotlinMultiplatform` publication and another for each concrete target, such as `jvm`, `android`,
+`iosArm64`, or `iosSimulatorArm64`.
 
 ## Formats
 
 - CycloneDX JSON
 - CycloneDX XML
 
-## How To Read The SBOMs
+## How to Read the SBOMs
 
-Warden Supreme publishes publication-oriented SBOMs:
+The publication name tells you which view of a module the SBOM describes:
 
 - the `kotlinMultiplatform` SBOM is the root metadata publication SBOM
 - target SBOMs such as `jvm`, `android`, `iosArm64`, and `iosSimulatorArm64` describe the concrete published target artifacts
@@ -25,7 +25,7 @@ This distinction matters when interpreting dependencies:
 - a target SBOM reflects the concrete artifact a consumer resolves for that platform
 - JVM publications such as `mavenJava` reflect the published server-side jar for that module
 
-The most useful rule of thumb is:
+In practice, choose:
 
 - use `kotlinMultiplatform` if you want the root KMP metadata publication view
 - use a target SBOM if you want the concrete artifact a consumer resolves for that platform
@@ -76,9 +76,9 @@ JSON/XML SBOM files and their detached signatures.
 - [Supreme Verifier](sbom/modules/supreme-verifier.md)
 - [Config Hoplite](sbom/modules/config-hoplite.md)
 - [Config Spring](sbom/modules/config-spring.md)
+- [Attestation Generator](sbom/modules/generator.md)
 
 ## Tooling
 
-These SBOMs are standard CycloneDX documents and can be consumed directly by established tooling such as
-Dependency-Track, OWASP Dependency-Check integrations that support CycloneDX, Syft/Grype workflows, and other
-CycloneDX-compatible scanners and inventory systems.
+The files are standard CycloneDX documents. Dependency-Track, CycloneDX-aware OWASP Dependency-Check integrations,
+Syft/Grype workflows, and other compatible inventory or scanning tools can consume them directly.

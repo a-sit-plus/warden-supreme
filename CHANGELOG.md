@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.0.5
+* Add the **attestation generator** (`at.asitplus.warden:generator`): a test-scoped library and a command-line tool that mint
+  Android key attestation statements and the certificate chains carrying them, from factory-provisioned TEE/StrongBox
+  chains to remotely provisioned (RKP) ones, which could not be generated before. Statements are built on the same types
+  the verifier parses, so structurally invalid properties are expressible for negative test vectors.
+  See the new [Attestation Generator](generator.md) page; the command-line tool is downloadable from there, and its
+  example configurations are generated and verified on every build.
+* **Fix Android attestation-extension parsing.** Each of the following made a structurally odd but
+  entirely plausible authorization list unparsable. Since `X509Certificate.androidAttestationExtension`
+  never throws, an affected certificate silently read back as carrying **no attestation extension at all**:
+    * `attestationIdBrand [710]` had no decoder at all (unlike every other `AttestationId`), so decoding
+      any authorization list containing a device brand threw a `ClassCastException`.
+    * `rootOfTrust [704]` carrying anything but a `SEQUENCE` threw out of the lenient decoding path
+      before it could catch anything. Mistyped values of any narrowly typed property now become an
+      `AttestationValue.Failure` for that property, like every other unparsable value.
+* Fix: `usageExpireDateTime [402]` decoded into a `UsageCountLimit` instead of a `UsageExpireDateTime`.
+  The bytes were right, the type was not.
+* Add per-property schema coverage for `AuthorizationList`: every one of the 46 schema properties is
+  asserted to be present after decoding -- as a success or as a failure -- for both a well-formed and a
+  schema-illegal value, to re-encode byte-for-byte, and to be checked against the schema by reflection,
+  so a newly added property cannot stay untested.
+* Add a `platform` member to `AttestationResult` and `KeyAttestation`, making cas splits smoother
+
 ## 1.0.4
 * **Fix:** Include the Android revocation-list snapshot used during certificate-chain validation in debug statements and reuse it during replay.
 * **Dependency Update:**
