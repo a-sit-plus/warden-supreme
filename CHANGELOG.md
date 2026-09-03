@@ -1,6 +1,12 @@
 # Changelog
 
 ## NEXT
+* Fux Spring Boot config loading (which is more cursed than anticipated):
+    * Add `revocation: DISABLED` as the canonical way to switch Android revocation checking off
+    * Spring Boot cannot represent an empty collection — it flattens both `[]` and `{}` into an empty string, indistinguishable from a blank environment variable
+    * Hence, an empty `revocation` list now uses an explicit sentinel that survives every property source and round-trips through `toYamlString()`/`toJsonString()`.
+    * A blank or `[]` value is rejected with an error naming the token, rather than silently disabling a security control.
+    * Add `config-spring-test`: a JVM-only test module containing a real Spring Boot application, covering all Spring Boot configuration-loading mechanisms against `config-spring`.
 
 ## 1.1.3
 * Fix: Preserve the meaningful Android attestation failure when both hardware and software verification fail, instead of masking it with a trust-anchor mismatch from the wrong verification engine.
