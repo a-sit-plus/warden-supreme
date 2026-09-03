@@ -24,6 +24,7 @@ version = artifactVersion
 
 sourceSets.test {
     kotlin {
+        // Shared fake attestation chains; they are issued by the generator module (see dependencies).
         srcDir("../roboto/src/test/kotlin/data")
     }
 }
@@ -45,6 +46,7 @@ internal val wardenVersion: String = """" + "$version\"\n")
 
 dependencies {
     api(project(":roboto"))
+    testImplementation(project(":generator"))
     api(bouncycastle("bcpkix", "jdk18on"))
     api(datetime())
     api(libs.devicecheck)

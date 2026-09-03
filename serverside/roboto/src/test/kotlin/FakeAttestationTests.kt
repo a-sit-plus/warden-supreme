@@ -2,7 +2,7 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
-import at.asitplus.attestation.data.AttestationCreator
+import at.asitplus.attestation.data.FakeAttestations
 import at.asitplus.attestation.data.BootState
 import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
@@ -24,7 +24,7 @@ val FakeAttestationTests by matrixSuite {
         val androidVersion = 11
         val patchLevel = PatchLevel(2021, 8)
 
-        val attestationProof = AttestationCreator.createAttestation(
+        val attestationProof = FakeAttestations.createAttestation(
             challenge = challenge,
             packageName = packageName,
             signatureDigest = signatureDigest,
@@ -52,7 +52,7 @@ val FakeAttestationTests by matrixSuite {
             )
 
             "Bug 77" {
-                val borkedAttestation = AttestationCreator.createAttestation(
+                val borkedAttestation = FakeAttestations.createAttestation(
                     challenge = challenge,
                     packageName = packageName,
                     signatureDigest = signatureDigest,
@@ -93,7 +93,7 @@ val FakeAttestationTests by matrixSuite {
             "verified boot key policies" - {
                 val oemBootKey = Random.nextBytes(32)
                 val customBootKey = Random.nextBytes(32)
-                val verifiedAttestation = AttestationCreator.createAttestation(
+                val verifiedAttestation = FakeAttestations.createAttestation(
                     challenge = challenge,
                     packageName = packageName,
                     signatureDigest = signatureDigest,
@@ -103,7 +103,7 @@ val FakeAttestationTests by matrixSuite {
                     verifiedBootKey = oemBootKey,
                     verifiedBootState = BootState.VERIFIED,
                 )
-                val selfSignedAttestation = AttestationCreator.createAttestation(
+                val selfSignedAttestation = FakeAttestations.createAttestation(
                     challenge = challenge,
                     packageName = packageName,
                     signatureDigest = signatureDigest,
@@ -198,7 +198,7 @@ val FakeAttestationTests by matrixSuite {
 
                 "within default tolerance" {
 
-                    val attestationProof = AttestationCreator.createAttestation(
+                    val attestationProof = FakeAttestations.createAttestation(
                         challenge = challenge,
                         packageName = packageName,
                         signatureDigest = signatureDigest,
@@ -232,7 +232,7 @@ val FakeAttestationTests by matrixSuite {
 
                 "intolerant towards the future" {
 
-                    val attestationProof = AttestationCreator.createAttestation(
+                    val attestationProof = FakeAttestations.createAttestation(
                         challenge = challenge,
                         packageName = packageName,
                         signatureDigest = signatureDigest,
@@ -294,7 +294,7 @@ val FakeAttestationTests by matrixSuite {
 
 
                     //now we verify for the same month without tolerance. this should work
-                    val attestationProofSameMonth = AttestationCreator.createAttestation(
+                    val attestationProofSameMonth = FakeAttestations.createAttestation(
                         challenge = challenge,
                         packageName = packageName,
                         signatureDigest = signatureDigest,
@@ -329,7 +329,7 @@ val FakeAttestationTests by matrixSuite {
                 }
 
                 "ignore future patch levels" {
-                    val attestationProof = AttestationCreator.createAttestation(
+                    val attestationProof = FakeAttestations.createAttestation(
                         challenge = challenge,
                         packageName = packageName,
                         signatureDigest = signatureDigest,

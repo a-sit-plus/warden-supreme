@@ -965,6 +965,14 @@ data class AuthorizationList private constructor(
     }
 
     companion object : Asn1Decodable<Asn1Sequence, AuthorizationList> {
+        /**
+         * Reconstructs a list from its encoded entries without normalising their order or contents.
+         *
+         * This is primarily useful for test-vector tooling which needs to preserve deliberately
+         * malformed authorization-list properties.
+         */
+        fun fromElements(elements: List<Element>): AuthorizationList = AuthorizationList(elements)
+
         override fun doDecode(src: Asn1Sequence): AuthorizationList {
             val elements = buildList {
                 for (child in src.children) {
@@ -1042,8 +1050,14 @@ data class AuthorizationList private constructor(
         private inline fun <reified D : Asn1Encodable<Asn1Element>> Tagged.decodeElement(
             element: Asn1Element
         ): AttestationValue<*> {
+            // The unchecked cast makes the call site accept any element, so a decoder declared for a
+            // narrower type (RootOfTrust wants a SEQUENCE) throws a ClassCastException on entry, before
+            // decodeFromTlvSafe can catch anything. Catch here, or a single mistyped property takes the
+            // whole extension down instead of becoming a Failure.
             @Suppress("UNCHECKED_CAST")
-            return (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(src = element).fold(
+            return catchingUnwrapped {
+                (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(src = element).getOrThrow()
+            }.fold(
                 onSuccess = { AttestationValue.Success(it, this) },
                 onFailure = { AttestationValue.Failure(D::class.simpleName!!, this, element) }
             )
@@ -1059,7 +1073,9 @@ data class AuthorizationList private constructor(
                 val decoded = if (primitiveOrNull == null) {
                     AttestationValue.Failure(D::class.simpleName!!, this, child)
                 } else {
-                    (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(primitiveOrNull).fold(
+                    catchingUnwrapped {
+                        (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(primitiveOrNull).getOrThrow()
+                    }.fold(
                         onSuccess = { AttestationValue.Success(it, this) },
                         onFailure = { AttestationValue.Failure(D::class.simpleName!!, this, child) }
                     )
@@ -1558,8 +1574,8 @@ data class AuthorizationList private constructor(
         IntEncodable {
         constructor(notAfter: Instant) : this(Asn1Integer(notAfter.toEpochMilliseconds()))
 
-        companion object Tag : Tagged(402uL), Asn1Decodable<Asn1Primitive, UsageCountLimit> {
-            override fun doDecode(src: Asn1Primitive) = UsageCountLimit(src.decodeToAsn1Integer())
+        companion object Tag : Tagged(402uL), Asn1Decodable<Asn1Primitive, UsageExpireDateTime> {
+            override fun doDecode(src: Asn1Primitive) = UsageExpireDateTime(src.decodeToAsn1Integer())
         }
 
         override val tagged get() = Tag
@@ -2186,7 +2202,10 @@ data class AuthorizationList private constructor(
 
         /** Device brand. */
         class Brand(name: String) : AttestationId(name) {
-            companion object Tag : Tagged(710uL)
+            companion object Tag : Tagged(710uL), Asn1Decodable<Asn1Primitive, Brand> {
+                override fun doDecode(src: Asn1Primitive) =
+                    Brand(src.asOctetString().content.decodeToString())
+            }
 
             override val tagged get() = Tag
         }

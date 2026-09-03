@@ -7,7 +7,7 @@ import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.closestToRootOrNull
 import at.asitplus.attestation.android.hasAndroidKeyAttestationExtensionOid
-import at.asitplus.attestation.data.AttestationCreator
+import at.asitplus.attestation.data.FakeAttestations
 import at.asitplus.attestation.data.CreatedAttestation
 import at.asitplus.attestation.data.SecurityLevel
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
@@ -39,7 +39,7 @@ val GeneratedAttestationTests by matrixSuite {
     val appVersion = 5
     val androidVersion = 11
 
-    val createdAttestation = AttestationCreator.createAttestationWithKeys(
+    val createdAttestation = FakeAttestations.createAttestationWithKeys(
         challenge,
         packageName,
         signatureDigest,
