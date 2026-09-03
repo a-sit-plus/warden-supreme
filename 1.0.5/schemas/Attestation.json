@@ -1,0 +1,53 @@
+{
+   "anyOf": [
+      {
+         "type": "object",
+         "required": [
+            "x5c"
+         ],
+         "properties": {
+            "x5c": {
+               "type": "array",
+               "items": {
+                  "type": "string",
+                  "title": "X509CertificateBase64Url"
+               },
+               "title": "CertificateChainBase64Url<X509CertificateBase64Url>"
+            }
+         },
+         "title": "android-key"
+      },
+      {
+         "type": "object",
+         "required": [
+            "attestation",
+            "clientDataJSON"
+         ],
+         "properties": {
+            "attestation": {
+               "type": "string",
+               "title": "ByteArrayBase64Url"
+            },
+            "clientDataJSON": {
+               "type": "string",
+               "title": "ByteArrayBase64Url"
+            }
+         },
+         "title": "ios-appattest"
+      },
+      {
+         "type": "object",
+         "required": [
+            "x5c"
+         ],
+         "properties": {
+            "x5c": {
+               "type": "string",
+               "title": "X509CertificateBase64Url"
+            }
+         },
+         "title": "self"
+      }
+   ],
+   "title": "Attestation"
+}
