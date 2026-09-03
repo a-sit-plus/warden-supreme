@@ -1,6 +1,7 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.SerializerRegistry
+import at.asitplus.attestation.SentinelEmptyListSerializer
 import at.asitplus.attestation.YamlFlatteningPolymorphicSerializer
 import at.asitplus.attestation.android.AndroidRevocationList.HttpLoader.Configuration.ProxyConfig.Type
 import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
@@ -161,7 +162,25 @@ data class AndroidRevocationList(
     class SerializerRegistrationException(message: String, val firstAccess: Array<StackTraceElement>) :
         Throwable(message)
 
+    /**
+     * Serializer for [AndroidAttestationConfiguration.revocation] that also accepts (and emits) the
+     * token [DISABLED] as the explicit spelling of "no revocation checking at all".
+     *
+     * @see SentinelEmptyListSerializer
+     */
+    object ConfigurationListSerializer :
+        SentinelEmptyListSerializer<Loader.Configuration<*>>(Loader.Configuration::class, DISABLED)
+
     companion object {
+
+        /**
+         * The token that switches revocation checking off. It resolves to an empty `revocation`
+         * list, which means no loader runs at all, so no revocation list is fetched, consulted or
+         * recorded. It exists because Spring Boot cannot represent an empty collection.
+         *
+         * @see SentinelEmptyListSerializer
+         */
+        private const val DISABLED = "DISABLED"
 
         @JvmField
         val GoogleDefaultLoaderConfig = HttpLoader.GoogleOfficial()

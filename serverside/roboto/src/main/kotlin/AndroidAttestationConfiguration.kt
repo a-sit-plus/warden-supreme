@@ -1,16 +1,10 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.attestation.AttestationConfiguration
-import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonObject
-import at.asitplus.attestation.android.AndroidAttestationConfiguration.Companion.fromJsonString
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
-import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
-import at.asitplus.signum.indispensable.toJcaPublicKey
-import com.google.android.attestation.Constants.GOOGLE_ROOT_CA_PUB_KEY
-import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -27,9 +21,8 @@ import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
-import java.util.*
+import kotlin.io.encoding.Base64
 import kotlin.math.absoluteValue
-import kotlin.text.HexFormat
 
 /**
  * Represents a Patch level configuration property.
@@ -257,7 +250,7 @@ private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("EC")
         .generatePublic(
             X509EncodedKeySpec(
-                Base64.getDecoder().decode(
+                Base64.decode(
                     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
                             "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
                 )
@@ -266,7 +259,7 @@ private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
     KeyFactory.getInstance("RSA")
         .generatePublic(
             X509EncodedKeySpec(
-                Base64.getDecoder().decode(
+                Base64.decode(
                     "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
                             "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
                             "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
@@ -309,10 +302,9 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
  * @param softwareTrustedRoots Manually specify the trust anchor for SW-attested certificate chains.
  * Defaults to google SW attestation keys. Overriding this set is useful for automated end-to-end tests, for example.
  * The default trust anchors are accessible through [GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12]
- * @param disableHardwareAttestation Entirely disable creation of a [HardwareAttestationVerifier].
+ * @param disableHardwareAttestation Entirely disables hardware attestation.
  * Only change this flag, if you **really** know what you are doing!
  * @param enableSoftwareAttestation Enables software attestation.
- * A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
  * When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software
  * attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only
  * devices, such as emulators in test stages, are acceptable.
@@ -343,7 +335,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
     /**
      * Set to `true` if *StrongBox* security level should be required.
-     * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+     * **BEWARE** that this switch is utterly useless if software attestation is used
      */
     val requireStrongBox: Boolean = false,
 
@@ -352,7 +344,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * effectively defeats the purpose of Key Attestation. Useful for debugging/testing.
      * When this is `true`, verified boot state and verified boot key digest checks are skipped, because they only make
      * sense when requiring a locked bootloader.
-     * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+     * **BEWARE** that this switch is utterly useless if software attestation is used
      */
     val allowBootloaderUnlock: Boolean = false,
 
@@ -395,14 +387,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
 
     /**
-     * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
+     * Entirely disables hardware attestation. Only change this flag, if you **really** know what
      * you are doing!
      * @see enableSoftwareAttestation
      */
     val disableHardwareAttestation: Boolean = false,
 
     /**
-     * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
+     * Enables software attestation.
      * When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software
      * attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only
      * devices, such as emulators in test stages, are acceptable.
@@ -417,9 +409,13 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     /**
      * Configures revocation checking. Defaults to checking against the official Google revocation list without Proxy.
      * Intentionally a list to prioritise.
+     * When loading a configuration from JSON or YAML, through Spring or Hoplite, use `DISABLED` to switch revocation checking off entirely; an empty list cannot be
+     * expressed in Spring Boot configuration, which is why the token exists.
      * @see AndroidRevocationList.HttpLoader.Configuration
      * @see AndroidRevocationList.FileLoader.Configuration
+     * @see AndroidRevocationList.InMemoryLoader.Configuration
      */
+    @Serializable(with = AndroidRevocationList.ConfigurationListSerializer::class)
     val revocation: List<AndroidRevocationList.Loader.Configuration<*>> = listOf(AndroidRevocationList.GoogleDefaultLoaderConfig),
 
     /**
@@ -482,7 +478,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if software attestation is used
          */
         requireStrongBox: Boolean = false,
 
@@ -491,7 +487,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing.
          * When this is `true`, verified boot state and verified boot key digest checks are skipped, because they only make
          * sense when requiring a locked bootloader.
-         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if software attestation is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -534,14 +530,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
 
         /**
-         * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
+         * Entirely disables hardware attestation. Only change this flag, if you **really** know what
          * you are doing!
          * @see enableSoftwareAttestation
          */
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
+         * Enables software attestation.
          * When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software
          * attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only
          * devices, such as emulators in test stages, are acceptable.
@@ -618,7 +614,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
         /**
          * Set to `true` if *StrongBox* security level should be required.
-         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if software attestation is used
          */
         requireStrongBox: Boolean = false,
 
@@ -627,7 +623,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * effectively defeats the purpose of Key Attestation. Useful for debugging/testing.
          * When this is `true`, verified boot state and verified boot key digest checks are skipped, because they only make
          * sense when requiring a locked bootloader.
-         * **BEWARE** that this switch is utterly useless if [SoftwareAttestationVerifier] is used
+         * **BEWARE** that this switch is utterly useless if software attestation is used
          */
         allowBootloaderUnlock: Boolean = false,
 
@@ -656,15 +652,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         attestationStatementValiditySeconds: Long? = null,
 
         /**
-         * Entirely disable creation of a [HardwareAttestationVerifier]. Only change this flag, if you **really** know what
+         * Entirely disables hardware attestation. Only change this flag, if you **really** know what
          * you are doing!
          * @see enableSoftwareAttestation
          */
-
         disableHardwareAttestation: Boolean = false,
 
         /**
-         * Enables software attestation. A [SoftwareAttestationVerifier] can only be instantiated if this flag is set to true.
+         * Enables software attestation.
          * When hardware attestation is also enabled, either verifier accepting an attestation is sufficient; software
          * attestation is therefore a fallback, not an additional hardware requirement. Enable it only where software-only
          * devices, such as emulators in test stages, are acceptable.
@@ -984,12 +979,12 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + (osPatchLevel ?: 0)
             result = 31 * result + packageName.hashCode()
             result = 31 * result + signerFingerprints.contentHashCodeIfArray()
-            result = 31 * result + (patchLevelOverride?.hashCode() ?: 0)
-            result = 31 * result + (trustedRootOverrides?.hashCode() ?: 0)
-            result = 31 * result + (requireRemoteKeyProvisioningOverride?.hashCode() ?: 0)
-            result = 31 * result + (requireStrongBoxOverride?.hashCode() ?: 0)
-            result = 31 * result + (verifiedBootKeys?.hashCode() ?: 0)
-            result = 31 * result + (customProperties?.hashCode() ?: 0)
+            result = 31 * result + patchLevelOverride.hashCode()
+            result = 31 * result + trustedRootOverrides.hashCode()
+            result = 31 * result + requireRemoteKeyProvisioningOverride.hashCode()
+            result = 31 * result + requireStrongBoxOverride.hashCode()
+            result = 31 * result + verifiedBootKeys.hashCode()
+            result = 31 * result + (customProperties.hashCode())
             return result
         }
 
@@ -1019,6 +1014,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * Builder to construct an [AndroidAttestationConfiguration] in a java-friendly way
      * @param applications applications to be attested
      */
+    @Suppress("unused")
     class Builder(private val applications: List<AppData>) {
 
         /**
@@ -1228,8 +1224,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "allowBootloaderUnlock=$allowBootloaderUnlock, " +
                 "requireRollbackResistance=$requireRollbackResistance, " +
                 "ignoreLeafValidity=$ignoreLeafValidity, " +
-                "hardwareAttestationTrustAnchors=${hardwareTrustedRoots.joinToString { it.derEncoded.encodeBase64() }}, " +
-                "softwareAttestationTrustAnchors=${softwareTrustedRoots.joinToString { it.derEncoded.encodeBase64() }}, " +
+                "hardwareAttestationTrustAnchors=${hardwareTrustedRoots.joinToString { Base64.encode(it.derEncoded) }}, " +
+                "softwareAttestationTrustAnchors=${softwareTrustedRoots.joinToString { Base64.encode(it.derEncoded) }}, " +
                 "verificationSecondsOffset=$verificationSecondsOffset, " +
                 "attestationStatementValiditySeconds=$attestationStatementValiditySeconds, " +
                 "disableHardwareAttestation=$disableHardwareAttestation, " +

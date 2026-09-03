@@ -61,13 +61,13 @@ open class YamlFlatteningPolymorphicSerializer<T : Any>(
     }
 }
 
-private fun isYamlEncoder(encoder: Encoder): Boolean =
+internal fun isYamlEncoder(encoder: Encoder): Boolean =
     encoder::class.qualifiedName?.startsWith("net.mamoe.yamlkt") == true
 
-private fun isYamlDecoder(decoder: Decoder): Boolean =
+internal fun isYamlDecoder(decoder: Decoder): Boolean =
     decoder::class.qualifiedName?.startsWith("net.mamoe.yamlkt") == true
 
-private fun jsonFor(serializersModule: SerializersModule) = Json {
+internal fun jsonFor(serializersModule: SerializersModule) = Json {
     this.serializersModule = serializersModule
     classDiscriminator = "type"
     encodeDefaults = true
@@ -75,7 +75,7 @@ private fun jsonFor(serializersModule: SerializersModule) = Json {
     explicitNulls = false
 }
 
-private fun flattenTypeValue(element: JsonElement): JsonElement = when (element) {
+internal fun flattenTypeValue(element: JsonElement): JsonElement = when (element) {
     is JsonObject -> {
         val type = element["type"]
         val value = element["value"]
@@ -101,7 +101,7 @@ private fun flattenTypeValue(element: JsonElement): JsonElement = when (element)
     }
 }
 
-private fun jsonElementToYamlElement(element: JsonElement): YamlElement =
+internal fun jsonElementToYamlElement(element: JsonElement): YamlElement =
     jsonElementToPlain(element).toYamlElement()
 
 private fun jsonElementToPlain(element: JsonElement): Any? = when (element) {
@@ -117,7 +117,7 @@ private fun jsonElementToPlain(element: JsonElement): Any? = when (element) {
     else -> null
 }
 
-private fun yamlElementToJsonElement(element: YamlElement): JsonElement = when (element) {
+internal fun yamlElementToJsonElement(element: YamlElement): JsonElement = when (element) {
     is YamlMap -> buildJsonObject {
         element.content.forEach { (k, v) ->
             val key = k.content?.toString() ?: "null"
