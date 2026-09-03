@@ -1,0 +1,39 @@
+{
+    "issuer": {
+        "provisioning": "FACTORY",
+        "securityLevel": "TEE",
+        "root": null,
+        "issuedAt": "2026-01-15T09:30:00Z",
+        "validity": "PT8760H"
+    },
+    "attestations": [
+        {
+            "keyDescription": {
+                "attestationVersion": 400,
+                "attestationSecurityLevel": "TEE",
+                "keyMintVersion": 400,
+                "keyMintSecurityLevel": "TEE",
+                "attestationChallenge": "7365727665722d6368616c6c656e6765",
+                "uniqueId": "",
+                "softwareEnforced": [
+                    "bf853d080206019bc1021da0",
+                    "bf85454f044d304b31253023041e61742e61736974706c75732e6174746573746174696f6e5f636c69656e74020101312204201111111111111111111111111111111111111111111111111111111111111111"
+                ],
+                "hardwareEnforced": [
+                    "a1053103020102",
+                    "a203020103",
+                    "a30402020100",
+                    "aa03020101",
+                    "bf8377020500",
+                    "bf853e03020100",
+                    "bf85404c304a042022222222222222222222222222222222222222222222222222222222222222220101ff0a010004203333333333333333333333333333333333333333333333333333333333333333",
+                    "bf85410502030222e0",
+                    "bf8542050203031770"
+                ]
+            },
+            "createdAt": "2026-01-15T09:35:00Z",
+            "leafCanSignCertificates": false
+        }
+    ],
+    "outputDirectory": "attestations/tee"
+}

@@ -1,0 +1,363 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AndroidDebugAttestationStatement</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.1.4
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":roboto/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":roboto/main" data-filter=":roboto/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="roboto::at.asitplus.attestation.android/AndroidDebugAttestationStatement///PointingToDeclaration//2122162949">
+  <div class="breadcrumbs"><a href="../../index.html">roboto</a><span class="delimiter">/</span><a href="../index.html">at.asitplus.attestation.android</a><span class="delimiter">/</span><span class="current">AndroidDebugAttestationStatement</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Android</span><wbr><span>Debug</span><wbr><span>Attestation</span><wbr><span><span>Statement</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">class </span><a href="index.html">AndroidDebugAttestationStatement</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>version<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>configuration<span class="token operator">: </span><a href="../-android-attestation-configuration/index.html">AndroidAttestationConfiguration</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>verificationTime<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>challenge<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationStatement<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="../-cert-pem-serializer/index.html">CertPemSerializer::class</a></span><wbr><span class="token punctuation">)</span>&nbsp;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>revocationLists<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-config-with-list/index.html">ConfigWithList</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../../at.asitplus.attestation/-debug-statement/index.html">DebugStatement</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator">&gt; </span><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/a-sit-plus/warden-supreme/tree/main/serverside/roboto/src/main/kotlin/AndroidDebugAttestationStatement.kt#L39">source</a>)</span></span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-1167568476%2FConstructors%2F2122162949" anchor-label="AndroidDebugAttestationStatement" id="-1167568476%2FConstructors%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-android-debug-attestation-statement.html"><span>Android</span><wbr><span>Debug</span><wbr><span>Attestation</span><wbr><span><span>Statement</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1167568476%2FConstructors%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">version<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">configuration<span class="token operator">: </span><a href="../-android-attestation-configuration/index.html">AndroidAttestationConfiguration</a><span class="token punctuation">, </span></span><span class="parameter ">verificationTime<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a><span class="token punctuation">, </span></span><span class="parameter ">challenge<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">attestationStatement<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="../-cert-pem-serializer/index.html">CertPemSerializer::class</a></span><wbr><span class="token punctuation">)</span>&nbsp;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">revocationLists<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-config-with-list/index.html">ConfigWithList</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="361265750%2FClasslikes%2F2122162949" anchor-label="Companion" id="361265750%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="361265750%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a> : <a href="../../at.asitplus.attestation/-debug-statement/-reader/index.html">DebugStatement.Reader</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="index.html">AndroidDebugAttestationStatement</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1482379290%2FClasslikes%2F2122162949" anchor-label="Type" id="-1482379290%2FClasslikes%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-type/index.html"><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1482379290%2FClasslikes%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">enum </span><a href="-type/index.html">Type</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-type/index.html">AndroidDebugAttestationStatement.Type</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="1683046284%2FProperties%2F2122162949" anchor-label="attestationStatement" id="1683046284%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-statement.html"><span>attestation</span><wbr><span><span>Statement</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1683046284%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-statement.html">attestationStatement</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="../-cert-pem-serializer/index.html">CertPemSerializer::class</a></span><wbr><span class="token punctuation">)</span>&nbsp;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1778396660%2FProperties%2F2122162949" anchor-label="challenge" id="-1778396660%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="challenge.html"><span><span>challenge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1778396660%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><span data-unresolved-link="at.asitplus.signum.indispensable.io/ByteArrayBase64UrlSerializer///PointingToDeclaration/">ByteArrayBase64UrlSerializer::class</span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="challenge.html">challenge</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-625894439%2FProperties%2F2122162949" anchor-label="configuration" id="-625894439%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="configuration.html"><span><span>configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-625894439%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="configuration.html">configuration</a><span class="token operator">: </span><a href="../-android-attestation-configuration/index.html">AndroidAttestationConfiguration</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1489850152%2FProperties%2F2122162949" anchor-label="revocationLists" id="-1489850152%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="revocation-lists.html"><span>revocation</span><wbr><span><span>Lists</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1489850152%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="revocation-lists.html">revocationLists</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-config-with-list/index.html">ConfigWithList</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1654738851%2FProperties%2F2122162949" anchor-label="verificationTime" id="1654738851%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="verification-time.html"><span>verification</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1654738851%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="verification-time.html">verificationTime</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="598825911%2FProperties%2F2122162949" anchor-label="version" id="598825911%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="version.html"><span><span>version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="598825911%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="version.html">version</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Holds the exact release version string of the Warden release used to create this debug statement. Used to ensure compatibility and traceability between different versions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-737959666%2FFunctions%2F2122162949" anchor-label="checkerFromConfig" id="-737959666%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="checker-from-config.html"><span>checker</span><wbr><span>From</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-737959666%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="checker-from-config.html"><span class="token function">checkerFromConfig</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-roboto/index.html">Roboto</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1837336996%2FFunctions%2F2122162949" anchor-label="replay" id="1837336996%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="replay.html"><span><span>replay</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1837336996%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="replay.html"><span class="token function">replay</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/cert/X509Certificate.html">X509Certificate</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Replays the debug statement, reconstructing or reprocessing it as per the underlying attestation verifier's logic. This method is typically used to regenerate or analyse the statement for debugging or auditing purposes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-196381646%2FFunctions%2F2122162949" anchor-label="replayBlocking" id="-196381646%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../at.asitplus.attestation/replay-blocking.html"><span>replay</span><wbr><span><span>Blocking</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-196381646%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../at.asitplus.attestation/replay-blocking.html">R</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="../../at.asitplus.attestation/-debug-statement/index.html">DebugStatement</a><span class="token operator">&lt;</span><a href="../../at.asitplus.attestation/replay-blocking.html">R</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../at.asitplus.attestation/replay-blocking.html"><span class="token function">replayBlocking</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../at.asitplus.attestation/replay-blocking.html">R</a></div><div class="brief "><p class="paragraph">Replays the debug statement, reconstructing or reprocessing it as per the underlying attestation verifier's logic. This method is typically used to regenerate or analyse the statement for debugging or auditing purposes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1637989935%2FFunctions%2F2122162949" anchor-label="serialize" id="1637989935%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="serialize.html"><span><span>serialize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1637989935%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="serialize.html"><span class="token function">serialize</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Serializes and pretty-prints this debug statement</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1571933032%2FFunctions%2F2122162949" anchor-label="serializeCompact" id="1571933032%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="serialize-compact.html"><span>serialize</span><wbr><span><span>Compact</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1571933032%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="serialize-compact.html"><span class="token function">serializeCompact</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">serializes and multibase-encodes this debug info</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-92924234%2FFunctions%2F2122162949" anchor-label="toJsonElement" id="-92924234%2FFunctions%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-json-element.html"><span>to</span><wbr><span>Json</span><wbr><span><span>Element</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-92924234%2FFunctions%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-json-element.html"><span class="token function">toJsonElement</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/JsonObject///PointingToDeclaration/">JsonObject</span></div><div class="brief "><p class="paragraph">Converts the debug statement into a JSON representation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

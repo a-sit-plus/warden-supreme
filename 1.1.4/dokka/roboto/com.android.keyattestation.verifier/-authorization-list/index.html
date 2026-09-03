@@ -1,0 +1,730 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AuthorizationList</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.1.4
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":roboto/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":roboto/main" data-filter=":roboto/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="roboto::com.android.keyattestation.verifier/AuthorizationList///PointingToDeclaration//2122162949">
+  <div class="breadcrumbs"><a href="../../index.html">roboto</a><span class="delimiter">/</span><a href="../index.html">com.android.keyattestation.verifier</a><span class="delimiter">/</span><span class="current">AuthorizationList</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Authorization</span><wbr><span><span>List</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="com.google.errorprone.annotations/Immutable///PointingToDeclaration/"><span class="token annotation builtin">Immutable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">AuthorizationList</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>purposes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>algorithms<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>keySize<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>blockModes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>digests<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>paddings<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>ecCurve<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>mlDsaVariant<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rsaPublicExponent<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rsaOaepMgfDigests<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>activeDateTime<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>originationExpireDateTime<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>usageExpireDateTime<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>usageCountLimit<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>noAuthRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>userAuthType<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>authTimeout<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>trustedUserPresenceRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>trustedConfirmationRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>unlockedDeviceRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>creationDateTime<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>origin<span class="token operator">: </span><a href="../-origin/index.html">Origin</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rollbackResistant<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rootOfTrust<span class="token operator">: </span><a href="../-root-of-trust/index.html">RootOfTrust</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>osVersion<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>osPatchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationApplicationId<span class="token operator">: </span><a href="../-attestation-application-id/index.html">AttestationApplicationId</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdBrand<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdDevice<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdProduct<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdSerial<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdImei<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdMeid<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdManufacturer<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdModel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>vendorPatchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bootPatchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attestationIdSecondImei<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>moduleHash<span class="token operator">: </span><span data-unresolved-link="com.google.protobuf/ByteString///PointingToDeclaration/">ByteString</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">areTagsOrdered<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div><p class="paragraph">Representation of the AuthorizationList sequence contained within <a href="../-key-description/index.html">KeyDescription</a>.</p><h4 class="tableheader">See also</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div></div></span></div><div><div class="title"><p class="paragraph">https://source.android.com/docs/security/features/keystore/attestation#authorizationlist-fields</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-1938328650%2FConstructors%2F2122162949" anchor-label="AuthorizationList" id="-1938328650%2FConstructors%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-authorization-list.html"><span>Authorization</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1938328650%2FConstructors%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">purposes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">algorithms<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">keySize<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">blockModes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">digests<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">paddings<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">ecCurve<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">mlDsaVariant<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">rsaPublicExponent<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">rsaOaepMgfDigests<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">activeDateTime<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">originationExpireDateTime<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">usageExpireDateTime<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">usageCountLimit<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">noAuthRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">userAuthType<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">authTimeout<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">trustedUserPresenceRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">trustedConfirmationRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">unlockedDeviceRequired<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">creationDateTime<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">origin<span class="token operator">: </span><a href="../-origin/index.html">Origin</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">rollbackResistant<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">rootOfTrust<span class="token operator">: </span><a href="../-root-of-trust/index.html">RootOfTrust</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">osVersion<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">osPatchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationApplicationId<span class="token operator">: </span><a href="../-attestation-application-id/index.html">AttestationApplicationId</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdBrand<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdDevice<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdProduct<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdSerial<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdImei<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdMeid<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdManufacturer<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdModel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">vendorPatchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">bootPatchLevel<span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">attestationIdSecondImei<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">moduleHash<span class="token operator">: </span><span data-unresolved-link="com.google.protobuf/ByteString///PointingToDeclaration/">ByteString</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">areTagsOrdered<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="810318524%2FProperties%2F2122162949" anchor-label="activeDateTime" id="810318524%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="active-date-time.html"><span>active</span><wbr><span>Date</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="810318524%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="active-date-time.html">activeDateTime</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="158309113%2FProperties%2F2122162949" anchor-label="algorithms" id="158309113%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="algorithms.html"><span><span>algorithms</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="158309113%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="algorithms.html">algorithms</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-132256990%2FProperties%2F2122162949" anchor-label="attestationApplicationId" id="-132256990%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-application-id.html"><span>attestation</span><wbr><span>Application</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-132256990%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-application-id.html">attestationApplicationId</a><span class="token operator">: </span><a href="../-attestation-application-id/index.html">AttestationApplicationId</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-448179807%2FProperties%2F2122162949" anchor-label="attestationIdBrand" id="-448179807%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-brand.html"><span>attestation</span><wbr><span>Id</span><wbr><span><span>Brand</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-448179807%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-brand.html">attestationIdBrand</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1634869252%2FProperties%2F2122162949" anchor-label="attestationIdDevice" id="-1634869252%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-device.html"><span>attestation</span><wbr><span>Id</span><wbr><span><span>Device</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1634869252%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-device.html">attestationIdDevice</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-762817782%2FProperties%2F2122162949" anchor-label="attestationIdImei" id="-762817782%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-imei.html"><span>attestation</span><wbr><span>Id</span><wbr><span><span>Imei</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-762817782%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-imei.html">attestationIdImei</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1969293535%2FProperties%2F2122162949" anchor-label="attestationIdManufacturer" id="-1969293535%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-manufacturer.html"><span>attestation</span><wbr><span>Id</span><wbr><span><span>Manufacturer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1969293535%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-manufacturer.html">attestationIdManufacturer</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-851096193%2FProperties%2F2122162949" anchor-label="attestationIdMeid" id="-851096193%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-meid.html"><span>attestation</span><wbr><span>Id</span><wbr><span><span>Meid</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-851096193%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-meid.html">attestationIdMeid</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1311317055%2FProperties%2F2122162949" anchor-label="attestationIdModel" id="1311317055%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-model.html"><span>attestation</span><wbr><span>Id</span><wbr><span><span>Model</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1311317055%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-model.html">attestationIdModel</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1388315015%2FProperties%2F2122162949" anchor-label="attestationIdProduct" id="-1388315015%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-product.html"><span>attestation</span><wbr><span>Id</span><wbr><span><span>Product</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1388315015%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-product.html">attestationIdProduct</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="445931318%2FProperties%2F2122162949" anchor-label="attestationIdSecondImei" id="445931318%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-second-imei.html"><span>attestation</span><wbr><span>Id</span><wbr><span>Second</span><wbr><span><span>Imei</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="445931318%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-second-imei.html">attestationIdSecondImei</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-851366370%2FProperties%2F2122162949" anchor-label="attestationIdSerial" id="-851366370%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-id-serial.html"><span>attestation</span><wbr><span>Id</span><wbr><span><span>Serial</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-851366370%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-id-serial.html">attestationIdSerial</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1459477852%2FProperties%2F2122162949" anchor-label="authTimeout" id="-1459477852%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="auth-timeout.html"><span>auth</span><wbr><span><span>Timeout</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1459477852%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="auth-timeout.html">authTimeout</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-81337574%2FProperties%2F2122162949" anchor-label="blockModes" id="-81337574%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="block-modes.html"><span>block</span><wbr><span><span>Modes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-81337574%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="block-modes.html">blockModes</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-984386705%2FProperties%2F2122162949" anchor-label="bootPatchLevel" id="-984386705%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="boot-patch-level.html"><span>boot</span><wbr><span>Patch</span><wbr><span><span>Level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-984386705%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="boot-patch-level.html">bootPatchLevel</a><span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1855061501%2FProperties%2F2122162949" anchor-label="creationDateTime" id="-1855061501%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="creation-date-time.html"><span>creation</span><wbr><span>Date</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1855061501%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="creation-date-time.html">creationDateTime</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-79477042%2FProperties%2F2122162949" anchor-label="digests" id="-79477042%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="digests.html"><span><span>digests</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-79477042%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="digests.html">digests</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-358381236%2FProperties%2F2122162949" anchor-label="ecCurve" id="-358381236%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="ec-curve.html"><span>ec</span><wbr><span><span>Curve</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-358381236%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="ec-curve.html">ecCurve</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1532064797%2FProperties%2F2122162949" anchor-label="keySize" id="1532064797%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="key-size.html"><span>key</span><wbr><span><span>Size</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1532064797%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="key-size.html">keySize</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="972415787%2FProperties%2F2122162949" anchor-label="mlDsaVariant" id="972415787%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="ml-dsa-variant.html"><span>ml</span><wbr><span>Dsa</span><wbr><span><span>Variant</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="972415787%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="ml-dsa-variant.html">mlDsaVariant</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1585981443%2FProperties%2F2122162949" anchor-label="moduleHash" id="1585981443%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="module-hash.html"><span>module</span><wbr><span><span>Hash</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1585981443%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="module-hash.html">moduleHash</a><span class="token operator">: </span><span data-unresolved-link="com.google.protobuf/ByteString///PointingToDeclaration/">ByteString</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1150320533%2FProperties%2F2122162949" anchor-label="noAuthRequired" id="1150320533%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="no-auth-required.html"><span>no</span><wbr><span>Auth</span><wbr><span><span>Required</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1150320533%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="no-auth-required.html">noAuthRequired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-30268425%2FProperties%2F2122162949" anchor-label="origin" id="-30268425%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="origin.html"><span><span>origin</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-30268425%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="origin.html">origin</a><span class="token operator">: </span><a href="../-origin/index.html">Origin</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1877917684%2FProperties%2F2122162949" anchor-label="originationExpireDateTime" id="1877917684%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="origination-expire-date-time.html"><span>origination</span><wbr><span>Expire</span><wbr><span>Date</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1877917684%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="origination-expire-date-time.html">originationExpireDateTime</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-664710339%2FProperties%2F2122162949" anchor-label="osPatchLevel" id="-664710339%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="os-patch-level.html"><span>os</span><wbr><span>Patch</span><wbr><span><span>Level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-664710339%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="os-patch-level.html">osPatchLevel</a><span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-505516215%2FProperties%2F2122162949" anchor-label="osVersion" id="-505516215%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="os-version.html"><span>os</span><wbr><span><span>Version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-505516215%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="os-version.html">osVersion</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1038263323%2FProperties%2F2122162949" anchor-label="paddings" id="1038263323%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="paddings.html"><span><span>paddings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1038263323%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="paddings.html">paddings</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1204616936%2FProperties%2F2122162949" anchor-label="purposes" id="1204616936%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="purposes.html"><span><span>purposes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1204616936%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="purposes.html">purposes</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1557490180%2FProperties%2F2122162949" anchor-label="rollbackResistant" id="1557490180%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rollback-resistant.html"><span>rollback</span><wbr><span><span>Resistant</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1557490180%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="rollback-resistant.html">rollbackResistant</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-9918338%2FProperties%2F2122162949" anchor-label="rootOfTrust" id="-9918338%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="root-of-trust.html"><span>root</span><wbr><span>Of</span><wbr><span><span>Trust</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-9918338%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="root-of-trust.html">rootOfTrust</a><span class="token operator">: </span><a href="../-root-of-trust/index.html">RootOfTrust</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="614272861%2FProperties%2F2122162949" anchor-label="rsaOaepMgfDigests" id="614272861%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rsa-oaep-mgf-digests.html"><span>rsa</span><wbr><span>Oaep</span><wbr><span>Mgf</span><wbr><span><span>Digests</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="614272861%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="rsa-oaep-mgf-digests.html">rsaOaepMgfDigests</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1033374843%2FProperties%2F2122162949" anchor-label="rsaPublicExponent" id="-1033374843%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rsa-public-exponent.html"><span>rsa</span><wbr><span>Public</span><wbr><span><span>Exponent</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1033374843%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="rsa-public-exponent.html">rsaPublicExponent</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="603910898%2FProperties%2F2122162949" anchor-label="trustedConfirmationRequired" id="603910898%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="trusted-confirmation-required.html"><span>trusted</span><wbr><span>Confirmation</span><wbr><span><span>Required</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="603910898%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="trusted-confirmation-required.html">trustedConfirmationRequired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1387448161%2FProperties%2F2122162949" anchor-label="trustedUserPresenceRequired" id="1387448161%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="trusted-user-presence-required.html"><span>trusted</span><wbr><span>User</span><wbr><span>Presence</span><wbr><span><span>Required</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1387448161%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="trusted-user-presence-required.html">trustedUserPresenceRequired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1843168891%2FProperties%2F2122162949" anchor-label="unlockedDeviceRequired" id="-1843168891%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unlocked-device-required.html"><span>unlocked</span><wbr><span>Device</span><wbr><span><span>Required</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1843168891%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="unlocked-device-required.html">unlockedDeviceRequired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-687742128%2FProperties%2F2122162949" anchor-label="usageCountLimit" id="-687742128%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="usage-count-limit.html"><span>usage</span><wbr><span>Count</span><wbr><span><span>Limit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-687742128%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="usage-count-limit.html">usageCountLimit</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-229175902%2FProperties%2F2122162949" anchor-label="usageExpireDateTime" id="-229175902%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="usage-expire-date-time.html"><span>usage</span><wbr><span>Expire</span><wbr><span>Date</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-229175902%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="usage-expire-date-time.html">usageExpireDateTime</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-635857136%2FProperties%2F2122162949" anchor-label="userAuthType" id="-635857136%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="user-auth-type.html"><span>user</span><wbr><span>Auth</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-635857136%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="user-auth-type.html">userAuthType</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigInteger.html">BigInteger</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-951840423%2FProperties%2F2122162949" anchor-label="vendorPatchLevel" id="-951840423%2FProperties%2F2122162949" data-filterable-set=":roboto/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":roboto/main" data-filterable-set=":roboto/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="vendor-patch-level.html"><span>vendor</span><wbr><span>Patch</span><wbr><span><span>Level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-951840423%2FProperties%2F2122162949"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":roboto/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="vendor-patch-level.html">vendorPatchLevel</a><span class="token operator">: </span><a href="../-patch-level/index.html">PatchLevel</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

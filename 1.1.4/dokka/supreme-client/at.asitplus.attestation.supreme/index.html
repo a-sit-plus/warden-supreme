@@ -1,0 +1,248 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>at.asitplus.attestation.supreme</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.1.4
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":supreme-client/commonMain">common</button>
+                <button class="platform-tag platform-selector native-like" data-active="" aria-pressed="true" data-filter=":supreme-client/iosMain">ios</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":supreme-client/commonMain" data-filter=":supreme-client/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option native-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":supreme-client/iosMain" data-filter=":supreme-client/iosMain">
+                                <span class="checkbox--icon"></span>
+                                ios
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageids="supreme-client::at.asitplus.attestation.supreme////PointingToDeclaration//-1483790780">
+  <div class="breadcrumbs"><a href="../index.html">supreme-client</a><span class="delimiter">/</span><span class="current">at.asitplus.attestation.supreme</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-2037666970%2FClasslikes%2F1412609226" anchor-label="AttestationClient" id="-2037666970%2FClasslikes%2F1412609226" data-filterable-set=":supreme-client/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-client/commonMain" data-filterable-set=":supreme-client/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-attestation-client/index.html"><span>Attestation</span><wbr><span><span>Client</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2037666970%2FClasslikes%2F1412609226"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-client/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-attestation-client/index.html">AttestationClient</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">client<span class="token operator">: </span><span data-unresolved-link="io.ktor.client/HttpClient///PointingToDeclaration/">HttpClient</span><span class="token punctuation">, </span></span><span class="parameter ">clock<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-clock/index.html">Clock</a><span class="token operator"> = </span>Clock.System<span class="token punctuation">, </span></span><span class="parameter ">maxAttestationPayloadBytes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Mobile client, fetching attestation challenges and posting signed CSRs or unsigned TBS CSRs containing attestation statements to an attestation verification endpoint.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1732830154%2FProperties%2F1412609226" anchor-label="attestationEndpointUrl" id="-1732830154%2FProperties%2F1412609226" data-filterable-set=":supreme-client/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-client/commonMain" data-filterable-set=":supreme-client/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-endpoint-url.html"><span>attestation</span><wbr><span>Endpoint</span><wbr><span><span>Url</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1732830154%2FProperties%2F1412609226"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-client/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/index.html">AttestationChallenge</a><span class="token punctuation">.</span><a href="attestation-endpoint-url.html">attestationEndpointUrl</a><span class="token operator">: </span><span data-unresolved-link="io.ktor.http/Url///PointingToDeclaration/">Url</span></div><div class="brief "><p class="paragraph">convenience shorthand to parse the attestation POST endpoint as a URL</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-724398332%2FFunctions%2F1412609226" anchor-label="createAttestationProof" id="-724398332%2FFunctions%2F1412609226" data-filterable-set=":supreme-client/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-client/commonMain" data-filterable-set=":supreme-client/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-attestation-proof.html"><span>create</span><wbr><span>Attestation</span><wbr><span><span>Proof</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-724398332%2FFunctions%2F1412609226"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-client/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/index.html">AttestationChallenge</a><span class="token punctuation">.</span><a href="create-attestation-proof.html"><span class="token function"><strike>createAttestationProof</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">alias<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">authPromptMessage<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">authPromptCancelText<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">additionalCsrExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509CertificateExtension///PointingToDeclaration/">X509CertificateExtension</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">additionalCsrAttributes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequestAttribute///PointingToDeclaration/">Pkcs10CertificationRequestAttribute</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequest///PointingToDeclaration/">Pkcs10CertificationRequest</span><span class="token operator">&gt;</span></div><br><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/index.html">AttestationChallenge</a><span class="token punctuation">.</span><a href="create-attestation-proof.html"><span class="token function">createAttestationProof</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">alias<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">authPromptMessage<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">authPromptCancelText<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">additionalCsrExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509CertificateExtension///PointingToDeclaration/">X509CertificateExtension</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">additionalCsrAttributes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequestAttribute///PointingToDeclaration/">Pkcs10CertificationRequestAttribute</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">attestAttributes<span class="token operator">: </span><span class="token punctuation">(</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/-attribute-attestation-descriptor/index.html">AttestationChallenge.AttributeAttestationDescriptor</a><span class="token operator">&gt;</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../supreme-common/at.asitplus.attestation.supreme/-primitive/index.html">Primitive</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-proof/index.html">AttestationProof</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a signed CSR or unsigned TBS CSR from this challenge, according to <a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/data-auth.html">AttestationChallenge.dataAuth</a>. Key creation follows <a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/key-constraints.html">AttestationChallenge.keyConstraints</a>. Hence, if no constraints are set, this method will always fail!</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="110236803%2FFunctions%2F1412609226" anchor-label="createCsr" id="110236803%2FFunctions%2F1412609226" data-filterable-set=":supreme-client/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-client/commonMain" data-filterable-set=":supreme-client/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-csr.html"><span>create</span><wbr><span><span>Csr</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="110236803%2FFunctions%2F1412609226"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-client/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.supreme.sign/Signer.Attestable///PointingToDeclaration/">Signer.Attestable</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="create-csr.html"><span class="token function">createCsr</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">challenge<span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/index.html">AttestationChallenge</a><span class="token punctuation">, </span></span><span class="parameter ">subjectName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/RelativeDistinguishedName///PointingToDeclaration/">RelativeDistinguishedName</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">additionalExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509CertificateExtension///PointingToDeclaration/">X509CertificateExtension</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">additionalAttributes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequestAttribute///PointingToDeclaration/">Pkcs10CertificationRequestAttribute</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequest///PointingToDeclaration/">Pkcs10CertificationRequest</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a signed CSR from an attestable signer. This is the low-level signature-authentication path and always proves possession of the private key; use <a href="create-attestation-proof.html">createAttestationProof</a> to follow a challenge-selected authentication mode. Encodes the challenge's nonce into a <span data-unresolved-link="at.asitplus.signum.indispensable.asn1//serialNumber/at.asitplus.signum.indispensable.asn1.KnownOIDs#/PointingToDeclaration/">KnownOIDs.serialNumber</span> subjectName and the attestation statement into a Pkcs10CertificationRequestAttribute with <a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/proof-o-i-d.html">AttestationChallenge.proofOID</a>. Since this operation prepares and directly signs the CSR, it may require user authentication.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-878310167%2FFunctions%2F1412609226" anchor-label="createTbsCsr" id="-878310167%2FFunctions%2F1412609226" data-filterable-set=":supreme-client/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-client/commonMain" data-filterable-set=":supreme-client/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-tbs-csr.html"><span>create</span><wbr><span>Tbs</span><wbr><span><span>Csr</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-878310167%2FFunctions%2F1412609226"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-client/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.supreme.sign/Signer.Attestable///PointingToDeclaration/">Signer.Attestable</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="create-tbs-csr.html"><span class="token function">createTbsCsr</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">challenge<span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/index.html">AttestationChallenge</a><span class="token punctuation">, </span></span><span class="parameter ">hashInput<span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-hash-input/index.html">AttestationHashInput</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Completes <a href="create-tbs-csr.html">hashInput</a> with this signer's public key and attestation statement. The same conversion is used for signed and hash-authenticated proofs; callers decide separately whether to sign the result.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="at.asitplus.signum.supreme.sign/Signer.Attestable///PointingToDeclaration/">Signer.Attestable</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="create-tbs-csr.html"><span class="token function">createTbsCsr</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">challenge<span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/index.html">AttestationChallenge</a><span class="token punctuation">, </span></span><span class="parameter ">subjectName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/RelativeDistinguishedName///PointingToDeclaration/">RelativeDistinguishedName</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">additionalExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509CertificateExtension///PointingToDeclaration/">X509CertificateExtension</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">additionalAttributes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequestAttribute///PointingToDeclaration/">Pkcs10CertificationRequestAttribute</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="at.asitplus/KmmResult///PointingToDeclaration/">KmmResult</span><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/TbsCertificationRequest///PointingToDeclaration/">TbsCertificationRequest</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a TBS CSR containing this signer's public key and attestation statement. This overload derives the subject, extensions, and attributes directly from <a href="create-tbs-csr.html">challenge</a> and the supplied additions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="949708069%2FFunctions%2F-966716922" anchor-label="getDeviceName" id="949708069%2FFunctions%2F-966716922" data-filterable-set=":supreme-client/iosMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":supreme-client/iosMain" data-filterable-set=":supreme-client/iosMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-device-name.html"><span>get</span><wbr><span>Device</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="949708069%2FFunctions%2F-966716922"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":supreme-client/iosMain" data-filterable-set=":supreme-client/iosMain" data-active="" data-toggle=":supreme-client/iosMain">ios</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-client/iosMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">fun </span><a href="get-device-name.html"><span class="token function">getDeviceName</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="292293102%2FFunctions%2F1412609226" anchor-label="performAttestationFlow" id="292293102%2FFunctions%2F1412609226" data-filterable-set=":supreme-client/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":supreme-client/commonMain" data-filterable-set=":supreme-client/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="perform-attestation-flow.html"><span>perform</span><wbr><span>Attestation</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="292293102%2FFunctions%2F1412609226"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":supreme-client/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="-attestation-client/index.html">AttestationClient</a><span class="token punctuation">.</span><a href="perform-attestation-flow.html"><span class="token function"><strike>performAttestationFlow</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">alias<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fetchChallengeEndpoint<span class="token operator">: </span><span data-unresolved-link="io.ktor.http/Url///PointingToDeclaration/">Url</span><span class="token punctuation">, </span></span><span class="parameter ">authPromptMessage<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">authPromptCancelText<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">additionalCsrExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509CertificateExtension///PointingToDeclaration/">X509CertificateExtension</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">additionalCsrAttributes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequestAttribute///PointingToDeclaration/">Pkcs10CertificationRequestAttribute</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-response/index.html">AttestationResponse</a></div><br><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="-attestation-client/index.html">AttestationClient</a><span class="token punctuation">.</span><a href="perform-attestation-flow.html"><span class="token function">performAttestationFlow</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">alias<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fetchChallengeEndpoint<span class="token operator">: </span><span data-unresolved-link="io.ktor.http/Url///PointingToDeclaration/">Url</span><span class="token punctuation">, </span></span><span class="parameter ">authPromptMessage<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">authPromptCancelText<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">additionalCsrExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509CertificateExtension///PointingToDeclaration/">X509CertificateExtension</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">additionalCsrAttributes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/Pkcs10CertificationRequestAttribute///PointingToDeclaration/">Pkcs10CertificationRequestAttribute</span><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter ">toBeAttestedAttributes<span class="token operator">: </span><span class="token punctuation">(</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-challenge/-attribute-attestation-descriptor/index.html">AttestationChallenge.AttributeAttestationDescriptor</a><span class="token operator">&gt;</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../supreme-common/at.asitplus.attestation.supreme/-primitive/index.html">Primitive</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../supreme-common/at.asitplus.attestation.supreme/-attestation-response/index.html">AttestationResponse</a></div><div class="brief "><p class="paragraph">Truly integrated attestation in a single call.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

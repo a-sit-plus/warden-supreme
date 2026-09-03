@@ -1,0 +1,239 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AndroidAttestationIssuer</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Warden-Supreme
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.1.4
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":generator/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":generator/main" data-filter=":generator/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Warden-Supreme
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="generator::at.asitplus.attestation.generator/AndroidAttestationIssuer///PointingToDeclaration//-1790917311">
+  <div class="breadcrumbs"><a href="../../index.html">generator</a><span class="delimiter">/</span><a href="../index.html">at.asitplus.attestation.generator</a><span class="delimiter">/</span><span class="current">AndroidAttestationIssuer</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Android</span><wbr><span>Attestation</span><wbr><span><span>Issuer</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":generator/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">AndroidAttestationIssuer</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/a-sit-plus/warden-supreme/tree/main/utils/generator/src/main/kotlin/Issuer.kt#L41">source</a>)</span></span></div><p class="paragraph">The runtime counterpart of <a href="../-issuer-spec/index.html">IssuerSpec</a>: a root, an attestation CA chain, and the keys to sign with.</p><p class="paragraph">All crypto material lives here and nowhere else; <a href="../../../generator/at.asitplus.attestation.generator/-android-attestation-issuer/--root--.html">spec</a> is the configuration that produced it, with a generated root filled back in, so <code class="lang-kotlin">GeneratorConfig(issuer.spec, …)</code> reproduces this issuer exactly.</p><p class="paragraph">Every <a href="issue.html">issue</a> call mints a fresh attestation key and a fresh attested leaf key, as real devices do.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-445059421%2FClasslikes%2F-1790917311" anchor-label="Companion" id="-445059421%2FClasslikes%2F-1790917311" data-filterable-set=":generator/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":generator/main" data-filterable-set=":generator/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-445059421%2FClasslikes%2F-1790917311"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":generator/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-772057522%2FProperties%2F-1790917311" anchor-label="attestationCa" id="-772057522%2FProperties%2F-1790917311" data-filterable-set=":generator/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":generator/main" data-filterable-set=":generator/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="attestation-ca.html"><span>attestation</span><wbr><span><span>Ca</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-772057522%2FProperties%2F-1790917311"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":generator/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="attestation-ca.html">attestationCa</a><span class="token operator">: </span><a href="../-certified-key/index.html">CertifiedKey</a></div><div class="brief "><p class="paragraph">Signs the per-issuance attestation key. Bottom-most CA of <a href="../../../generator/at.asitplus.attestation.generator/-android-attestation-issuer/--root--.html">caChain</a>, or <a href="../../../generator/at.asitplus.attestation.generator/-android-attestation-issuer/--root--.html">root</a> itself.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-130202596%2FProperties%2F-1790917311" anchor-label="root" id="-130202596%2FProperties%2F-1790917311" data-filterable-set=":generator/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":generator/main" data-filterable-set=":generator/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="root.html"><span><span>root</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-130202596%2FProperties%2F-1790917311"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":generator/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="root.html">root</a><span class="token operator">: </span><a href="../-certified-key/index.html">CertifiedKey</a></div><div class="brief "><p class="paragraph">The trust anchor of everything this issuer issues.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-830522265%2FProperties%2F-1790917311" anchor-label="rootCertificate" id="-830522265%2FProperties%2F-1790917311" data-filterable-set=":generator/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":generator/main" data-filterable-set=":generator/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="root-certificate.html"><span>root</span><wbr><span><span>Certificate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-830522265%2FProperties%2F-1790917311"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":generator/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="root-certificate.html">rootCertificate</a><span class="token operator">: </span><span data-unresolved-link="at.asitplus.signum.indispensable.pki/X509Certificate///PointingToDeclaration/">X509Certificate</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1245379741%2FProperties%2F-1790917311" anchor-label="spec" id="-1245379741%2FProperties%2F-1790917311" data-filterable-set=":generator/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":generator/main" data-filterable-set=":generator/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="spec.html"><span><span>spec</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1245379741%2FProperties%2F-1790917311"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":generator/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="spec.html">spec</a><span class="token operator">: </span><a href="../-issuer-spec/index.html">IssuerSpec</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1736597837%2FFunctions%2F-1790917311" anchor-label="configuration" id="1736597837%2FFunctions%2F-1790917311" data-filterable-set=":generator/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":generator/main" data-filterable-set=":generator/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="configuration.html"><span><span>configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1736597837%2FFunctions%2F-1790917311"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":generator/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="configuration.html"><span class="token function">configuration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">attestations<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-attestation-spec/index.html">AttestationSpec</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf(AttestationSpec())<span class="token punctuation">, </span></span><span class="parameter ">outputDirectory<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"generator-output"</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-generator-config/index.html">GeneratorConfig</a></div><div class="brief "><p class="paragraph">The configuration reproducing this issuer, together with the attestations to create from it.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-231895518%2FFunctions%2F-1790917311" anchor-label="issue" id="-231895518%2FFunctions%2F-1790917311" data-filterable-set=":generator/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":generator/main" data-filterable-set=":generator/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="issue.html"><span><span>issue</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-231895518%2FFunctions%2F-1790917311"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":generator/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="issue.html"><span class="token function">issue</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">attestation<span class="token operator">: </span><a href="../-attestation-spec/index.html">AttestationSpec</a><span class="token operator"> = </span>AttestationSpec()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-issued-attestation/index.html">IssuedAttestation</a></div><br><div class="symbol monospace"><span class="token keyword">fun </span><a href="issue.html"><span class="token function">issue</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><a href="../-attestation-spec-builder/index.html">AttestationSpecBuilder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-issued-attestation/index.html">IssuedAttestation</a></div><div class="brief "><p class="paragraph">Builds the statement with the type-safe DSL instead of passing a prepared <a href="../-attestation-spec/index.html">AttestationSpec</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
