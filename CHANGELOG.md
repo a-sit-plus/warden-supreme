@@ -1,6 +1,12 @@
 # Changelog
 
 ## 1.0.5
+* Fix Spring Boot config loading (which is more cursed than anticipated):
+    * Add `revocation: DISABLED` as the canonical way to switch Android revocation checking off
+    * Spring Boot cannot represent an empty collection — it flattens both `[]` and `{}` into an empty string, indistinguishable from a blank environment variable
+    * Hence, an empty `revocation` list now uses an explicit sentinel that survives every property source and round-trips through `toYamlString()`/`toJsonString()`.
+    * A blank or `[]` value is rejected with an error naming the token, rather than silently disabling a security control.
+    * Extend `config-spring` tests with a real Spring Boot application covering every Spring Boot configuration-loading mechanism: classpath and external YAML/properties files, profiles, multi-document YAML, `spring.config.import`, command-line arguments, JVM system properties, environment variables, `@TestPropertySource`, `@DynamicPropertySource` and `ApplicationContextRunner`.
 * Add the **attestation generator** (`at.asitplus.warden:generator`): a test-scoped library and a command-line tool that mint
   Android key attestation statements and the certificate chains carrying them, from factory-provisioned TEE/StrongBox
   chains to remotely provisioned (RKP) ones, which could not be generated before. Statements are built on the same types

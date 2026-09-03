@@ -244,6 +244,43 @@ It is possible to create entirely new loaders and even externalise their configu
 for the externalisable configuration. The latter must be marked as `@Serializable` and registered using the
 `AndroidRevocationList.loaderRegistry` **before the first configuration reading or writing happens**.
 
+### Disabling Revocation Checks
+
+Revocation checking is turned off by setting `revocation` to `DISABLED` (matched case-insensitively):
+
+```yaml
+revocation: DISABLED
+```
+
+No loader then runs at all, so no revocation list is fetched, consulted, or recorded in debug statements.
+
+!!! warning "`revocation: []` is not accepted"
+    An empty list looks like the obvious spelling, but Spring Boot cannot represent one: its YAML processor
+    flattens both `[]` and `{}` into an *empty string*, which is indistinguishable from an unresolved shell
+    variable, a blank Helm value, or an emptied CI secret. Reading a blank back as "no revocation checking"
+    would let a typo silently switch a security control off, so blanks are rejected with an error naming the
+    token, and `DISABLED` is the only accepted spelling in every format.
+
+Because `DISABLED` is a plain scalar, it survives every Spring Boot property source unchanged:
+
+```properties
+attestation.android.revocation=DISABLED
+```
+
+```shell
+--attestation.android.revocation=DISABLED
+ATTESTATION_ANDROID_REVOCATION=DISABLED
+```
+
+It is also what `toYamlString()` and `toJsonString()` emit for an empty `revocation` list, so canonical
+configuration written by Warden Supreme stays loadable by every format, Spring included.
+
+!!! note "An empty in-memory revocation list cannot be configured from Spring Boot"
+    A `mem` loader whose list has no entries (`list: { entries: {} }`) is a valid configuration in YAML and
+    JSON, but not reachable from Spring Boot: an empty nested map contributes no properties at all, so both
+    `entries` and its parent `list` disappear before any binder sees them. Use `revocation: DISABLED` if the
+    intent is to skip revocation checking.
+
 
 ## iOS Configuration
 
