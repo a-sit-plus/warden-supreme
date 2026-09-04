@@ -1,6 +1,7 @@
 # Changelog
 
 ## NEXT
+* Add Fixed time srouce shorthand in `SupremeConfiguration`
 
 ## 1.1.4
 * Fix Spring Boot config loading (which is more cursed than anticipated):
