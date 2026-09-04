@@ -38,7 +38,7 @@ open class YamlFlatteningPolymorphicSerializer<T : Any>(
     override val descriptor: SerialDescriptor = polymorphicSerializer.descriptor
 
     override fun serialize(encoder: Encoder, value: T) {
-        if (isYamlEncoder(encoder)) {
+        if (encoder.isYamlEncoder()) {
             val json = jsonFor(encoder.serializersModule)
             val element = json.encodeToJsonElement(polymorphicSerializer, value)
             val flattened = flattenTypeValue(element)
@@ -50,7 +50,7 @@ open class YamlFlatteningPolymorphicSerializer<T : Any>(
     }
 
     override fun deserialize(decoder: Decoder): T {
-        if (isYamlDecoder(decoder)) {
+        if (decoder.isYamlDecoder()) {
             val json = jsonFor(decoder.serializersModule)
             val yamlElement = decoder.decodeSerializableValue(YamlElement.serializer())
             val element = yamlElementToJsonElement(yamlElement)
@@ -61,11 +61,11 @@ open class YamlFlatteningPolymorphicSerializer<T : Any>(
     }
 }
 
-internal fun isYamlEncoder(encoder: Encoder): Boolean =
-    encoder::class.qualifiedName?.startsWith("net.mamoe.yamlkt") == true
+fun Encoder.isYamlEncoder(): Boolean =
+    this::class.qualifiedName?.startsWith("net.mamoe.yamlkt") == true
 
-internal fun isYamlDecoder(decoder: Decoder): Boolean =
-    decoder::class.qualifiedName?.startsWith("net.mamoe.yamlkt") == true
+fun Decoder.isYamlDecoder(): Boolean =
+    this::class.qualifiedName?.startsWith("net.mamoe.yamlkt") == true
 
 internal fun jsonFor(serializersModule: SerializersModule) = Json {
     this.serializersModule = serializersModule

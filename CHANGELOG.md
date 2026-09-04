@@ -1,6 +1,9 @@
 # Changelog
 
 ## NEXT
+* Add Fixed time source shorthand in `SupremeConfiguration`
+* More Java-Friendliness all over the place (see docs/integration/java)
+    * Mark Java-Only APIs `internal` and use `@JvmName` to hide them from the public Kotlin API   
 
 ## 1.1.4
 * Fix Spring Boot config loading (which is more cursed than anticipated):
