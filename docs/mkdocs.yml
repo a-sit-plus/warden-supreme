@@ -159,6 +159,7 @@ nav:
         - Debugging: integration/debugging.md
         - Usage without Integrated Clients: integration/raw.md
         - Migration from WARDEN: integration/migration.md
+        - Java Interop: integration/java.md
         - Changelog: CHANGELOG.md
     - SBOM:
         - Overview: sbom.md
