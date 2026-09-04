@@ -32,33 +32,34 @@ val customerAttributesOID = ObjectIdentifier("2.25.30419858255939885837023545453
 val configuration = SupremeConfiguration(
  /*(1)!*/android = makoto.androidAttestationConfiguration!!,
     ios = makoto.iosAttestationConfiguration!!,
- /*(2)!*/attestationProofOID = serviceSpecificOID, //override default
- /*(3)!*/genericDeviceNameOID = null, //WardenDefaults.OIDs.DEVICE_NAME by default
- /*(4)!*/defaultKeyConstraints = KeyConstraints(
+ /*(2)!*/clock = SupremeConfiguration.Clock.System,
+ /*(3)!*/attestationProofOID = serviceSpecificOID, //override default
+ /*(4)!*/genericDeviceNameOID = null, //WardenDefaults.OIDs.DEVICE_NAME by default
+ /*(5)!*/defaultKeyConstraints = KeyConstraints(
         algorithmParameters = AlgorithmParameters.EC(
             curve = ECCurve.SECP_256_R_1,
             digests = setOf(ECCurve.SECP_256_R_1.nativeDigest),
             allowKeyAgreement = false //DEFAULT
         ),
- /*(5)!*/keyProtection = KeyProtection(
+ /*(6)!*/keyProtection = KeyProtection(
             timeout = 30.seconds,
             deviceLock = false,
             biometry = true,
             allowNewBiometricFactors = false,
         )
     ),
- /*(6)!*/toBeAttestedAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
+ /*(7)!*/toBeAttestedAttributes = AttestationChallenge.CertificationRequestAttributeAttestationDescriptor(
         customerAttributesOID,
         listOf(
             AttestationChallenge.AttributeAttestationDescriptor("accountId", PrimitiveType.STRING),
             AttestationChallenge.AttributeAttestationDescriptor("riskScore", PrimitiveType.INT, required = false),
         ),
     ),
- /*(7)!*/dataAuth = DataAuthentication.Hash(Digest.SHA256),
+ /*(8)!*/dataAuth = DataAuthentication.Hash(Digest.SHA256),
 )
 
 val verifier = AttestationVerifier(
     configuration,
- /*(8)!*/nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(9)!*/128)) },
-) {/*(10)!*/clock, offset -> redisBacked }
+ /*(9)!*/nonceGenerator = suspend { CryptoRand.nextBytes(ByteArray(/*(10)!*/128)) },
+) {/*(11)!*/clock, offset -> redisBacked }
 // --8<-- [end:verifier-config-supreme]

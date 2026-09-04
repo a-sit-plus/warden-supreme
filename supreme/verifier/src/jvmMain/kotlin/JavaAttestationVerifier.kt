@@ -17,15 +17,17 @@ import kotlinx.coroutines.launch
  * The verifier itself remains suspend-based. This adapter exposes ordinary Java callback methods and
  * completes a [CompletableFuture] when the asynchronous verification operation finishes.
  */
-class JavaAttestationVerifier(configuration: SupremeConfiguration) {
+internal class JavaAttestationVerifier internal constructor(configuration: SupremeConfiguration) {
 
     private val verifier = AttestationVerifier(configuration)
 
-    fun issueChallenge(endpoint: String): CompletableFuture<AttestationChallenge> = submit {
+    @JvmName("issueChallenge")
+    internal fun issueChallenge(endpoint: String): CompletableFuture<AttestationChallenge> = submit {
         verifier.issueChallenge(endpoint)
     }
 
-    fun verifyAttestation(proof: AttestationProof, callbacks: Callbacks): CompletableFuture<AttestationResponse> =
+    @JvmName("verifyAttestation")
+    internal fun verifyAttestation(proof: AttestationProof, callbacks: Callbacks): CompletableFuture<AttestationResponse> =
         submit {
             verifier.verifyAttestation(
                 attestationProof = proof,
@@ -42,7 +44,7 @@ class JavaAttestationVerifier(configuration: SupremeConfiguration) {
             )
         }
 
-    interface Callbacks {
+    internal interface Callbacks {
         fun onChallengeValidated(challenge: AttestationChallenge, proof: AttestationProof)
 
         fun onPreAttestationError(error: PreAttestationError): String?

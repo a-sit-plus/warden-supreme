@@ -33,7 +33,7 @@ const val OID_RKP = "1.3.6.1.4.1.11129.2.1.30"
  * enabling software attestation accepts software-only attestations as a fallback even while hardware attestation remains
  * enabled. Keep software attestation disabled when hardware backing is required.
  */
-class   Roboto
+class Roboto
 @JvmOverloads
 constructor(
     val attestationConfiguration: AndroidAttestationConfiguration,
@@ -102,7 +102,7 @@ constructor(
      * into a serializable data structure for easy debugging
      */
     @JvmName("collectDebugInfo")
-    fun collectDebugInfoJ(
+    internal fun collectDebugInfoJ(
         certificates: List<X509Certificate>,
         expectedChallenge: ByteArray,
         verificationDate: Date = Date(),
@@ -119,7 +119,7 @@ constructor(
      * into a serializable data structure for easy debugging
      */
     @JvmName("collectDebugInfo")
-    fun collectDebugInfoJ(
+    internal fun collectDebugInfoJ(
         certificates: List<X509Certificate>,
         expectedChallenge: ByteArray,
         verificationDate: java.time.Instant = java.time.Instant.now(),

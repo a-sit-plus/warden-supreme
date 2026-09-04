@@ -119,6 +119,7 @@ markdown_extensions:
       dedent_subsections: true
       base_path:
         - ../supreme/verifier/src/jvmTest/kotlin/examples/
+        - ../supreme/verifier/src/jvmTest/java/examples/
         - ../utils/generator/src/test/kotlin/examples/
         - ../supreme/client/src/commonTest/kotlin/examples/
         - docs/examples/
@@ -159,7 +160,7 @@ nav:
         - Debugging: integration/debugging.md
         - Usage without Integrated Clients: integration/raw.md
         - Migration from WARDEN: integration/migration.md
-        - Java Interop: integration/java.md
+        - Java Interoperability: integration/java.md
         - Changelog: CHANGELOG.md
     - SBOM:
         - Overview: sbom.md

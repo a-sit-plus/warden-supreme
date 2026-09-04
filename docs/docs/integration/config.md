@@ -4,6 +4,10 @@
 !!! tip "Configuration Reference"
     For the full configuration reference, see [Attestation Policy Configuration](supreme.md#attestation-policy-configuration).
 
+!!! tip inline end "Configuration from Java"
+    `SupremeConfiguration` accepts `java.time.Clock` and `java.time.Duration`, and its fixed clock accepts a
+    `java.time.Instant`. See [Using Warden Supreme from Java](java.md#configuration-and-time).
+
 Warden Supreme configuration consists of two parts:
 
 1. Attestation policy configuration as explained in [Attestation Policy Configuration](supreme.md#attestation-policy-configuration), split into
@@ -186,7 +190,20 @@ expose the same (de)serialisation functions as `SupremeConfiguration`.
     --8<-- "supreme.json"
     ```
 
-It is possible to add time sources other than the system clock and externalise their configurations as well by implementing
+!!! tip "Fixed verification time"
+    The examples use `clock: system`, which is the production default. For deterministic tests and replay, configure
+    the built-in fixed time source:
+
+    ```yaml
+    clock:
+      type: fixed # (1)
+      instant: 2025-01-10T12:34:56.789Z # (2)
+    ```
+
+    1. `fixed` selects the serialisable `SupremeConfiguration.Clock.Fixed` implementation.
+    2. `instant` pins verification to one ISO-8601 instant. This representation round-trips through YAML and JSON.
+
+It is also possible to add other time sources and externalise their configurations by implementing
 `SupremeConfiguration.Clock` and registering the classes for serialisation using `SupremeConfiguration.Clock.registry`.
 
 !!! tip "Loading from a file"
