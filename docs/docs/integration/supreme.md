@@ -124,9 +124,6 @@ setup uses a Ktor back-end and a KMP client; the verifier itself is not tied to 
     2. Call the endpoints.
     3. Store the received certificate chain after a successful attestation.
 
-!!! tip inline end "Migration Info"
-    Warden Supreme 0.9.99 revamped trust anchor management and thus changed configuration parameters.
-
 ### Attestation Policy Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
 The following snippet shows an MWE that also accounts for five minutes of clock drift:
@@ -324,11 +321,6 @@ file system, instead of an HTTP server, where HTTP headers are used to encode th
 The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.
 
 ### Attestation Verifier Setup
-
-!!! tip inline end "Java back-end?"
-    Use `JavaAttestationVerifier` for `CompletableFuture`-based verification and ordinary Java callbacks. The dedicated
-    [Java interoperability guide](java.md) contains a complete, compiled example.
-
 First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
 
 ??? info inline end "Important Nonce Info"
@@ -503,6 +495,12 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
     3. manually set the appropriate CA-related extensions and key-usage flags so it becomes a legitimate intermediate CA certificate allowed to sign subordinate certificates
 
     Attested intermediate CAs therefore require manual issuance work.
+
+
+!!! tip "Java Back-Ends"
+    Use `JavaAttestationVerifier` for `CompletableFuture`-based verification and ordinary Java callbacks. The dedicated
+    [Java interoperability guide](java.md) contains a complete, compiled example.
+
 
 ### Client Integration
 

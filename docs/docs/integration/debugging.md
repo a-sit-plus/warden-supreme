@@ -36,8 +36,7 @@ time.
 ## Collecting Debug Info
 
 !!! tip inline end "Java Back-Ends"
-    The Java verifier callback receives the ready-made debug statement directly. Raw _makoto_ and _roboto_ expose
-    synchronous `collectDebugInfo(...)` methods. See [Using Warden Supreme from Java](java.md) for their Java signatures.
+    See [Using Warden Supreme from Java](java.md) for Java-friendly APIs.
 
 Regardless of whether you are using Warden Supreme's integrated attestation flow, or raw makoto/roboto,
 all flows produce a debug statement with the same `serialize()`, `serializeCompact()`, and `replay()` lifecycle. Only

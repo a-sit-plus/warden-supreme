@@ -119,7 +119,7 @@ markdown_extensions:
       dedent_subsections: true
       base_path:
         - ../supreme/verifier/src/jvmTest/kotlin/examples/
-        - ../supreme/verifier/src/jvmTest/java/examples/
+        - ../supreme/verifier/src/jvmTest/java/examples/javaapi
         - ../utils/generator/src/test/kotlin/examples/
         - ../supreme/client/src/commonTest/kotlin/examples/
         - docs/examples/

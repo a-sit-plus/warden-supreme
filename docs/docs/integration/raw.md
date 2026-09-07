@@ -27,11 +27,6 @@ This page also documents _Warden makoto_ (previously WARDEN) and _Warden roboto_
 deployments that have not yet adopted the integrated flow. See the [migration notes](migration.md) when moving between
 the APIs.
 
-!!! tip inline end "Calling these APIs from Java"
-    _Makoto_ and _roboto_ provide Java time constructors and synchronous verification helpers. Their exact Java
-    signatures, including names changed with `@JvmName`, are collected in the
-    [Java interoperability guide](java.md#using-makoto-or-roboto-directly).
-
 !!! tip "Hybrid Integration"
     It is possible to use Warden Supreme's verifier with custom clients by adhering to the [same flows](supreme.md#high-level-attestation-flow) and [data model](datamodel.md).
 
@@ -52,6 +47,11 @@ configuration properties for iOS and Android. This page focuses on behaviour, in
 !!! warning "Additional Setup Required"
     Be sure to follow the [setup procedure for iOS](../technical/ios.md#setup) to enable App Attest. Otherwise, App Attest
     is unavailable and will fail hard.
+
+!!! tip "Calling APIs from Java"
+    _Makoto_ and _roboto_ provide Java time constructors and synchronous verification helpers. Their exact Java
+    signatures, including names changed with `@JvmName`, are collected in the
+    [Java interoperability guide](java.md#using-makoto-or-roboto-directly).
 
 ## Architecture and Flow Overview
 
