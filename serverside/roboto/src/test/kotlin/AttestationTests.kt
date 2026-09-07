@@ -1,29 +1,17 @@
 package at.asitplus.attestation.android
 
-import at.asitplus.attestation.android.androidAttestationExtension
-import at.asitplus.attestation.android.closestToRoot
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
-import at.asitplus.attestation.android.hasAndroidKeyAttestationExtensionOid
 import at.asitplus.attestation.data.AttestationData
 import at.asitplus.attestation.data.attestationCertChain
-import at.asitplus.attestation.replayBlocking
-import com.google.android.attestation.ParsedAttestationRecord
-import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel
-import at.asitplus.testballoon.matrix.*
+import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.util.*
-import com.google.protobuf.ByteString
 import org.bouncycastle.util.encoders.Base64
-import org.bouncycastle.asn1.ASN1Encodable
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERSequence
-import org.bouncycastle.asn1.DERSet
 import java.security.cert.X509Certificate
-import kotlin.system.measureTimeMillis
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -163,8 +151,8 @@ val AttestationTests by matrixSuite {
 
                         AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
                             .shouldBeInstanceOf<List<X509Certificate>>().apply {
-                                closestToRoot {  it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                                closestToRoot {  it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                                closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                                closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
                             }
 
                     }
@@ -579,35 +567,94 @@ val AttestationTests by matrixSuite {
 
                         "time of verification" - {
                             "too early" {
-                                shouldThrow<CertificateInvalidException> {
-                                    service.verify(
-                                        recordedAttestation.attestationCertChain,
 
-                                        recordedAttestation.verificationDate - 30_000.days,
-                                        recordedAttestation.challenge
-                                    ).getOrThrow()
-                                }.reason shouldBe CertificateInvalidException.Reason.TIME
+                                if (recordedAttestation.attestationCertChain.isRemoteKeyProvisioned()) {
+                                    shouldThrow<CertificateInvalidException> {
+                                        service.verify(
+                                            recordedAttestation.attestationCertChain,
 
-                                val collectDebugInfo =
-                                    service.collectDebugInfo(
-                                        recordedAttestation.attestationCertChain,
-                                        recordedAttestation.challenge,
-                                        recordedAttestation.verificationDate - 30_000.days,
-                                    ).serialize()
+                                            recordedAttestation.verificationDate - 30_000.days,
+                                            recordedAttestation.challenge
+                                        ).getOrThrow()
+                                    }.reason shouldBe CertificateInvalidException.Reason.TIME
 
-                                shouldThrow<CertificateInvalidException> {
-                                    AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
-                                }.reason shouldBe CertificateInvalidException.Reason.TIME
+                                    val collectDebugInfo =
+                                        service.collectDebugInfo(
+                                            recordedAttestation.attestationCertChain,
+                                            recordedAttestation.challenge,
+                                            recordedAttestation.verificationDate - 30_000.days,
+                                        ).serialize()
+
+                                    shouldThrow<CertificateInvalidException> {
+                                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                                            .getOrThrow()
+                                    }.reason shouldBe CertificateInvalidException.Reason.TIME
+                                } else {
+                                    shouldThrow<AttestationValueException> {
+                                        service.verify(
+                                            recordedAttestation.attestationCertChain,
+
+                                            recordedAttestation.verificationDate - 30_000.days,
+                                            recordedAttestation.challenge
+                                        ).getOrThrow()
+                                    }.reason shouldBe AttestationValueException.Reason.STATEMENT_TIME
+
+                                    val collectDebugInfo =
+                                        service.collectDebugInfo(
+                                            recordedAttestation.attestationCertChain,
+                                            recordedAttestation.challenge,
+                                            recordedAttestation.verificationDate - 30_000.days,
+                                        ).serialize()
+
+                                    shouldThrow<AttestationValueException> {
+                                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                                            .getOrThrow()
+                                    }.reason shouldBe AttestationValueException.Reason.STATEMENT_TIME
+                                }
                             }
 
                             "too late" {
-                                shouldThrow<CertificateInvalidException> {
-                                    service.verify(
-                                        recordedAttestation.attestationCertChain,
-                                        recordedAttestation.verificationDate - 30_000.days,
-                                        recordedAttestation.challenge
-                                    ).getOrThrow()
-                                }.reason shouldBe CertificateInvalidException.Reason.TIME
+                                if (recordedAttestation.attestationCertChain.isRemoteKeyProvisioned()) {
+                                    shouldThrow<CertificateInvalidException> {
+                                        service.verify(
+                                            recordedAttestation.attestationCertChain,
+                                            recordedAttestation.verificationDate + 30_000.days,
+                                            recordedAttestation.challenge
+                                        ).getOrThrow()
+                                    }.reason shouldBe CertificateInvalidException.Reason.TIME
+                                    val collectDebugInfo =
+                                        service.collectDebugInfo(
+                                            recordedAttestation.attestationCertChain,
+                                            recordedAttestation.challenge,
+                                            recordedAttestation.verificationDate + 30_000.days,
+                                        ).serialize()
+
+                                    shouldThrow<CertificateInvalidException> {
+                                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                                            .getOrThrow()
+                                    }.reason shouldBe CertificateInvalidException.Reason.TIME
+                                } else {
+                                    shouldThrow<AttestationValueException> {
+                                        service.verify(
+                                            recordedAttestation.attestationCertChain,
+
+                                            recordedAttestation.verificationDate + 30_000.days,
+                                            recordedAttestation.challenge
+                                        ).getOrThrow()
+                                    }.reason shouldBe AttestationValueException.Reason.STATEMENT_TIME
+
+                                    val collectDebugInfo =
+                                        service.collectDebugInfo(
+                                            recordedAttestation.attestationCertChain,
+                                            recordedAttestation.challenge,
+                                            recordedAttestation.verificationDate + 30_000.days,
+                                        ).serialize()
+
+                                    shouldThrow<AttestationValueException> {
+                                        AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay()
+                                            .getOrThrow()
+                                    }.reason shouldBe AttestationValueException.Reason.STATEMENT_TIME
+                                }
                             }
                         }
 
