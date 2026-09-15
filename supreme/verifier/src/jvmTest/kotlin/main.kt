@@ -63,14 +63,14 @@ private val requestedAttributes = AttestationChallenge.CertificationRequestAttri
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
 val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEnabled = false) }) {
-    if (System.getenv("SUPREME_ENDTOENDTEST") == "true") {
+    if (System.getenv("SUPREME_ENDTOENDTEST") != "true") {
         //starts a KTOR server, because WARDEN cannot run on Android, hence using the MockEngine is no use, because it will
         //fail at runtime
 
         "Verifier" - {
             val ENDPOINT_CHALLENGE = "/api/v1/challenge"
             val PATH_ATTEST = "/api/v1/attest"
-            val ENDPOINT_ATTEST = "http://10.0.2.2:8080$PATH_ATTEST"
+            val ENDPOINT_ATTEST = "http://192.168.101.23:8080$PATH_ATTEST"
 
             var running: Boolean? = true
 
@@ -97,14 +97,11 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                     IosAttestationConfiguration(
                         IosAttestationConfiguration.AppData(
                             "9CYHJNG644",
-                            "at.asitplus.signumtest.iosApp", //to test with real app from ios
-                            sandbox = true
+                            "at.asitplus.warden.supreme", //to test with real app from ios
+                            sandbox = false
                         ),
                     ),
-                    clock = object : SupremeConfiguration.Clock {
-                        override val timeSource: Clock
-                            get() = FixedTimeClock(2025u, 1u, 10u)
-                    })
+                   )
             )
 
             suspend fun verify(
@@ -174,6 +171,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                             attestationValidator.issueChallenge(
                                 ENDPOINT_ATTEST,
                                 timeZone = TimeZone.currentSystemDefault(),
+                                keyConstraints = KeyConstraints(KeyConstraints.AlgorithmParameters.EC(), keyProtection = KeyConstraints.KeyProtection(biometry = true, allowNewBiometricFactors = false)),
                             )
                         )
 

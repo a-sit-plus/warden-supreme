@@ -2,6 +2,8 @@
 
 ## NEXT
 
+* Add iOS Client exported as XCode framework
+
 ## 1.2.0
 * Add per-Android-trust-anchor factory-provisioned certificate-chain validity policies.
     * `enforceFactoryProvisionedChainValidity` remains `true` globally
