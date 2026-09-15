@@ -1,4 +1,3 @@
-import at.asitplus.gradle.exportXCFramework
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
 
@@ -79,12 +78,6 @@ kotlin {
             implementation(ktor("client-mock"))
             implementation("at.asitplus.gradle:testhelper:20251114")
             implementation(ktor("client-mock"))
-        }
-
-        listOf(iosArm64Main, iosSimulatorArm64Main).forEach {
-            it.dependencies {
-                api(ktor("client-darwin"))
-            }
         }
     }
 }
@@ -218,9 +211,4 @@ signing {
     val signingPassword: String? by project
     useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign(publishing.publications)
-}
-
-
-exportXCFramework("WardenSupreme", transitiveExports = true) {
-
 }
