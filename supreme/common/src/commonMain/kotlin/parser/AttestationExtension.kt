@@ -30,6 +30,33 @@ class AttestationKeyDescription(
     val softwareEnforced: AuthorizationList,
     val hardwareEnforced: AuthorizationList
 ) : Asn1Encodable<Asn1Sequence>, Identifiable {
+
+    /**
+    alias for [keyMintVersion] for backwards compatibility for attestationVersion<=4
+     */
+    val keymasterVersion: Int get() = keyMintVersion
+
+    /**
+    alias for [keyMintSecurityLevel] for backwards compatibility for attestationVersion<=4
+     */
+    val keymasterSecurityLevel: SecurityLevel get() = keyMintSecurityLevel
+
+    init {
+        versionCheck()
+    }
+
+    fun versionCheck() {
+        if(attestationVersion < 100)
+        {
+            // keyMintVersion was previously named keyMintVersion
+            // keyMintSecurityLevel was previously named keyMintSecurityLevel
+            // TODO: only provide getter in right versions?
+        }
+        if (attestationVersion < 3) {
+            // AttestationKeyDescription.SecurityLevel.STRONGBOX not allowed TODO
+        }
+    }
+
     override fun encodeToTlv() = Asn1.Sequence {
         +Asn1.Int(attestationVersion)
         +attestationSecurityLevel
@@ -46,8 +73,8 @@ class AttestationKeyDescription(
         if (other !is AttestationKeyDescription) return false
 
         if (attestationVersion != other.attestationVersion) return false
-        if (keyMintVersion != other.keyMintVersion) return false
         if (attestationSecurityLevel != other.attestationSecurityLevel) return false
+        if (keyMintVersion != other.keyMintVersion) return false
         if (keyMintSecurityLevel != other.keyMintSecurityLevel) return false
         if (!attestationChallenge.contentEquals(other.attestationChallenge)) return false
         if (!uniqueId.contentEquals(other.uniqueId)) return false
@@ -87,8 +114,8 @@ class AttestationKeyDescription(
             val keyMintSecurityLevel = SecurityLevel.decodeFromTlv(src.nextChild().asPrimitive())
             val attestationChallenge = src.nextChild().asOctetString().content
             val uniqueId = src.nextChild().asOctetString().content
-            val softwareEnforced = AuthorizationList.decodeFromTlv(src.nextChild().asSequence())
-            val hardwareEnforced = AuthorizationList.decodeFromTlv(src.nextChild().asSequence())
+            val softwareEnforced = AuthorizationList.decodeFromTlv(src.nextChild().asSequence()).copy(attestationVersion=version)
+            val hardwareEnforced = AuthorizationList.decodeFromTlv(src.nextChild().asSequence()).copy(attestationVersion=version)
             //if there's more, we don't are not allowed to care
             return AttestationKeyDescription(
                 version,
@@ -132,8 +159,8 @@ val X509Certificate.androidAttestationExtension: AttestationKeyDescription?
     get() = tbsCertificate.extensions?.firstOrNull { it.oid == AttestationKeyDescription.oid }
         ?.let {
             catchingUnwrapped {
-                AttestationKeyDescription.decodeFromTlv(
-                    it.value.asEncapsulatingOctetString().children.first().asSequence()
-                )
+                val children = it.value.asEncapsulatingOctetString().children
+                require(children.size == 1)
+                AttestationKeyDescription.decodeFromTlv(children.first().asSequence())
             }.getOrNull()
         }
