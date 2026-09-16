@@ -124,9 +124,6 @@ setup uses a Ktor back-end and a KMP client; the verifier itself is not tied to 
     2. Call the endpoints.
     3. Store the received certificate chain after a successful attestation.
 
-!!! tip inline end "Migration Info"
-    Warden Supreme 0.9.99 revamped trust anchor management and thus changed configuration parameters.
-
 ### Attestation Policy Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
 The following snippet shows an MWE that also accounts for five minutes of clock drift:
@@ -324,7 +321,6 @@ file system, instead of an HTTP server, where HTTP headers are used to encode th
 The in-memory loader, on the other hand, will only ever serve a single, static pre-configured revocation list.
 
 ### Attestation Verifier Setup
-
 First, an `AttestationVerifier` instance needs to be created based on a `Makoto` instance:
 
 ??? info inline end "Important Nonce Info"
@@ -361,22 +357,25 @@ First, an `AttestationVerifier` instance needs to be created based on a `Makoto`
     1. Android and iOS attestation policies. Here they are lifted from the `Makoto` instance configured above, but you can
        equally construct the `AndroidAttestationConfiguration` and `IosAttestationConfiguration` directly or load them from
        externalised configuration.
-    2. We want Warden Supreme to convey the attestation statement payload inside the TBS CSR using a custom OID.
-    3. We don't care about device names in this example and don't require it from the client.
-    4. We explicitly specify the key we want to have created on the client.  
+    2. The system clock is the default verification time source. For deterministic tests and replay, use the new
+       serialisable `SupremeConfiguration.Clock.Fixed(Instant)`; both system and fixed clocks round-trip through the
+       canonical YAML and JSON configuration formats.
+    3. We want Warden Supreme to convey the attestation statement payload inside the TBS CSR using a custom OID.
+    4. We don't care about device names in this example and don't require it from the client.
+    5. We explicitly specify the key we want to have created on the client.
        The values shown here correspond to the defaults, as this is supported by Android and iOS.
-    5. We require user authentication to use the private key:
+    6. We require user authentication to use the private key:
         * Protected by biometric auth
         * Usable for 30 seconds without reauthentication
         * Enrolling new biometric factors will invalidate the key
-    6. Request two application-provided values under one dedicated attribute OID. `accountId` is required; `riskScore`
+    7. Request two application-provided values under one dedicated attribute OID. `accountId` is required; `riskScore`
        may be omitted as `null`. Order and type are part of the schema.
-    7. Authenticate the TBS CSR data by hashing it with SHA-256 and feeding the digest into platform attestation. Set
+    8. Authenticate the TBS CSR data by hashing it with SHA-256 and feeding the digest into platform attestation. Set
        `DataAuthentication.Signature` (the default) when proof of possession is required.
-    8. A custom nonce generator passed to the verifier. The nonce generator and challenge validator are not part of the
+    9. A custom nonce generator passed to the verifier. The nonce generator and challenge validator are not part of the
        `SupremeConfiguration`, since they are runtime services rather than policy.
-    9. We want extra long nonces (default: 64 bytes; max: 128 bytes).
-    10. Checking and invalidating challenges is handled by a Redis-backed `AttestationChallengeValidator` (not shown here;
+    10. We want extra long nonces (default: 64 bytes; max: 128 bytes).
+    11. Checking and invalidating challenges is handled by a Redis-backed `AttestationChallengeValidator` (not shown here;
         roll your own). This is the recommended approach when multiple verifier instances issue challenges. Omit this
         trailing lambda to use the default bounded in-memory challenge validator.
 
@@ -496,6 +495,12 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
     3. manually set the appropriate CA-related extensions and key-usage flags so it becomes a legitimate intermediate CA certificate allowed to sign subordinate certificates
 
     Attested intermediate CAs therefore require manual issuance work.
+
+
+!!! tip "Java Back-Ends"
+    Use `JavaAttestationVerifier` for `CompletableFuture`-based verification and ordinary Java callbacks. The dedicated
+    [Java interoperability guide](java.md) contains a complete, compiled example.
+
 
 ### Client Integration
 

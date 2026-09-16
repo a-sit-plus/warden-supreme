@@ -7,15 +7,22 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.asn1.ObjectIdentifierStringSerializer
 import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encoding.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import net.mamoe.yamlkt.Yaml
+import net.mamoe.yamlkt.YamlElement
+import net.mamoe.yamlkt.YamlLiteral
+import net.mamoe.yamlkt.YamlList
+import net.mamoe.yamlkt.YamlMap
+import net.mamoe.yamlkt.YamlNull
 import kotlin.time.Duration
+import kotlin.time.Instant
+import kotlin.time.toJavaDuration
+import kotlin.time.toKotlinDuration
+import kotlin.time.toKotlinInstant
 
 /**
  * Integrated attestation configuration for the Supreme attestation verifier
@@ -143,6 +150,38 @@ private constructor(
         maxAttestationPayloadBytes,
     )
 
+
+    /**
+     * Java-friendly constructor (although using Java on the back-end kind of defeats the whole point of a shared codebase).
+     * **Note that at least one of [ios], and  [android] must be non-null!**
+     */
+    @Throws(AttestationException.Configuration::class, IllegalArgumentException::class)
+    @JvmOverloads
+    constructor(
+        ios: IosAttestationConfiguration?,
+        android: AndroidAttestationConfiguration?,
+        javaClock: java.time.Clock = java.time.Clock.systemUTC(),
+        verificationTimeOffsetJ: java.time.Duration = Makoto.DEFAULT_TIME_OFFSET.toJavaDuration(),
+        attestationProofOID: ObjectIdentifier = WardenDefaults.OIDs.ATTESTATION_PROOF,
+        genericDeviceNameOID: ObjectIdentifier? = WardenDefaults.OIDs.DEVICE_NAME,
+        defaultKeyConstraints: KeyConstraints? = WardenDefaults.KeyConstraints.p256Signer,
+        dataAuth: DataAuthentication = DataAuthentication.Signature,
+        toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
+        maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
+    ) : this(
+        ios=ios,
+        android=android,
+        clock= Clock.from(javaClock),
+        verificationTimeOffset=verificationTimeOffsetJ.toKotlinDuration(),
+        attestationProofOID = attestationProofOID,
+        genericDeviceNameOID = genericDeviceNameOID,
+        defaultKeyConstraints = defaultKeyConstraints,
+        dataAuthentication = dataAuth,
+        toBeAttestedAttributes = toBeAttestedAttributes,
+        maxAttestationPayloadBytes = maxAttestationPayloadBytes,
+    )
+
+
     init {
         require(android != null || ios != null) { "At least one attestation configuration (iOS or Android) must be provided" }
         require(maxAttestationPayloadBytes > 0) { "maxAttestationPayloadSize must be positive" }
@@ -206,8 +245,6 @@ private constructor(
                 if (this === other) return true
                 if (other !is System) return false
 
-                if (timeSource != other.timeSource) return false
-
                 return true
             }
 
@@ -218,9 +255,23 @@ private constructor(
             override fun toString(): String = "System"
         }
 
+        /**
+         * Fixed clock, useful for testing
+         */
+        @Serializable
+        @SerialName("fixed")
+        data class Fixed(val instant: Instant) : Clock {
+            override val timeSource: kotlin.time.Clock
+                get() = FixedTimeClock(instant.toEpochMilliseconds())
+
+            /**
+             * Java-friendly constructor
+             */
+            constructor(javaInstant: java.time.Instant): this(javaInstant.toKotlinInstant())
+        }
+
         object Serializer : KSerializer<Clock> {
-            override val descriptor: SerialDescriptor =
-                PrimitiveSerialDescriptor("SupremeConfiguration.Clock", PrimitiveKind.STRING)
+            override val descriptor: SerialDescriptor = PolymorphicSerializer(Clock::class).descriptor
 
             override fun serialize(encoder: Encoder, value: Clock) {
                 if (value is System) {
@@ -234,16 +285,40 @@ private constructor(
             }
 
             override fun deserialize(decoder: Decoder): Clock {
-                val scalar = catchingUnwrapped { decoder.decodeString() }.getOrNull()
-                if (scalar != null) {
-                    if (scalar.equals("system", ignoreCase = true)) return System
-                    throw SerializationException("Unknown clock value: $scalar")
+                if (decoder is JsonDecoder) {
+                    val element = decoder.decodeJsonElement()
+                    if (element is JsonPrimitive && element.isString) {
+                        if (element.content.equals("system", ignoreCase = true)) return System
+                        throw SerializationException("Unknown clock value: ${element.content}")
+                    }
+                    return json.decodeFromJsonElement(PolymorphicSerializer(Clock::class), element)
                 }
+                if (decoder.isYamlDecoder()) {
+                    val element = decoder.decodeSerializableValue(YamlElement.serializer())
+                    if (element is YamlLiteral) {
+                        if (element.content.equals("system", ignoreCase = true)) return System
+                        throw SerializationException("Unknown clock value: ${element.content}")
+                    }
+                    return json.decodeFromJsonElement(PolymorphicSerializer(Clock::class), element.toJsonElement())
+                }
+                val scalar = catchingUnwrapped { decoder.decodeString() }.getOrNull()
+                if (scalar?.equals("system", ignoreCase = true) == true) return System
+                if (scalar != null) throw SerializationException("Unknown clock value: $scalar")
                 return decoder.decodeSerializableValue(YamlFlatteningPolymorphicSerializer(Clock::class))
             }
         }
 
         companion object {
+
+            @JvmStatic
+            fun from(timeSource:java.time.Clock) = object : Clock {
+                override val timeSource: kotlin.time.Clock                    get() = timeSource.toKotlinClock()
+            }
+
+            fun from(timeSource:kotlin.time.Clock) = object : Clock {
+                override val timeSource: kotlin.time.Clock                    get() = timeSource
+            }
+
             /**
              * Use to register custom [SupremeConfiguration.Clock]s, if you need custom externalised clock configuration.
              * Must be called only once before ever using the registered clock configs.
@@ -255,9 +330,21 @@ private constructor(
             init {
                 //NOOP for our process but useful to keep everything neatly tracked
                 registry.register(SupremeConfiguration.Clock.System::class)
+                //NOOP for our process but useful to keep everything neatly tracked
+                registry.register(SupremeConfiguration.Clock.Fixed::class)
             }
         }
     }
+}
+
+private fun YamlElement.toJsonElement(): JsonElement = when (this) {
+    is YamlMap -> buildJsonObject {
+        content.forEach { (key, value) -> put(key.content.toString(), value.toJsonElement()) }
+    }
+    is YamlList -> buildJsonArray { content.forEach { add(it.toJsonElement()) } }
+    is YamlNull -> JsonPrimitive(null as String?)
+    is YamlLiteral -> JsonPrimitive(content)
+    else -> JsonPrimitive(content?.toString())
 }
 
 private object ConfigurationAttestableAttributesSerializer :

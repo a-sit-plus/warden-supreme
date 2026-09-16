@@ -35,6 +35,9 @@ time.
 
 ## Collecting Debug Info
 
+!!! tip inline end "Java Back-Ends"
+    See [Using Warden Supreme from Java](java.md) for Java-friendly APIs.
+
 Regardless of whether you are using Warden Supreme's integrated attestation flow, or raw makoto/roboto,
 all flows produce a debug statement with the same `serialize()`, `serializeCompact()`, and `replay()` lifecycle. Only
 the point at which the statement is collected and its concrete type differ:

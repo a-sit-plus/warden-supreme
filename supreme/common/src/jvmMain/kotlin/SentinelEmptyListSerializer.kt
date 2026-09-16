@@ -54,7 +54,7 @@ open class SentinelEmptyListSerializer<T : Any>(
     override fun serialize(encoder: Encoder, value: List<T>) {
         if (value.isEmpty()) {
             when {
-                isYamlEncoder(encoder) ->
+                encoder.isYamlEncoder() ->
                     encoder.encodeSerializableValue(YamlElement.serializer(), sentinel.toYamlElement())
 
                 encoder is JsonEncoder -> encoder.encodeJsonElement(JsonPrimitive(sentinel))
@@ -68,7 +68,7 @@ open class SentinelEmptyListSerializer<T : Any>(
     }
 
     override fun deserialize(decoder: Decoder): List<T> {
-        if (isYamlDecoder(decoder)) {
+        if (decoder.isYamlDecoder()) {
             val yamlElement = decoder.decodeSerializableValue(YamlElement.serializer())
             if (yamlElement is YamlLiteral && yamlElement.content.matchesSentinel()) return emptyList()
             val json = jsonFor(decoder.serializersModule)

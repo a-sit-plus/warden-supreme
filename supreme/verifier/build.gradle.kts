@@ -1,3 +1,4 @@
+import at.asitplus.gradle.coroutines
 import at.asitplus.gradle.ktor
 import at.asitplus.gradle.setupDokka
 
@@ -37,6 +38,7 @@ kotlin {
             api(project(":makoto"))
             api(project(":supreme-common"))
             implementation(libs.yamltk)
+            implementation(coroutines())
         }
 
         jvmTest {
