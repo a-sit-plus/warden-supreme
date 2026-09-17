@@ -21,15 +21,11 @@ kotlin {
 
 
     sourceSets {
-        all {
-            languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
-        }
+        all { languageSettings.optIn("kotlin.ExperimentalUnsignedTypes") }
 
-        listOf(iosArm64Main, iosSimulatorArm64Main).forEach {
-            it.dependencies {
-                implementation(project(":supreme-client"))
-                implementation(ktor("client-darwin"))
-            }
+        iosMain.dependencies {
+            implementation(project(":supreme-client"))
+            implementation(ktor("client-darwin"))
         }
     }
 }
