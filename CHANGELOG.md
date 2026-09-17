@@ -1,6 +1,7 @@
 # Changelog
 
 ## NEXT
+* Add iOS Client exported as XCode framework
 * Add Fixed time source shorthand in `SupremeConfiguration`
 * More Java-Friendliness all over the place (see docs/integration/java)
     * Mark Java-Only APIs `internal` and use `@JvmName` to hide them from the public Kotlin API
