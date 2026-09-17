@@ -5,6 +5,14 @@
 * More Java-Friendliness all over the place (see docs/integration/java)
     * Mark Java-Only APIs `internal` and use `@JvmName` to hide them from the public Kotlin API   
 
+## 1.2.0
+* Add per-Android-trust-anchor factory-provisioned certificate-chain validity policies.
+    * `enforceFactoryProvisionedChainValidity` remains `true` globally
+    * Warden's default Google factory-provisioned roots with subject `SERIALNUMBER=f92009e853b6b045`, and the bundled raw public-key roots,
+      explicitly permit expired factory-provisioned chains (`false`).  
+      ** THIS IS A BEHAVIOURAL CHANGE: ** whereas some checks might have failed with a certificate/time exceptions, they may now succeed by default or fail
+      due to attestation statement creation time, intead of expired/not-yet valid certificates
+
 ## 1.1.4
 * Fix Spring Boot config loading (which is more cursed than anticipated):
     * Add `revocation: DISABLED` as the canonical way to switch Android revocation checking off
