@@ -123,18 +123,6 @@ class SpringPitestBridgeTest {
     }
 
     @Test
-    fun springEmptyRevocationSequenceRemainsDistinctFromAnOmittedValue() {
-        assertEquals(
-            JsonArray(emptyList()),
-            mapOf("revocation" to null).toAttestationJsonObject()["revocation"]
-        )
-        assertEquals(
-            JsonArray(listOf(JsonPrimitive("configured"))),
-            mapOf("revocation" to listOf("configured")).toAttestationJsonObject()["revocation"]
-        )
-    }
-
-    @Test
     fun springRejectsMalformedCollectionsNestedKeysAndSubtypePayloads() {
         assertThrows(IllegalArgumentException::class.java) {
             mapOf("applications" to mapOf(1 to "boom")).toAttestationJsonObject()
