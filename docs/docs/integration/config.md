@@ -216,7 +216,9 @@ validity, and the provisioning method is derived from the received certificate c
     `enforceFactoryProvisionedChainValidity` to `false`. They therefore permit expired factory-provisioned chains
     even though the global default is `true`. Other generic roots use the global setting. Consequently, attestations
     that previously failed because a certificate was expired or not yet valid may now succeed, or may instead fail on
-    the attestation statement's creation time.
+    the attestation statement's creation time. This is in line with
+    [the official recommendation](https://developer.android.com/privacy-and-security/security-key-attestation#expired_factory_keys)
+    that factory-provisioned chains rooted in trust anchors matching this subject should skip timely validity checks.
 
 In YAML or JSON, a plain certificate or public-key PEM string is a generic root. Add a Boolean to the list form to
 make it Android-specific. Public-key roots may also contain a CA name; list item order is irrelevant.
