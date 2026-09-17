@@ -320,12 +320,11 @@ deserialise them before use.
 #### Flexible Android Revocation Configuration
 Warden Supreme 1.0.0 and later completely revamp revocation handling.
 Instead of hardcoding a check against the official Google revocation list, it is now possible to configure an arbitrary number of
-revocation list loaders. Configuring an empty list completely disables revocation checks.
-To disable them in YAML, set the `revocation` property explicitly to an empty sequence under `android`:
+revocation list loaders. To disable revocation checks, set `revocation` property to `DISABLED` under the `android` namespace:
 
 ```yaml
 android:
-  revocation: []
+  revocation: DISABLED
 ```
 
 Omitting `revocation` does **not** disable checks; it retains the default Google revocation-list loader.
