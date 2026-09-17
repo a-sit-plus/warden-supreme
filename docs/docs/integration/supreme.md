@@ -124,6 +124,41 @@ setup uses a Ktor back-end and a KMP client; the verifier itself is not tied to 
     2. Call the endpoints.
     3. Store the received certificate chain after a successful attestation.
 
+!!! warning "iOS prerequisites: App Attest, provisioning, and Face ID"
+    App Attest requires an explicit App ID whose bundle identifier matches the app. In the
+    [Apple Developer portal](https://developer.apple.com/help/account/identifiers/enable-app-capabilities), open
+    **Certificates, Identifiers & Profiles → Identifiers**, select the App ID, and enable **App Attest**. Changing an
+    App ID invalidates provisioning profiles that use it, so regenerate and install those profiles, or let Xcode's
+    automatic signing create a fresh one. Adding only an entitlement file is insufficient when the selected profile
+    does not contain the capability.
+
+    Add **App Attest** under the app target's **Signing & Capabilities**, or add the entitlement manually:
+
+    ```xml
+    <key>com.apple.developer.devicecheck.appattest-environment</key>
+    <string>development</string>
+    ```
+
+    Use either `development` or `production` and configure the verifier's iOS `sandbox` setting to match. Keys from one
+    environment do not work in the other; TestFlight and App Store builds always use production regardless of the
+    entitlement. See Apple's
+    [App Attest environment documentation](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.devicecheck.appattest-environment).
+
+    Face ID has no separate capability or entitlement. If a challenge can require biometric key protection, the app's
+    Info.plist must contain a user-facing reason or iOS terminates the app when Face ID is accessed:
+
+    ```xml
+    <key>NSFaceIDUsageDescription</key>
+    <string>Use Face ID to authorize the attested key.</string>
+    ```
+
+    To require biometrics without device-passcode fallback, request `biometry = true` and `deviceLock = false`.
+    Otherwise the iOS client permits user presence through either biometrics or the device passcode. Keychain access
+    control is fixed when a key is created, so use a new alias after changing these constraints. See Apple's
+    [Face ID usage-description](https://developer.apple.com/documentation/bundleresources/information-property-list/nsfaceidusagedescription)
+    and [keychain user-presence](https://developer.apple.com/documentation/security/secaccesscontrolcreateflags/userpresence)
+    documentation.
+
 !!! tip inline end "Migration Info"
     Warden Supreme 0.9.99 revamped trust anchor management and thus changed configuration parameters.
 
