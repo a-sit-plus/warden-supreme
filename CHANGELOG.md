@@ -2,6 +2,7 @@
 
 ## NEXT
 
+* Add iOS Client exported as XCode framework
 * Add per-Android-trust-anchor factory-provisioned certificate-chain validity policies.
     * `enforceFactoryProvisionedChainValidity` remains `true` globally
     * Warden's default Google factory-provisioned roots with subject `SERIALNUMBER=f92009e853b6b045`, and the bundled raw public-key roots,
