@@ -1,0 +1,141 @@
+name: Publish Swift Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "SemVer version to publish, for example 1.2.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: macos-latest
+    env:
+      PRODUCT_NAME: WardenSupreme
+      PACKAGE_BRANCH: swift-package
+      REPOSITORY_URL: https://github.com/${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ inputs.version }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Validate version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$VERSION"
+
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]]; then
+            echo "Version '$version' is not valid SemVer." >&2
+            exit 1
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$version" >/dev/null 2>&1; then
+            echo "Tag '$version' already exists." >&2
+            exit 1
+          fi
+
+          if gh release view "$version" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release '$version' already exists." >&2
+            exit 1
+          fi
+
+      - name: Build release XCFramework
+        run: ./gradlew -PartifactVersion="$VERSION" :supreme-client-swift:assembleWardenSupremeReleaseXCFramework
+
+      - name: Zip XCFramework and compute checksum
+        id: artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          framework_path="supreme/client-swift/build/XCFrameworks/release/${PRODUCT_NAME}.xcframework"
+          zip_path="$RUNNER_TEMP/${PRODUCT_NAME}.xcframework.zip"
+
+          test -d "$framework_path"
+          ditto -c -k --sequesterRsrc --keepParent "$framework_path" "$zip_path"
+
+          echo "zip_path=$zip_path" >> "$GITHUB_OUTPUT"
+          echo "checksum=$(swift package compute-checksum "$zip_path")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish package branch and tag
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$VERSION"
+          package_dir="$RUNNER_TEMP/swift-package"
+          worktree="$RUNNER_TEMP/swift-package-worktree"
+          asset_url="${REPOSITORY_URL}/releases/download/${version}/${PRODUCT_NAME}.xcframework.zip"
+
+          mkdir -p "$package_dir"
+          cat > "$package_dir/Package.swift" <<EOF
+          // swift-tools-version: 5.9
+          // Published from source commit: ${GITHUB_SHA}
+
+          import PackageDescription
+
+          let package = Package(
+              name: "${PRODUCT_NAME}",
+              platforms: [.iOS(.v15)],
+              products: [
+                  .library(name: "${PRODUCT_NAME}", targets: ["${PRODUCT_NAME}"])
+              ],
+              targets: [
+                  .binaryTarget(
+                      name: "${PRODUCT_NAME}",
+                      url: "${asset_url}",
+                      checksum: "${{ steps.artifact.outputs.checksum }}"
+                  )
+              ]
+          )
+          EOF
+
+          cat > "$package_dir/README.md" <<EOF
+          # ${PRODUCT_NAME}
+
+          Add \`${REPOSITORY_URL}\` as a package dependency in Xcode and select version \`${version}\`.
+
+          Published from source commit \`${GITHUB_SHA}\`.
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git worktree add --detach "$worktree"
+
+          cd "$worktree"
+          git checkout --orphan "$PACKAGE_BRANCH"
+          git rm -rf . >/dev/null 2>&1 || true
+          cp "$package_dir/Package.swift" Package.swift
+          cp "$package_dir/README.md" README.md
+          git add Package.swift README.md
+          git commit -m "Publish Swift package ${version}" -m "Source commit: ${GITHUB_SHA}"
+
+          package_sha="$(git rev-parse HEAD)"
+          git tag "$version" "$package_sha"
+          git push origin "HEAD:refs/heads/${PACKAGE_BRANCH}" --force
+          git push origin "refs/tags/${version}:refs/tags/${version}"
+          echo "package_sha=$package_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        shell: bash
+        run: |
+          gh release create "$VERSION" "${{ steps.artifact.outputs.zip_path }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "${{ steps.package.outputs.package_sha }}" \
+            --title "$VERSION" \
+            --notes "Swift Package binary release for ${PRODUCT_NAME}. Source commit: ${GITHUB_SHA}."
