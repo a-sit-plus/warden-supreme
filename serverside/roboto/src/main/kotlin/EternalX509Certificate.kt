@@ -20,11 +20,11 @@ class EternalX509Certificate(private val delegate: X509Certificate) : X509Certif
 
     override fun hasUnsupportedCriticalExtension(): Boolean = delegate.hasUnsupportedCriticalExtension()
 
-    override fun getCriticalExtensionOIDs(): MutableSet<String> = delegate.criticalExtensionOIDs
+    override fun getCriticalExtensionOIDs(): MutableSet<String>? = delegate.criticalExtensionOIDs
 
-    override fun getNonCriticalExtensionOIDs(): MutableSet<String> = delegate.nonCriticalExtensionOIDs
+    override fun getNonCriticalExtensionOIDs(): MutableSet<String>? = delegate.nonCriticalExtensionOIDs
 
-    override fun getExtensionValue(oid: String?): ByteArray = delegate.getExtensionValue(oid)
+    override fun getExtensionValue(oid: String?): ByteArray? = delegate.getExtensionValue(oid)
 
     override fun checkValidity() {
         /*NOOP*/
@@ -54,13 +54,13 @@ class EternalX509Certificate(private val delegate: X509Certificate) : X509Certif
 
     override fun getSigAlgOID(): String = delegate.sigAlgOID
 
-    override fun getSigAlgParams(): ByteArray = delegate.sigAlgParams
+    override fun getSigAlgParams(): ByteArray? = delegate.sigAlgParams
 
-    override fun getIssuerUniqueID(): BooleanArray = delegate.issuerUniqueID
+    override fun getIssuerUniqueID(): BooleanArray? = delegate.issuerUniqueID
 
-    override fun getSubjectUniqueID(): BooleanArray = delegate.subjectUniqueID
+    override fun getSubjectUniqueID(): BooleanArray? = delegate.subjectUniqueID
 
-    override fun getKeyUsage(): BooleanArray = delegate.keyUsage
+    override fun getKeyUsage(): BooleanArray? = delegate.keyUsage
 
     override fun getBasicConstraints(): Int = delegate.basicConstraints
 
