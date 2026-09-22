@@ -153,6 +153,7 @@ nav:
     - Integration Guide:
         - Integrating Warden Supreme:
             - End-to-End Integration: integration/supreme.md
+            - Native iOS Client: integration/ios.md
             - Externalising Configuration: integration/config.md
             - Error Handling: integration/errorhandling.md
             - Data Model and Schema: integration/datamodel.md
