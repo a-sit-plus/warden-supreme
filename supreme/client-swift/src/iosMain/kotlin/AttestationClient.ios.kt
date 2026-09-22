@@ -15,6 +15,7 @@ import platform.CoreFoundation.CFRetain
 import platform.Foundation.NSData
 import platform.Foundation.NSUserDefaults
 import platform.Security.*
+import platform.posix.memcpy
 
 /**
  * Certificate pins consumed by the private Kotlin-to-Swift bridge.
@@ -29,6 +30,23 @@ class KotlinIosAttestationResult(
     val successful: Boolean,
     val message: String,
     val certificateCount: Int,
+)
+
+/** One additional attribute requested by the verifier. */
+class KotlinAttestedAttributeDescriptor(
+    val name: String,
+    val type: String,
+    val required: Boolean,
+)
+
+/** Strongly typed value transported from the public Swift façade. */
+class KotlinAttestedAttributeValue(
+    val type: String,
+    val booleanValue: Boolean,
+    val stringValue: String?,
+    val integerValue: Long,
+    val floatingPointValue: Double,
+    val bytesValue: NSData?,
 )
 
 /** Retained key pointer transported through SKIE without suspend-return type erasure. */
@@ -101,7 +119,11 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
      * [challengeEndpoint] must be an absolute HTTP or HTTPS URL.
      */
     @Throws(Throwable::class)
-    suspend fun performAttestation(alias: String, challengeEndpoint: String): KotlinIosAttestationResult {
+    suspend fun performAttestation(
+        alias: String,
+        challengeEndpoint: String,
+        additionalAttributes: (List<KotlinAttestedAttributeDescriptor>) -> List<KotlinAttestedAttributeValue>,
+    ): KotlinIosAttestationResult {
         require(alias.isNotBlank()) { "Key alias must not be blank" }
         val endpoint = Url(challengeEndpoint)
         require(endpoint.host.isNotBlank() && endpoint.protocol.name in setOf("http", "https")) {
@@ -109,10 +131,7 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
         }
 
         return when (val response = client.performAttestationFlow(alias, endpoint) { requested ->
-            requested.map {
-                require(!it.required) { "Verifier requested unsupported required attribute '${it.name}'" }
-                null
-            }
+            resolveAttestedAttributes(requested, additionalAttributes)
         }) {
             is AttestationResponse.Success -> {
                 // ponytail: certificates are public data; UserDefaults avoids a second Keychain schema.
@@ -136,4 +155,54 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
     }
 
     private fun certificateKey(alias: String) = "at.asitplus.warden.attestation-certificate.$alias"
+}
+
+internal fun resolveAttestedAttributes(
+    requested: List<AttestationChallenge.AttributeAttestationDescriptor>,
+    provider: (List<KotlinAttestedAttributeDescriptor>) -> List<KotlinAttestedAttributeValue>,
+): List<Primitive> {
+    val provided = provider(requested.map {
+        KotlinAttestedAttributeDescriptor(it.name, it.type.name, it.required)
+    })
+    require(provided.size == requested.size) {
+        "Expected ${requested.size} attested attributes, got ${provided.size}"
+    }
+    return requested.zip(provided).mapIndexed { index, (descriptor, value) ->
+        val missing = value.type == "MISSING"
+        require(!missing || !descriptor.required) {
+            "Attribute $index ('${descriptor.name}') is required"
+        }
+        if (missing) null else value.toPrimitive(descriptor.type)
+    }
+}
+
+private fun KotlinAttestedAttributeValue.toPrimitive(expectedType: PrimitiveType): Primitive {
+    require(type == expectedType.name) { "Expected ${expectedType.name} attribute, got $type" }
+    return when (expectedType) {
+        PrimitiveType.NULL -> null
+        PrimitiveType.BOOLEAN -> booleanValue
+        PrimitiveType.STRING -> requireNotNull(stringValue)
+        PrimitiveType.BYTE -> integerValue.also {
+            require(it in Byte.MIN_VALUE.toLong()..Byte.MAX_VALUE.toLong())
+        }.toByte()
+        PrimitiveType.SHORT -> integerValue.also {
+            require(it in Short.MIN_VALUE.toLong()..Short.MAX_VALUE.toLong())
+        }.toShort()
+        PrimitiveType.INT -> integerValue.also {
+            require(it in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong())
+        }.toInt()
+        PrimitiveType.LONG -> integerValue
+        PrimitiveType.CHAR -> requireNotNull(stringValue).single()
+        PrimitiveType.FLOAT -> floatingPointValue.toFloat()
+        PrimitiveType.DOUBLE -> floatingPointValue
+        PrimitiveType.BYTEARRAY -> requireNotNull(bytesValue).toByteArray()
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun NSData.toByteArray(): ByteArray {
+    if (length.toInt() == 0) return byteArrayOf()
+    return ByteArray(length.toInt()).also { result ->
+        result.usePinned { memcpy(it.addressOf(0), bytes, length) }
+    }
 }
