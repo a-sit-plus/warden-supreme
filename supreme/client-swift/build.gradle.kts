@@ -6,6 +6,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("at.asitplus.gradle.conventions")
+    id("de.infix.testBalloon")
     id("co.touchlab.skie") version "0.10.14"
 }
 

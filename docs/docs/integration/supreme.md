@@ -532,12 +532,13 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 !!! warning inline end "Key Management"
     Trying to create a key for an existing alias will cause an error! Key management is your responsibility!
 
-!!! info "Native iOS integration"
-    Swift Package installation, App Attest provisioning, native Security-framework APIs, local development, and the
-    demonstrator app are covered in the dedicated [iOS client integration guide](ios.md).
+#### Swift Client
+
+Warden Supreme comes with a Swift client to integrate into native iOS apps.
+Swift Package installation, App Attest provisioning, native Security-framework APIs, local development information, and a
+demonstrator app are covered in the dedicated [iOS client integration guide](ios.md).
 
 #### Kotlin Multiplatform Client
-
 
 The Warden Supreme client is built around Ktor and its Kotlin Multiplatform support.
 Doing so allows for obtaining a certificate chain for an attested key in literally three short lines of code, if the challenge already

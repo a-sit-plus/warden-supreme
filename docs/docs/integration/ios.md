@@ -1,8 +1,8 @@
 # Native iOS Client Integration
 
-!!! info inline end "Preview Status"
+!!! info inline end "Stability Status"
     Contrary to KMP clients, the native iOS client has not yet been integrated at scale.
-    Hence, rough edges may be present.
+    Hence, rough edges may still be present.
 
 Warden Supreme provides a native Swift façade around its Kotlin Multiplatform client. Applications interact with
 `IosAttestationClient`, `URL`, `SecKey`, and `SecCertificate`; The Swift package supports iOS 15 and newer.
@@ -169,20 +169,13 @@ Bind the server to a LAN interface and allow it through the host firewall. Remov
 and use HTTPS for every non-local deployment.
 
 ## Technical Details
-The Swift client still relies on KMP and merely provides a façade around the Supreme Kotlin Multiplatform client.
-In the age of AI-assisted vulnerability analysis, this is not at all about easy wins and very much so at the same time:
 
-* A pure Swift re-implementation of the Supreme verifier would be much more light-weight.
-* However, it would also come with the added cost of maintaining and hardening two disjoint stacks, meaning that
-  any vulnerability found in the KMP codebase would require follow-up analysis of the Swift code and vice versa. This entails:
-    * Longer release/hotfix cycles
-    * Increased complexity and higher potential for bugs
-    * Hardening two serialization stacks, which is an intriguing challenge as it is a steady stream of bugs old and new, but not the right call for security-critical functionality.
+The Swift API is a thin façade over the Supreme Kotlin Multiplatform client. The XCFramework contains the shared KMP
+implementation and a small Swift layer that exposes idiomatic Swift types while hiding Kotlin/Native interoperability.
 
-Keeping Swift-client-specific code do nothing more but a thin façade, allows focused development and hardening effort to be spent
-on a single KMP codebase. Hence it is more than just an easy win in terms of not having to develop and maintain two disjoint stacks,
-but a deliberate, informed choice.
-Hence, there will never be an official re-implementation of the Supreme client functionality in Swift.
+A pure Swift implementation could reduce binary size, but it would duplicate security-critical protocol and serialization
+logic. Keeping one implementation means fixes and hardening apply consistently across platforms. The project therefore
+does not plan to provide a separate pure Swift implementation.
 
 ## Demonstrator App
 
