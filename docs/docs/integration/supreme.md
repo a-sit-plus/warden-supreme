@@ -18,8 +18,8 @@ _Warden Supreme_ is a fully integrated key and app attestation suite with three 
     Be sure to read up on them **before** integrating attestation into your services.
 
 Warden Supreme combines the server-side lineage of [WARDEN](https://github.com/a-sit-plus/warden) with Signum's
-[_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/) to provide the same client API on Android
-and iOS.
+[_Supreme_ KMP crypto provider](https://a-sit-plus.github.io/signum/supreme/) to provide a common KMP client on Android
+and iOS, plus a native Swift façade for Xcode projects.
 The original server-side-only key and app attestation library is still available and actively maintained, as it is one
 of the pillars supporting Warden Supreme.
 It now lives on as [Warden makoto](https://github.com/a-sit-plus/warden-supreme/tree/main/serverside/makoto) and continues to be published to Maven Central.
@@ -35,7 +35,7 @@ use [Spring](https://spring.io/), Ktor, or another HTTP framework.
   ```kotlin
   implementation("at.asitplus.warden:supreme-verifier:$version")
   ```
-* On mobile clients, add the `client` dependency:
+* In KMP mobile clients, add the `client` dependency:
   ```kotlin
   implementation("at.asitplus.warden:supreme-client:$version")
   ```
@@ -102,8 +102,8 @@ Both signature and hash mode bind the same attribute sequence.
 
 
 
-The server must be configured before it can evaluate a client. Android and iOS use the same client and verifier APIs,
-while their policy configuration remains separate because the platforms expose different evidence.
+The server must be configured before it can evaluate a client. Android and iOS use the same attestation flow and
+verifier, while their client façades and policy configuration remain platform-specific.
 
 ## Warden Supreme Step-by-Step Guide
 !!! note
@@ -123,6 +123,9 @@ setup uses a Ktor back-end and a KMP client; the verifier itself is not tied to 
     1. Wire the verifier to the HTTPS endpoints in an `AttestationClient`.
     2. Call the endpoints.
     3. Store the received certificate chain after a successful attestation.
+
+!!! tip inline end "Migration Info"
+    Warden Supreme 0.9.99 revamped trust anchor management and thus changed configuration parameters.
 
 ### Attestation Policy Configuration
 Since Android and iOS attestation require different configuration parameters, distinct configuration classes exist.
@@ -529,6 +532,13 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 !!! warning inline end "Key Management"
     Trying to create a key for an existing alias will cause an error! Key management is your responsibility!
 
+#### Swift Client
+
+Warden Supreme comes with a Swift client to integrate into native iOS apps.
+Swift Package installation, App Attest provisioning, native Security-framework APIs, local development information, and a
+demonstrator app are covered in the dedicated [iOS client integration guide](ios.md).
+
+#### Kotlin Multiplatform Client
 
 The Warden Supreme client is built around Ktor and its Kotlin Multiplatform support.
 Doing so allows for obtaining a certificate chain for an attested key in literally three short lines of code, if the challenge already
