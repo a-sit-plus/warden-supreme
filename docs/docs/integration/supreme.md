@@ -39,8 +39,6 @@ use [Spring](https://spring.io/), Ktor, or another HTTP framework.
   ```kotlin
   implementation("at.asitplus.warden:supreme-client:$version")
   ```
-* In a native iOS project, add `https://github.com/a-sit-plus/warden-supreme` as a Swift Package dependency in Xcode
-  and select the `WardenSupreme` product.
 
 
 ## High-Level Attestation Flow
@@ -122,46 +120,9 @@ setup uses a Ktor back-end and a KMP client; the verifier itself is not tied to 
     2. Create an `AttestationVerifier` based on the configured `Makoto` instance, your CA certificate, and signing keys.
     3. Wire HTTPS endpoints to the `AttestationVerifier` and start an HTTP server.
 * Mobile app:
-    1. Wire the verifier to the HTTPS endpoints in an `AttestationClient` or Swift `IosAttestationClient`.
+    1. Wire the verifier to the HTTPS endpoints in an `AttestationClient`.
     2. Call the endpoints.
     3. Store the received certificate chain after a successful attestation.
-
-### iOS Project Prerequisites
-
-!!! warning "iOS prerequisites: App Attest, provisioning, and Face ID"
-    App Attest requires an explicit App ID whose bundle identifier matches the app. In the
-    [Apple Developer portal](https://developer.apple.com/help/account/identifiers/enable-app-capabilities), open
-    **Certificates, Identifiers & Profiles → Identifiers**, select the App ID, and enable **App Attest**. Changing an
-    App ID invalidates provisioning profiles that use it, so regenerate and install those profiles, or let Xcode's
-    automatic signing create a fresh one. Adding only an entitlement file is insufficient when the selected profile
-    does not contain the capability.
-
-    Add **App Attest** under the app target's **Signing & Capabilities**, or add the entitlement manually:
-
-    ```xml
-    <key>com.apple.developer.devicecheck.appattest-environment</key>
-    <string>development</string>
-    ```
-
-    Use either `development` or `production` and configure the verifier's iOS `sandbox` setting to match. Keys from one
-    environment do not work in the other; TestFlight and App Store builds always use production regardless of the
-    entitlement. See Apple's
-    [App Attest environment documentation](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.devicecheck.appattest-environment).
-
-    Face ID has no separate capability or entitlement. If a challenge can require biometric key protection, the app's
-    Info.plist must contain a user-facing reason or iOS terminates the app when Face ID is accessed:
-
-    ```xml
-    <key>NSFaceIDUsageDescription</key>
-    <string>Use Face ID to authorize the attested key.</string>
-    ```
-
-    To require biometrics without device-passcode fallback, request `biometry = true` and `deviceLock = false`.
-    Otherwise the iOS client permits user presence through either biometrics or the device passcode. Keychain access
-    control is fixed when a key is created, so use a new alias after changing these constraints. See Apple's
-    [Face ID usage-description](https://developer.apple.com/documentation/bundleresources/information-property-list/nsfaceidusagedescription)
-    and [keychain user-presence](https://developer.apple.com/documentation/security/secaccesscontrolcreateflags/userpresence)
-    documentation.
 
 !!! tip inline end "Migration Info"
     Warden Supreme 0.9.99 revamped trust anchor management and thus changed configuration parameters.
@@ -571,84 +532,9 @@ This example assumes Ktor. Since this is an example environment, TLS is omitted 
 !!! warning inline end "Key Management"
     Trying to create a key for an existing alias will cause an error! Key management is your responsibility!
 
-#### Native iOS Client
-
-The `WardenSupreme` Swift Package supports iOS 15 and newer. Add
-`https://github.com/a-sit-plus/warden-supreme` under **File → Add Package Dependencies** in Xcode, select a released
-version, and add the `WardenSupreme` product to the application target. Complete the
-[iOS project prerequisites](#ios-project-prerequisites) before running on a physical device; App Attest is unavailable
-in the simulator.
-
-```swift
-import Foundation
-import Security
-import WardenSupreme
-
-func attestKey() async throws {
-    let client = IosAttestationClient()
-    let alias = "account-signing-key"
-
-    let result = try await client.performAttestation(
-        alias: alias,
-        challengeEndpoint: URL(string: "https://verifier.example/api/v1/challenge")!
-    )
-
-    guard result.successful else {
-        print("Attestation rejected: \(result.message)")
-        return
-    }
-
-    let privateKey: SecKey = try await client.getAttestedKey(alias: alias)
-    let leaf: SecCertificate? = client.getAttestationKeyCertificate(alias: alias)
-    let chain: [SecCertificate] = client.getAttestationCertificateChain(alias: alias)
-}
-```
-
-`performAttestation` fetches the challenge, creates and attests the Signum-backed key, submits the proof to the URL in
-the challenge, and stores the returned leaf-first certificate chain under the alias. A verifier rejection is returned as
-`IosAttestationResult(successful: false, ...)`; networking, malformed input, and platform failures are thrown.
-
-`getAttestedKey` is asynchronous because retrieving a protected private key can display Face ID or another system
-authentication prompt. It returns a native `SecKey`; the leaf and complete chain APIs return native `SecCertificate`
-values. The private key never leaves the Keychain. Use a fresh alias for each newly created key.
-
-The client permits cellular access by default. It can be disabled, and HTTPS certificate pins can be supplied in Ktor's
-`sha256/<base64>` format:
-
-```swift
-let client = IosAttestationClient(
-    allowCellularAccess: false,
-    pins: [
-        PinnedCertificate(
-            domain: "verifier.example",
-            fingerprints: ["sha256/BASE64_SHA256_CERTIFICATE_FINGERPRINT"]
-        )
-    ]
-)
-```
-
-!!! warning "Required client-provided attributes"
-    The current Swift façade does not expose an attribute provider. It supplies `nil` for optional attributes and rejects
-    a challenge that requests a required client-provided attribute. Do not request required client-provided attributes
-    from Swift clients.
-
-!!! warning "Plain HTTP is for local development only"
-    `performAttestation` accepts HTTP URLs, but iOS App Transport Security blocks plain HTTP unless the application opts
-    out. For a Debug-only app that connects directly to a verifier on the development machine, add the following keys to
-    its Info.plist and use the machine's LAN address, not `localhost`:
-
-    ```xml
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-    <key>NSLocalNetworkUsageDescription</key>
-    <string>Connect to the local Warden Supreme verifier.</string>
-    ```
-
-    Bind the development server to a LAN interface and allow it through the host firewall. Remove the ATS exception from
-    release builds and use HTTPS for every non-local deployment.
+!!! info "Native iOS integration"
+    Swift Package installation, App Attest provisioning, native Security-framework APIs, local development, and the
+    demonstrator app are covered in the dedicated [iOS client integration guide](ios.md).
 
 #### Kotlin Multiplatform Client
 

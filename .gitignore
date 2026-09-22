@@ -1,4 +1,7 @@
 dokka-tmp.md
+.DS_Store
+xcuserdata/
+*.xcuserstate
 .gradle
 build
 .idea
