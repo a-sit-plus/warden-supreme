@@ -22,6 +22,9 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Build WardenSupreme XCFramework
+        run: ./gradlew --no-daemon :supreme-client-swift:assembleWardenSupremeXCFramework
+
       - name: Build for iOS Simulator
         run: |
           xcodebuild \
