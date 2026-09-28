@@ -1,5 +1,7 @@
 # Changelog
 
+## NEXT
+
 ## 1.2.0
 * **Add iOS (Swift) Client**
 * Add Fixed time source shorthand in `SupremeConfiguration`
