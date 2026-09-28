@@ -1,0 +1,32 @@
+{
+    "issuer": {
+        "provisioning": "RKP",
+        "securityLevel": "STRONGBOX",
+        "root": null,
+        "issuedAt": "2026-01-15T09:30:00Z",
+        "validity": "PT30M"
+    },
+    "attestations": [
+        {
+            "keyDescription": {
+                "attestationVersion": 400,
+                "attestationSecurityLevel": "STRONGBOX",
+                "keyMintVersion": 400,
+                "keyMintSecurityLevel": "STRONGBOX",
+                "attestationChallenge": "7365727665722d6368616c6c656e6765",
+                "uniqueId": "",
+                "softwareEnforced": [],
+                "hardwareEnforced": [
+                    "a1053103020102",
+                    "a203020103",
+                    "aa03020101",
+                    "bf8550020500",
+                    "bf85542204204444444444444444444444444444444444444444444444444444444444444444"
+                ]
+            },
+            "createdAt": "2026-01-15T09:35:00Z",
+            "leafCanSignCertificates": false
+        }
+    ],
+    "outputDirectory": "attestations/strongbox-rkp"
+}

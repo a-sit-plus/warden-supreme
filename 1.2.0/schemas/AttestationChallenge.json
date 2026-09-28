@@ -1,0 +1,302 @@
+{
+   "type": "object",
+   "required": [
+      "issuedAt",
+      "validity",
+      "nonce",
+      "attestationEndpoint",
+      "proofOID",
+      "dataAuth"
+   ],
+   "properties": {
+      "issuedAt": {
+         "type": "integer",
+         "minimum": -9223372036854775808,
+         "maximum": 9223372036854775807,
+         "title": "Milliseconds since epoch"
+      },
+      "validity": {
+         "type": "integer",
+         "minimum": -9223372036854775808,
+         "maximum": 9223372036854775807,
+         "title": "DurationInWholeSeconds"
+      },
+      "timeZone": {
+         "type": [
+            "string",
+            "null"
+         ],
+         "title": "TimeZone"
+      },
+      "nonce": {
+         "type": "string",
+         "title": "ByteArrayBase64Url"
+      },
+      "attestationEndpoint": {
+         "type": "string",
+         "title": "String"
+      },
+      "proofOID": {
+         "type": "string",
+         "title": "OID"
+      },
+      "genericDeviceNameOID": {
+         "type": [
+            "string",
+            "null"
+         ],
+         "title": "OID"
+      },
+      "version": {
+         "type": [
+            "integer",
+            "null"
+         ],
+         "minimum": -2147483648,
+         "maximum": 2147483647,
+         "title": "Int"
+      },
+      "keyConstraints": {
+         "type": [
+            "object",
+            "null"
+         ],
+         "required": [
+            "algorithmParameters"
+         ],
+         "properties": {
+            "algorithmParameters": {
+               "anyOf": [
+                  {
+                     "type": "object",
+                     "required": [
+                        "curve",
+                        "digests",
+                        "allowKeyAgreement",
+                        "allowSigning"
+                     ],
+                     "properties": {
+                        "curve": {
+                           "type": "string",
+                           "title": "EC name. One of: P-256, P-384, P-521"
+                        },
+                        "digests": {
+                           "type": "array",
+                           "items": {
+                              "type": "string",
+                              "title": "Digest name. One of: SHA1, SHA256, SHA384, SHA512"
+                           },
+                           "uniqueItems": true,
+                           "title": "LinkedHashSet<Digest name. One of: SHA1, SHA256, SHA384, SHA512>"
+                        },
+                        "allowKeyAgreement": {
+                           "type": "boolean",
+                           "title": "Boolean"
+                        },
+                        "allowSigning": {
+                           "type": "boolean",
+                           "title": "Boolean"
+                        }
+                     },
+                     "title": "EC"
+                  },
+                  {
+                     "type": "object",
+                     "required": [
+                        "keySize",
+                        "paddings",
+                        "digests",
+                        "allowDecrypting",
+                        "allowSigning"
+                     ],
+                     "properties": {
+                        "keySize": {
+                           "type": "integer",
+                           "minimum": -2147483648,
+                           "maximum": 2147483647,
+                           "title": "BitLength"
+                        },
+                        "paddings": {
+                           "type": "array",
+                           "items": {
+                              "enum": [
+                                 "PKCS1",
+                                 "PSS"
+                              ],
+                              "title": "RSAPadding"
+                           },
+                           "uniqueItems": true,
+                           "title": "LinkedHashSet<RSAPadding>"
+                        },
+                        "digests": {
+                           "type": "array",
+                           "items": {
+                              "enum": [
+                                 "SHA1",
+                                 "SHA256",
+                                 "SHA384",
+                                 "SHA512"
+                              ],
+                              "title": "Digest"
+                           },
+                           "uniqueItems": true,
+                           "title": "LinkedHashSet<Digest>"
+                        },
+                        "allowDecrypting": {
+                           "type": "boolean",
+                           "title": "Boolean"
+                        },
+                        "allowSigning": {
+                           "type": "boolean",
+                           "title": "Boolean"
+                        }
+                     },
+                     "title": "RSA"
+                  }
+               ],
+               "title": "AlgorithmParameters"
+            },
+            "keyProtection": {
+               "type": [
+                  "object",
+                  "null"
+               ],
+               "required": [],
+               "properties": {
+                  "timeout": {
+                     "type": [
+                        "string",
+                        "null"
+                     ],
+                     "title": "Duration"
+                  },
+                  "deviceLock": {
+                     "type": [
+                        "boolean",
+                        "null"
+                     ],
+                     "title": "Boolean"
+                  },
+                  "biometry": {
+                     "type": [
+                        "boolean",
+                        "null"
+                     ],
+                     "title": "Boolean"
+                  },
+                  "allowNewBiometricFactors": {
+                     "type": [
+                        "boolean",
+                        "null"
+                     ],
+                     "title": "Boolean"
+                  }
+               },
+               "title": "KeyProtection"
+            }
+         },
+         "title": "KeyConstraints"
+      },
+      "additionalPayload": {
+         "type": [
+            "object",
+            "null"
+         ],
+         "additionalProperties": {
+            "type": "object",
+            "required": [
+               "type",
+               "value"
+            ],
+            "properties": {
+               "type": {
+                  "type": "integer",
+                  "minimum": -128,
+                  "maximum": 127,
+                  "title": "Byte"
+               },
+               "value": {
+                  "type": "object",
+                  "required": [],
+                  "properties": {},
+                  "title": "ConstrainedValuePayload"
+               }
+            },
+            "title": "ConstrainedValue"
+         },
+         "title": "LinkedHashMap<String,ConstrainedValue>"
+      },
+      "toBeAttestedAttributes": {
+         "type": [
+            "object",
+            "null"
+         ],
+         "required": [
+            "oid",
+            "attributes"
+         ],
+         "properties": {
+            "oid": {
+               "type": "string",
+               "title": "OID"
+            },
+            "attributes": {
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "required": [
+                     "name",
+                     "type",
+                     "required"
+                  ],
+                  "properties": {
+                     "name": {
+                        "type": "string",
+                        "title": "String"
+                     },
+                     "type": {
+                        "type": "integer",
+                        "minimum": -128,
+                        "maximum": 127,
+                        "title": "PrimitiveType"
+                     },
+                     "required": {
+                        "type": "boolean",
+                        "title": "Boolean"
+                     }
+                  },
+                  "title": "AttributeAttestationDescriptor"
+               },
+               "title": "ArrayList<AttributeAttestationDescriptor>"
+            }
+         },
+         "title": "CertificationRequestAttributeAttestationDescriptor"
+      },
+      "dataAuth": {
+         "type": "object",
+         "required": [
+            "type"
+         ],
+         "properties": {
+            "type": {
+               "enum": [
+                  "SIGNATURE",
+                  "HASH"
+               ],
+               "title": "Type"
+            },
+            "algorithm": {
+               "enum": [
+                  "SHA1",
+                  "SHA256",
+                  "SHA384",
+                  "SHA512"
+               ],
+               "title": "Digest"
+            }
+         },
+         "title": "SerializedDataAuthentication"
+      }
+   },
+   "title": "AttestationChallenge"
+}

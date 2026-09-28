@@ -1,0 +1,26 @@
+{
+    "issuer": {
+        "provisioning": "FACTORY",
+        "securityLevel": "TEE",
+        "root": null,
+        "issuedAt": "2026-01-15T09:30:00Z",
+        "validity": "PT8760H"
+    },
+    "attestations": [
+        {
+            "keyDescription": {
+                "attestationVersion": 400,
+                "attestationSecurityLevel": "TEE",
+                "keyMintVersion": 400,
+                "keyMintSecurityLevel": "TEE",
+                "attestationChallenge": "",
+                "uniqueId": "",
+                "softwareEnforced": [],
+                "hardwareEnforced": []
+            },
+            "createdAt": "2026-01-15T09:35:00Z",
+            "leafCanSignCertificates": false
+        }
+    ],
+    "outputDirectory": "attestations"
+}
