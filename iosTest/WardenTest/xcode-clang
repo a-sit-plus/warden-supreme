@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# ponytail: Xcode 26.6 deadlocks while capturing verbose clang probe output.
+args=()
+for arg in "$@"; do
+    [[ "$arg" == "-v" ]] || args+=("$arg")
+done
+exec "$(xcrun --find clang)" "${args[@]}"

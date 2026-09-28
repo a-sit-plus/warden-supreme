@@ -1,6 +1,7 @@
 # Changelog
 
 ## NEXT
+* Add iOS Client exported as XCode framework
 * Add Fixed time source shorthand in `SupremeConfiguration`
 * More Java-Friendliness all over the place (see docs/integration/java)
     * Mark Java-Only APIs `internal` and use `@JvmName` to hide them from the public Kotlin API
@@ -10,6 +11,10 @@
       explicitly permit expired factory-provisioned chains (`false`).  
       **THIS IS A BEHAVIOURAL CHANGE:** whereas some checks might have failed with a certificate/time exceptions, they may now succeed by default or fail
       due to attestation statement creation time, instead of expired/not-yet valid certificates
+* Update Conventions to 20260918 with
+    * TestBalloon Addons 0.17.0
+    * Bouncy Castle 1.86
+
 
 ## 1.1.4
 * Fix Spring Boot config loading (which is more cursed than anticipated):

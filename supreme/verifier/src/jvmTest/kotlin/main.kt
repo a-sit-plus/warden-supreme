@@ -97,8 +97,8 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                     IosAttestationConfiguration(
                         IosAttestationConfiguration.AppData(
                             "9CYHJNG644",
-                            "at.asitplus.signumtest.iosApp", //to test with real app from ios
-                            sandbox = true
+                            "at.asitplus.warden.supreme", //to test with real app from ios
+                            sandbox = false
                         ),
                     ),
                     clock = object : SupremeConfiguration.Clock {

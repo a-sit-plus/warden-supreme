@@ -33,7 +33,7 @@ import kotlin.time.Clock
  * For testing, it is possible to provide a custom [clock] for high-level checks.
  * **Note that this clock does not affect generated attestation proofs, because those will always use the actual device clock!**
  */
-class AttestationClient(
+open class AttestationClient(
     client: HttpClient,
     private val clock: Clock = Clock.System,
     private val maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
