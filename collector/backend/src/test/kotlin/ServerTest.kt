@@ -2,6 +2,7 @@ package at.asitplus.warden
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.Makoto
+import at.asitplus.testballoon.matrix.*
 import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.SupremeConfiguration
@@ -24,15 +25,15 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import java.io.File
-import kotlin.test.*
+import io.kotest.matchers.shouldBe
+import io.kotest.assertions.throwables.shouldThrowAny
 import kotlin.io.path.createTempDirectory
 import java.util.zip.ZipInputStream
 import java.util.concurrent.atomic.AtomicInteger
 
-class ServerTest {
+val ServerTest by matrixSuite {
 
-    @Test
-    fun `successful collection updates debug index without restart`() {
+    "successful collection updates debug index without restart" {
         val outputDir = createTempDirectory("collector-index-test").toFile()
         try {
             val configuration = AndroidAttestationConfiguration(
@@ -42,21 +43,20 @@ class ServerTest {
             val statement = Makoto(androidAttestationConfiguration = configuration)
                 .collectDebugInfo(emptyList<ByteArray>(), byteArrayOf(1))
             CollectorStore(outputDir).use { store ->
-                assertTrue(store.debugStatements().none())
+                store.debugStatements().none() shouldBe true
                 val id = store.collect(1500, null, "test", false, statement.serializeCompact(), byteArrayOf(1))
                 store.collect(1600, null, "test", false, null, byteArrayOf(1))
-                assertEquals(listOf(id), store.debugStatements(1000, 2000).map { it.parentFile.name }.toList())
-                assertEquals(statement.serialize(), store.debugStatements().single().readText())
-                assertFails { store.collect(1700, null, "test", false, "invalid", byteArrayOf(1)) }
-                assertEquals(1, store.debugStatements().count())
+                store.debugStatements(1000, 2000).map { it.parentFile.name }.toList() shouldBe listOf(id)
+                store.debugStatements().single().readText() shouldBe statement.serialize()
+                shouldThrowAny { store.collect(1700, null, "test", false, "invalid", byteArrayOf(1)) }
+                store.debugStatements().count() shouldBe 1
             }
         } finally {
             outputDir.deleteRecursively()
         }
     }
 
-    @Test
-    fun `debug exports reject overload and release permits`() {
+    "debug exports reject overload and release permits" {
         val outputDir = createTempDirectory("collector-overload-test").toFile()
         try {
             testApplication {
@@ -80,76 +80,66 @@ class ServerTest {
                     val exports = List(2) { async { client.get("/api/debug-statements") } }
                     try {
                         withTimeout(10000) { started.await() }
-                        assertEquals(HttpStatusCode.TooManyRequests, client.get("/api/debug-statements").status)
+                        client.get("/api/debug-statements").status shouldBe HttpStatusCode.TooManyRequests
                     } finally {
                         release.complete(Unit)
                     }
-                    exports.awaitAll().forEach { assertEquals("[]", it.bodyAsText()) }
+                    exports.awaitAll().forEach { it.bodyAsText() shouldBe "[]" }
                 }
-                assertEquals(HttpStatusCode.OK, client.get("/api/debug-statements").status)
+                client.get("/api/debug-statements").status shouldBe HttpStatusCode.OK
             }
         } finally {
             outputDir.deleteRecursively()
         }
     }
 
-    @Test
-    fun `debug statement API filters directory timestamps and validates bounds`() {
-        val outputDir = createTempDirectory("collector-api-test").toFile()
-        try {
-            // Valid JSON payloads suffice: this endpoint must not deserialize WARDEN statements.
-            val ids = listOf("2000-aaaaa", "1000-bbbbb", "999-ccccc", "1999-ddddd", "1000-aaaaa")
-            ids.forEach { id ->
-                File(outputDir, id).mkdirs()
-                File(outputDir, "$id/record.json").writeText("{}")
-                File(outputDir, "$id/debug-statement.json").writeText("\"$id\"")
-            }
-            File(outputDir, "1500-incomplete").mkdirs()
-            File(outputDir, "1500-incomplete/debug-statement.json").writeText("{}")
-            File(outputDir, "not-a-record").mkdirs()
-            File(outputDir, "not-a-record/record.json").writeText("{}")
-            File(outputDir, "not-a-record/debug-statement.json").writeText("{}")
-            File(outputDir, "1200-nostatement").mkdirs()
-            File(outputDir, "1200-nostatement/record.json").writeText("{}")
-
-            // Rebuild solely from filesystem names, including records sharing a millisecond.
+    "startup rebuilds the index from directory names" {
+        withStoredStatements { outputDir, ids ->
             repeat(2) {
                 CollectorStore(outputDir).use { store ->
-                    assertEquals(ids.sortedWith(compareBy<String> { it.substringBeforeLast('-').toLong() }.thenBy { it }),
-                        store.debugStatements().map { it.parentFile.name }.toList())
-                    assertEquals(listOf("1000-aaaaa", "1000-bbbbb", "1999-ddddd"),
-                        store.debugStatements(1000, 2000).map { it.parentFile.name }.toList())
-                    assertTrue(store.debugStatements(1000, 1000).none())
+                    store.debugStatements().map { it.parentFile.name }.toList() shouldBe ids.sortedWith(compareBy<String> { it.substringBeforeLast('-').toLong() }.thenBy { it })
+                    store.debugStatements(1000, 2000).map { it.parentFile.name }.toList() shouldBe listOf("1000-aaaaa", "1000-bbbbb", "1999-ddddd")
+                    store.debugStatements(1000, 1000).none() shouldBe true
                 }
             }
-            testApplication {
-                environment { config = MapApplicationConfig("collector.outputDir" to outputDir.absolutePath) }
-                application { configureSerialization(); configureRouting() }
-                suspend fun check(query: String, expected: List<String>) {
-                    val response = client.get("/api/debug-statements$query")
-                    assertEquals(HttpStatusCode.OK, response.status)
-                    assertEquals(expected, Json.decodeFromString<List<String>>(response.bodyAsText()))
-                }
-                check("", listOf("999-ccccc", "1000-aaaaa", "1000-bbbbb", "1999-ddddd", "2000-aaaaa"))
-                check("?from=1&to=2", listOf("1000-aaaaa", "1000-bbbbb", "1999-ddddd"))
-                check("?to=1", listOf("999-ccccc"))
-                check("?from=2", listOf("2000-aaaaa"))
-                check("?from=1&to=1", emptyList())
-                check("?from=3", emptyList())
-                listOf("?from=2&to=1", "?from=no", "?to=", "?from=1.5", "?from=1&from=2",
-                    "?to=${Long.MAX_VALUE}", "?from=${Long.MIN_VALUE}").forEach { query ->
-                    assertEquals(HttpStatusCode.BadRequest, client.get("/api/debug-statements$query").status)
-                }
-                // Validation errors must not consume export permits.
-                check("?from=2", listOf("2000-aaaaa"))
-            }
-        } finally {
-            outputDir.deleteRecursively()
         }
     }
 
-    @Test
-    fun `collector policies change only their documented checks`() {
+    "debug statement API parameter combinations" - {
+        data("from", boundCases, nameFn = { _, case -> case.name }) - { from ->
+            data("to", boundCases, nameFn = { _, case -> case.name }) test { to ->
+                withStoredStatements { outputDir, ids ->
+                    testApplication {
+                        environment { config = MapApplicationConfig("collector.outputDir" to outputDir.absolutePath) }
+                        application { configureSerialization(); configureRouting() }
+                        val response = client.get("/api/debug-statements") {
+                            url {
+                                from.values.forEach { parameters.append("from", it) }
+                                to.values.forEach { parameters.append("to", it) }
+                            }
+                        }
+                        val invalid = from.invalid || to.invalid ||
+                            (from.milliseconds != null && to.milliseconds != null && from.milliseconds > to.milliseconds)
+                        if (invalid) {
+                            response.status shouldBe HttpStatusCode.BadRequest
+                            // Invalid parameters must leave capacity for a subsequent export.
+                            client.get("/api/debug-statements").status shouldBe HttpStatusCode.OK
+                        } else {
+                            response.status shouldBe HttpStatusCode.OK
+                            val expected = ids.filter { id ->
+                                val timestamp = id.substringBeforeLast('-').toLong()
+                                (from.milliseconds == null || timestamp >= from.milliseconds) &&
+                                    (to.milliseconds == null || timestamp < to.milliseconds)
+                            }.sortedWith(compareBy<String> { it.substringBeforeLast('-').toLong() }.thenBy { it })
+                            Json.decodeFromString<List<String>>(response.bodyAsText()) shouldBe expected
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    "collector policies change only their documented checks" {
         val base = SupremeConfiguration(
             AndroidAttestationConfiguration(
                 AndroidAttestationConfiguration.AppData("test", setOf(ByteArray(32))),
@@ -157,31 +147,30 @@ class ServerTest {
         )
 
         val default = base.forCollectorPolicy(CollectorPolicy.DEFAULT).android!!
-        assertTrue(default.enforceFactoryProvisionedChainValidity)
-        assertFalse(default.allowBootloaderUnlock)
+        default.enforceFactoryProvisionedChainValidity shouldBe true
+        default.allowBootloaderUnlock shouldBe false
 
         val oldCertificates = base.forCollectorPolicy(CollectorPolicy.OLD_FACTORY_CERTIFICATES).android!!
-        assertFalse(oldCertificates.enforceFactoryProvisionedChainValidity)
-        assertFalse(oldCertificates.allowBootloaderUnlock)
+        oldCertificates.enforceFactoryProvisionedChainValidity shouldBe false
+        oldCertificates.allowBootloaderUnlock shouldBe false
 
         val unlocked = base.forCollectorPolicy(CollectorPolicy.UNLOCKED_BOOTLOADER).android!!
-        assertFalse(unlocked.enforceFactoryProvisionedChainValidity)
-        assertTrue(unlocked.allowBootloaderUnlock)
+        unlocked.enforceFactoryProvisionedChainValidity shouldBe false
+        unlocked.allowBootloaderUnlock shouldBe true
 
         val grapheneOs = base.forCollectorPolicy(CollectorPolicy.GRAPHENE_OS).android!!
-        assertFalse(grapheneOs.enforceFactoryProvisionedChainValidity)
-        assertFalse(grapheneOs.allowBootloaderUnlock)
-        assertTrue(VerifiedBootKey.OEM in grapheneOs.verifiedBootKeys)
-        assertTrue(grapheneOs.verifiedBootKeys.any { it is VerifiedBootKey.Digest })
+        grapheneOs.enforceFactoryProvisionedChainValidity shouldBe false
+        grapheneOs.allowBootloaderUnlock shouldBe false
+        (VerifiedBootKey.OEM in grapheneOs.verifiedBootKeys) shouldBe true
+        grapheneOs.verifiedBootKeys.any { it is VerifiedBootKey.Digest } shouldBe true
 
         val strongBox = base.forCollectorPolicy(CollectorPolicy.STRONGBOX_ONLY).android!!
-        assertTrue(strongBox.requireStrongBox)
-        assertTrue(strongBox.enforceFactoryProvisionedChainValidity)
-        assertFalse(strongBox.allowBootloaderUnlock)
+        strongBox.requireStrongBox shouldBe true
+        strongBox.enforceFactoryProvisionedChainValidity shouldBe true
+        strongBox.allowBootloaderUnlock shouldBe false
     }
 
-    @Test
-    fun `replay failure keeps stored state`() {
+    "replay failure keeps stored state" {
         val outputDir = createTempDirectory("collector-replay-test").toFile()
         try {
             val recordDir = File(outputDir, "1234-dead").apply { mkdirs() }
@@ -202,19 +191,18 @@ class ServerTest {
             oldFiles.forEach { (name, contents) -> File(recordDir, name).writeBytes(contents) }
 
             CollectorStore(outputDir).use { store ->
-                assertEquals("original", store.list().single().second.result)
+                store.list().single().second.result shouldBe "original"
             }
 
             oldFiles.forEach { (name, contents) ->
-                assertContentEquals(contents, File(recordDir, name).readBytes())
+                File(recordDir, name).readBytes().contentEquals(contents) shouldBe true
             }
         } finally {
             outputDir.deleteRecursively()
         }
     }
 
-    @Test
-    fun `test root endpoint`() {
+    "test root endpoint" {
         val outputDir = createTempDirectory("collector-test").toFile()
         try {
             testApplication {
@@ -226,28 +214,28 @@ class ServerTest {
                     configureRouting()
                 }
                 // verify server root returns 200
-                assertEquals(HttpStatusCode.OK, client.get("/").status)
-                assertEquals(HttpStatusCode.OK, client.get("/health").status)
-                assertEquals(HttpStatusCode.OK, client.get("/collector.css").status)
+                client.get("/").status shouldBe HttpStatusCode.OK
+                client.get("/health").status shouldBe HttpStatusCode.OK
+                client.get("/collector.css").status shouldBe HttpStatusCode.OK
                 CollectorPolicy.entries.forEach { policy ->
                     val challenge = Json.decodeFromString<AttestationChallenge>(
                         client.get(policy.challengePath).bodyAsText()
                     )
-                    assertTrue(challenge.attestationEndpoint.endsWith(policy.attestPath))
+                    challenge.attestationEndpoint.endsWith(policy.attestPath) shouldBe true
                 }
-                assertEquals(DemoAttestation.CHALLENGE_PATH, CollectorPolicy.DEFAULT.challengePath)
-                assertEquals(DemoAttestation.ATTEST_PATH, CollectorPolicy.DEFAULT.attestPath)
+                CollectorPolicy.DEFAULT.challengePath shouldBe DemoAttestation.CHALLENGE_PATH
+                CollectorPolicy.DEFAULT.attestPath shouldBe DemoAttestation.ATTEST_PATH
                 val version = client.get(DemoAttestation.VERSION_PATH).bodyAsText()
-                assertTrue(version.toLong() > 0)
-                assertEquals(HttpStatusCode.OK, client.get(DemoAttestation.DOWNLOAD_PATH).status)
+                (version.toLong() > 0) shouldBe true
+                client.get(DemoAttestation.DOWNLOAD_PATH).status shouldBe HttpStatusCode.OK
                 val archives = coroutineScope {
                     List(8) { async { client.get(DEBUG_STATEMENTS_ARCHIVE_PATH) } }.awaitAll()
                 }
-                archives.forEach { assertEquals(HttpStatusCode.OK, it.status) }
+                archives.forEach { it.status shouldBe HttpStatusCode.OK }
                 val archiveBytes = archives.map { it.body<ByteArray>() }
-                archiveBytes.drop(1).forEach { assertContentEquals(archiveBytes.first(), it) }
+                archiveBytes.drop(1).forEach { it.contentEquals(archiveBytes.first()) shouldBe true }
                 ZipInputStream(archiveBytes.first().inputStream()).use {
-                    assertNull(it.nextEntry)
+                    it.nextEntry shouldBe null
                 }
             }
         } finally {
@@ -255,4 +243,53 @@ class ServerTest {
         }
     }
 
+}
+
+private data class BoundCase(
+    val name: String,
+    val values: List<String>,
+    val milliseconds: Long? = null,
+    val invalid: Boolean = false,
+)
+
+private val boundCases = listOf(
+    BoundCase("omitted", emptyList()),
+    BoundCase("negative", listOf("-1"), -1000),
+    BoundCase("zero", listOf("0"), 0),
+    BoundCase("first boundary", listOf("1"), 1000),
+    BoundCase("last boundary", listOf("2"), 2000),
+    BoundCase("after all statements", listOf("3"), 3000),
+    BoundCase("lowest representable seconds", listOf("-9223372036854775"), -9223372036854775000L),
+    BoundCase("highest representable seconds", listOf("9223372036854775"), 9223372036854775000L),
+    BoundCase("empty", listOf(""), invalid = true),
+    BoundCase("non-numeric", listOf("no"), invalid = true),
+    BoundCase("fractional", listOf("1.5"), invalid = true),
+    BoundCase("lower conversion overflow", listOf(Long.MIN_VALUE.toString()), invalid = true),
+    BoundCase("upper conversion overflow", listOf(Long.MAX_VALUE.toString()), invalid = true),
+    BoundCase("integer parsing overflow", listOf("9223372036854775808"), invalid = true),
+    BoundCase("duplicate equal values", listOf("1", "1"), invalid = true),
+    BoundCase("duplicate different values", listOf("1", "2"), invalid = true),
+)
+
+private suspend fun withStoredStatements(action: suspend (File, List<String>) -> Unit) {
+    val outputDir = createTempDirectory("collector-api-test").toFile()
+    try {
+        // JSON payloads suffice: the export must not deserialize WARDEN statements.
+        val ids = listOf("2000-aaaaa", "1000-bbbbb", "999-ccccc", "1999-ddddd", "1000-aaaaa", "-1-eeeee", "0-fffff")
+        ids.forEach { id ->
+            File(outputDir, id).mkdirs()
+            File(outputDir, "$id/record.json").writeText("{}")
+            File(outputDir, "$id/debug-statement.json").writeText("\"$id\"")
+        }
+        File(outputDir, "1500-incomplete").mkdirs()
+        File(outputDir, "1500-incomplete/debug-statement.json").writeText("{}")
+        File(outputDir, "not-a-record").mkdirs()
+        File(outputDir, "not-a-record/record.json").writeText("{}")
+        File(outputDir, "not-a-record/debug-statement.json").writeText("{}")
+        File(outputDir, "1200-nostatement").mkdirs()
+        File(outputDir, "1200-nostatement/record.json").writeText("{}")
+        action(outputDir, ids)
+    } finally {
+        outputDir.deleteRecursively()
+    }
 }

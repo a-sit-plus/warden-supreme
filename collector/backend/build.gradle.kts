@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     alias(libs.plugins.ktor)
+    id("de.infix.testBalloon")
     id("at.asitplus.gradle.conventions")
 }
 
@@ -44,7 +45,6 @@ dependencies {
     implementation(ktor("serialization-kotlinx-json"))
     implementation(libs.logback.classic)
 
-    testImplementation(kotlin("test"))
     testImplementation(ktor("server-test-host"))
 }
 
