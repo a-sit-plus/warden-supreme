@@ -26,13 +26,21 @@ import at.asitplus.warden.collector.shared.CollectorPolicy
 import at.asitplus.warden.collector.shared.DemoAttestation
 import io.ktor.server.application.*
 import io.ktor.http.HttpHeaders
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.html.respondHtml
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.*
 import kotlinx.datetime.TimeZone
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.Semaphore
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -132,6 +140,8 @@ fun Application.configureRouting() {
             ?: "./collected-proofs"
     )
     val store = CollectorStore(outputDir)
+    // ponytail: two simultaneous exports; rate limiting belongs at the reverse proxy.
+    val debugStatementExports = Semaphore(2)
     monitor.subscribe(ApplicationStopped) { store.close() }
     val collectorVersionCode = this::class.java.classLoader.getResource("collector-version.txt")
         ?.readText()?.trim() ?: error("collector-version.txt not found on the classpath")
@@ -259,6 +269,52 @@ fun Application.configureRouting() {
         get(DEBUG_STATEMENTS_ARCHIVE_PATH) {
             call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"debug-statements.zip\"")
             call.respondFile(store.debugStatementsArchive())
+        }
+
+        get("/api/debug-statements") {
+            val (from, to) = try {
+                listOf("from", "to").map { name ->
+                    call.request.queryParameters.getAll(name)?.let { values ->
+                        require(values.size == 1)
+                        Math.multiplyExact(values.single().toLong(), 1000L)
+                    }
+                }.also { (from, to) -> require(from == null || to == null || from <= to) }
+            } catch (_: IllegalArgumentException) {
+                call.respondText("Expected optional integer epoch seconds with from <= to", status = HttpStatusCode.BadRequest)
+                return@get
+            } catch (_: ArithmeticException) {
+                call.respondText("Timestamp is out of range", status = HttpStatusCode.BadRequest)
+                return@get
+            }
+            if (!debugStatementExports.tryAcquire()) {
+                call.respondText("Too many concurrent exports", status = HttpStatusCode.TooManyRequests)
+                return@get
+            }
+            try {
+                call.respondBytesWriter(ContentType.Application.Json) {
+                    withContext(Dispatchers.IO) {
+                        writeByte('['.code.toByte())
+                        var first = true
+                        val buffer = ByteArray(8192)
+                        store.debugStatements(from, to).forEach { file ->
+                            currentCoroutineContext().ensureActive()
+                            file.inputStream().use { input ->
+                                if (!first) writeByte(','.code.toByte())
+                                first = false
+                                while (true) {
+                                    currentCoroutineContext().ensureActive()
+                                    val count = input.read(buffer)
+                                    if (count < 0) break
+                                    writeFully(buffer, 0, count)
+                                }
+                            }
+                        }
+                        writeByte(']'.code.toByte())
+                    }
+                }
+            } finally {
+                debugStatementExports.release()
+            }
         }
 
         // Downloads (chain.der, proof.der, debug-statement.json, attestation.json) are the files

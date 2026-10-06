@@ -26,6 +26,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.util.concurrent.ConcurrentSkipListMap
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.random.Random
@@ -66,6 +67,10 @@ data class CollectedRecord(
 
 /** Filesystem store: one directory per collected attestation under [dir]. */
 class CollectorStore(private val dir: File) : AutoCloseable {
+    // ponytail: rebuild from directory names at startup; no persistent index to maintain.
+    private val statements = ConcurrentSkipListMap<Pair<Long, String>, File>(
+        compareBy<Pair<Long, String>> { it.first }.thenBy { it.second }
+    )
     private sealed interface ArchiveCommand {
         data object StatementsChanged : ArchiveCommand
         data class Get(val result: CompletableDeferred<File>) : ArchiveCommand
@@ -110,6 +115,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
                 statement = debugStatement,
             )
             if (debugStatement != null) {
+                statements[submittedAtEpochMs to id] = File(recordDir, "debug-statement.json")
                 archiveCommands.trySend(ArchiveCommand.StatementsChanged)
             }
             logger.info("Stored attestation proof; success=true; path={}", recordDir.absolutePath)
@@ -122,6 +128,20 @@ class CollectorStore(private val dir: File) : AutoCloseable {
             )
             throw exception
         }
+    }
+
+    /** Bounds are epoch milliseconds, lower inclusive and upper exclusive. No file reads or sorting. */
+    fun debugStatements(from: Long? = null, to: Long? = null): Sequence<File> {
+        require(from == null || to == null || from <= to)
+        val lower = from?.let { it to "" }
+        val upper = to?.let { it to "" }
+        val matching = when {
+            lower != null && upper != null -> statements.subMap(lower, true, upper, false)
+            lower != null -> statements.tailMap(lower, true)
+            upper != null -> statements.headMap(upper, false)
+            else -> statements
+        }
+        return matching.values.asSequence()
     }
 
     /** Requests one ZIP build; concurrent requests await the already-running build instead of scheduling another. */
@@ -209,6 +229,10 @@ class CollectorStore(private val dir: File) : AutoCloseable {
         dir.listFiles { file -> file.isDirectory }?.forEach { recordDir ->
             val statementFile = File(recordDir, "debug-statement.json")
             if (!statementFile.isFile) return@forEach
+            val timestamp = recordDir.name.substringBeforeLast('-').toLongOrNull()
+            if (timestamp != null && File(recordDir, "record.json").isFile) {
+                statements[timestamp to recordDir.name] = statementFile
+            }
 
             try {
                 val oldRecord = catchingUnwrapped {
