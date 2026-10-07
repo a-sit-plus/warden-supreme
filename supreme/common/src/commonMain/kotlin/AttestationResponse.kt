@@ -2,18 +2,21 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.signum.indispensable.io.X509CertificateBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.X509Certificate
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class AttestationResponse {
 
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     abstract var info: String?
 
     @SerialName("Success")
     @Serializable
     class Success(
         val certificateChain: List<@Serializable(with = X509CertificateBase64UrlSerializer::class) X509Certificate>,
+        @EncodeDefault(EncodeDefault.Mode.NEVER)
         override var info: String? = null,
     ) : AttestationResponse()
 
@@ -21,6 +24,7 @@ sealed class AttestationResponse {
     @Serializable
     class Failure(
         val kind: Type, val explanation: String?,
+        @EncodeDefault(EncodeDefault.Mode.NEVER)
         override var info: String? = null,
     ) : AttestationResponse() {
         @Serializable

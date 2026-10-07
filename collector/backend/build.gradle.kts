@@ -1,5 +1,6 @@
 import at.asitplus.gradle.datetime
 import at.asitplus.gradle.ktor
+import at.asitplus.gradle.serialization
 import org.gradle.language.jvm.tasks.ProcessResources
 
 plugins {
@@ -44,6 +45,7 @@ dependencies {
     implementation(ktor("server-html-builder"))
     implementation(ktor("serialization-kotlinx-json"))
     implementation(libs.logback.classic)
+    implementation(serialization("json-io"))
 
     testImplementation(ktor("server-test-host"))
 }

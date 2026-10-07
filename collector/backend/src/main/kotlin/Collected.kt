@@ -13,9 +13,12 @@ import at.asitplus.signum.indispensable.pki.leaf
 import at.asitplus.warden.collector.shared.DemoAttestation
 import at.asitplus.warden.collector.shared.androidAttestationJson
 import kotlinx.html.*
+import kotlinx.html.stream.appendHTML
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import org.slf4j.LoggerFactory
@@ -67,10 +70,16 @@ data class CollectedRecord(
 
 /** Filesystem store: one directory per collected attestation under [dir]. */
 class CollectorStore(private val dir: File) : AutoCloseable {
+
+    val fileMutex = Mutex()
+
+    val indexHtml = File(dir, "index.html")
+
     // ponytail: rebuild from directory names at startup; no persistent index to maintain.
     private val statements = ConcurrentSkipListMap<Pair<Long, String>, File>(
         compareBy<Pair<Long, String>> { it.first }.thenBy { it.second }
     )
+
     private sealed interface ArchiveCommand {
         data object StatementsChanged : ArchiveCommand
         data class Get(val result: CompletableDeferred<File>) : ArchiveCommand
@@ -84,6 +93,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
     init {
         dir.mkdirs()
         runBlocking { replayStoredStatements() }
+        runBlocking { refreshReport() }
         archiveScope.launch { runArchiveWorker() }
     }
 
@@ -91,7 +101,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
      * Writes all artifacts for one submission to `<dir>/<id>/` and returns the id. Extraction and
      * file emission happen once, here — the report and downloads just read files afterwards.
      */
-    fun collect(
+    suspend fun collect(
         submittedAtEpochMs: Long,
         deviceName: String?,
         result: String,
@@ -119,6 +129,11 @@ class CollectorStore(private val dir: File) : AutoCloseable {
                 archiveCommands.trySend(ArchiveCommand.StatementsChanged)
             }
             logger.info("Stored attestation proof; success=true; path={}", recordDir.absolutePath)
+            try {
+                refreshReport()
+            } catch (exception: Exception) {
+                logger.error("Failed to refresh collected report; retaining previous HTML", exception)
+            }
             return id
         } catch (exception: Exception) {
             logger.info(
@@ -127,6 +142,27 @@ class CollectorStore(private val dir: File) : AutoCloseable {
                 exception.message,
             )
             throw exception
+        }
+    }
+
+    private suspend fun refreshReport() {
+        val records = list()
+        val temporary = File.createTempFile("index-", ".html", dir)
+        try {
+            temporary.bufferedWriter().use { writer ->
+                writer.write("<!DOCTYPE html>\n")
+                writer.appendHTML().html { renderCollectedReport(records) }
+            }
+            fileMutex.withLock {
+                Files.move(
+                    temporary.toPath(),
+                    indexHtml.toPath(),
+                    StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING,
+                )
+            }
+        } finally {
+            temporary.delete()
         }
     }
 

@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package at.asitplus.warden
 
 import at.asitplus.attestation.AttestationResult
@@ -28,22 +30,59 @@ import io.ktor.server.application.*
 import io.ktor.http.HttpHeaders
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.html.respondHtml
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.utils.io.*
+import io.ktor.utils.io.asSink
 import kotlinx.datetime.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import kotlinx.io.asSource
+import kotlinx.io.buffered
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeStructure
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonUnquotedLiteral
+import kotlinx.serialization.json.io.decodeFromSource
+import kotlinx.serialization.json.io.encodeToSink
 import java.io.File
 import java.util.concurrent.Semaphore
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+
+// JsonElement serialization otherwise converts numeric literals to Long/Double and can lose precision.
+private fun JsonElement.preserveLiterals(): JsonElement = when (this) {
+    is JsonObject -> JsonObject(mapValues { it.value.preserveLiterals() })
+    is JsonArray -> JsonArray(map { it.preserveLiterals() })
+    is JsonPrimitive -> if (isString || this == JsonNull) this else JsonUnquotedLiteral(content)
+}
+
+private object DebugStatementsSerializer : SerializationStrategy<Sequence<File>> {
+    override val descriptor = ListSerializer(JsonElement.serializer()).descriptor
+
+    override fun serialize(encoder: Encoder, value: Sequence<File>) {
+        encoder.encodeStructure(descriptor) {
+            value.forEachIndexed { index, file ->
+                // ponytail: one decoded statement at a time; kotlinx.serialization has no public token-copy API.
+                val statement = file.inputStream().asSource().buffered().use { source ->
+                    Json.decodeFromSource<JsonElement>(source).preserveLiterals()
+                }
+                encodeSerializableElement(descriptor, index, JsonElement.serializer(), statement)
+            }
+        }
+    }
+}
 
 /**
  * Loads the [SupremeConfiguration] (bundled `supreme.yaml`, or the path in `collector.supremeConfig`).
@@ -248,8 +287,7 @@ fun Application.configureRouting() {
 
         // Human-readable report of everything collected so far.
         get("/") {
-            val records = store.list()
-            call.respondHtml { renderCollectedReport(records) }
+            call.respondFile(store.indexHtml)
         }
 
         get("/favicon.png") {
@@ -294,23 +332,11 @@ fun Application.configureRouting() {
             try {
                 call.respondBytesWriter(ContentType.Application.Json) {
                     withContext(Dispatchers.IO) {
-                        writeByte('['.code.toByte())
-                        var first = true
-                        val buffer = ByteArray(8192)
-                        store.debugStatements(from, to).forEach { file ->
-                            currentCoroutineContext().ensureActive()
-                            file.inputStream().use { input ->
-                                if (!first) writeByte(','.code.toByte())
-                                first = false
-                                while (true) {
-                                    currentCoroutineContext().ensureActive()
-                                    val count = input.read(buffer)
-                                    if (count < 0) break
-                                    writeFully(buffer, 0, count)
-                                }
-                            }
+                        val context = currentCoroutineContext()
+                        val files = store.debugStatements(from, to).onEach { context.ensureActive() }
+                        asSink().buffered().use { sink ->
+                            Json.encodeToSink(DebugStatementsSerializer, files, sink)
                         }
-                        writeByte(']'.code.toByte())
                     }
                 }
             } finally {

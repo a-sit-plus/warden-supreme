@@ -22,16 +22,55 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import java.io.File
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.assertions.throwables.shouldThrowAny
 import kotlin.io.path.createTempDirectory
 import java.util.zip.ZipInputStream
 import java.util.concurrent.atomic.AtomicInteger
 
 val ServerTest by matrixSuite {
+
+    "report is published on startup and collection and served from disk" {
+        val outputDir = createTempDirectory("collector-report-test").toFile()
+        val index = File(outputDir, "index.html")
+        try {
+            index.writeText("stale report")
+            CollectorStore(outputDir).use { store ->
+                index.readText() shouldContain "0 collected"
+                coroutineScope {
+                    List(8) { number ->
+                        async(Dispatchers.IO) {
+                            store.collect(number.toLong(), "device-$number", "test", false, null, byteArrayOf(1))
+                        }
+                    }.awaitAll()
+                }
+                val report = index.readText()
+                report shouldContain "8 collected"
+                repeat(8) { report shouldContain "device-$it" }
+                shouldThrowAny { store.collect(100, null, "test", false, "invalid", byteArrayOf(1)) }
+                index.readText() shouldBe report
+                outputDir.listFiles()!!.none { it.name.startsWith("index-") } shouldBe true
+            }
+
+            index.writeText("stale report")
+            testApplication {
+                environment { config = MapApplicationConfig("collector.outputDir" to outputDir.absolutePath) }
+                application { configureSerialization(); configureRouting() }
+                startApplication()
+                index.readText() shouldContain "8 collected"
+                client.get("/").bodyAsText() shouldBe index.readText()
+                index.writeText("served from disk")
+                client.get("/").bodyAsText() shouldBe "served from disk"
+            }
+        } finally {
+            outputDir.deleteRecursively()
+        }
+    }
 
     "successful collection updates debug index without restart" {
         val outputDir = createTempDirectory("collector-index-test").toFile()
@@ -101,6 +140,22 @@ val ServerTest by matrixSuite {
                     store.debugStatements(1000, 2000).map { it.parentFile.name }.toList() shouldBe listOf("1000-aaaaa", "1000-bbbbb", "1999-ddddd")
                     store.debugStatements(1000, 1000).none() shouldBe true
                 }
+            }
+        }
+    }
+
+    "debug export streams nested JSON without changing numbers or escaping" {
+        withStoredStatements { outputDir, _ ->
+            val payload = """{"nested":[null,true,{"text":"Grüße \"quoted\" \n ${"x".repeat(32768)}"}],"decimal":0.12345678901234567890123456789,"integer":12345678901234567890123456789}"""
+            File(outputDir, "1999-ddddd/debug-statement.json").writeText(payload)
+            testApplication {
+                environment { config = MapApplicationConfig("collector.outputDir" to outputDir.absolutePath) }
+                application { configureSerialization(); configureRouting() }
+                val response = client.get("/api/debug-statements?from=1&to=2")
+                response.status shouldBe HttpStatusCode.OK
+                Json.parseToJsonElement(response.bodyAsText()) shouldBe Json.parseToJsonElement(
+                    """["1000-aaaaa","1000-bbbbb",$payload]"""
+                )
             }
         }
     }
