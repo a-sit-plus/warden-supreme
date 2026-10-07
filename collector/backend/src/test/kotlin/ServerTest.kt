@@ -15,7 +15,7 @@ import io.ktor.server.application.install
 import io.ktor.http.content.OutgoingContent
 import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.testing.testApplication
-import at.asitplus.warden.collector.shared.DemoAttestation
+import at.asitplus.warden.collector.shared.CollectorPaths
 import at.asitplus.warden.collector.shared.CollectorPolicy
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.async
@@ -63,9 +63,9 @@ val ServerTest by matrixSuite {
                 application { configureSerialization(); configureRouting() }
                 startApplication()
                 index.readText() shouldContain "8 collected"
-                client.get("/").bodyAsText() shouldBe index.readText()
+                client.get(CollectorPaths.ROOT_PATH).bodyAsText() shouldBe index.readText()
                 index.writeText("served from disk")
-                client.get("/").bodyAsText() shouldBe "served from disk"
+                client.get(CollectorPaths.ROOT_PATH).bodyAsText() shouldBe "served from disk"
             }
         } finally {
             outputDir.deleteRecursively()
@@ -106,7 +106,7 @@ val ServerTest by matrixSuite {
                 application {
                     install(createApplicationPlugin("HoldExports") {
                         onCallRespond { call, body ->
-                            if (call.request.local.uri == "/api/debug-statements" && body is OutgoingContent.WriteChannelContent) {
+                            if (call.request.local.uri == CollectorPaths.GET_STATEMENTS_PATH && body is OutgoingContent.WriteChannelContent) {
                                 if (count.incrementAndGet() == 2) started.complete(Unit)
                                 release.await()
                             }
@@ -116,16 +116,16 @@ val ServerTest by matrixSuite {
                     configureRouting()
                 }
                 coroutineScope {
-                    val exports = List(2) { async { client.get("/api/debug-statements") } }
+                    val exports = List(2) { async { client.get(CollectorPaths.GET_STATEMENTS_PATH) } }
                     try {
                         withTimeout(10000) { started.await() }
-                        client.get("/api/debug-statements").status shouldBe HttpStatusCode.TooManyRequests
+                        client.get(CollectorPaths.GET_STATEMENTS_PATH).status shouldBe HttpStatusCode.TooManyRequests
                     } finally {
                         release.complete(Unit)
                     }
                     exports.awaitAll().forEach { it.bodyAsText() shouldBe "[]" }
                 }
-                client.get("/api/debug-statements").status shouldBe HttpStatusCode.OK
+                client.get(CollectorPaths.GET_STATEMENTS_PATH).status shouldBe HttpStatusCode.OK
             }
         } finally {
             outputDir.deleteRecursively()
@@ -151,7 +151,7 @@ val ServerTest by matrixSuite {
             testApplication {
                 environment { config = MapApplicationConfig("collector.outputDir" to outputDir.absolutePath) }
                 application { configureSerialization(); configureRouting() }
-                val response = client.get("/api/debug-statements?from=1&to=2")
+                val response = client.get("${CollectorPaths.GET_STATEMENTS_PATH}?from=1&to=2")
                 response.status shouldBe HttpStatusCode.OK
                 Json.parseToJsonElement(response.bodyAsText()) shouldBe Json.parseToJsonElement(
                     """["1000-aaaaa","1000-bbbbb",$payload]"""
@@ -167,7 +167,7 @@ val ServerTest by matrixSuite {
                     testApplication {
                         environment { config = MapApplicationConfig("collector.outputDir" to outputDir.absolutePath) }
                         application { configureSerialization(); configureRouting() }
-                        val response = client.get("/api/debug-statements") {
+                        val response = client.get(CollectorPaths.GET_STATEMENTS_PATH) {
                             url {
                                 from.values.forEach { parameters.append("from", it) }
                                 to.values.forEach { parameters.append("to", it) }
@@ -178,7 +178,7 @@ val ServerTest by matrixSuite {
                         if (invalid) {
                             response.status shouldBe HttpStatusCode.BadRequest
                             // Invalid parameters must leave capacity for a subsequent export.
-                            client.get("/api/debug-statements").status shouldBe HttpStatusCode.OK
+                            client.get(CollectorPaths.GET_STATEMENTS_PATH).status shouldBe HttpStatusCode.OK
                         } else {
                             response.status shouldBe HttpStatusCode.OK
                             val expected = ids.filter { id ->
@@ -269,22 +269,22 @@ val ServerTest by matrixSuite {
                     configureRouting()
                 }
                 // verify server root returns 200
-                client.get("/").status shouldBe HttpStatusCode.OK
-                client.get("/health").status shouldBe HttpStatusCode.OK
-                client.get("/collector.css").status shouldBe HttpStatusCode.OK
+                client.get(CollectorPaths.ROOT_PATH).status shouldBe HttpStatusCode.OK
+                client.get(CollectorPaths.HEALTH_PATH).status shouldBe HttpStatusCode.OK
+                client.get(CollectorPaths.STYLESHEET_PATH).status shouldBe HttpStatusCode.OK
                 CollectorPolicy.entries.forEach { policy ->
                     val challenge = Json.decodeFromString<AttestationChallenge>(
                         client.get(policy.challengePath).bodyAsText()
                     )
                     challenge.attestationEndpoint.endsWith(policy.attestPath) shouldBe true
                 }
-                CollectorPolicy.DEFAULT.challengePath shouldBe DemoAttestation.CHALLENGE_PATH
-                CollectorPolicy.DEFAULT.attestPath shouldBe DemoAttestation.ATTEST_PATH
-                val version = client.get(DemoAttestation.VERSION_PATH).bodyAsText()
+                CollectorPolicy.DEFAULT.challengePath shouldBe CollectorPaths.CHALLENGE_PATH
+                CollectorPolicy.DEFAULT.attestPath shouldBe CollectorPaths.ATTEST_PATH
+                val version = client.get(CollectorPaths.VERSION_PATH).bodyAsText()
                 (version.toLong() > 0) shouldBe true
-                client.get(DemoAttestation.DOWNLOAD_PATH).status shouldBe HttpStatusCode.OK
+                client.get(CollectorPaths.DOWNLOAD_PATH).status shouldBe HttpStatusCode.OK
                 val archives = coroutineScope {
-                    List(8) { async { client.get(DEBUG_STATEMENTS_ARCHIVE_PATH) } }.awaitAll()
+                    List(8) { async { client.get(CollectorPaths.DEBUG_STATEMENTS_ARCHIVE_PATH) } }.awaitAll()
                 }
                 archives.forEach { it.status shouldBe HttpStatusCode.OK }
                 val archiveBytes = archives.map { it.body<ByteArray>() }

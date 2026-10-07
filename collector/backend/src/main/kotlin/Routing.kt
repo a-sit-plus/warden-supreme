@@ -25,7 +25,7 @@ import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.warden.collector.shared.CollectorPolicy
-import at.asitplus.warden.collector.shared.DemoAttestation
+import at.asitplus.warden.collector.shared.CollectorPaths
 import io.ktor.server.application.*
 import io.ktor.http.HttpHeaders
 import io.ktor.http.ContentType
@@ -187,11 +187,11 @@ fun Application.configureRouting() {
 
     routing {
 
-        get("/health") {
+        get(CollectorPaths.HEALTH_PATH) {
             call.respondText("OK")
         }
 
-        get(DemoAttestation.VERSION_PATH) {
+        get(CollectorPaths.VERSION_PATH) {
             call.respondText(collectorVersionCode)
         }
 
@@ -286,31 +286,31 @@ fun Application.configureRouting() {
         }
 
         // Human-readable report of everything collected so far.
-        get("/") {
+        get(CollectorPaths.ROOT_PATH) {
             call.respondFile(store.indexHtml)
         }
 
-        get("/favicon.png") {
+        get(CollectorPaths.FAVICON_PATH) {
             call.respondResource("warden.png")
         }
-        get("/logo.png") {
+        get(CollectorPaths.LOGO_PATH) {
             call.respondResource("supreme-horz.png")
         }
-        get("/collector.css") {
+        get(CollectorPaths.STYLESHEET_PATH) {
             call.respondResource("collector.css")
         }
-        get("/collector-apk-qr.svg") {
+        get(CollectorPaths.APK_QR_PATH) {
             call.respondResource("collector-apk-qr.svg")
         }
-        get(DemoAttestation.DOWNLOAD_PATH) {
+        get(CollectorPaths.DOWNLOAD_PATH) {
             call.respondResource("collector.apk")
         }
-        get(DEBUG_STATEMENTS_ARCHIVE_PATH) {
+        get(CollectorPaths.DEBUG_STATEMENTS_ARCHIVE_PATH) {
             call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"debug-statements.zip\"")
             call.respondFile(store.debugStatementsArchive())
         }
 
-        get("/api/debug-statements") {
+        get(CollectorPaths.GET_STATEMENTS_PATH) {
             val (from, to) = try {
                 listOf("from", "to").map { name ->
                     call.request.queryParameters.getAll(name)?.let { values ->
@@ -346,6 +346,6 @@ fun Application.configureRouting() {
 
         // Downloads (chain.der, proof.der, debug-statement.json, attestation.json) are the files
         // written per submission under the output directory — served directly, no download routes.
-        staticFiles("/files", outputDir)
+        staticFiles(CollectorPaths.FILES_PATH, outputDir)
     }
 }

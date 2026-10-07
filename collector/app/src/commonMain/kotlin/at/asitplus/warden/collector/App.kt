@@ -73,7 +73,7 @@ import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.warden.collector.generated.resources.Res
 import at.asitplus.warden.collector.generated.resources.warden
 import at.asitplus.warden.collector.shared.CollectorPolicy
-import at.asitplus.warden.collector.shared.DemoAttestation
+import at.asitplus.warden.collector.shared.CollectorPaths
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -115,7 +115,7 @@ fun App() {
             catchingUnwrapped {
                 val client = HttpClient()
                 try {
-                    client.get(host + DemoAttestation.VERSION_PATH).bodyAsText().trim().toLong()
+                    client.get(host + CollectorPaths.VERSION_PATH).bodyAsText().trim().toLong()
                 } finally {
                     client.close()
                 }
@@ -132,7 +132,7 @@ fun App() {
                 confirmButton = {
                     TextButton(onClick = {
                         update = null
-                        actions.openUrl(host + DemoAttestation.DOWNLOAD_PATH)
+                        actions.openUrl(host + CollectorPaths.DOWNLOAD_PATH)
                     }) { Text("Update") }
                 },
                 dismissButton = {

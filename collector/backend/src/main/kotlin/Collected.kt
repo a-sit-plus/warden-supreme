@@ -10,7 +10,7 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.leaf
-import at.asitplus.warden.collector.shared.DemoAttestation
+import at.asitplus.warden.collector.shared.CollectorPaths
 import at.asitplus.warden.collector.shared.androidAttestationJson
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
@@ -39,7 +39,6 @@ import kotlin.time.Instant
 private val json = Json { ignoreUnknownKeys = true }
 private val prettyJson = Json { prettyPrint = true }
 private val logger = LoggerFactory.getLogger(CollectorStore::class.java)
-const val DEBUG_STATEMENTS_ARCHIVE_PATH = "/debug-statements.zip"
 
 /**
  * One collected attestation, fully pre-extracted at collection time so the report never re-parses.
@@ -85,7 +84,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
         data class Get(val result: CompletableDeferred<File>) : ArchiveCommand
     }
 
-    private val debugStatementsArchive = File(dir, DEBUG_STATEMENTS_ARCHIVE_PATH.removePrefix("/"))
+    private val debugStatementsArchive = File(dir, CollectorPaths.DEBUG_STATEMENTS_ARCHIVE_PATH.removePrefix("/"))
     private val archiveCommands = Channel<ArchiveCommand>(Channel.UNLIMITED)
     private val archiveRequests = Channel<Unit>(Channel.CONFLATED)
     private val archiveScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -431,12 +430,12 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
         title { +"Warden Supreme — Public Attestation Testing Service" }
         link {
             rel = "stylesheet"
-            href = "/collector.css"
+            href = CollectorPaths.STYLESHEET_PATH
             type = "text/css"
         }
         link {
             rel = "icon"
-            href = "/favicon.png"
+            href = CollectorPaths.FAVICON_PATH
             type = "image/png"
             sizes = "any"
         }
@@ -448,7 +447,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                 h1 {
                     img(
                         alt = "Warden Supreme",
-                        src = "/logo.png"
+                        src = CollectorPaths.LOGO_PATH
                     )
                     span {
                         +"Public Attestation Testing Service"
@@ -476,7 +475,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                         span {
                             classes += "download"
                             a {
-                                href = DEBUG_STATEMENTS_ARCHIVE_PATH
+                                href = CollectorPaths.DEBUG_STATEMENTS_ARCHIVE_PATH
                                 +"⬇ Download all debug statements ⬇"
                             }
                         }
@@ -484,11 +483,11 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                 }
             }
             a(classes = "qr") {
-                href = DemoAttestation.DOWNLOAD_PATH
+                href = CollectorPaths.DOWNLOAD_PATH
                 target = "_blank"
                 img(
                     alt = "QR code to download the Collector APK",
-                    src = "/collector-apk-qr.svg"
+                    src = CollectorPaths.APK_QR_PATH
                 )
                 span { +"Click or scan to download APK" }
             }
@@ -624,21 +623,21 @@ private fun TBODY.reportRow(id: String, r: CollectedRecord) = tr {
     td("mono") { +Instant.fromEpochMilliseconds(r.submittedAtEpochMs).toString() }
     td {
         if (r.hasChain) {
-            a("/files/$id/chain.der", classes = "chain-download") { +"Download" }
-            a("/files/$id/chain.der", classes = "chain-explore") {
+            a("${CollectorPaths.FILES_PATH}/$id/chain.der", classes = "chain-download") { +"Download" }
+            a("${CollectorPaths.FILES_PATH}/$id/chain.der", classes = "chain-explore") {
                 target = "_blank"
                 +"Explore"
             }
         } else +NA
     }
-    td { a("/files/$id/proof.der") { +"proof.der" } }
-    td { if (r.hasStatement) a("/files/$id/debug-statement.json") { +"debug-statement.json" } else +NA }
+    td { a("${CollectorPaths.FILES_PATH}/$id/proof.der") { +"proof.der" } }
+    td { if (r.hasStatement) a("${CollectorPaths.FILES_PATH}/$id/debug-statement.json") { +"debug-statement.json" } else +NA }
     td("att") {
         val attestation = r.attestationJson
         if (attestation == null) +NA
         else details("tree") {
             summary { +"view" }
-            if (r.hasAttestationJson) span("jsonlink") { a("/files/$id/attestation.json") { +"download json" } }
+            if (r.hasAttestationJson) span("jsonlink") { a("${CollectorPaths.FILES_PATH}/$id/attestation.json") { +"download json" } }
             jsonTree(attestation, rootOpen = true)
         }
     }
