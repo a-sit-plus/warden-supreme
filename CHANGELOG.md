@@ -1,6 +1,8 @@
 # Changelog
 
 ## NEXT
+* Add generic `info` String to success and failed `AttestationResponse`
+* Add Collector APIs to query to statements within a timeframe
 
 ## 1.2.0
 * **Add iOS (Swift) Client**
