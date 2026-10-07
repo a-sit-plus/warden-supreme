@@ -8,15 +8,21 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class AttestationResponse {
 
+    abstract var info: String?
+
     @SerialName("Success")
     @Serializable
     class Success(
-        val certificateChain: List<@Serializable(with = X509CertificateBase64UrlSerializer::class) X509Certificate>
+        val certificateChain: List<@Serializable(with = X509CertificateBase64UrlSerializer::class) X509Certificate>,
+        override var info: String? = null,
     ) : AttestationResponse()
 
     @SerialName("Failure")
     @Serializable
-    class Failure(val kind: Type, val explanation: String?) : AttestationResponse() {
+    class Failure(
+        val kind: Type, val explanation: String?,
+        override var info: String? = null,
+    ) : AttestationResponse() {
         @Serializable
         enum class Type {
             TRUST,
