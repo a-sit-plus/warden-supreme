@@ -2,8 +2,10 @@
 
 package at.asitplus.attestation.supreme
 
+import kotlinx.serialization.encodeToByteArray
+
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -11,8 +13,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import java.security.MessageDigest
 import java.util.*
 import kotlin.random.Random
-import at.asitplus.attestation.android.AndroidAttestationConfiguration
-import at.asitplus.signum.indispensable.pki.CertificationRequest
 
 val AttestationVerifierFakeAndroidTest by matrixSuite(
     matrixConfig { execution = ExecutionMode.Sequential }

@@ -1,9 +1,15 @@
 package examples.docs.service
 
-import at.asitplus.signum.indispensable.decodeFromDer
+import at.asitplus.attestation.supreme.decodeAttestationProof
+import at.asitplus.attestation.supreme.tbsCsr
+import at.asitplus.signum.Signum
+
 import at.asitplus.signum.indispensable.pki.*
-import at.asitplus.signum.supreme.sign
-import at.asitplus.signum.supreme.sign.Signer
+import at.asitplus.signum.indispensable.sign.sign
+import at.asitplus.signum.supreme.installSupreme
+import at.asitplus.signum.dsl.ec
+import at.asitplus.awesn1.Asn1Integer
+import at.asitplus.signum.indispensable.sign.Signer
 import examples.docs.config.minimal.verifier
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -21,20 +27,21 @@ val PATH_CHALLENGE = "/api/v1/challenge"
 val PATH_ATTEST = "/api/v1/attest"
 
 val publicEndpoint: String = ""
-val signer = Signer.Ephemeral {
-    ec { }
-}.getOrThrow()
+val signer = kotlinx.coroutines.runBlocking {
+    at.asitplus.signum.Signum.installSupreme()
+    Signer.Ephemeral { ec { } }
+}
 
-var issuerName = listOf(
+var issuerName = X500Name(listOf(
     RelativeDistinguishedName(
-        AttributeTypeAndValue.CommonName("Supreme Verifier")
+        at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue.CommonName("Supreme Verifier")
     )
-)
-var subjectName = listOf(
+))
+var subjectName = X500Name(listOf(
     RelativeDistinguishedName(
-        AttributeTypeAndValue.CommonName("Supreme Client")
+        at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue.CommonName("Supreme Client")
     )
-)
+))
 
 val caCert: Certificate = TODO()
 
@@ -66,15 +73,15 @@ val server = embeddedServer(Netty, port = 8080) {
                 val tbsCsr = received.tbsCsr
              /*(7)!*/val leafCertificate = signer.sign(
                  /*(8)!*/TbsCertificate(
-                      /*(9)!*/serialNumber = Random.nextBytes(32),
+                      /*(9)!*/serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19)),
                       /*(10)!*/publicKey = tbsCsr.publicKey,
-                         signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
-                         validFrom = Asn1Time(Clock.System.now()),
-                         validUntil = Asn1Time(Clock.System.now() + 10.days),
+                         signatureAlgorithm = signer.signatureAlgorithm,
+                         validFrom = Clock.System.now(),
+                         validUntil = Clock.System.now() + 10.days,
                          issuerName = issuerName,
                          subjectName = subjectName,
                     )
-                ).getOrThrow()
+                )
              /*(11)!*/listOf(leafCertificate, caCert)
             }
          /*(12)!*/call.respond(result)

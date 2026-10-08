@@ -1,9 +1,9 @@
 package at.asitplus.attestation.generator
 
 import at.asitplus.attestation.android.AuthorizationList
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.Asn1ExplicitlyTagged
-import at.asitplus.signum.indispensable.asn1.encoding.parse
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.Asn1ExplicitlyTagged
+import at.asitplus.awesn1.encoding.parse
 
 /**
  * Returns a copy in which every occurrence of [property] is replaced by [rawExplicitProperty].

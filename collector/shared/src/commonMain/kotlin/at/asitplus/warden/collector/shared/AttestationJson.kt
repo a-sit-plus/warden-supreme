@@ -2,14 +2,15 @@
 
 package at.asitplus.warden.collector.shared
 
+
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AttestationValue
 import at.asitplus.attestation.android.AuthorizationList
 import at.asitplus.attestation.android.androidAttestationExtension
-import at.asitplus.signum.indispensable.asn1.*
-import at.asitplus.signum.indispensable.asn1.encoding.*
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.*
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -28,7 +29,7 @@ import kotlin.time.Instant
  */
 
 /** Renders the full attestation extension of [this] leaf certificate, or null if absent/unparsable. */
-fun X509Certificate.androidAttestationJson(): JsonObject? = androidAttestationExtension?.toReadableJson()
+fun Certificate.androidAttestationJson(): JsonObject? = androidAttestationExtension?.toReadableJson()
 
 /** Renders the attestation extension closest to the root of [this] chain, or null if none present. */
 fun CertificateChain.androidAttestationJson(): JsonObject? = androidAttestationExtension?.toReadableJson()

@@ -1,8 +1,8 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.asn1.Asn1Sequence
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1.ExplicitlyTagged
+import at.asitplus.awesn1.Asn1Sequence
+import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.awesn1.encoding.Asn1.ExplicitlyTagged
 
 
 /**

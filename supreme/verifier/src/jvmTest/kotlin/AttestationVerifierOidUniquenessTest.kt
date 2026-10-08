@@ -2,11 +2,21 @@
 
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.throwables.shouldThrowAny
+import at.asitplus.awesn1.Asn1Sequence
+import at.asitplus.awesn1.Asn1CustomStructure
+import at.asitplus.awesn1.TagClass
+import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
+import at.asitplus.signum.Signum
+import at.asitplus.awesn1.serialization.encodeToTlv
+import at.asitplus.awesn1.serialization.decodeFromTlv
+
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.awesn1.ObjectIdentifier
+import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.X509CertificateExtension
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.matchers.shouldBe
@@ -30,7 +40,7 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
             attestationEndpoint,
             toBeAttestedAttributes = requested,
         )
-        val proof = Pkcs10CertificationRequestAttribute(
+        val proof = CsrAttribute(
             challenge.proofOID,
             Asn1String.UTF8(fixture.fake.attestationJson()).encodeToTlv(),
         )
@@ -39,47 +49,42 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
             "device" -> requireNotNull(challenge.genericDeviceNameOID)
             else -> requireNotNull(challenge.toBeAttestedAttributes).oid
         }
-        val duplicate = Pkcs10CertificationRequestAttribute(
+        val duplicate = CsrAttribute(
             duplicatedOid,
             Asn1String.UTF8("duplicate").encodeToTlv(),
         )
         val attributes = if (kind == "proof") listOf(proof, duplicate) else listOf(proof, duplicate, duplicate)
-        val csr = createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, attributes)
-        var callbackError: PreAttestationError.ClientDataValidation? = null
-
-        val failure = verifier.verifyAttestation(
-            AttestationProof.Signed(csr),
-            onPreAttestationError = {
-                callbackError = shouldBeInstanceOf<PreAttestationError.ClientDataValidation>()
-                "callback"
-            },
-            certificateIssuer = { emptyList() },
-        ).shouldBeInstanceOf<AttestationResponse.Failure>()
-
-        failure.kind shouldBe AttestationResponse.Failure.Type.CONTENT
-        callbackError?.reason shouldBe PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_ATTRIBUTE_OID
+        shouldThrow<IllegalArgumentException> {
+            createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, attributes)
+        }
+        val valid = createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, listOf(proof))
+        val malformed = Asn1Sequence(
+            Signum.Der.encodeToTlv(valid.tbsCsr).asSequence().children.take(3) +
+                    Asn1CustomStructure(attributes.map { Signum.Der.encodeToTlv(it) }, 0uL, TagClass.CONTEXT_SPECIFIC),
+        )
+        shouldThrowAny { Signum.Der.decodeFromTlv<TbsCertificationRequest>(malformed) }
     }
 
     data(
         "duplicate OID kind",
         listOf(
-            Triple("attributes", PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_ATTRIBUTE_OID) { proof: Pkcs10CertificationRequestAttribute ->
+            Triple("attributes", PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_ATTRIBUTE_OID) { proof: CsrAttribute ->
                 listOf(
                     proof,
-                    Pkcs10CertificationRequestAttribute(duplicateOid, Asn1String.UTF8("one").encodeToTlv()),
-                    Pkcs10CertificationRequestAttribute(duplicateOid, Asn1String.UTF8("two").encodeToTlv()),
+                    CsrAttribute(duplicateOid, Asn1String.UTF8("one").encodeToTlv()),
+                    CsrAttribute(duplicateOid, Asn1String.UTF8("two").encodeToTlv()),
                 )
             },
-            Triple("extensions", PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_EXTENSION_OID) { proof: Pkcs10CertificationRequestAttribute ->
+            Triple("extensions", PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_EXTENSION_OID) { proof: CsrAttribute ->
                 val extensions = listOf(
                     X509CertificateExtension(duplicateOid, false, Asn1.OctetString(byteArrayOf(1))),
                     X509CertificateExtension(duplicateOid, true, Asn1.OctetString(byteArrayOf(2))),
                 )
                 listOf(
                     proof,
-                    Pkcs10CertificationRequestAttribute(
+                    CsrAttribute(
                         extensionRequestOid,
-                        Asn1.Sequence { extensions.forEach { +it } },
+                        Asn1.Sequence { extensions.forEach { +Signum.Der.encodeToTlv(it) } },
                     ),
                 )
             },
@@ -89,25 +94,31 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
         val fixture = generateAndroidFixture()
         val verifier = fixture.verifier(fixture.trustedConfig())
         val challenge = verifier.issueChallenge(attestationEndpoint)
-        val proof = Pkcs10CertificationRequestAttribute(
+        val proof = CsrAttribute(
             challenge.proofOID,
             Asn1String.UTF8(fixture.fake.attestationJson()).encodeToTlv(),
         )
-        val csr = createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, attributes(proof))
+        if (expectedReason == PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_ATTRIBUTE_OID) {
+            shouldThrow<IllegalArgumentException> {
+                createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, attributes(proof))
+            }
+        } else {
+            val csr = createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, attributes(proof))
 
-        var callbackError: PreAttestationError.ClientDataValidation? = null
-        val failure = verifier.verifyAttestation(
-            AttestationProof.Signed(csr),
-            onPreAttestationError = {
-                callbackError = shouldBeInstanceOf<PreAttestationError.ClientDataValidation>()
-                "callback"
-            },
-            certificateIssuer = { emptyList() },
-        ).shouldBeInstanceOf<AttestationResponse.Failure>()
+            var callbackError: PreAttestationError.ClientDataValidation? = null
+            val failure = verifier.verifyAttestation(
+                AttestationProof.Signed(csr),
+                onPreAttestationError = {
+                    callbackError = shouldBeInstanceOf<PreAttestationError.ClientDataValidation>()
+                    "callback"
+                },
+                certificateIssuer = { emptyList() },
+            ).shouldBeInstanceOf<AttestationResponse.Failure>()
 
-        failure.kind shouldBe AttestationResponse.Failure.Type.CONTENT
-        failure.explanation shouldBe "callback"
-        callbackError?.reason shouldBe expectedReason
+            failure.kind shouldBe AttestationResponse.Failure.Type.CONTENT
+            failure.explanation shouldBe "callback"
+            callbackError?.reason shouldBe expectedReason
+        }
     }
 
     test("non-canonical attribute order is rejected as CONTENT") {
@@ -117,16 +128,16 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
             attestationEndpoint,
             dataAuth = DataAuthentication.Hash(Digest.SHA256),
         )
-        val proof = Pkcs10CertificationRequestAttribute(
+        val proof = CsrAttribute(
             challenge.proofOID,
             Asn1String.UTF8(fixture.fake.attestationJson()).encodeToTlv(),
         )
-        val other = Pkcs10CertificationRequestAttribute(
+        val other = CsrAttribute(
             duplicateOid,
             Asn1String.UTF8("value").encodeToTlv(),
         )
-        val nonCanonical = Asn1.SetOf { listOf(proof, other).forEach { +it } }
-            .map { Pkcs10CertificationRequestAttribute.decodeFromTlv(it.asSequence()) }
+        val nonCanonical = Asn1.SetOf { listOf(proof, other).forEach { +Signum.Der.encodeToTlv(it) } }
+            .map { Signum.Der.decodeFromTlv<CsrAttribute>(it.asSequence()) }
             .reversed()
         val csr = createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, nonCanonical)
 
@@ -154,11 +165,11 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
             challenge,
             fixture.fake.leafKeyPair,
             listOf(
-                Pkcs10CertificationRequestAttribute(
+                CsrAttribute(
                     challenge.proofOID,
                     Asn1String.UTF8(fixture.fake.attestationJson()).encodeToTlv(),
                 ),
-                Pkcs10CertificationRequestAttribute(
+                CsrAttribute(
                     extensionRequestOid,
                     Asn1String.UTF8("not extensions").encodeToTlv(),
                 ),

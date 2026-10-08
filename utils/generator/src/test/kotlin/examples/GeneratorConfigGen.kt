@@ -10,8 +10,8 @@ import at.asitplus.attestation.generator.Provisioning
 import at.asitplus.attestation.generator.attestationSpec
 import at.asitplus.attestation.generator.issuerSpec
 import at.asitplus.attestation.generator.mangle
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.testballoon.matrix.ExecutionMode
 import at.asitplus.testballoon.matrix.matrixConfig

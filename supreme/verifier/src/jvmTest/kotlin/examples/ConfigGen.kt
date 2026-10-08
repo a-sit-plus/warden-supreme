@@ -1,5 +1,6 @@
 package examples.docs
 
+
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
@@ -10,8 +11,8 @@ import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.DataAuthentication
 import at.asitplus.attestation.supreme.PrimitiveType
 import at.asitplus.attestation.supreme.SupremeConfiguration
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.ObjectIdentifier
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.ExperimentalHoplite
 import com.sksamuel.hoplite.addFileSource

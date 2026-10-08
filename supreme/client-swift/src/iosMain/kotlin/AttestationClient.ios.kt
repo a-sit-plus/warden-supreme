@@ -1,9 +1,10 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
 import at.asitplus.signum.HazardousMaterials
 import at.asitplus.signum.internals.giveToCF
 import at.asitplus.signum.internals.toNSData
-import at.asitplus.signum.supreme.AutofreeVariable
 import at.asitplus.signum.supreme.hazmat.secKeyRef
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import io.ktor.client.*
@@ -82,12 +83,10 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
 
     /** Returns a retained Security-framework key handle. The Swift façade consumes the retain. */
     @OptIn(ExperimentalForeignApi::class, HazardousMaterials::class)
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNCHECKED_CAST")
     @Throws(Throwable::class)
     suspend fun getAttestedKey(alias: String): KotlinRetainedSecKey {
         require(alias.isNotBlank()) { "Key alias must not be blank" }
-        val key = PlatformSigningProvider.getSignerForKey(alias).getOrThrow().secKeyRef
-                as? AutofreeVariable<SecKeyRef>
+        val key = PlatformSigningProvider.getSignerForKey(alias).secKeyRef
             ?: error("Signum did not expose a SecKey for alias '$alias'")
         return KotlinRetainedSecKey(requireNotNull(key.value).also(::CFRetain))
     }
@@ -103,7 +102,7 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
     @OptIn(ExperimentalForeignApi::class)
     fun getAttestationCertificate(alias: String, index: Int): SecCertificateRef? {
         val data = getAttestationCertificateChainData(alias).getOrNull(index) ?: return null
-        return memScoped { SecCertificateCreateWithData(null, giveToCF(data)) }
+        return memScoped { SecCertificateCreateWithData(null, data.giveToCF()) }
     }
 
     private fun getAttestationCertificateChainData(alias: String): List<NSData> {
@@ -136,7 +135,7 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
             is AttestationResponse.Success -> {
                 // ponytail: certificates are public data; UserDefaults avoids a second Keychain schema.
                 NSUserDefaults.standardUserDefaults.setObject(
-                    response.certificateChain.map { it.encodeToDer().toNSData() },
+                    response.certificateChain.map { Signum.Der.encodeToByteArray(it).toNSData() },
                     certificateKey(alias),
                 )
                 KotlinIosAttestationResult(

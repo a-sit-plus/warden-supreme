@@ -2,11 +2,16 @@
 
 package at.asitplus.attestation.generator
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
+
+import at.asitplus.signum.indispensable.pki.value
+
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.AuthorizationList
 import at.asitplus.attestation.android.androidAttestationExtension
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.matchers.shouldBe
@@ -385,7 +390,7 @@ private data class AuthorizationListRecipe(
     )
 }
 
-private fun asn1Integer(value: Int) = at.asitplus.signum.indispensable.asn1.Asn1Integer(value)
+private fun asn1Integer(value: Int) = at.asitplus.awesn1.Asn1Integer(value)
 private fun instant(seconds: Int) = Instant.fromEpochSeconds(seconds.toLong())
 
 private val schemaEnumsArb = Arb.bind(
@@ -446,15 +451,15 @@ private val statementArb = Arb.bind(
 
 // ---- assertions on real X.509 ------------------------------------------------------------------
 
-private val at.asitplus.signum.indispensable.pki.X509Certificate.basicConstraints
+private val at.asitplus.signum.indispensable.pki.Certificate.basicConstraints
     get() = tbsCertificate.extensions?.firstOrNull { it.oid.toString() == "2.5.29.19" }
 
-private val at.asitplus.signum.indispensable.pki.X509Certificate.pathLength: Int?
+private val at.asitplus.signum.indispensable.pki.Certificate.pathLength: Int?
     get() = asJava.basicConstraints.let { if (it == Int.MAX_VALUE || it < 0) null else it }
 
-private val at.asitplus.signum.indispensable.pki.X509Certificate.asJava: java.security.cert.X509Certificate
+private val at.asitplus.signum.indispensable.pki.Certificate.asJava: java.security.cert.X509Certificate
     get() = CertificateFactory.getInstance("X.509")
-        .generateCertificate(encodeToTlv().derEncoded.inputStream()) as java.security.cert.X509Certificate
+        .generateCertificate(Signum.Der.encodeToByteArray(this).inputStream()) as java.security.cert.X509Certificate
 
 /** Full RFC 5280 path validation by the JVM: signatures, basic constraints, path length, key usage. */
 private fun IssuedAttestation.validateStrictPkix(at: Instant) {

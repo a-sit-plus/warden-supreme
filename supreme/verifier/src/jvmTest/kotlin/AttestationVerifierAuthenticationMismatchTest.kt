@@ -2,14 +2,17 @@
 
 package at.asitplus.attestation.supreme
 
+import at.asitplus.awesn1.encoding.encodeToDer
+import at.asitplus.awesn1.serialization.encodeToTlv
+
 import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.toCryptoPublicKey
-import at.asitplus.signum.supreme.hash.digest
+import at.asitplus.signum.indispensable.digest.digest
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -65,8 +68,8 @@ private suspend fun mismatchedAuthenticationProof(
 
         is DataAuthentication.Hash -> AttestationProof.Hashed(
             hashInput.toTbsCsr(
-                fake.leafKeyPair.public.toCryptoPublicKey().getOrThrow(),
-                Pkcs10CertificationRequestAttribute(
+                fake.leafKeyPair.public.toCryptoPublicKey(),
+                CsrAttribute(
                     challenge.proofOID,
                     Asn1String.UTF8(fake.attestationJson()).encodeToTlv(),
                 ),

@@ -7,7 +7,6 @@ import at.asitplus.attestation.supreme.SortedSet
 import at.asitplus.catchingUnwrapped
 import at.asitplus.awesn1.*
 import at.asitplus.awesn1.encoding.*
-import at.asitplus.signum.indispensable.asn1.decodeFromTlvSafe
 import at.asitplus.signum.indispensable.misc.BitLength
 import kotlinx.datetime.Month
 import kotlinx.datetime.YearMonth
@@ -1057,7 +1056,7 @@ data class AuthorizationList private constructor(
             // whole extension down instead of becoming a Failure.
             @Suppress("UNCHECKED_CAST")
             return catchingUnwrapped {
-                (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(src = element).getOrThrow()
+                (this as Asn1Decodable<Asn1Element, D>).decodeFromTlv(src = element)
             }.fold(
                 onSuccess = { AttestationValue.Success(it, this) },
                 onFailure = { AttestationValue.Failure(D::class.simpleName!!, this, element) }
@@ -1075,7 +1074,7 @@ data class AuthorizationList private constructor(
                     AttestationValue.Failure(D::class.simpleName!!, this, child)
                 } else {
                     catchingUnwrapped {
-                        (this as Asn1Decodable<Asn1Element, D>).decodeFromTlvSafe(primitiveOrNull).getOrThrow()
+                        (this as Asn1Decodable<Asn1Element, D>).decodeFromTlv(primitiveOrNull)
                     }.fold(
                         onSuccess = { AttestationValue.Success(it, this) },
                         onFailure = { AttestationValue.Failure(D::class.simpleName!!, this, child) }

@@ -1,5 +1,12 @@
 package at.asitplus.warden
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.decodeFromByteArray
+import at.asitplus.signum.indispensable.pki.X500Name
+import at.asitplus.awesn1.Asn1Integer
+import at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue
+import at.asitplus.signum.dsl.ec
+
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
@@ -13,15 +20,13 @@ import at.asitplus.attestation.supreme.deviceNameForOid
 import at.asitplus.attestation.supreme.tbsCsr
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.Asn1Time
+import at.asitplus.awesn1.Asn1String
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
-import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
-import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
-import at.asitplus.signum.supreme.sign
-import at.asitplus.signum.supreme.sign.Signer
+import at.asitplus.signum.indispensable.pki.Certificate as SignumX509Certificate
+import at.asitplus.signum.indispensable.sign.sign
+import at.asitplus.signum.indispensable.sign.Signer
 import at.asitplus.warden.collector.shared.CollectorPolicy
 import at.asitplus.warden.collector.shared.DemoAttestation
 import io.ktor.server.application.*
@@ -186,7 +191,7 @@ fun Application.configureRouting() {
                             val verified = this as AttestationResult.Android.Verified
                             val nonce = verified.androidAttestationExtension.attestationChallenge
                             val chain = verified.attestationCertificateChain
-                                .map { SignumX509Certificate.decodeFromDer(it.encoded) }
+                                .map { Signum.Der.decodeFromByteArray<SignumX509Certificate>(it.encoded) }
                             statement = verifier.makoto
                                 .collectDebugInfo(AndroidKeystoreAttestation(chain), nonce)
                                 .serializeCompact()
@@ -194,24 +199,22 @@ fun Application.configureRouting() {
                     },
                     certificateIssuer = { received ->
                         val tbsCsr = received.tbsCsr
-                        Signer.Ephemeral { ec { } }.getOrThrow().let { signer ->
+                        Signer.Ephemeral { ec { } }.let { signer ->
                             signer.sign(
                                 TbsCertificate(
-                                    serialNumber = Random.nextBytes(32),
+                                    serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19)),
                                     publicKey = tbsCsr.publicKey,
-                                    signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm()
-                                        .getOrThrow(),
-                                    validFrom = Asn1Time(Clock.System.now()),
-                                    validUntil = Asn1Time(Clock.System.now() + 10.days),
-                                    issuerName = listOf(
+                                    signatureAlgorithm = signer.signatureAlgorithm,
+                                    validFrom = Clock.System.now(),
+                                    validUntil = Clock.System.now() + 10.days,
+                                    issuerName = X500Name(listOf(
                                         RelativeDistinguishedName(
-                                            AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme Collector"))
+                                            X500AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme Collector"))
                                         )
-                                    ),
+                                    )),
                                     subjectName = tbsCsr.subjectName,
                                 )
-                            )
-                            .map { listOf(it) }.getOrThrow()
+                            ).let { listOf(it) }
                         }
                     },
                 )

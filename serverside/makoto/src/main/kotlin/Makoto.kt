@@ -1,5 +1,11 @@
 package at.asitplus.attestation
 
+
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
+
+import at.asitplus.signum.indispensable.sign.*
+
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.Roboto
 import at.asitplus.attestation.android.exceptions.AttestationValueException
@@ -9,7 +15,6 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
-import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.AppleAppAttest
 import ch.veehait.devicecheck.appattest.assertion.Assertion
@@ -551,7 +556,7 @@ class Makoto
                     ).let {
                         when (it) {
                             is AttestationResult.IOS -> KeyAttestation(
-                                attestationProof.parsedClientData.publicKey.toJcaPublicKey().getOrThrow(), it
+                                attestationProof.parsedClientData.publicKey.toJcaPublicKey(), it
                             )
 
                             is AttestationResult.Error -> KeyAttestation(null, it)
@@ -570,7 +575,7 @@ class Makoto
             }
 
             is AndroidKeystoreAttestation -> verifyAttestationAndroid(
-                attestationProof.certificateChain.map { it.encodeToDer() },
+                attestationProof.certificateChain.map { Signum.Der.encodeToByteArray(it) },
                 challenge
             ).let {
                 when (it) {

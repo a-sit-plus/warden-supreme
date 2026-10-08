@@ -2,10 +2,11 @@
 
 package at.asitplus.attestation.supreme
 
+
 import at.asitplus.attestation.supreme.AttestationProof.Hashed
 import at.asitplus.attestation.supreme.AttestationProof.Signed
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.testballoon.matrix.ExecutionMode
 import at.asitplus.testballoon.matrix.fixture
@@ -26,7 +27,7 @@ import kotlin.time.Duration
 private data class JavaProofFixture(
     val challenge: AttestationChallenge,
     val proof: Signed,
-    val certificateChain: List<X509Certificate>,
+    val certificateChain: List<Certificate>,
 )
 
 private fun AndroidFixture.javaHarness(
@@ -75,8 +76,8 @@ val SupremeVerifierJavaApiTest by matrixSuite(matrixConfig { execution = Executi
             documentedVerifier,
             Hashed(
                 TbsCertificationRequest(
-                    subjectName = emptyList(),
-                    publicKey = generateRsaKeyPair(1024).public.toCryptoPublicKey().getOrThrow(),
+                    subjectName = at.asitplus.signum.indispensable.pki.X500Name.EMPTY,
+                    publicKey = generateRsaKeyPair(1024).public.toCryptoPublicKey(),
                     attributes = emptyList(),
                 ),
             ),

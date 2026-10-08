@@ -2,6 +2,11 @@
 
 package at.asitplus.warden
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
+
+import at.asitplus.signum.indispensable.pki.value
+
 import at.asitplus.attestation.WardenDebugAttestationStatement
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.KeyAttestation
@@ -259,7 +264,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
         val chainFile = File(recordDir, "chain.der")
         val hasChain = chain != null && catchingUnwrapped {
             val der =
-                ByteArrayOutputStream().use { out -> chain.forEach { out.write(it.encodeToDer()) }; out.toByteArray() }
+                ByteArrayOutputStream().use { out -> chain.forEach { out.write(Signum.Der.encodeToByteArray(it)) }; out.toByteArray() }
             chainFile.writeBytes(der)
         }.isSuccess
         if (!hasChain) chainFile.delete()
@@ -295,8 +300,8 @@ class CollectorStore(private val dir: File) : AutoCloseable {
             avb = extract { (hw?.rootOfTrust?.getOrNull() ?: sw?.rootOfTrust?.getOrNull())?.let { avbStatus(it) } },
             packageName = extract { sw?.attestationApplicationId?.getOrNull()?.packageInfos?.firstOrNull()?.packageName },
             packageVersion = extract { sw?.attestationApplicationId?.getOrNull()?.packageInfos?.firstOrNull()?.version?.toString() },
-            certValidityStart = extract { chain?.leaf?.tbsCertificate?.let { "${it.validFrom.instant}" } } ?: NA,
-            certValidityEnd = extract { chain?.leaf?.tbsCertificate?.let { "${it.validUntil.instant}" } } ?: NA,
+            certValidityStart = extract { chain?.leaf?.tbsCertificate?.let { "${it.validFrom}" } } ?: NA,
+            certValidityEnd = extract { chain?.leaf?.tbsCertificate?.let { "${it.validUntil}" } } ?: NA,
             provisioning = extract {
                 if (extension?.keyMintSecurityLevel != AttestationKeyDescription.SecurityLevel.SOFTWARE) chain?.let {
                     provisioning(
@@ -349,7 +354,7 @@ private fun avbStatus(rootOfTrust: AuthorizationList.RootOfTrust): String = when
 
 private fun provisioning(chain: CertificateChain): String {
     val factory = CertificateFactory.getInstance("X.509")
-    val jca = chain.map { factory.generateCertificate(ByteArrayInputStream(it.encodeToDer())) as X509Certificate }
+    val jca = chain.map { factory.generateCertificate(ByteArrayInputStream(Signum.Der.encodeToByteArray(it))) as X509Certificate }
     return if (jca.isRemoteKeyProvisioned()) "RKP" else "factory-provisioned"
 }
 

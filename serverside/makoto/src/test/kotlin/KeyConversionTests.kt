@@ -1,3 +1,5 @@
+
+import at.asitplus.signum.indispensable.iosEncoded
 import at.asitplus.attestation.decodeBase64ToArray
 import at.asitplus.attestation.parseToPublicKey
 import at.asitplus.signum.indispensable.toCryptoPublicKey
@@ -12,7 +14,7 @@ val KeyConversionTests by matrixSuite {
         "it should be parsable" - {
             val parsedKey = x509Key.parseToPublicKey()
             "and encodable to ANSI X9.62" - {
-                val ansiBytes = parsedKey.toCryptoPublicKey().getOrThrow().iosEncoded
+                val ansiBytes = parsedKey.toCryptoPublicKey().iosEncoded
                 "and decodable" - {
                     val decoded = ansiBytes.parseToPublicKey()
                     "to match the original X5095-encoded key" {

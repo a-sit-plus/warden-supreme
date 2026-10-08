@@ -1,11 +1,13 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.supreme.installSupreme
+import at.asitplus.signum.Signum
 import at.asitplus.attestation.*
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifierStringSerializer
+import at.asitplus.awesn1.ObjectIdentifier
+import at.asitplus.awesn1.ObjectIdentifierStringSerializer
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.builtins.ListSerializer
@@ -70,6 +72,8 @@ private constructor(
     val toBeAttestedAttributes: AttestationChallenge.CertificationRequestAttributeAttestationDescriptor? = null,
     val maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
 ) : AttestationConfiguration {
+
+    init { Signum.installSupreme() }
 
     @Throws(AttestationException.Configuration::class, IllegalArgumentException::class)
     constructor(
@@ -194,6 +198,8 @@ private constructor(
     override fun toJsonElement(): JsonObject = json.encodeToJsonElement(this).jsonObject
 
     companion object : AttestationConfiguration.Reader<SupremeConfiguration> {
+
+        init { Signum.installSupreme() }
 
         private val yaml by lazy {
             Yaml {

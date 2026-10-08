@@ -1,5 +1,5 @@
 import at.asitplus.attestation.supreme.*
-import at.asitplus.signum.indispensable.Digest
+import at.asitplus.signum.indispensable.digest.Digest
 import at.asitplus.signum.indispensable.pki.leaf
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import at.asitplus.test.Target
@@ -58,9 +58,9 @@ val EndToEndTest by matrixSuite {
             withClue(clue) {
                 result.shouldBeInstanceOf<AttestationResponse.Success>()
                 withClue("Cert leaf pub key is the original attested key") {
-                    result.certificateChain.leaf.decodedPublicKey.getOrThrow() shouldBe PlatformSigningProvider.getSignerForKey(
+                    result.certificateChain.leaf.publicKey shouldBe PlatformSigningProvider.getSignerForKey(
                         ALIAS
-                    ).getOrThrow().publicKey
+                    ).publicKey
                 }
             }
 
@@ -92,8 +92,8 @@ val EndToEndTest by matrixSuite {
                 val result = client.attest(proof, challenge.attestationEndpointUrl)
                 if (scenario.succeeds) {
                     result.shouldBeInstanceOf<AttestationResponse.Success>().also { success ->
-                        success.certificateChain.leaf.decodedPublicKey.getOrThrow() shouldBe
-                                PlatformSigningProvider.getSignerForKey(alias).getOrThrow().publicKey
+                        success.certificateChain.leaf.publicKey shouldBe
+                                PlatformSigningProvider.getSignerForKey(alias).publicKey
                     }
                 } else {
                     result.shouldBeInstanceOf<AttestationResponse.Failure>().kind shouldBe

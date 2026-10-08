@@ -1,10 +1,12 @@
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
+import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.androidAttestationExtension
 import at.asitplus.attestation.android.prettyPrint
 import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.attestation.android.*
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.toKmpCertificate
 import com.google.android.attestation.ParsedAttestationRecord
 import at.asitplus.testballoon.matrix.*
@@ -124,7 +126,7 @@ val CustomParserTests by matrixSuite {
                 attestationCertChain,
                 nameFn = { _, value -> value.subjectX500Principal.toString() + " (" + value.sigAlgName + ")" }) test {
                 it.toKmpCertificate().isSuccess shouldBe true
-                it.toKmpCertificate().getOrThrow().encodeToDer() shouldBe it.encoded
+                Signum.Der.encodeToByteArray(it.toKmpCertificate().getOrThrow()) shouldBe it.encoded
             }
         }
         val fromGoogle =

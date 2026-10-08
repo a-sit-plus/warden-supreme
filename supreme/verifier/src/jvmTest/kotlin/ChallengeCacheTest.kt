@@ -1,9 +1,10 @@
 package at.asitplus.attestation.supreme
 
+
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.catching
 import at.asitplus.signum.indispensable.CryptoSignature
-import at.asitplus.signum.indispensable.SignatureAlgorithm
+import at.asitplus.signum.indispensable.sign.SignatureAlgorithm
 import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
@@ -31,8 +32,8 @@ private val csrKeyPair by lazy { generateRsaKeyPair(1024) }
 
 private fun csrForChallenge(challenge: AttestationChallenge): CertificationRequest {
     val tbsCsr = TbsCertificationRequest(
-        subjectName = listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber())),
-        publicKey = csrKeyPair.public.toCryptoPublicKey().getOrThrow(),
+        subjectName = at.asitplus.signum.indispensable.pki.X500Name(listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber()))),
+        publicKey = csrKeyPair.public.toCryptoPublicKey(),
         attributes = emptyList(),
     )
     return CertificationRequest(

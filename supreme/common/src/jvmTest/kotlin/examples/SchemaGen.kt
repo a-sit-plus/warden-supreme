@@ -4,7 +4,7 @@ import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.AttestationResponse
 import at.asitplus.attestation.supreme.InstantLongSerializer
 import at.asitplus.signum.indispensable.Attestation
-import at.asitplus.signum.indispensable.Digest
+import at.asitplus.signum.indispensable.digest.Digest
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.testballoon.matrix.*
 import io.github.smiley4.schemakenerator.core.data.InitialKTypeData
@@ -48,7 +48,7 @@ private fun buildMinimal(type: TypeData, types: Map<TypeId, TypeData>): String {
     val typeName =
         if (shortName == InstantLongSerializer::class.simpleName) "Milliseconds since epoch"
         else if (shortName.contains("EllipticCurve")) "EC name. One of: ${ECCurve.entries.joinToString { it.jwkName }}"
-        else if (shortName.contains("DigestNamer")) "Digest name. One of: ${Digest.entries.joinToString { it.name }}"
+        else if (shortName.contains("DigestNamer")) "Digest name. One of: ${at.asitplus.signum.indispensable.digest.WellKnownDigest.entries.joinToString { it.name }}"
         else if (shortName.lowercase().endsWith("serializer")) shortName.dropLast("serializer".length)
         else shortName
     return buildString {

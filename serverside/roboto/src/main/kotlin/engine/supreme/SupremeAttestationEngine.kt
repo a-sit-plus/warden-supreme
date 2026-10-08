@@ -1,7 +1,7 @@
 package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.*
-import at.asitplus.signum.indispensable.asn1.toBigInteger
+import at.asitplus.awesn1.toBigInteger
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.datetime.YearMonth

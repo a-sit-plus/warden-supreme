@@ -2,7 +2,15 @@
 
 package at.asitplus.attestation
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
+import kotlinx.serialization.decodeFromByteArray
+import at.asitplus.awesn1.serialization.decodeFromTlv
+
+
 import at.asitplus.signum.indispensable.*
+import at.asitplus.signum.indispensable.sign.*
+import at.asitplus.signum.indispensable.misc.ANSIECPrefix
 import at.asitplus.awesn1.*
 import at.asitplus.awesn1.encoding.*
 import at.asitplus.signum.indispensable.io.ByteArrayBase64Serializer
@@ -122,7 +130,7 @@ data class CanonicalIosAttestation(val cert: X509Certificate, val receipt: Recei
     fun toValidatedAttestation(): ValidatedAttestation = ValidatedAttestation(cert, receipt, iosVersion)
 
     override fun encodeToTlv() = Asn1.Sequence {
-        +cert.toKmpCertificate().getOrThrow().encodeToTlv()
+        +Asn1Element.parse(cert.encoded)
         +receipt.p7.encodeToAsn1OctetStringPrimitive()
         iosVersion?.let { +Asn1String.UTF8(it) }
     }
@@ -163,7 +171,7 @@ data class CanonicalIosAttestation(val cert: X509Certificate, val receipt: Recei
 
     companion object : Asn1Decodable<Asn1Sequence, CanonicalIosAttestation> {
         override fun doDecode(src: Asn1Sequence): CanonicalIosAttestation = src.decodeAs {
-            val cert = at.asitplus.signum.indispensable.pki.Certificate.decodeFromTlv(next() as Asn1Sequence)
+            val cert = Signum.Der.decodeFromTlv<at.asitplus.signum.indispensable.pki.Certificate>(next())
 
             val receipt = next().asOctetString().content.let {
                 Receipt(Receipt.Payload.parse((it.readAsSignedData())), it)
@@ -172,7 +180,7 @@ data class CanonicalIosAttestation(val cert: X509Certificate, val receipt: Recei
                 next().asPrimitive().decodeToUtf8String()
             else null
 
-            CanonicalIosAttestation(cert.toJcaCertificateBlocking().getOrThrow(), receipt, iosVersion?.value)
+            CanonicalIosAttestation(cert.toJcaCertificateBlocking(), receipt, iosVersion?.value)
         }
     }
 }
@@ -218,24 +226,25 @@ object ValidatedAttestationSerializer : KSerializer<ValidatedAttestation> {
         val iosVersion = decoder.decodeElementIndex(String.serializer().descriptor)
             .let { if (it == -1) null else decoder.decodeStringElement(String.serializer().descriptor, it) }
         decoder.endStructure(descriptor)
-        return ValidatedAttestation(cert.toJcaCertificateBlocking().getOrThrow(), receipt, iosVersion)
+        return ValidatedAttestation(cert.toJcaCertificateBlocking(), receipt, iosVersion)
     }
 }
 
-internal fun PublicKey.transcodeToAllFormats() = toCryptoPublicKey().getOrThrow().let {
+internal fun PublicKey.transcodeToAllFormats() = toCryptoPublicKey().let {
     when (it) {
         is CryptoPublicKey.EC -> listOf(
-            it.encodeToDer(),
+            Signum.Der.encodeToByteArray(it),
             it.toAnsiX963Encoded(useCompressed = it.preferCompressedRepresentation),
             it.toAnsiX963Encoded(useCompressed = !it.preferCompressedRepresentation),
             it.didEncoded.encodeToByteArray()
         )
 
         is CryptoPublicKey.RSA -> listOf(
-            it.encodeToDer(),
+            Signum.Der.encodeToByteArray(it),
             it.iosEncoded,
             it.didEncoded.encodeToByteArray()
         )
+        else -> throw IllegalArgumentException("Unsupported public key type: ${it::class}")
     }
 }
 
@@ -260,9 +269,13 @@ internal fun kotlin.time.Instant.toJavaDate() = Date.from(toJavaInstant())
 
 fun ByteArray.parseToPublicKey(): PublicKey =
     try {
-        CryptoPublicKey.decodeFromDer(this).toJcaPublicKey().getOrThrow()
+        Signum.Der.decodeFromByteArray<CryptoPublicKey>(this).toJcaPublicKey()
     } catch (e: Throwable) {
-        CryptoPublicKey.fromIosEncoded(this).toJcaPublicKey().getOrThrow()
+        when (firstOrNull()?.toUByte()) {
+            ANSIECPrefix.UNCOMPRESSED.prefixUByte -> EcdsaPublicKey.fromIosEncoded(this)
+            (BERTags.SEQUENCE or BERTags.CONSTRUCTED) -> RsaPublicKey.fromIosEncoded(this)
+            else -> throw IllegalArgumentException("Unknown iOS key type")
+        }.toJcaPublicKey()
     }
 
 /**

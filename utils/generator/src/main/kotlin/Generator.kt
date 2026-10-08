@@ -1,6 +1,7 @@
 package at.asitplus.attestation.generator
 
-import at.asitplus.signum.indispensable.asn1.encodeToPEM
+import at.asitplus.signum.Signum
+import at.asitplus.signum.indispensable.encodeToPem
 import java.io.File
 
 /**
@@ -20,5 +21,5 @@ fun main(args: Array<String>) {
         File(destination, "attestation-$index-chain.pem").writeText(issued.chainPem())
         File(destination, "attestation-$index-key.pem").writeText(issued.leafPrivateKeyPem())
     }
-    File(destination, "root.pem").writeText(issuer.rootCertificate.encodeToPEM().getOrThrow())
+    File(destination, "root.pem").writeText(Signum.Der.encodeToPem(issuer.rootCertificate))
 }

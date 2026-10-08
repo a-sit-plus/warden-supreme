@@ -1,9 +1,13 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.supreme.installSupreme
+import at.asitplus.signum.Signum
+import at.asitplus.signum.indispensable.decodeFromPem
+
+
 import at.asitplus.attestation.AttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.decodeFromPem
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
@@ -70,7 +74,7 @@ data class PatchLevel @JvmOverloads constructor(
 
 
 val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
-    Certificate.decodeFromPem(
+    Signum.Der.decodeFromPem<Certificate>(
         """
             -----BEGIN CERTIFICATE-----
             MIICIjCCAaigAwIBAgIRAISp0Cl7DrWK5/8OgN52BgUwCgYIKoZIzj0EAwMwUjEc
@@ -87,7 +91,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
             uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
             -----END CERTIFICATE-----
             """.trimIndent()
-    ).toJcaCertificateBlocking().getOrThrow(),
+    ).toJcaCertificateBlocking(),
     enforceFactoryProvisionedChainValidity = true /*NOOP for an RKP root, but better safe than sorry*/
 )
 
@@ -97,7 +101,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
 val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
     //Current RSA ROOT
     TrustedRoot.Certificate(
-        Certificate.decodeFromPem(
+        Signum.Der.decodeFromPem<Certificate>(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAPHBcqaZ6vUdMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -130,14 +134,14 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             w1IdYIg2Wxg7yHcQZemFQg==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).toJcaCertificateBlocking().getOrThrow(),
+        ).toJcaCertificateBlocking(),
         enforceFactoryProvisionedChainValidity = false
     ),
     //new Google EC Root
     GOOGLE_RKP_EC_ROOT,
     //Old, but as of 2025 still valid root certificate. Will expire in 2026
     TrustedRoot.Certificate(
-        Certificate.decodeFromPem(
+        Signum.Der.decodeFromPem<Certificate>(
             """
             -----BEGIN CERTIFICATE-----
             MIIFYDCCA0igAwIBAgIJAOj6GWMU0voYMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -171,13 +175,13 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             wDB5y0USicV3YgYGmi+NZfhA4URSh77Yd6uuJOJENRaNVTzk
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).toJcaCertificateBlocking().getOrThrow(),
+        ).toJcaCertificateBlocking(),
         enforceFactoryProvisionedChainValidity = false
     ),
 
     //old, but still valid
     TrustedRoot.Certificate(
-        Certificate.decodeFromPem(
+        Signum.Der.decodeFromPem<Certificate>(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJANUP8luj8tazMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -210,13 +214,13 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             ex0SdDrx+tWUDqG8At2JHA==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).toJcaCertificateBlocking().getOrThrow(),
+        ).toJcaCertificateBlocking(),
         enforceFactoryProvisionedChainValidity = false
     ),
 
     //old, but still valid
     TrustedRoot.Certificate(
-        Certificate.decodeFromPem(
+        Signum.Der.decodeFromPem<Certificate>(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAMNrfES5rhgxMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -249,7 +253,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             mD/vFDkzF+wm7cyWpQpCVQ==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).toJcaCertificateBlocking().getOrThrow(),
+        ).toJcaCertificateBlocking(),
         enforceFactoryProvisionedChainValidity = false
     ),
 )
@@ -466,6 +470,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val customProperties: Map<String, String> = emptyMap()
 
 ) : AttestationConfiguration {
+
+    init { Signum.installSupreme() }
 
     /**
      * Convenience constructor to attest a single app
@@ -1323,6 +1329,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonElement(): JsonObject = jsonDebug.encodeToJsonElement(this).jsonObject
 
     companion object : AttestationConfiguration.Reader<AndroidAttestationConfiguration> {
+
+        init { Signum.installSupreme() }
 
         private val yaml by lazy {
             Yaml {
