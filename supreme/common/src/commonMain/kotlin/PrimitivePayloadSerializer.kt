@@ -8,11 +8,15 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Transient
+import kotlinx.serialization.builtins.ByteArraySerializer
+import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonNull
 
 
 /**
@@ -104,6 +108,23 @@ enum class PrimitiveType(
     ),
 
     ;
+
+    /** Native JSON codec, sharing the same type table as the ASN.1 codec. */
+    @Suppress("UNCHECKED_CAST")
+    internal val jsonSerializer: KSerializer<Primitive>
+        get() = when (this) {
+            NULL -> JsonNull.serializer()
+            BOOLEAN -> Boolean.serializer()
+            STRING -> String.serializer()
+            BYTE -> Byte.serializer()
+            SHORT -> Short.serializer()
+            INT -> Int.serializer()
+            LONG -> Long.serializer()
+            CHAR -> Char.serializer()
+            FLOAT -> Float.serializer()
+            DOUBLE -> Double.serializer()
+            BYTEARRAY -> ByteArraySerializer()
+        }.nullable as KSerializer<Primitive>
 
     internal object ByteSerializer : KSerializer<PrimitiveType> {
 

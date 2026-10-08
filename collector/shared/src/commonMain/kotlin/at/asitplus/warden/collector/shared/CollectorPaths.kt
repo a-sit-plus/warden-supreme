@@ -10,7 +10,7 @@ package at.asitplus.warden.collector.shared
  * Both sides use real system time; the verifier's default `verificationTimeOffset` leeway absorbs
  * normal client/server clock skew.
  */
-object DemoAttestation {
+object CollectorPaths {
 
     /** GET endpoint the app fetches the attestation challenge from. */
     const val CHALLENGE_PATH: String = "/api/v1/challenge"
@@ -23,6 +23,26 @@ object DemoAttestation {
 
     /** POST endpoint the app submits the attestation proof to (embedded in the challenge by the backend). */
     const val ATTEST_PATH: String = "/api/v1/attest"
+
+    const val GET_STATEMENTS_PATH: String = "/api/v2/debug-statements"
+    const val DEBUG_STATEMENTS_ARCHIVE_PATH: String = "/debug-statements.zip"
+
+    const val ROOT_PATH: String = "/"
+    const val HEALTH_PATH: String = "/health"
+    const val FAVICON_PATH: String = "/favicon.png"
+    const val LOGO_PATH: String = "/logo.png"
+    const val STYLESHEET_PATH: String = "/collector.css"
+    const val APK_QR_PATH: String = "/collector-apk-qr.svg"
+    const val FILES_PATH: String = "/files"
+
+    const val OLD_FACTORY_CERTIFICATES_CHALLENGE_PATH: String = "/api/v1/old-factory-certs/challenge"
+    const val OLD_FACTORY_CERTIFICATES_ATTEST_PATH: String = "/api/v1/old-factory-certs/attest"
+    const val UNLOCKED_BOOTLOADER_CHALLENGE_PATH: String = "/api/v1/unlocked-bootloader/challenge"
+    const val UNLOCKED_BOOTLOADER_ATTEST_PATH: String = "/api/v1/unlocked-bootloader/attest"
+    const val GRAPHENE_OS_CHALLENGE_PATH: String = "/api/v1/grapheneos/challenge"
+    const val GRAPHENE_OS_ATTEST_PATH: String = "/api/v1/grapheneos/attest"
+    const val STRONGBOX_ONLY_CHALLENGE_PATH: String = "/api/v1/strongbox/challenge"
+    const val STRONGBOX_ONLY_ATTEST_PATH: String = "/api/v1/strongbox/attest"
 }
 
 enum class CollectorPolicy(
@@ -36,35 +56,35 @@ enum class CollectorPolicy(
         "Default",
         "Default",
         "Requires timely certificate chains, a locked bootloader, and OEM verified boot.",
-        DemoAttestation.CHALLENGE_PATH,
-        DemoAttestation.ATTEST_PATH,
+        CollectorPaths.CHALLENGE_PATH,
+        CollectorPaths.ATTEST_PATH,
     ),
     OLD_FACTORY_CERTIFICATES(
         "Trust old factory certs",
         "Old certs",
         "Accepts expired factory-provisioned certificate chains, but otherwise keeps the default policy.",
-        "/api/v1/old-factory-certs/challenge",
-        "/api/v1/old-factory-certs/attest",
+        CollectorPaths.OLD_FACTORY_CERTIFICATES_CHALLENGE_PATH,
+        CollectorPaths.OLD_FACTORY_CERTIFICATES_ATTEST_PATH,
     ),
     UNLOCKED_BOOTLOADER(
         "Unlocked Bootloader",
         "Unlocked",
         "Accepts expired factory-provisioned chains and unlocked bootloaders; verified boot state and boot-key checks are skipped.",
-        "/api/v1/unlocked-bootloader/challenge",
-        "/api/v1/unlocked-bootloader/attest",
+        CollectorPaths.UNLOCKED_BOOTLOADER_CHALLENGE_PATH,
+        CollectorPaths.UNLOCKED_BOOTLOADER_ATTEST_PATH,
     ),
     GRAPHENE_OS(
         "Strongbox-only and GrapheneOS",
         "GrapheneOS",
         "Accepts only strongbox-capable devices, but trusts expired factory-provisioned chains and locked devices using OEM verified boot or a pinned GrapheneOS verified boot key.",
-        "/api/v1/grapheneos/challenge",
-        "/api/v1/grapheneos/attest",
+        CollectorPaths.GRAPHENE_OS_CHALLENGE_PATH,
+        CollectorPaths.GRAPHENE_OS_ATTEST_PATH,
     ),
     STRONGBOX_ONLY(
         "StrongBox only",
         "StrongBox",
         "Uses the default policy and additionally requires the attested key to be backed by StrongBox.",
-        "/api/v1/strongbox/challenge",
-        "/api/v1/strongbox/attest",
+        CollectorPaths.STRONGBOX_ONLY_CHALLENGE_PATH,
+        CollectorPaths.STRONGBOX_ONLY_ATTEST_PATH,
     ),
 }

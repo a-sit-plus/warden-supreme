@@ -37,6 +37,19 @@ interesting half.
     **Never configure a production deployment to send attestations to this service.** This is a public testing endpoint:
     submitted attestation data and diagnostic artefacts may be stored and published.
 
+## Fetching Debug Statements
+
+`GET /api/debug-statements` returns a JSON array of stored debug statements, ordered by submission time.
+Optional `from` and `to` query parameters are integer UTC Unix epoch seconds: `from` is inclusive and `to`
+is exclusive. Omit either parameter for an open bound, or both to fetch all statements. For example,
+`/api/debug-statements?from=1786960000&to=1787050000`. Empty ranges return `[]`; invalid bounds return `400`.
+
+The backend indexes timestamps from existing submission directory names at startup and updates the index
+after successful collection. No additional metadata files are needed. Responses stream existing JSON files
+without parsing them. At most two API exports run simultaneously; excess requests receive `429` and should
+be retried later. New submissions may appear during an export; external storage changes require a restart.
+Configure request-rate limits at the reverse proxy when exposing the endpoint publicly.
+
 ## Exploring Failure Conditions with Custom Builds
 
 You can build or deliberately modify the Attestation Collector app and submit attestations to the public service. The

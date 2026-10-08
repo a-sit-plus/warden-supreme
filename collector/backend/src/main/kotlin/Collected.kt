@@ -10,12 +10,15 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.leaf
-import at.asitplus.warden.collector.shared.DemoAttestation
+import at.asitplus.warden.collector.shared.CollectorPaths
 import at.asitplus.warden.collector.shared.androidAttestationJson
 import kotlinx.html.*
+import kotlinx.html.stream.appendHTML
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import org.slf4j.LoggerFactory
@@ -26,6 +29,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.util.concurrent.ConcurrentSkipListMap
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.random.Random
@@ -35,7 +39,6 @@ import kotlin.time.Instant
 private val json = Json { ignoreUnknownKeys = true }
 private val prettyJson = Json { prettyPrint = true }
 private val logger = LoggerFactory.getLogger(CollectorStore::class.java)
-const val DEBUG_STATEMENTS_ARCHIVE_PATH = "/debug-statements.zip"
 
 /**
  * One collected attestation, fully pre-extracted at collection time so the report never re-parses.
@@ -66,12 +69,22 @@ data class CollectedRecord(
 
 /** Filesystem store: one directory per collected attestation under [dir]. */
 class CollectorStore(private val dir: File) : AutoCloseable {
+
+    val fileMutex = Mutex()
+
+    val indexHtml = File(dir, "index.html")
+
+    // ponytail: rebuild from directory names at startup; no persistent index to maintain.
+    private val statements = ConcurrentSkipListMap<Pair<Long, String>, File>(
+        compareBy<Pair<Long, String>> { it.first }.thenBy { it.second }
+    )
+
     private sealed interface ArchiveCommand {
         data object StatementsChanged : ArchiveCommand
         data class Get(val result: CompletableDeferred<File>) : ArchiveCommand
     }
 
-    private val debugStatementsArchive = File(dir, DEBUG_STATEMENTS_ARCHIVE_PATH.removePrefix("/"))
+    private val debugStatementsArchive = File(dir, CollectorPaths.DEBUG_STATEMENTS_ARCHIVE_PATH.removePrefix("/"))
     private val archiveCommands = Channel<ArchiveCommand>(Channel.UNLIMITED)
     private val archiveRequests = Channel<Unit>(Channel.CONFLATED)
     private val archiveScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -79,6 +92,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
     init {
         dir.mkdirs()
         runBlocking { replayStoredStatements() }
+        runBlocking { refreshReport() }
         archiveScope.launch { runArchiveWorker() }
     }
 
@@ -86,7 +100,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
      * Writes all artifacts for one submission to `<dir>/<id>/` and returns the id. Extraction and
      * file emission happen once, here — the report and downloads just read files afterwards.
      */
-    fun collect(
+    suspend fun collect(
         submittedAtEpochMs: Long,
         deviceName: String?,
         result: String,
@@ -110,9 +124,15 @@ class CollectorStore(private val dir: File) : AutoCloseable {
                 statement = debugStatement,
             )
             if (debugStatement != null) {
+                statements[submittedAtEpochMs to id] = File(recordDir, "debug-statement.json")
                 archiveCommands.trySend(ArchiveCommand.StatementsChanged)
             }
             logger.info("Stored attestation proof; success=true; path={}", recordDir.absolutePath)
+            try {
+                refreshReport()
+            } catch (exception: Exception) {
+                logger.error("Failed to refresh collected report; retaining previous HTML", exception)
+            }
             return id
         } catch (exception: Exception) {
             logger.info(
@@ -122,6 +142,41 @@ class CollectorStore(private val dir: File) : AutoCloseable {
             )
             throw exception
         }
+    }
+
+    private suspend fun refreshReport() {
+        val records = list()
+        val temporary = File.createTempFile("index-", ".html", dir)
+        try {
+            temporary.bufferedWriter().use { writer ->
+                writer.write("<!DOCTYPE html>\n")
+                writer.appendHTML().html { renderCollectedReport(records) }
+            }
+            fileMutex.withLock {
+                Files.move(
+                    temporary.toPath(),
+                    indexHtml.toPath(),
+                    StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING,
+                )
+            }
+        } finally {
+            temporary.delete()
+        }
+    }
+
+    /** Bounds are epoch milliseconds, lower inclusive and upper exclusive. No file reads or sorting. */
+    fun debugStatements(from: Long? = null, to: Long? = null): Sequence<File> {
+        require(from == null || to == null || from <= to)
+        val lower = from?.let { it to "" }
+        val upper = to?.let { it to "" }
+        val matching = when {
+            lower != null && upper != null -> statements.subMap(lower, true, upper, false)
+            lower != null -> statements.tailMap(lower, true)
+            upper != null -> statements.headMap(upper, false)
+            else -> statements
+        }
+        return matching.values.asSequence()
     }
 
     /** Requests one ZIP build; concurrent requests await the already-running build instead of scheduling another. */
@@ -209,6 +264,10 @@ class CollectorStore(private val dir: File) : AutoCloseable {
         dir.listFiles { file -> file.isDirectory }?.forEach { recordDir ->
             val statementFile = File(recordDir, "debug-statement.json")
             if (!statementFile.isFile) return@forEach
+            val timestamp = recordDir.name.substringBeforeLast('-').toLongOrNull()
+            if (timestamp != null && File(recordDir, "record.json").isFile) {
+                statements[timestamp to recordDir.name] = statementFile
+            }
 
             try {
                 val oldRecord = catchingUnwrapped {
@@ -371,12 +430,12 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
         title { +"Warden Supreme — Public Attestation Testing Service" }
         link {
             rel = "stylesheet"
-            href = "/collector.css"
+            href = CollectorPaths.STYLESHEET_PATH
             type = "text/css"
         }
         link {
             rel = "icon"
-            href = "/favicon.png"
+            href = CollectorPaths.FAVICON_PATH
             type = "image/png"
             sizes = "any"
         }
@@ -388,7 +447,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                 h1 {
                     img(
                         alt = "Warden Supreme",
-                        src = "/logo.png"
+                        src = CollectorPaths.LOGO_PATH
                     )
                     span {
                         +"Public Attestation Testing Service"
@@ -416,7 +475,7 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                         span {
                             classes += "download"
                             a {
-                                href = DEBUG_STATEMENTS_ARCHIVE_PATH
+                                href = CollectorPaths.DEBUG_STATEMENTS_ARCHIVE_PATH
                                 +"⬇ Download all debug statements ⬇"
                             }
                         }
@@ -424,11 +483,11 @@ fun HTML.renderCollectedReport(records: List<Pair<String, CollectedRecord>>) {
                 }
             }
             a(classes = "qr") {
-                href = DemoAttestation.DOWNLOAD_PATH
+                href = CollectorPaths.DOWNLOAD_PATH
                 target = "_blank"
                 img(
                     alt = "QR code to download the Collector APK",
-                    src = "/collector-apk-qr.svg"
+                    src = CollectorPaths.APK_QR_PATH
                 )
                 span { +"Click or scan to download APK" }
             }
@@ -564,21 +623,21 @@ private fun TBODY.reportRow(id: String, r: CollectedRecord) = tr {
     td("mono") { +Instant.fromEpochMilliseconds(r.submittedAtEpochMs).toString() }
     td {
         if (r.hasChain) {
-            a("/files/$id/chain.der", classes = "chain-download") { +"Download" }
-            a("/files/$id/chain.der", classes = "chain-explore") {
+            a("${CollectorPaths.FILES_PATH}/$id/chain.der", classes = "chain-download") { +"Download" }
+            a("${CollectorPaths.FILES_PATH}/$id/chain.der", classes = "chain-explore") {
                 target = "_blank"
                 +"Explore"
             }
         } else +NA
     }
-    td { a("/files/$id/proof.der") { +"proof.der" } }
-    td { if (r.hasStatement) a("/files/$id/debug-statement.json") { +"debug-statement.json" } else +NA }
+    td { a("${CollectorPaths.FILES_PATH}/$id/proof.der") { +"proof.der" } }
+    td { if (r.hasStatement) a("${CollectorPaths.FILES_PATH}/$id/debug-statement.json") { +"debug-statement.json" } else +NA }
     td("att") {
         val attestation = r.attestationJson
         if (attestation == null) +NA
         else details("tree") {
             summary { +"view" }
-            if (r.hasAttestationJson) span("jsonlink") { a("/files/$id/attestation.json") { +"download json" } }
+            if (r.hasAttestationJson) span("jsonlink") { a("${CollectorPaths.FILES_PATH}/$id/attestation.json") { +"download json" } }
             jsonTree(attestation, rootOpen = true)
         }
     }

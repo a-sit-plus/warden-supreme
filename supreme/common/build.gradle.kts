@@ -56,14 +56,15 @@ kotlin {
 
         commonMain.dependencies {
             api(libs.supreme)
+            api(serialization("json"))
         }
 
         jvmMain.dependencies {
             api(libs.yamltk)
-            api(serialization("json"))
         }
 
         jvmTest.dependencies {
+            implementation(serialization("cbor"))
             implementation(libs.schemakenerator.core)
             implementation(libs.schemakenerator.serialization)
             implementation(libs.schemakenerator.jsonschema)

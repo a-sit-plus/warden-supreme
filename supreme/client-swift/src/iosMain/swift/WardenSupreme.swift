@@ -26,6 +26,9 @@ public struct IosAttestationResult: Sendable {
 
     /// The number of certificates returned and stored for the key.
     public let certificateCount: Int
+
+    /// Additional properties supplied by the verifier, preserving primitive types and explicit nulls.
+    public let info: [String: Primitive]
 }
 
 /// A primitive value type requested by the verifier for attestation.
@@ -51,7 +54,7 @@ public struct AttestedAttributeRequest: Sendable {
 }
 
 /// A client-provided primitive value to bind into the attestation ceremony.
-public enum AttestedAttributeValue: Sendable {
+public enum Primitive: Sendable {
     case null
     case boolean(Bool)
     case string(String)
@@ -65,8 +68,11 @@ public enum AttestedAttributeValue: Sendable {
     case byteArray(Data)
 }
 
+@available(*, deprecated, renamed: "Primitive")
+public typealias AttestedAttributeValue = Primitive
+
 /// Supplies values in the same order as the verifier's requests. Use `nil` for an omitted optional value.
-public typealias AdditionalAttributesProvider = ([AttestedAttributeRequest]) -> [AttestedAttributeValue?]
+public typealias AdditionalAttributesProvider = ([AttestedAttributeRequest]) -> [Primitive?]
 
 /// Attests Signum-backed keys with a Warden Supreme verifier.
 public final class IosAttestationClient {
@@ -138,7 +144,8 @@ public final class IosAttestationClient {
         return IosAttestationResult(
             successful: result.successful,
             message: result.message,
-            certificateCount: Int(result.certificateCount)
+            certificateCount: Int(result.certificateCount),
+            info: result.info.mapValues { $0.swiftValue }
         )
     }
 
@@ -168,7 +175,7 @@ public final class IosAttestationClient {
     }
 }
 
-private extension AttestedAttributeValue {
+private extension Primitive {
     var bridgeValue: KotlinAttestedAttributeValue {
         switch self {
         case .null:
@@ -198,6 +205,22 @@ private extension AttestedAttributeValue {
 }
 
 private extension KotlinAttestedAttributeValue {
+    var swiftValue: Primitive {
+        switch AttestedAttributeType(rawValue: type)! {
+        case .null: .null
+        case .boolean: .boolean(booleanValue)
+        case .string: .string(stringValue!)
+        case .byte: .byte(Int8(integerValue))
+        case .short: .short(Int16(integerValue))
+        case .int: .int(Int32(integerValue))
+        case .long: .long(integerValue)
+        case .character: .character(Character(stringValue!))
+        case .float: .float(Float(floatingPointValue))
+        case .double: .double(floatingPointValue)
+        case .byteArray: .byteArray(bytesValue! as Data)
+        }
+    }
+
     static var missing: KotlinAttestedAttributeValue {
         KotlinAttestedAttributeValue(type: "MISSING", booleanValue: false, stringValue: nil, integerValue: 0, floatingPointValue: 0, bytesValue: nil)
     }

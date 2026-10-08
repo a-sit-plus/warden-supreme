@@ -30,6 +30,7 @@ class KotlinIosAttestationResult(
     val successful: Boolean,
     val message: String,
     val certificateCount: Int,
+    val info: Map<String, KotlinAttestedAttributeValue> = emptyMap(),
 )
 
 /** One additional attribute requested by the verifier. */
@@ -42,11 +43,11 @@ class KotlinAttestedAttributeDescriptor(
 /** Strongly typed value transported from the public Swift façade. */
 class KotlinAttestedAttributeValue(
     val type: String,
-    val booleanValue: Boolean,
-    val stringValue: String?,
-    val integerValue: Long,
-    val floatingPointValue: Double,
-    val bytesValue: NSData?,
+    val booleanValue: Boolean = false,
+    val stringValue: String? = null,
+    val integerValue: Long = 0,
+    val floatingPointValue: Double = 0.0,
+    val bytesValue: NSData? = null,
 )
 
 /** Retained key pointer transported through SKIE without suspend-return type erasure. */
@@ -143,6 +144,7 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
                     successful = true,
                     message = "Key attested; received ${response.certificateChain.size} certificate(s)",
                     certificateCount = response.certificateChain.size,
+                    info = response.info.mapValues { (_, value) -> value.toSwiftBridgeValue() },
                 )
             }
 
@@ -150,11 +152,27 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
                 successful = false,
                 message = "${response.kind}: ${response.explanation ?: "Attestation rejected"}",
                 certificateCount = 0,
+                info = response.info.mapValues { (_, value) -> value.toSwiftBridgeValue() },
             )
         }
     }
 
     private fun certificateKey(alias: String) = "at.asitplus.warden.attestation-certificate.$alias"
+}
+
+internal fun Primitive.toSwiftBridgeValue(): KotlinAttestedAttributeValue = when (this) {
+    null -> KotlinAttestedAttributeValue("NULL")
+    is Boolean -> KotlinAttestedAttributeValue("BOOLEAN", booleanValue = this)
+    is String -> KotlinAttestedAttributeValue("STRING", stringValue = this)
+    is Byte -> KotlinAttestedAttributeValue("BYTE", integerValue = toLong())
+    is Short -> KotlinAttestedAttributeValue("SHORT", integerValue = toLong())
+    is Int -> KotlinAttestedAttributeValue("INT", integerValue = toLong())
+    is Long -> KotlinAttestedAttributeValue("LONG", integerValue = this)
+    is Char -> KotlinAttestedAttributeValue("CHAR", stringValue = toString())
+    is Float -> KotlinAttestedAttributeValue("FLOAT", floatingPointValue = toDouble())
+    is Double -> KotlinAttestedAttributeValue("DOUBLE", floatingPointValue = this)
+    is ByteArray -> KotlinAttestedAttributeValue("BYTEARRAY", bytesValue = toNSData())
+    else -> throw IllegalArgumentException("Unsupported primitive: ${this::class.simpleName}")
 }
 
 internal fun resolveAttestedAttributes(

@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package at.asitplus.warden
 
 import at.asitplus.attestation.AttestationResult
@@ -23,19 +25,64 @@ import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
 import at.asitplus.signum.supreme.sign
 import at.asitplus.signum.supreme.sign.Signer
 import at.asitplus.warden.collector.shared.CollectorPolicy
-import at.asitplus.warden.collector.shared.DemoAttestation
+import at.asitplus.warden.collector.shared.CollectorPaths
 import io.ktor.server.application.*
 import io.ktor.http.HttpHeaders
-import io.ktor.server.html.respondHtml
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.asSink
 import kotlinx.datetime.TimeZone
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
+import kotlinx.io.asSource
+import kotlinx.io.buffered
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeStructure
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonUnquotedLiteral
+import kotlinx.serialization.json.io.decodeFromSource
+import kotlinx.serialization.json.io.encodeToSink
 import java.io.File
+import java.util.concurrent.Semaphore
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+
+// JsonElement serialization otherwise converts numeric literals to Long/Double and can lose precision.
+private fun JsonElement.preserveLiterals(): JsonElement = when (this) {
+    is JsonObject -> JsonObject(mapValues { it.value.preserveLiterals() })
+    is JsonArray -> JsonArray(map { it.preserveLiterals() })
+    is JsonPrimitive -> if (isString || this == JsonNull) this else JsonUnquotedLiteral(content)
+}
+
+private object DebugStatementsSerializer : SerializationStrategy<Sequence<File>> {
+    override val descriptor = ListSerializer(JsonElement.serializer()).descriptor
+
+    override fun serialize(encoder: Encoder, value: Sequence<File>) {
+        encoder.encodeStructure(descriptor) {
+            value.forEachIndexed { index, file ->
+                // ponytail: one decoded statement at a time; kotlinx.serialization has no public token-copy API.
+                val statement = file.inputStream().asSource().buffered().use { source ->
+                    Json.decodeFromSource<JsonElement>(source).preserveLiterals()
+                }
+                encodeSerializableElement(descriptor, index, JsonElement.serializer(), statement)
+            }
+        }
+    }
+}
 
 /**
  * Loads the [SupremeConfiguration] (bundled `supreme.yaml`, or the path in `collector.supremeConfig`).
@@ -132,17 +179,19 @@ fun Application.configureRouting() {
             ?: "./collected-proofs"
     )
     val store = CollectorStore(outputDir)
+    // ponytail: two simultaneous exports; rate limiting belongs at the reverse proxy.
+    val debugStatementExports = Semaphore(2)
     monitor.subscribe(ApplicationStopped) { store.close() }
     val collectorVersionCode = this::class.java.classLoader.getResource("collector-version.txt")
         ?.readText()?.trim() ?: error("collector-version.txt not found on the classpath")
 
     routing {
 
-        get("/health") {
+        get(CollectorPaths.HEALTH_PATH) {
             call.respondText("OK")
         }
 
-        get(DemoAttestation.VERSION_PATH) {
+        get(CollectorPaths.VERSION_PATH) {
             call.respondText(collectorVersionCode)
         }
 
@@ -222,7 +271,7 @@ fun Application.configureRouting() {
 
                 // Extract columns and emit all download artifacts to disk now — the report and downloads
                 // just read files afterwards (no per-request regeneration).
-                store.collect(
+                response.info["id"] = store.collect(
                     submittedAtEpochMs = submittedAt,
                     deviceName = deviceName,
                     result = result,
@@ -231,38 +280,72 @@ fun Application.configureRouting() {
                     proofBytes = proofBytes,
                 )
 
+
                 call.respond(response)
             }
         }
 
         // Human-readable report of everything collected so far.
-        get("/") {
-            val records = store.list()
-            call.respondHtml { renderCollectedReport(records) }
+        get(CollectorPaths.ROOT_PATH) {
+            call.respondFile(store.indexHtml)
         }
 
-        get("/favicon.png") {
+        get(CollectorPaths.FAVICON_PATH) {
             call.respondResource("warden.png")
         }
-        get("/logo.png") {
+        get(CollectorPaths.LOGO_PATH) {
             call.respondResource("supreme-horz.png")
         }
-        get("/collector.css") {
+        get(CollectorPaths.STYLESHEET_PATH) {
             call.respondResource("collector.css")
         }
-        get("/collector-apk-qr.svg") {
+        get(CollectorPaths.APK_QR_PATH) {
             call.respondResource("collector-apk-qr.svg")
         }
-        get(DemoAttestation.DOWNLOAD_PATH) {
+        get(CollectorPaths.DOWNLOAD_PATH) {
             call.respondResource("collector.apk")
         }
-        get(DEBUG_STATEMENTS_ARCHIVE_PATH) {
+        get(CollectorPaths.DEBUG_STATEMENTS_ARCHIVE_PATH) {
             call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"debug-statements.zip\"")
             call.respondFile(store.debugStatementsArchive())
         }
 
+        get(CollectorPaths.GET_STATEMENTS_PATH) {
+            val (from, to) = try {
+                listOf("from", "to").map { name ->
+                    call.request.queryParameters.getAll(name)?.let { values ->
+                        require(values.size == 1)
+                        Math.multiplyExact(values.single().toLong(), 1000L)
+                    }
+                }.also { (from, to) -> require(from == null || to == null || from <= to) }
+            } catch (_: IllegalArgumentException) {
+                call.respondText("Expected optional integer epoch seconds with from <= to", status = HttpStatusCode.BadRequest)
+                return@get
+            } catch (_: ArithmeticException) {
+                call.respondText("Timestamp is out of range", status = HttpStatusCode.BadRequest)
+                return@get
+            }
+            if (!debugStatementExports.tryAcquire()) {
+                call.respondText("Too many concurrent exports", status = HttpStatusCode.TooManyRequests)
+                return@get
+            }
+            try {
+                call.respondBytesWriter(ContentType.Application.Json) {
+                    withContext(Dispatchers.IO) {
+                        val context = currentCoroutineContext()
+                        val files = store.debugStatements(from, to).onEach { context.ensureActive() }
+                        asSink().buffered().use { sink ->
+                            Json.encodeToSink(DebugStatementsSerializer, files, sink)
+                        }
+                    }
+                }
+            } finally {
+                debugStatementExports.release()
+            }
+        }
+
         // Downloads (chain.der, proof.der, debug-statement.json, attestation.json) are the files
         // written per submission under the output directory — served directly, no download routes.
-        staticFiles("/files", outputDir)
+        staticFiles(CollectorPaths.FILES_PATH, outputDir)
     }
 }
