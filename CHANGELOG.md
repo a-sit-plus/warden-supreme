@@ -1,7 +1,17 @@
 # Changelog
 
 ## NEXT
-* Add generic `info` String to success and failed `AttestationResponse`
+* Add `info: MutableMap<String, Primitive>` to successful and failed `AttestationResponse` values.
+    * Accepts ordinary Kotlin primitives, including `null`, numeric types, `Char`, and `ByteArray`.
+      Empty maps are omitted from the wire and missing maps default to empty mutable maps.
+    * Add reusable `PrimitiveSerializer` and `PrimitiveMapSerializer`: JSON uses named type/value entries;
+      other formats use stable type IDs and the existing ASN.1 DER codecs.
+    * Attestation Collector returns stored proof ID in `info["id"]`.
+* Expose verifier response properties in the Swift client through `IosAttestationResult.info: [String: Primitive]`,
+  preserving primitive types and explicit nulls for both successful and failed attestations.
+    * Rename the Swift `AttestedAttributeValue` enum to `Primitive`, also used by `AdditionalAttributesProvider`.
+      Keep `AttestedAttributeValue` as a deprecated typealias with a rename hint for source compatibility.
+* Add data-driven JSON/CBOR primitive-map round-trip and malformed-payload tests, and iOS primitive-bridge tests.
 * Add Collector APIs to query to statements within a timeframe
 
 ## 1.2.0
