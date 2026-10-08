@@ -10,14 +10,16 @@ import kotlinx.serialization.Serializable
 sealed class AttestationResponse {
 
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    abstract var info: String?
+    @Serializable(with = PrimitiveMapSerializer::class)
+    abstract val info: MutableMap<String, Primitive>
 
     @SerialName("Success")
     @Serializable
     class Success(
         val certificateChain: List<@Serializable(with = X509CertificateBase64UrlSerializer::class) X509Certificate>,
         @EncodeDefault(EncodeDefault.Mode.NEVER)
-        override var info: String? = null,
+        @Serializable(with = PrimitiveMapSerializer::class)
+        override val info: MutableMap<String, Primitive> = mutableMapOf(),
     ) : AttestationResponse()
 
     @SerialName("Failure")
@@ -25,7 +27,8 @@ sealed class AttestationResponse {
     class Failure(
         val kind: Type, val explanation: String?,
         @EncodeDefault(EncodeDefault.Mode.NEVER)
-        override var info: String? = null,
+        @Serializable(with = PrimitiveMapSerializer::class)
+        override val info: MutableMap<String, Primitive> = mutableMapOf(),
     ) : AttestationResponse() {
         @Serializable
         enum class Type {

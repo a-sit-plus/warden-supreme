@@ -271,7 +271,7 @@ fun Application.configureRouting() {
 
                 // Extract columns and emit all download artifacts to disk now — the report and downloads
                 // just read files afterwards (no per-request regeneration).
-                response.info=store.collect(
+                response.info["id"] = store.collect(
                     submittedAtEpochMs = submittedAt,
                     deviceName = deviceName,
                     result = result,
