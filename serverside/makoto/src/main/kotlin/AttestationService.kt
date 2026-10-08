@@ -2,13 +2,17 @@
 
 package at.asitplus.attestation
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
+
+import at.asitplus.signum.indispensable.sign.*
+
 import at.asitplus.attestation.AttestationException
 import at.asitplus.attestation.Makoto.Companion.assertionReader
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
-import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
@@ -461,13 +465,13 @@ object NoopAttestationService : AttestationService() {
     ): KeyAttestation<PublicKey> =
         when (attestationProof) {
             is IosHomebrewAttestation -> KeyAttestation(
-                attestationProof.parsedClientData.publicKey.toJcaPublicKey().getOrThrow(),
-                AttestationResult.IOS.NOOP(attestationProof.parsedClientData.publicKey.encodeToDer())
+                attestationProof.parsedClientData.publicKey.toJcaPublicKey(),
+                AttestationResult.IOS.NOOP(Signum.Der.encodeToByteArray(attestationProof.parsedClientData.publicKey))
             )
 
             is AndroidKeystoreAttestation -> KeyAttestation(
-                attestationProof.certificateChain.first().publicKey.toJcaPublicKey().getOrThrow(),
-                AttestationResult.Android.NOOP(attestationProof.certificateChain.map { it.encodeToDer() })
+                attestationProof.certificateChain.first().publicKey.toJcaPublicKey(),
+                AttestationResult.Android.NOOP(attestationProof.certificateChain.map { Signum.Der.encodeToByteArray(it) })
             )
 
             else -> KeyAttestation(

@@ -1,10 +1,15 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.encodeToByteArray
+import at.asitplus.signum.indispensable.decodeFromPem
+import at.asitplus.signum.indispensable.encodeToPem
+
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
 import at.asitplus.awesn1.*
 import at.asitplus.awesn1.encoding.encodeToDer
-import at.asitplus.signum.indispensable.asn1.encodeToPEM
 import at.asitplus.signum.indispensable.pki.Certificate
 import io.ktor.util.*
 import kotlinx.serialization.KSerializer
@@ -38,7 +43,7 @@ import kotlin.io.encoding.Base64
  */
 @Serializable(with = TrustedRootSerializer::class)
 sealed interface TrustedRoot {
-    val value: Encodable<*>
+    val value: Encodable
 
     /** Android-only policy attached to a trust root. */
     sealed interface AndroidSpecific : TrustedRoot {
@@ -57,9 +62,12 @@ sealed interface TrustedRoot {
         val caName: X500Principal? = null
     ) : TrustedRoot {
         @Throws(Throwable::class)
-        constructor(encoded: ByteArray) : this(CryptoPublicKey.decodeFromDer(encoded).toJcaPublicKey().getOrThrow())
+        constructor(encoded: ByteArray) : this(Signum.Der.decodeFromByteArray<CryptoPublicKey>(encoded).toJcaPublicKey())
 
-        override val value = publicKey.toCryptoPublicKey().getOrThrow()
+        override val value = publicKey.let {
+            Signum.installIndispensable()
+            it.toCryptoPublicKey()
+        }
 
         override val trustAnchor = TrustAnchor(
             caName ?: X500Principal(
@@ -106,7 +114,7 @@ sealed interface TrustedRoot {
 
         @Throws(Throwable::class)
         constructor(encoded: ByteArray) : this(
-            at.asitplus.signum.indispensable.pki.Certificate.decodeFromDer(encoded).toJcaCertificateBlocking().getOrThrow()
+            Signum.Der.decodeFromByteArray<at.asitplus.signum.indispensable.pki.Certificate>(encoded).toJcaCertificateBlocking()
         )
 
         override val publicKey: java.security.PublicKey by lazy { certificate.publicKey }
@@ -145,8 +153,8 @@ sealed interface TrustedRoot {
 
 
     val derEncoded: ByteArray get() = when(this) {
-        is PublicKey -> value.encodeToDer()
-        is Certificate -> value.encodeToDer()
+        is PublicKey -> Signum.Der.encodeToByteArray(value)
+        is Certificate -> Signum.Der.encodeToByteArray(value)
     }
 
     val trustAnchor: TrustAnchor
@@ -198,8 +206,8 @@ object TrustedRootSerializer : KSerializer<TrustedRoot> {
         value: TrustedRoot
     ) {
         val pem = when (value) {
-            is TrustedRoot.Certificate -> value.certificate.toKmpCertificate().getOrThrow().encodeToPEM().getOrThrow()
-            is TrustedRoot.PublicKey -> value.publicKey.toCryptoPublicKey().getOrThrow().encodeToPEM().getOrThrow()
+            is TrustedRoot.Certificate -> Signum.Der.encodeToPem(value.certificate.toKmpCertificate().getOrThrow())
+            is TrustedRoot.PublicKey -> Signum.Der.encodeToPem(value.publicKey.toCryptoPublicKey())
         }
         val caName = (value as? TrustedRoot.PublicKey)?.caName?.name
         val policy = value.androidValidityPolicy()
@@ -261,12 +269,12 @@ object TrustedRootSerializer : KSerializer<TrustedRoot> {
 
         val publicKey = strings.firstNotNullOfOrNull { pem ->
             catchingUnwrapped {
-                CryptoPublicKey.decodeFromPem(pem).getOrThrow().toJcaPublicKey().getOrThrow()
+                Signum.Der.decodeFromPem<CryptoPublicKey>(pem).toJcaPublicKey()
             }.getOrNull()
         }
         if (publicKey != null) {
             val caNames = strings.filter { pem ->
-                catchingUnwrapped { CryptoPublicKey.decodeFromPem(pem).getOrThrow() }.isFailure
+                catchingUnwrapped { Signum.Der.decodeFromPem<CryptoPublicKey>(pem) }.isFailure
             }
             require(caNames.size <= 1) { "Public-key trust root may contain at most one CA name" }
             return if (policy == null) TrustedRoot.PublicKey(publicKey, caNames.singleOrNull()?.let(::X500Principal))
@@ -275,8 +283,8 @@ object TrustedRootSerializer : KSerializer<TrustedRoot> {
 
         val certificates = strings.mapNotNull { pem ->
             catchingUnwrapped {
-                at.asitplus.signum.indispensable.pki.Certificate.decodeFromPem(pem).getOrThrow()
-                    .toJcaCertificateBlocking().getOrThrow()
+                Signum.Der.decodeFromPem<at.asitplus.signum.indispensable.pki.Certificate>(pem)
+                    .toJcaCertificateBlocking()
             }.getOrNull()
         }
         require(certificates.size == 1 && strings.size == 1) { "Certificate trust root must contain exactly one PEM certificate" }

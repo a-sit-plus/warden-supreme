@@ -5,6 +5,7 @@ import at.asitplus.attestation.android.*
 import at.asitplus.attestation.fromSpringEnvironment
 import at.asitplus.attestation.fromSpringMap
 import at.asitplus.attestation.supreme.SupremeConfiguration
+import at.asitplus.signum.Signum
 import at.asitplus.signum.indispensable.encodeToPem
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.toKmpCertificate
@@ -412,6 +413,6 @@ private fun withTempConfigDir(
 }
 
 private fun trustedRootPem(root: TrustedRoot): String = when (root) {
-    is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().getOrThrow().encodeToPem()
-    is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().getOrThrow().encodeToPem()
+    is TrustedRoot.Certificate -> Signum.Der.encodeToPem(root.certificate.toKmpCertificate().getOrThrow())
+    is TrustedRoot.PublicKey -> Signum.Der.encodeToPem(root.publicKey.toCryptoPublicKey())
 }

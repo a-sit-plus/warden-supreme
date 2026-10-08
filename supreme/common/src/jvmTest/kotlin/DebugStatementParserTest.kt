@@ -1,8 +1,9 @@
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
 import at.asitplus.attestation.android.*
 import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.catchingUnwrapped
 import at.asitplus.io.MultiBase
-import at.asitplus.signum.indispensable.encodeToDer
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toKmpCertificate
 import at.asitplus.testballoon.matrix.CompactReport
@@ -138,11 +139,11 @@ val DebugStatementParserTest by matrixSuite {
                         it.toKmpCertificate().isSuccess shouldBe true
 
                         var own = it.toKmpCertificate().getOrThrow()
-                        if (!own.encodeToDer().contentEquals(it.encoded)) {
-                            System.err.println("OWN: ${own.encodeToDer().toHexString()}")
+                        if (!Signum.Der.encodeToByteArray(own).contentEquals(it.encoded)) {
+                            System.err.println("OWN: ${Signum.Der.encodeToByteArray(own).toHexString()}")
                             System.err.println("ORI: ${it.encoded.toHexString()}")
                         }
-                        own.encodeToDer() shouldBe it.encoded
+                        Signum.Der.encodeToByteArray(own) shouldBe it.encoded
                     }
                 }
 

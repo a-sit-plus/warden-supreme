@@ -1,8 +1,8 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.Digest
+import at.asitplus.signum.indispensable.digest.Digest
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.asymmetric.RSAPadding
+import at.asitplus.signum.indispensable.sign.RsaAlgorithm
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.nativeDigest
 import kotlinx.serialization.SerialName
@@ -37,8 +37,8 @@ data class KeyConstraints(
         @SerialName("RSA")
         class RSA(
             val keySize: @Serializable(with = BitLengthSerializer::class) BitLength,
-            val paddings: Set<RSAPadding> = setOf(RSAPadding.OAEP.SHA256),
-            override val digests: Set<Digest> = setOf(Digest.SHA256),
+            val paddings: Set<RsaAlgorithm.Padding> = setOf(RsaAlgorithm.Padding.PSS),
+            override val digests: Set<@Serializable(with = DigestSerializer::class) Digest> = setOf(Digest.SHA256),
             val allowDecrypting: Boolean = false,
         ) : AlgorithmParameters() {
             //must be true as of now, because we require signing for proof of possession

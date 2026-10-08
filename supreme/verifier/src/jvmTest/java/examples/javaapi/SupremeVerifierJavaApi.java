@@ -12,7 +12,7 @@ import at.asitplus.attestation.supreme.JavaAttestationVerifier;
 import at.asitplus.attestation.supreme.PreAttestationError;
 import at.asitplus.attestation.supreme.SupremeConfiguration;
 import at.asitplus.signum.indispensable.CryptoPublicKey;
-import at.asitplus.signum.indispensable.pki.X509Certificate;
+import at.asitplus.signum.indispensable.pki.Certificate;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Collections;
@@ -102,7 +102,7 @@ public final class SupremeVerifierJavaApi {
             }
 
             @Override
-            public List<X509Certificate> certificateIssuer(
+            public List<Certificate> certificateIssuer(
                     AttestationResult.Verified verified,
                     AttestationProof receivedProof
             ) {

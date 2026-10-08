@@ -1,21 +1,15 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.pki.value
+
 import at.asitplus.attestation.android.androidAttestationExtension
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.Digest
+import at.asitplus.signum.indispensable.digest.Digest
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.asn1.Asn1Null
-import at.asitplus.signum.indispensable.asn1.Asn1Sequence
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1.ExplicitlyTagged
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1.Sequence
-import at.asitplus.signum.indispensable.asn1.encoding.decodeToUtf8String
-import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1OctetStringPrimitive
-import at.asitplus.signum.indispensable.asn1.encoding.encodeToAsn1Primitive
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.supreme.hash.digest
+import at.asitplus.signum.indispensable.pki.Certificate
+import at.asitplus.signum.indispensable.digest.digest
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -41,7 +35,7 @@ class InstantLongSerializer : KSerializer<Instant> {
 object DigestSerializer : KSerializer<Digest> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("DigestNamer", PrimitiveKind.STRING)
     override fun deserialize(decoder: Decoder): Digest =
-        Digest.valueOf(decoder.decodeString())
+        decoder.decodeString().let { name -> at.asitplus.signum.indispensable.digest.WellKnownDigest.entries.single { it.name == name } }
 
     override fun serialize(encoder: Encoder, value: Digest) {
         encoder.encodeString(value.name)
@@ -89,7 +83,7 @@ object BitLengthSerializer : KSerializer<BitLength> {
  * @throws Throwable In case a certificate in the chain is malformed
  */
 @Throws(Throwable::class)
-fun CertificateChain.withAndroidAttestationExtensions(): List<X509Certificate> =
+fun CertificateChain.withAndroidAttestationExtensions(): List<Certificate> =
     filter { it.androidAttestationExtension != null }
 
 /**
@@ -97,10 +91,10 @@ fun CertificateChain.withAndroidAttestationExtensions(): List<X509Certificate> =
  *
  * @throws Throwable if no match is found
  */
-fun List<X509Certificate>.closestToRoot(predicate: (X509Certificate) -> Boolean) = last(predicate)
+fun List<Certificate>.closestToRoot(predicate: (Certificate) -> Boolean) = last(predicate)
 
 /**
  * Returns the certificate matching the predicate that is closes to the root. Can be the root itself.
  */
-fun List<X509Certificate>.closestToRootOrNull(predicate: (X509Certificate) -> Boolean) =
+fun List<Certificate>.closestToRootOrNull(predicate: (Certificate) -> Boolean) =
     catchingUnwrapped { closestToRoot(predicate) }.getOrNull()

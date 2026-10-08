@@ -1,5 +1,7 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.pki.value
+
 import at.asitplus.KmmResult
 import at.asitplus.attestation.supreme.AttestationChallenge.Companion.CURRENT_VERSION
 import at.asitplus.catching
@@ -367,7 +369,7 @@ fun requireBoundedArrayNesting(json: String) {
 val TbsCertificationRequest.nonce: KmmResult<ByteArray>
     get() = catching {
         val noncesRecovered =
-            subjectName.mapNotNull { name -> name.attrsAndValues.find { attributeTypeAndValue -> attributeTypeAndValue.oid == KnownOIDs.serialNumber } }
+            subjectName.relativeDistinguishedNames.mapNotNull { name -> name.attrsAndValues.find { attributeTypeAndValue -> attributeTypeAndValue.oid == KnownOIDs.serialNumber } }
         if (noncesRecovered.isEmpty()) throw Asn1StructuralException("No nonce present")
         else if (noncesRecovered.size != 1) throw Asn1StructuralException("More than one nonce present!")
         noncesRecovered.first().value.asPrimitive().decodeToString().hexToByteArray()

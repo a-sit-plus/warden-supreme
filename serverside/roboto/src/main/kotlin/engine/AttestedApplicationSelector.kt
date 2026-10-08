@@ -3,10 +3,11 @@ package at.asitplus.attestation.android.engine
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.hasAndroidKeyAttestationExtensionOid
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.Asn1ExplicitlyTagged
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.parse
+import at.asitplus.awesn1.Asn1Structure
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.Asn1ExplicitlyTagged
+import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.awesn1.encoding.parse
 import com.google.android.attestation.Constants.KEY_DESCRIPTION_OID
 import java.nio.charset.StandardCharsets.UTF_8
 import java.security.cert.X509Certificate
@@ -27,7 +28,7 @@ internal fun selectAttestedApplication(
     require(extension.size <= MAX_EXTENSION_BYTES) { "Attestation extension is too large" }
 
     val keyDescriptionBytes = Asn1Element.parse(extension).asOctetString().content
-    val keyDescription = Asn1Element.parse(keyDescriptionBytes).asSequence()
+    val keyDescription = parseBounded(keyDescriptionBytes).asSequence()
     require(keyDescription.children.size == KEY_DESCRIPTION_FIELD_COUNT) { "Invalid key description" }
     val appIdTags = keyDescription.children[SOFTWARE_ENFORCED_INDEX].asSequence().children
         .filterIsInstance<Asn1ExplicitlyTagged>()
@@ -39,7 +40,7 @@ internal fun selectAttestedApplication(
         ?: return null
     require(appId.size <= MAX_APPLICATION_ID_BYTES) { "Attestation application ID is too large" }
 
-    val fields = Asn1Element.parse(appId).asSequence().children
+    val fields = parseBounded(appId).asSequence().children
     require(fields.size == APPLICATION_ID_FIELD_COUNT) { "Invalid attestation application ID" }
     val packages = fields[0].asSet().children
     val digests = fields[1].asSet().children
@@ -72,6 +73,18 @@ internal fun selectAttestedApplication(
         expectedValue = packageMatches.flatMap { it.signerFingerprints },
         actualValue = null,
     )
+}
+
+private fun parseBounded(bytes: ByteArray): Asn1Element {
+    val root = Asn1Element.parse(bytes)
+    val pending = ArrayDeque<Pair<Asn1Element, Int>>()
+    pending.add(root to 0)
+    while (pending.isNotEmpty()) {
+        val (element, depth) = pending.removeLast()
+        require(depth <= 64) { "Attestation data is too deeply nested" }
+        if (element is Asn1Structure) element.children.forEach { pending.add(it to depth + 1) }
+    }
+    return root
 }
 
 private const val SOFTWARE_ENFORCED_INDEX = 6

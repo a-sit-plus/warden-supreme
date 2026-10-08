@@ -1,8 +1,7 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.asn1.Asn1Encodable
-import at.asitplus.signum.indispensable.asn1.Asn1Sequence
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
+import at.asitplus.signum.indispensable.Encodable
+import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 
 /**
@@ -14,10 +13,10 @@ import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
  * [AttestationChallenge].
  */
 sealed interface AttestationProof {
-    val data: Asn1Encodable<Asn1Sequence>
+    val data: Encodable
 
     /** A complete PKCS#10 CSR whose signature proves possession of the attested private key. */
-    class Signed(override val data: Pkcs10CertificationRequest) : AttestationProof
+    class Signed(override val data: CertificationRequest) : AttestationProof
 
     /** An unsigned TBS CSR whose non-key, non-proof contents are authenticated using the challenge's hash algorithm. */
     class Hashed(override val data: TbsCertificationRequest) : AttestationProof

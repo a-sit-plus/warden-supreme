@@ -9,6 +9,7 @@ import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.attestation.supreme.SupremeConfiguration
+import at.asitplus.signum.Signum
 import at.asitplus.signum.indispensable.encodeToPem
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toCryptoPublicKey
@@ -373,8 +374,8 @@ private object HopliteFixtures {
 }
 
 private fun trustedRootPem(root: TrustedRoot): String = when (root) {
-    is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().getOrThrow().encodeToPem()
-    is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().getOrThrow().encodeToPem()
+    is TrustedRoot.Certificate -> Signum.Der.encodeToPem(root.certificate.toKmpCertificate().getOrThrow())
+    is TrustedRoot.PublicKey -> Signum.Der.encodeToPem(root.publicKey.toCryptoPublicKey())
 }
 
 private fun JsonElement.recaseKeys(style: PropertyCaseStyle): JsonElement = when (this) {

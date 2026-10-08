@@ -2,17 +2,20 @@
 
 package at.asitplus.attestation.supreme
 
+import at.asitplus.awesn1.encoding.encodeToDer
+import at.asitplus.awesn1.serialization.encodeToTlv
+
 import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.awesn1.ObjectIdentifier
+import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
+import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.X509CertificateExtension
 import at.asitplus.signum.indispensable.toCryptoPublicKey
-import at.asitplus.signum.supreme.hash.digest
+import at.asitplus.signum.indispensable.digest.digest
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -31,7 +34,7 @@ private suspend fun hashBindingFixture(
     expectedAlgorithm: Digest = Digest.SHA256,
     attestedAlgorithm: Digest = expectedAlgorithm,
     genericDeviceNameOid: ObjectIdentifier? = null,
-    attributes: List<Pkcs10CertificationRequestAttribute> = emptyList(),
+    attributes: List<CsrAttribute> = emptyList(),
     extensions: List<X509CertificateExtension> = emptyList(),
     mutate: (AttestationHashInput) -> AttestationHashInput = { it },
 ): HashBindingFixture {
@@ -69,14 +72,14 @@ private suspend fun hashBindingFixture(
         attestationEndpoint,
         dataAuth = DataAuthentication.Hash(expectedAlgorithm),
     )
-    val proof = Pkcs10CertificationRequestAttribute(
+    val proof = CsrAttribute(
         challenge.proofOID,
         Asn1String.UTF8(fake.attestationJson()).encodeToTlv(),
     )
     return HashBindingFixture(
         verifier,
         AttestationProof.Hashed(
-            mutate(hashInput).toTbsCsr(fake.leafKeyPair.public.toCryptoPublicKey().getOrThrow(), proof)
+            mutate(hashInput).toTbsCsr(fake.leafKeyPair.public.toCryptoPublicKey(), proof)
         ),
     )
 }
@@ -95,7 +98,7 @@ val AttestationVerifierHashBindingTest by matrixSuite {
             AttestationHashInput(
                 version = input.version,
                 subjectName = input.subjectName + RelativeDistinguishedName(
-                    AttributeTypeAndValue.CommonName(Asn1String.UTF8("mutated"))
+                    at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue.CommonName(Asn1String.UTF8("mutated"))
                 ),
                 attributes = input.attributes,
             )
@@ -121,7 +124,7 @@ val AttestationVerifierHashBindingTest by matrixSuite {
             AttestationHashInput(
                 version = input.version,
                 subjectName = input.subjectName,
-                attributes = input.attributes + Pkcs10CertificationRequestAttribute(
+                attributes = input.attributes + CsrAttribute(
                     bindingAttributeOid,
                     Asn1String.UTF8("added later").encodeToTlv(),
                 ),
@@ -140,7 +143,7 @@ val AttestationVerifierHashBindingTest by matrixSuite {
         hashBindingFixture(
             genericDeviceNameOid = bindingDeviceNameOid,
             attributes = listOf(
-                Pkcs10CertificationRequestAttribute(
+                CsrAttribute(
                     bindingDeviceNameOid,
                     Asn1String.UTF8("Example Device").encodeToTlv(),
                 )
@@ -158,7 +161,7 @@ val AttestationVerifierHashBindingTest by matrixSuite {
         hashBindingFixture(
             genericDeviceNameOid = bindingDeviceNameOid,
             attributes = listOf(
-                Pkcs10CertificationRequestAttribute(
+                CsrAttribute(
                     bindingDeviceNameOid,
                     Asn1String.UTF8("Original Device").encodeToTlv(),
                 )
@@ -168,7 +171,7 @@ val AttestationVerifierHashBindingTest by matrixSuite {
                 version = input.version,
                 subjectName = input.subjectName,
                 attributes = input.attributes.map {
-                    if (it.oid == bindingDeviceNameOid) Pkcs10CertificationRequestAttribute(
+                    if (it.oid == bindingDeviceNameOid) CsrAttribute(
                         bindingDeviceNameOid,
                         Asn1String.UTF8("Modified Device").encodeToTlv(),
                     ) else it

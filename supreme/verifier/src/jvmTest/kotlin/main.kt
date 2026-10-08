@@ -1,24 +1,29 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.pki.X500Name
+import at.asitplus.signum.Signum
+
+import at.asitplus.signum.indispensable.pki.value
+
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.parseHex
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.Asn1Time
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.decodeFromDer
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.decodeFromPem
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
 import at.asitplus.signum.indispensable.toJcaPublicKey
-import at.asitplus.signum.supreme.sign
-import at.asitplus.signum.supreme.sign.Signer
+import at.asitplus.signum.indispensable.sign.sign
+import at.asitplus.signum.dsl.ec
+import at.asitplus.awesn1.Asn1Integer
+import at.asitplus.signum.indispensable.sign.Signer
 import at.asitplus.testballoon.matrix.matrixConfig
 import at.asitplus.testballoon.matrix.matrixSuite
 import de.infix.testBalloon.framework.core.TestConfig
@@ -88,12 +93,12 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                         )
                     ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(
                         TrustedRoot.PublicKey(
-                            CryptoPublicKey.decodeFromPem(
+                            Signum.Der.decodeFromPem<CryptoPublicKey>(
                                 "-----BEGIN PUBLIC KEY-----\n" +
                                         "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
                                         "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
                                         "-----END PUBLIC KEY-----"
-                            ).toJcaPublicKey().getOrThrow()
+                            ).toJcaPublicKey()
                         )
                     )
                         .build(),
@@ -140,22 +145,22 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                 certificateIssuer = { received ->
                     val tbsCsr = received.tbsCsr
                     println("Successfully attested device ${tbsCsr.deviceNameForOid(attestationValidator.genericDeviceNameOID ?: WardenDefaults.OIDs.DEVICE_NAME)}")
-                    Signer.Ephemeral { ec { } }.getOrThrow().let { signer ->
+                    Signer.Ephemeral { ec { } }.let { signer ->
                         signer.sign(
                             TbsCertificate(
-                                serialNumber = Random.nextBytes(32),
+                                serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19)),
                                 publicKey = tbsCsr.publicKey,
-                                signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
-                                validFrom = Asn1Time(Clock.System.now()),
-                                validUntil = Asn1Time(Clock.System.now() + 10.days),
-                                issuerName = listOf(
+                                signatureAlgorithm = signer.signatureAlgorithm,
+                                validFrom = Clock.System.now(),
+                                validUntil = Clock.System.now() + 10.days,
+                                issuerName = X500Name(listOf(
                                     RelativeDistinguishedName(
-                                        AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme"))
+                                        at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme"))
                                     )
-                                ),
+                                )),
                                 subjectName = tbsCsr.subjectName,
                             )
-                        ).map { listOf(it) }.getOrThrow()
+                        ).let { listOf(it) }
                     }
                 },
             )

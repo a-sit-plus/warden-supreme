@@ -2,29 +2,37 @@
 
 package at.asitplus.attestation.generator
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.encodeToByteArray
+import at.asitplus.signum.indispensable.decodeFromPem
+import at.asitplus.signum.indispensable.encodeToPem
+
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.signum.indispensable.CryptoPrivateKey
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.SignatureAlgorithm
-import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.Asn1Primitive
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.Asn1Time
-import at.asitplus.signum.indispensable.asn1.BitSet
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.asn1.encodeToPEM
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.signum.indispensable.sign.SignatureAlgorithm
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.Asn1Primitive
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.awesn1.Asn1Time
+import at.asitplus.awesn1.BitSet
+import at.asitplus.awesn1.ObjectIdentifier
+import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
-import at.asitplus.signum.indispensable.pki.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import at.asitplus.signum.indispensable.pki.X509CertificateExtension
-import at.asitplus.signum.supreme.hash.digest
-import at.asitplus.signum.supreme.sign
-import at.asitplus.signum.supreme.sign.Signer
-import at.asitplus.signum.supreme.sign.signerFor
+import at.asitplus.signum.indispensable.digest.digest
+import at.asitplus.signum.indispensable.sign.sign
+import at.asitplus.signum.indispensable.sign.Signer
+import at.asitplus.signum.indispensable.sign.signerFor
+import at.asitplus.signum.supreme.installSupreme
+import at.asitplus.signum.indispensable.pki.X500Name
+import at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue
+import at.asitplus.awesn1.encoding.parse
+import at.asitplus.signum.dsl.ec
 import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -45,9 +53,9 @@ class AndroidAttestationIssuer private constructor(
     /** Signs the per-issuance attestation key. Bottom-most CA of [caChain], or [root] itself. */
     val attestationCa: CertifiedKey,
     /** The CA certificates between leaf and root, ordered leaf-most first. */
-    private val caChain: List<X509Certificate>,
+    private val caChain: List<Certificate>,
 ) {
-    val rootCertificate: X509Certificate get() = root.certificate
+    val rootCertificate: Certificate get() = root.certificate
 
     /** The configuration reproducing this issuer, together with the attestations to create from it. */
     fun configuration(
@@ -79,6 +87,8 @@ class AndroidAttestationIssuer private constructor(
         issue(AttestationSpecBuilder().apply(block).build())
 
     companion object {
+        init { Signum.installSupreme() }
+
         fun from(spec: IssuerSpec): AndroidAttestationIssuer {
             val validity = spec.issuedAt.validFor(spec.validity)
             val (root, rootSpec) = spec.root?.let { it.load() to it }
@@ -103,15 +113,15 @@ class AndroidAttestationIssuer private constructor(
 /** One issued attestation: the chain a client would present, and the attested leaf key. */
 data class IssuedAttestation(
     /** Leaf first, root last. */
-    val certificateChain: List<X509Certificate>,
+    val certificateChain: List<Certificate>,
     /** The attested private key, for signing payloads the attestation vouches for. */
-    val leafSigner: Signer,
+    val leafSigner: Signer.WithExportableKey,
 ) {
-    val leafCertificate: X509Certificate get() = certificateChain.first()
-    val rootCertificate: X509Certificate get() = certificateChain.last()
+    val leafCertificate: Certificate get() = certificateChain.first()
+    val rootCertificate: Certificate get() = certificateChain.last()
 
-    fun chainPem(): String = certificateChain.joinToString("\n") { it.encodeToPEM().getOrThrow() }
-    fun leafPrivateKeyPem(): String = leafSigner.exportPrivateKey().getOrThrow().encodeToPEM().getOrThrow()
+    fun chainPem(): String = certificateChain.joinToString("\n") { Signum.Der.encodeToPem(it) }
+    fun leafPrivateKeyPem(): String = runBlocking { Signum.Der.encodeToPem(leafSigner.exportPrivateKey()) }
 }
 
 /** Certificate validity: not-before and not-after. */
@@ -122,8 +132,8 @@ typealias Validity = Pair<Asn1Time, Asn1Time>
  *
  * This is issuing material, private key included -- which is the point of a fake-attestation generator.
  */
-class CertifiedKey(val certificate: X509Certificate, val signer: Signer) {
-    val subject: List<RelativeDistinguishedName> get() = certificate.tbsCertificate.subjectName
+class CertifiedKey(val certificate: Certificate, val signer: Signer.WithExportableKey) {
+    val subject: List<RelativeDistinguishedName> get() = certificate.tbsCertificate.subjectName.relativeDistinguishedNames
 
     fun certify(
         subject: List<RelativeDistinguishedName>,
@@ -131,7 +141,7 @@ class CertifiedKey(val certificate: X509Certificate, val signer: Signer) {
         validity: Validity,
         role: Role,
         extensions: List<X509CertificateExtension> = emptyList(),
-    ): X509Certificate = issueCertificate(
+    ): Certificate = issueCertificate(
         issuer = this.subject,
         subject = subject,
         subjectKey = subjectKey,
@@ -151,8 +161,8 @@ class CertifiedKey(val certificate: X509Certificate, val signer: Signer) {
 
     /** This key as reusable configuration. */
     fun export() = RootSpec(
-        certificatePem = certificate.encodeToPEM().getOrThrow(),
-        privateKeyPkcs8Pem = signer.exportPrivateKey().getOrThrow().encodeToPEM().getOrThrow(),
+        certificatePem = Signum.Der.encodeToPem(certificate),
+        privateKeyPkcs8Pem = runBlocking { Signum.Der.encodeToPem(signer.exportPrivateKey()) },
     )
 }
 
@@ -174,21 +184,21 @@ private val IssuerSpec.attestationSubject: List<RelativeDistinguishedName>
     get() = when (provisioning) {
         Provisioning.FACTORY -> factoryProvisioned(securityLevel)
         Provisioning.RKP -> listOf(
-            relativeDistinguishedName(AttributeTypeAndValue.Organization(Asn1String.UTF8(securityLevel.androidName))),
-            relativeDistinguishedName(AttributeTypeAndValue.CommonName(Asn1String.UTF8(randomHex()))),
+            relativeDistinguishedName(X500AttributeTypeAndValue.Organization(Asn1String.UTF8(securityLevel.androidName))),
+            relativeDistinguishedName(X500AttributeTypeAndValue.CommonName(Asn1String.UTF8(randomHex()))),
         )
     }
 
 /** `serialNumber=<hex>, title=TEE|StrongBox`, as factory-provisioned CAs and attestation keys carry. */
 private fun factoryProvisioned(securityLevel: AttestationKeyDescription.SecurityLevel) = listOf(
-    relativeDistinguishedName(AttributeTypeAndValue.Other(SERIAL_NUMBER, Asn1String.UTF8(randomHex()))),
-    relativeDistinguishedName(AttributeTypeAndValue.Other(TITLE, Asn1String.UTF8(securityLevel.androidName))),
+    relativeDistinguishedName(X500AttributeTypeAndValue(SERIAL_NUMBER, Asn1String.UTF8(randomHex()))),
+    relativeDistinguishedName(X500AttributeTypeAndValue(TITLE, Asn1String.UTF8(securityLevel.androidName))),
 )
 
 /** `O=Google LLC, CN=<name>`, as the remote-provisioning CAs carry. */
 private fun googleCa(name: String) = listOf(
-    relativeDistinguishedName(AttributeTypeAndValue.Organization(Asn1String.UTF8("Google LLC"))),
-    relativeDistinguishedName(AttributeTypeAndValue.CommonName(Asn1String.UTF8(name))),
+    relativeDistinguishedName(X500AttributeTypeAndValue.Organization(Asn1String.UTF8("Google LLC"))),
+    relativeDistinguishedName(X500AttributeTypeAndValue.CommonName(Asn1String.UTF8(name))),
 )
 
 /** How Android spells the security level inside a subject name. */
@@ -202,13 +212,13 @@ private val TITLE = ObjectIdentifier("2.5.4.12")
 private fun randomHex() = Random.nextBytes(16).toHexString()
 
 private fun RootSpec.load(): CertifiedKey {
-    val certificate = X509Certificate.decodeFromPem(certificatePem).getOrThrow()
-    val key = CryptoPrivateKey.decodeFromPem(privateKeyPkcs8Pem).getOrThrow() as? CryptoPrivateKey.WithPublicKey<*>
+    val certificate = Signum.Der.decodeFromPem<Certificate>(certificatePem)
+    val key = Signum.Der.decodeFromPem<CryptoPrivateKey>(privateKeyPkcs8Pem) as? CryptoPrivateKey.WithPublicKey
         ?: error("Imported root private key carries no public key")
-    require(key.publicKey == certificate.decodedPublicKey.getOrThrow()) {
+    require(key.publicKey == certificate.publicKey) {
         "Imported root certificate does not match its private key"
     }
-    return CertifiedKey(certificate, SignatureAlgorithm.ECDSA(Digest.SHA256, null).signerFor(key).getOrThrow())
+    return CertifiedKey(certificate, (SignatureAlgorithm.ECDSA(Digest.SHA256, null) as SignatureAlgorithm).signerFor(key) as Signer.WithExportableKey)
 }
 
 /** Roots state `CA:TRUE` without a path-length constraint, the way Google's attestation root does. */
@@ -257,7 +267,7 @@ private fun basicConstraints(pathLength: Int?) = extension("2.5.29.19", critical
 
 /** `keyUsage`, as a DER BIT STRING of the given RFC 5280 4.2.1.3 bit positions. */
 private fun keyUsage(vararg bits: Long) = extension("2.5.29.15", critical = true) {
-    Asn1.BitString(BitSet().apply { bits.forEach { set(it) } })
+    Asn1.BitString(BitSet().apply { bits.forEach { set(it, true) } })
 }
 
 private const val DIGITAL_SIGNATURE = 0L
@@ -278,8 +288,8 @@ private fun authorityKeyIdentifier(issuerKey: CryptoPublicKey) = extension("2.5.
 private fun CryptoPublicKey.keyIdentifier(): ByteArray {
     // SubjectPublicKeyInfo ::= SEQUENCE { algorithm, subjectPublicKey BIT STRING }; the BIT STRING's
     // content starts with its count of unused bits, which is not part of the key.
-    val subjectPublicKey = encodeToTlv().children[1].asPrimitive().content
-    return Digest.SHA1.digest(subjectPublicKey.copyOfRange(1, subjectPublicKey.size))
+    val subjectPublicKey = at.asitplus.awesn1.Asn1Element.parse(Signum.Der.encodeToByteArray(this)).asSequence().children[1].asPrimitive().content
+    return runBlocking { Digest.SHA1.digest(subjectPublicKey.copyOfRange(1, subjectPublicKey.size)) }
 }
 
 private fun extension(oid: String, critical: Boolean = false, value: () -> Asn1Element) =
@@ -297,12 +307,12 @@ internal fun AttestationKeyDescription.asCertificateExtension() = X509Certificat
  */
 private fun randomSerialNumber() = byteArrayOf(1) + Random.nextBytes(19)
 
-private fun ephemeralEcP256Signer() = Signer.Ephemeral { ec { } }.getOrThrow()
+private fun ephemeralEcP256Signer() = runBlocking { Signer.Ephemeral { ec { } } }
 
 private fun commonName(value: String) =
-    listOf(relativeDistinguishedName(AttributeTypeAndValue.CommonName(Asn1String.UTF8(value))))
+    listOf(relativeDistinguishedName(X500AttributeTypeAndValue.CommonName(Asn1String.UTF8(value))))
 
-private fun relativeDistinguishedName(attribute: AttributeTypeAndValue) =
+private fun relativeDistinguishedName(attribute: X500AttributeTypeAndValue) =
     RelativeDistinguishedName(attribute)
 
 private fun Instant.validFor(duration: Duration) = Asn1Time(this) to Asn1Time(this + duration)
@@ -314,17 +324,17 @@ private fun issueCertificate(
     signer: Signer,
     validity: Validity,
     extensions: List<X509CertificateExtension> = emptyList(),
-): X509Certificate = runBlocking {
+): Certificate = runBlocking {
     signer.sign(
         TbsCertificate(
-            serialNumber = randomSerialNumber(),
+            serialNumber = at.asitplus.awesn1.Asn1Integer.fromUnsignedByteArray(randomSerialNumber()),
             publicKey = subjectKey,
-            signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
-            validFrom = validity.first,
-            validUntil = validity.second,
-            issuerName = issuer,
-            subjectName = subject,
+            signatureAlgorithm = signer.signatureAlgorithm,
+            validFrom = validity.first.instant,
+            validUntil = validity.second.instant,
+            issuerName = X500Name(issuer),
+            subjectName = X500Name(subject),
             extensions = extensions,
         )
-    ).getOrThrow()
+    )
 }

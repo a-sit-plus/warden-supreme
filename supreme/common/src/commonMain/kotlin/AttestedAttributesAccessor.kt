@@ -1,5 +1,7 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.pki.value
+
 /**
  * Returns the client-provided attributes requested by [challenge], parsed and keyed by their configured names.
  * Optional absent values are present in the map with a `null` value. If the challenge requested no attributes, the

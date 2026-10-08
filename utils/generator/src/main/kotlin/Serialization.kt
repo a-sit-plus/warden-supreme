@@ -5,9 +5,9 @@ package at.asitplus.attestation.generator
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.AuthorizationList
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.parse
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.awesn1.encoding.parse
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

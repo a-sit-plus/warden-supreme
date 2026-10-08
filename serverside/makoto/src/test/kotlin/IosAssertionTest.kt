@@ -1,3 +1,6 @@
+
+import at.asitplus.awesn1.encoding.encodeToDer
+import at.asitplus.awesn1.encoding.decodeFromDer
 import at.asitplus.attestation.*
 import at.asitplus.testballoon.matrix.matrixSuite
 import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator

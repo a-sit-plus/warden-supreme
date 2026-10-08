@@ -2,6 +2,10 @@
 
 package at.asitplus.attestation
 
+import at.asitplus.signum.Signum
+import kotlinx.serialization.decodeFromByteArray
+
+
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
@@ -11,7 +15,7 @@ import at.asitplus.attestation.data.FakeAttestations
 import at.asitplus.attestation.data.CreatedAttestation
 import at.asitplus.attestation.data.SecurityLevel
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
-import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate as SignumX509Certificate
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Sequence
@@ -97,7 +101,7 @@ val GeneratedAttestationTests by matrixSuite {
     }
 
     fun List<X509Certificate>.toAndroidKeystoreAttestation() =
-        AndroidKeystoreAttestation(map { SignumX509Certificate.decodeFromDer(it.encoded) })
+        AndroidKeystoreAttestation(map { Signum.Der.decodeFromByteArray<SignumX509Certificate>(it.encoded) })
 
     val attestationService = Makoto(
         androidAttestationConfiguration = AndroidAttestationConfiguration(

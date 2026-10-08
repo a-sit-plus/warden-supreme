@@ -138,7 +138,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         //also: adding it here, makes sure it never interferes with other checks, so behavior stays the same
         if (requireRKP) {
             if (!certificateChain.isRemoteKeyProvisioned()) throw AttestationValueException(
-                "Certificate chain does not contain a remotely-provisioned attestation certificate",
+                "X509Certificate chain does not contain a remotely-provisioned attestation certificate",
                 reason = AttestationValueException.Reason.SEC_LEVEL, expectedValue = true, actualValue = false
             )
         }
@@ -161,7 +161,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
             certificate.verify(parent.publicKey)
         }.onFailure {
             throw CertificateInvalidException(
-                message = "Certificate ${certificate.serialNumber} could not be verified",
+                message = "X509Certificate ${certificate.serialNumber} could not be verified",
                 cause = it,
                 reason = if ((it is CertificateExpiredException) || (it is CertificateNotYetValidException)) CertificateInvalidException.Reason.TIME else CertificateInvalidException.Reason.TRUST,
                 certificateChain = fullChainForDebugging,
@@ -181,7 +181,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                 revocationLists.forEach {
                     it.list.find(certificate.serialNumber)?.let { entry ->
                         throw RevocationException.Revoked(
-                            "Certificate ${certificate.serialNumber} revoked",
+                            "X509Certificate ${certificate.serialNumber} revoked",
                             certificateChain = fullChainForDebugging,
                             revokedCertificate = certificate,
                             entry = entry
