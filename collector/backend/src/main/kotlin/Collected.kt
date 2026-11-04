@@ -136,10 +136,10 @@ class CollectorStore(private val dir: File) : AutoCloseable {
             }
             return id
         } catch (exception: Exception) {
-            logger.info(
+            logger.warn(
                 "Stored attestation proof; success=false; path={}; reason={}",
                 recordDir.absolutePath,
-                exception.message,
+                exception.toString(),
             )
             throw exception
         }

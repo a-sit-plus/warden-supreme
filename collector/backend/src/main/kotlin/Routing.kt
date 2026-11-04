@@ -1,5 +1,3 @@
-@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
-
 package at.asitplus.warden
 
 import at.asitplus.attestation.AttestationResult
@@ -56,6 +54,8 @@ import kotlinx.serialization.json.JsonUnquotedLiteral
 import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
 import java.io.File
+import java.io.IOException
+import java.nio.file.Files
 import java.util.concurrent.Semaphore
 import kotlin.random.Random
 import kotlin.time.Clock
@@ -188,6 +188,26 @@ fun Application.configureRouting() {
     routing {
 
         get(CollectorPaths.HEALTH_PATH) {
+            try {
+                withContext(Dispatchers.IO) {
+                    val id = "${Clock.System.now().toEpochMilliseconds()}-${Random.nextInt(0x10000, 0x100000).toString(16)}"
+                    val probeDir = Files.createDirectory(File(outputDir, id).toPath())
+                    try {
+                        val proof = probeDir.resolve("proof.der")
+                        try {
+                            Files.write(proof, byteArrayOf(0))
+                        } finally {
+                            Files.deleteIfExists(proof)
+                        }
+                    } finally {
+                        Files.delete(probeDir)
+                    }
+                }
+            } catch (exception: IOException) {
+                log.warn("Attestation storage health check failed; path={}", outputDir.absolutePath, exception)
+                call.respondText("Attestation storage unavailable", status = HttpStatusCode.ServiceUnavailable)
+                return@get
+            }
             call.respondText("OK")
         }
 
