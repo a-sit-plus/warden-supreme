@@ -1,5 +1,3 @@
-@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
-
 package at.asitplus.warden
 
 import at.asitplus.attestation.AttestationResult
@@ -56,7 +54,11 @@ import kotlinx.serialization.json.JsonUnquotedLiteral
 import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
 import java.io.File
+import java.io.IOException
+import java.nio.file.Files
 import java.util.concurrent.Semaphore
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.deleteRecursively
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -166,6 +168,7 @@ internal fun SupremeConfiguration.forCollectorPolicy(policy: CollectorPolicy): S
     )
 }
 
+@OptIn(ExperimentalPathApi::class)
 fun Application.configureRouting() {
     val configuration = loadConfiguration()
     val verifiers = CollectorPolicy.entries.associateWith { AttestationVerifier(configuration.forCollectorPolicy(it)) }
@@ -188,6 +191,35 @@ fun Application.configureRouting() {
     routing {
 
         get(CollectorPaths.HEALTH_PATH) {
+            try {
+                withContext(Dispatchers.IO) {
+                    val id = "${Clock.System.now().toEpochMilliseconds()}-${Random.nextInt(0x10000, 0x100000).toString(16)}"
+                    val probeDir = Files.createDirectory(File(outputDir, id).toPath())
+                    try {
+                        val proof = probeDir.resolve("proof.der")
+                        try {
+                            Files.write(proof, byteArrayOf(0))
+                        } finally {
+                            Files.deleteIfExists(proof)
+                        }
+                    } finally {
+                        probeDir.deleteRecursively()
+                    }
+                }
+            } catch (exception: IOException) {
+                log.warn(
+                    "Attestation storage health check failed; status=503; path={}; userAgent={}; reason={}",
+                    outputDir.absolutePath,
+                    call.request.headers[HttpHeaders.UserAgent],
+                    exception.toString(),
+                )
+                call.respondText("Attestation storage unavailable", status = HttpStatusCode.ServiceUnavailable)
+                return@get
+            }
+            log.info(
+                "Attestation storage health check succeeded; status=200; userAgent={}",
+                call.request.headers[HttpHeaders.UserAgent],
+            )
             call.respondText("OK")
         }
 

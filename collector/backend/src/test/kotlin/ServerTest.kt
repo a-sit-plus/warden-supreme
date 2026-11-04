@@ -29,6 +29,9 @@ import java.io.File
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.assertions.throwables.shouldThrowAny
+import io.kotest.assertions.withClue
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldBeEmpty
 import kotlin.io.path.createTempDirectory
 import java.util.zip.ZipInputStream
 import java.util.concurrent.atomic.AtomicInteger
@@ -136,8 +139,15 @@ val ServerTest by matrixSuite {
         withStoredStatements { outputDir, ids ->
             repeat(2) {
                 CollectorStore(outputDir).use { store ->
-                    store.debugStatements().map { it.parentFile.name }.toList() shouldBe ids.sortedWith(compareBy<String> { it.substringBeforeLast('-').toLong() }.thenBy { it })
-                    store.debugStatements(1000, 2000).map { it.parentFile.name }.toList() shouldBe listOf("1000-aaaaa", "1000-bbbbb", "1999-ddddd")
+                    store.debugStatements().map { it.parentFile.name }
+                        .toList() shouldBe ids.sortedWith(compareBy<String> {
+                        it.substringBeforeLast('-').toLong()
+                    }.thenBy { it })
+                    store.debugStatements(1000, 2000).map { it.parentFile.name }.toList() shouldBe listOf(
+                        "1000-aaaaa",
+                        "1000-bbbbb",
+                        "1999-ddddd"
+                    )
                     store.debugStatements(1000, 1000).none() shouldBe true
                 }
             }
@@ -146,7 +156,8 @@ val ServerTest by matrixSuite {
 
     "debug export streams nested JSON without changing numbers or escaping" {
         withStoredStatements { outputDir, _ ->
-            val payload = """{"nested":[null,true,{"text":"Grüße \"quoted\" \n ${"x".repeat(32768)}"}],"decimal":0.12345678901234567890123456789,"integer":12345678901234567890123456789}"""
+            val payload =
+                """{"nested":[null,true,{"text":"Grüße \"quoted\" \n ${"x".repeat(32768)}"}],"decimal":0.12345678901234567890123456789,"integer":12345678901234567890123456789}"""
             File(outputDir, "1999-ddddd/debug-statement.json").writeText(payload)
             testApplication {
                 environment { config = MapApplicationConfig("collector.outputDir" to outputDir.absolutePath) }
@@ -174,7 +185,7 @@ val ServerTest by matrixSuite {
                             }
                         }
                         val invalid = from.invalid || to.invalid ||
-                            (from.milliseconds != null && to.milliseconds != null && from.milliseconds > to.milliseconds)
+                                (from.milliseconds != null && to.milliseconds != null && from.milliseconds > to.milliseconds)
                         if (invalid) {
                             response.status shouldBe HttpStatusCode.BadRequest
                             // Invalid parameters must leave capacity for a subsequent export.
@@ -184,7 +195,7 @@ val ServerTest by matrixSuite {
                             val expected = ids.filter { id ->
                                 val timestamp = id.substringBeforeLast('-').toLong()
                                 (from.milliseconds == null || timestamp >= from.milliseconds) &&
-                                    (to.milliseconds == null || timestamp < to.milliseconds)
+                                        (to.milliseconds == null || timestamp < to.milliseconds)
                             }.sortedWith(compareBy<String> { it.substringBeforeLast('-').toLong() }.thenBy { it })
                             Json.decodeFromString<List<String>>(response.bodyAsText()) shouldBe expected
                         }
@@ -270,7 +281,11 @@ val ServerTest by matrixSuite {
                 }
                 // verify server root returns 200
                 client.get(CollectorPaths.ROOT_PATH).status shouldBe HttpStatusCode.OK
+                val filesBeforeHealthCheck = outputDir.listFiles()!!.map { it.name }.toSet()
                 client.get(CollectorPaths.HEALTH_PATH).status shouldBe HttpStatusCode.OK
+                withClue("Health check must clean up its probe") {
+                    outputDir.listFiles()!!.map { it.name }.toSet() shouldBe filesBeforeHealthCheck
+                }
                 client.get(CollectorPaths.STYLESHEET_PATH).status shouldBe HttpStatusCode.OK
                 CollectorPolicy.entries.forEach { policy ->
                     val challenge = Json.decodeFromString<AttestationChallenge>(
@@ -292,6 +307,13 @@ val ServerTest by matrixSuite {
                 ZipInputStream(archiveBytes.first().inputStream()).use {
                     it.nextEntry shouldBe null
                 }
+                outputDir.deleteRecursively().shouldBeTrue()
+                outputDir.writeText("blocked storage directory")
+                HttpStatusCode.ServiceUnavailable shouldBe client.get("/health").status
+                outputDir.delete().shouldBeTrue()
+                outputDir.mkdirs().shouldBeTrue()
+                HttpStatusCode.OK shouldBe client.get("/health").status
+                outputDir.listFiles()!!.shouldBeEmpty()
             }
         } finally {
             outputDir.deleteRecursively()
@@ -348,3 +370,4 @@ private suspend fun withStoredStatements(action: suspend (File, List<String>) ->
         outputDir.deleteRecursively()
     }
 }
+
