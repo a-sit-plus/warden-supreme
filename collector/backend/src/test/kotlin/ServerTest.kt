@@ -35,7 +35,6 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import kotlin.io.path.createTempDirectory
 import java.util.zip.ZipInputStream
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.test.assertTrue
 
 val ServerTest by matrixSuite {
 
@@ -282,9 +281,10 @@ val ServerTest by matrixSuite {
                 }
                 // verify server root returns 200
                 client.get(CollectorPaths.ROOT_PATH).status shouldBe HttpStatusCode.OK
+                val filesBeforeHealthCheck = outputDir.listFiles()!!.map { it.name }.toSet()
                 client.get(CollectorPaths.HEALTH_PATH).status shouldBe HttpStatusCode.OK
                 withClue("Health check must clean up its probe") {
-                    outputDir.listFiles()!!.shouldBeEmpty()
+                    outputDir.listFiles()!!.map { it.name }.toSet() shouldBe filesBeforeHealthCheck
                 }
                 client.get(CollectorPaths.STYLESHEET_PATH).status shouldBe HttpStatusCode.OK
                 CollectorPolicy.entries.forEach { policy ->
@@ -312,7 +312,7 @@ val ServerTest by matrixSuite {
                 HttpStatusCode.ServiceUnavailable shouldBe client.get("/health").status
                 outputDir.delete().shouldBeTrue()
                 outputDir.mkdirs().shouldBeTrue()
-                HttpStatusCode.OK shouldBe client.get("/health").status)
+                HttpStatusCode.OK shouldBe client.get("/health").status
                 outputDir.listFiles()!!.shouldBeEmpty()
             }
         } finally {

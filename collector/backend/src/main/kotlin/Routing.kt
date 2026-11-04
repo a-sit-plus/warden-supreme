@@ -57,6 +57,8 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.util.concurrent.Semaphore
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.deleteRecursively
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -166,6 +168,7 @@ internal fun SupremeConfiguration.forCollectorPolicy(policy: CollectorPolicy): S
     )
 }
 
+@OptIn(ExperimentalPathApi::class)
 fun Application.configureRouting() {
     val configuration = loadConfiguration()
     val verifiers = CollectorPolicy.entries.associateWith { AttestationVerifier(configuration.forCollectorPolicy(it)) }
@@ -200,7 +203,7 @@ fun Application.configureRouting() {
                             Files.deleteIfExists(proof)
                         }
                     } finally {
-                        Files.delete(probeDir)
+                        probeDir.deleteRecursively()
                     }
                 }
             } catch (exception: IOException) {
