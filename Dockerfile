@@ -43,8 +43,11 @@ RUN --mount=type=cache,target=/root/.gradle \
 
 FROM eclipse-temurin:17-jre-jammy
 
-RUN groupadd --gid 1000 collector \
-    && useradd --uid 1000 --gid collector --no-create-home collector \
+ARG SLIPLANE_USER_ID=1000
+ARG SLIPLANE_GROUP_ID=1000
+
+RUN groupadd --gid "$SLIPLANE_GROUP_ID" collector \
+    && useradd --uid "$SLIPLANE_USER_ID" --gid collector --no-create-home collector \
     && mkdir /attestations \
     && chown collector:collector /attestations
 WORKDIR /app
