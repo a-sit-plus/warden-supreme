@@ -297,9 +297,9 @@ class CollectorStore(private val dir: File) : AutoCloseable {
             } catch (exception: Exception) {
                 if (exception is CancellationException) throw exception
                 logger.error(
-                    "Failed to replay stored attestation; retaining existing files; path={}",
+                    "Failed to replay stored attestation; retaining existing files; path={}; reason={}",
                     recordDir.absolutePath,
-                    exception,
+                    exception.toString(),
                 )
             }
         }

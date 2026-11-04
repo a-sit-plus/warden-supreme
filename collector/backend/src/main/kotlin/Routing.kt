@@ -207,10 +207,19 @@ fun Application.configureRouting() {
                     }
                 }
             } catch (exception: IOException) {
-                log.warn("Attestation storage health check failed; path={}", outputDir.absolutePath, exception)
+                log.warn(
+                    "Attestation storage health check failed; status=503; path={}; userAgent={}; reason={}",
+                    outputDir.absolutePath,
+                    call.request.headers[HttpHeaders.UserAgent],
+                    exception.toString(),
+                )
                 call.respondText("Attestation storage unavailable", status = HttpStatusCode.ServiceUnavailable)
                 return@get
             }
+            log.info(
+                "Attestation storage health check succeeded; status=200; userAgent={}",
+                call.request.headers[HttpHeaders.UserAgent],
+            )
             call.respondText("OK")
         }
 
