@@ -90,7 +90,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
     private val archiveScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     init {
-        dir.mkdirs()
+        Files.createDirectories(dir.toPath())
         runBlocking { replayStoredStatements() }
         runBlocking { refreshReport() }
         archiveScope.launch { runArchiveWorker() }
@@ -109,8 +109,9 @@ class CollectorStore(private val dir: File) : AutoCloseable {
         proofBytes: ByteArray,
     ): String {
         val id = "$submittedAtEpochMs-${Random.nextInt(0x10000, 0x100000).toString(16)}"
-        val recordDir = File(dir, id).apply { mkdirs() }
+        val recordDir = File(dir, id)
         try {
+            Files.createDirectories(recordDir.toPath())
             File(recordDir, "proof.der").writeBytes(proofBytes)
 
             val debugStatement = statement?.let(WardenDebugAttestationStatement::deserializeCompact)

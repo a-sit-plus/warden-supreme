@@ -43,7 +43,9 @@ RUN --mount=type=cache,target=/root/.gradle \
 
 FROM eclipse-temurin:17-jre-jammy
 
-RUN useradd --system --uid 10001 collector
+RUN useradd --system --uid 10001 collector \
+    && mkdir /attestations \
+    && chown collector /attestations
 WORKDIR /app
 COPY --from=build /workspace/collector/backend/build/libs/collector-backend-all.jar app.jar
 
