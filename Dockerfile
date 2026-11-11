@@ -29,6 +29,14 @@ RUN git init --quiet dependencies/android-key-attestation \
     && test -z "$(git -C release-1.0.2 status --porcelain)"
 
 FROM sources AS build
+# Sliplane supplies service environment variables as build arguments. Signing happens here,
+# before the APK is embedded in the backend JAR; runtime variables cannot change its signer.
+ARG BASE_URL
+ARG COLLECTOR_KEYSTORE_PATH
+ARG COLLECTOR_KEYSTORE_PASSWORD
+ARG COLLECTOR_KEY_ALIAS
+ARG COLLECTOR_KEY_PASSWORD
+
 RUN --mount=type=cache,target=/root/.gradle \
     if [ -f .env ]; then \
         while IFS='=' read -r key value; do \

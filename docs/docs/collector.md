@@ -50,6 +50,19 @@ without parsing them. At most two API exports run simultaneously; excess request
 be retried later. New submissions may appear during an export; external storage changes require a restart.
 Configure request-rate limits at the reverse proxy when exposing the endpoint publicly.
 
+## Signing a Deployed Collector APK
+
+The Docker build signs the release APK and embeds it in the backend JAR. On Sliplane, set
+`COLLECTOR_KEYSTORE_PATH`, `COLLECTOR_KEYSTORE_PASSWORD`, `COLLECTOR_KEY_ALIAS`, and `COLLECTOR_KEY_PASSWORD`
+before rebuilding the service. Sliplane passes these settings as build arguments, which the Dockerfile declares in
+its `build` stage. Changing only the running container's environment cannot change the embedded APK's signature.
+
+`COLLECTOR_KEYSTORE_PATH` must refer to a file available inside the build container. Relative paths resolve from
+`/workspace`, the copied repository root. The selected certificate's SHA-256 fingerprint must match the backend's
+`signerFingerprints` in `supreme.yaml`. Without signing overrides, local builds use `supreme/client/keystore.p12`,
+whose test certificate is not trusted by the public collector. After deploying, verify the downloaded APK with
+`apksigner verify --print-certs collector.apk`.
+
 ## Exploring Failure Conditions with Custom Builds
 
 You can build or deliberately modify the Attestation Collector app and submit attestations to the public service. The
