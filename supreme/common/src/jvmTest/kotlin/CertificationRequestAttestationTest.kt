@@ -1,21 +1,16 @@
-import at.asitplus.signum.indispensable.fromAsn1
-import at.asitplus.signum.indispensable.asn1
 import at.asitplus.KmmResult
 import at.asitplus.attestation.supreme.*
 import at.asitplus.attestation.supreme.AttestationProof.Hashed
 import at.asitplus.attestation.supreme.AttestationProof.Signed
-import at.asitplus.catching
-import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.CryptoSignature
-import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.sign.SignatureAlgorithm
-import at.asitplus.awesn1.encoding.encodeToDer
-import at.asitplus.awesn1.serialization.encodeToTlv
 import at.asitplus.awesn1.Asn1String
 import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.awesn1.encoding.encodeToDer
+import at.asitplus.catching
+import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.pki.*
+import at.asitplus.signum.indispensable.sign.SignatureAlgorithm
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -44,10 +39,10 @@ private val stringArb = bytesArb.map(ByteArray::toHexString)
 private val subjectNameArb = Arb.list(
     Arb.list(stringArb, 1..3).map { values ->
         RelativeDistinguishedName(values.mapIndexed { index, value ->
-            AttributeTypeAndValue(
-                ObjectIdentifier("1.3.6.1.4.1.60387.1.${index + 1}"),
-                Asn1String.UTF8(value).encodeToTlv(),
-            )
+            AttributeTypeAndValue.fromAsn1(Asn1.Sequence {
+                add(ObjectIdentifier("1.3.6.1.4.1.60387.1.${index + 1}"))
+                add(Asn1String.UTF8(value).encodeToTlv())
+            })
         }.toSet())
     },
     0..3,
@@ -151,7 +146,11 @@ val CertificationRequestAttestationTest by matrixSuite {
             listOf<Primitive>("account-123", null).toSequence(),
         )
         val tbsCsr = TbsCertificationRequest(Name.EMPTY, publicKey, attributes = listOf(attribute))
-        val csr = CertificationRequest(tbsCsr, SignatureAlgorithm.RSAwithSHA256andPKCS1Padding, CryptoSignature.RSA(byteArrayOf(1)))
+        val csr = CertificationRequest(
+            tbsCsr,
+            SignatureAlgorithm.RSAwithSHA256andPKCS1Padding,
+            CryptoSignature.RSA(byteArrayOf(1))
+        )
 
         listOf(AttestationProof.Hashed(tbsCsr), AttestationProof.Signed(csr)).forEach { received ->
             with(challenge) {

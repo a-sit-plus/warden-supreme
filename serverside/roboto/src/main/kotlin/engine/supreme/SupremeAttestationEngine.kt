@@ -20,7 +20,7 @@ sealed class SupremeAttestationEngine(
     attestationConfiguration,
     verifyChallenge
 ) {
-    override val certChainValidator = JvmCertChainValidator(attestationConfiguration)
+    override val certChainValidator = SupremeCertChainValidator(attestationConfiguration)
 
     override val CertificateChain.attestationRecord: AttestationKeyDescription?
         get() = lastOrNull { it.hasAndroidKeyAttestationExtensionOid }?.androidAttestationExtension

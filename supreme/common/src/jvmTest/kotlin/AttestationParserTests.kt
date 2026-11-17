@@ -6,7 +6,6 @@ import at.asitplus.attestation.android.prettyPrint
 import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.attestation.android.*
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
 import at.asitplus.signum.indispensable.toKmpCertificate
 import at.asitplus.testballoon.matrix.matrixSuite
 import com.google.android.attestation.ParsedAttestationRecord

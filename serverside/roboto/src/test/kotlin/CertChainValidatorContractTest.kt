@@ -5,11 +5,13 @@ import at.asitplus.signum.indispensable.toKmpCertificate
 import kotlin.time.toKotlinInstant
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel as AttestationSecurityLevel
 import at.asitplus.attestation.android.engine.JvmCertChainValidator
+import at.asitplus.attestation.android.engine.SupremeCertChainValidator
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.attestation.data.FakeAttestations
 import at.asitplus.attestation.data.SecurityLevel
+import at.asitplus.attestation.data.attestationCertChain
 import at.asitplus.attestation.generator.Provisioning
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.withClue
@@ -38,13 +40,15 @@ private val contractInstant = Instant.parse("2025-01-10T00:00:00Z")
 private val contractDate = Date(contractInstant.toEpochMilliseconds() + 30 * 60_000)
 private val attestationOid = ASN1ObjectIdentifier("1.3.6.1.4.1.11129.2.1.17")
 
-/** Same expected outcomes for both backends; replace one JVM construction below when Supreme is ready. */
+/** Fixed expectations and differential checks against the JVM reference for the native Supreme validator. */
 val CertChainValidatorContractTest by matrixSuite {
     val factory = chainFixture(Provisioning.FACTORY)
     val rkp = chainFixture(Provisioning.RKP)
     val factoryStrongBox = chainFixture(Provisioning.FACTORY, SecurityLevel.STRONGBOX)
     val rkpStrongBox = chainFixture(Provisioning.RKP, SecurityLevel.STRONGBOX)
     val acceptedUnknownLevel = ChainOutcome()
+    val acceptedRkp = ChainOutcome(securityLevel = AttestationSecurityLevel.TRUSTED_ENVIRONMENT)
+    val acceptedStrongBox = ChainOutcome(securityLevel = AttestationSecurityLevel.STRONGBOX)
     val trustFailure = ChainOutcome(failure = CertificateInvalidException::class, reason = "TRUST")
     val rkpFailure = ChainOutcome(failure = AttestationValueException::class, reason = "SEC_LEVEL")
     val root = factory.chain.last()
@@ -61,16 +65,32 @@ val CertChainValidatorContractTest by matrixSuite {
     val cases = buildList {
         // Unmodified :generator output is the baseline; signed mutations exercise the edge cases below.
         add(ChainCase("accept generated factory TEE with unknown chain security level", factory.generatedChain, acceptedUnknownLevel))
-        add(ChainCase("accept generated factory StrongBox", factoryStrongBox.generatedChain,
+        add(ChainCase("accept generated factory StrongBox", factoryStrongBox.generatedChain, acceptedStrongBox))
         add(ChainCase("accept generated RKP TEE when RKP is required", rkp.generatedChain, acceptedRkp, requireRkp = true))
-        add(ChainCase("accept generated RKP StrongBox", rkpStrongBox.generatedChain,
+        add(ChainCase("accept generated RKP StrongBox", rkpStrongBox.generatedChain, acceptedStrongBox))
         add(ChainCase("accept three-certificate software shape with unknown chain security level", softwareChain, acceptedUnknownLevel))
         add(ChainCase("reject generated factory chain when RKP is required", factory.generatedChain, rkpFailure, requireRkp = true))
+
+        for (captured in listOf(sammy14, pixel6KeyMint200Good)) {
+            val chain = captured.attestationCertChain
+            val date = Date(captured.verificationDate.toEpochMilliseconds())
+            add(ChainCase("accept captured RKP ${captured.name}", chain, acceptedRkp,
+                roots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS, requireRkp = true, date = date))
+            add(ChainCase("reject captured RKP ${captured.name} with no trusted roots", chain,
+                ChainOutcome(failure = CertificateInvalidException.OtherMatchingRoot::class, reason = "TRUST",
+                    certificateIndex = chain.lastIndex), roots = emptySet(), date = date))
+        }
+        add(ChainCase("reject default software root when not trusted",
+            listOf(root.reissue(factory.rootKey, publicKey = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.first().publicKey)),
+            ChainOutcome(failure = CertificateInvalidException.OtherMatchingRoot::class, reason = "TRUST", certificateIndex = 0),
+            roots = emptySet()))
 
         add(ChainCase("accept unnamed public-key anchor", factory.chain, acceptedUnknownLevel,
             roots = setOf(TrustedRoot.PublicKey(root.publicKey))))
         add(ChainCase("accept matching named public-key anchor", factory.chain, acceptedUnknownLevel,
             roots = setOf(TrustedRoot.PublicKey(root.publicKey, root.subjectX500Principal))))
+        add(ChainCase("accept matching named anchor with different DN letter case", factory.chain,acceptedUnknownLevel,
+            roots = setOf(TrustedRoot.PublicKey(root.publicKey, X500Principal(root.subjectX500Principal.name.uppercase())))))
         add(ChainCase("reject wrong anchor name despite matching key", factory.chain, trustFailure,
             roots = setOf(TrustedRoot.PublicKey(root.publicKey, X500Principal("CN=Wrong CA")))))
         add(ChainCase("accept renewed root under public-key anchor", renewedChain, acceptedUnknownLevel,
@@ -160,6 +180,19 @@ val CertChainValidatorContractTest by matrixSuite {
                 ignoreLeafValidity = true))
         }
 
+        val boundaryLeaf = rkp.chain.first().reissue(rkp.attestationKey,
+            notBefore = Date(contractDate.time - 60_000), notAfter = Date(contractDate.time + 60_000))
+        for ((boundary, offset, accepted) in listOf(
+            Triple("notBefore", -1L, false), Triple("notBefore", 0L, true),
+            Triple("notAfter", 0L, true), Triple("notAfter", 1L, false),
+        )) {
+            val boundaryTime = if (boundary == "notBefore") boundaryLeaf.notBefore else boundaryLeaf.notAfter
+            add(ChainCase("RKP leaf $boundary offset ${offset}ms", rkp.chain.replaceAt(0, boundaryLeaf),
+                if (accepted) acceptedRkp else ChainOutcome(
+                    failure = CertificateInvalidException::class, reason = "TIME", certificateIndex = 0),
+                date = Date(boundaryTime.time + offset)))
+        }
+
         for (index in listOf(0, 1, factory.chain.lastIndex)) {
             val list = AndroidRevocationList(mapOf(factory.chain[index].serialNumber.toString(16) to
                 AndroidRevocationList.Entry(AndroidRevocationList.RevocationStatus.REVOKED)))
@@ -191,7 +224,7 @@ val CertChainValidatorContractTest by matrixSuite {
         val configuration = case.configuration()
         assertChainValidatorContract(case,
             JvmCertChainValidator(configuration),
-            JvmCertChainValidator(configuration),
+            SupremeCertChainValidator(configuration),
         )
     }
 }
@@ -200,6 +233,7 @@ private data class ChainOutcome(
     val failure: KClass<out Throwable>? = null,
     val reason: String? = null,
     val certificateIndex: Int? = null,
+    val securityLevel: AttestationSecurityLevel? = null,
     val revocationLists: List<ConfigWithList> = emptyList(),
 )
 
@@ -232,15 +266,15 @@ private suspend fun assertChainValidatorContract(
 ) {
     val firstOutcome = observeChainValidator(first, case)
     val secondOutcome = observeChainValidator(second, case)
-    withClue("first validator: ${first::class.simpleName}") { firstOutcome shouldBe case.expected }
-    withClue("second validator: ${second::class.simpleName}") { secondOutcome shouldBe case.expected }
-    withClue("validators must agree") { firstOutcome shouldBe secondOutcome }
+    withClue("first validator: ${first::class.simpleName}") { firstOutcome.first shouldBe case.expected }
+    withClue("second validator: ${second::class.simpleName}") { secondOutcome.first shouldBe case.expected }
+    withClue("validators must agree, including failure messages") { secondOutcome shouldBe firstOutcome }
 }
 
-private suspend fun observeChainValidator(validator: CertChainValidator, case: ChainCase): ChainOutcome {
+private suspend fun observeChainValidator(validator: CertChainValidator, case: ChainCase): Pair<ChainOutcome, String?> {
     val result = with(validator) { case.chain.map { it.toKmpCertificate() }.verify(case.date.toInstant().toKotlinInstant(), case.roots, case.requireRkp) }
     val lists = result.revocationLists
-    return when (val failure = result.verdict.exceptionOrNull()) {
+    val outcome = when (val failure = result.verdict.exceptionOrNull()) {
         null -> ChainOutcome(securityLevel = result.verdict.getOrThrow(), revocationLists = lists)
         is CertificateInvalidException -> ChainOutcome(failure::class, failure.reason.name,
             case.chain.map { it.toKmpCertificate() }.indexOf(failure.invalidCertificate).takeIf { it >= 0 }, revocationLists = lists)
@@ -250,6 +284,7 @@ private suspend fun observeChainValidator(validator: CertChainValidator, case: C
         is RevocationException.ListUnavailable -> ChainOutcome(failure::class, revocationLists = lists)
         else -> throw AssertionError("Unexpected validator failure", failure)
     }
+    return outcome to result.verdict.exceptionOrNull()?.message
 }
 
 private data class ChainFixture(
