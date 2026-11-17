@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.KmmResult
 import at.asitplus.attestation.DebugStatement
 import at.asitplus.attestation.android.AndroidRevocationList.Loader.Configuration
@@ -42,9 +43,10 @@ class AndroidDebugAttestationStatement(
     val configuration: AndroidAttestationConfiguration,
     val verificationTime: Instant,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray,
+    // CertificateChain aliases this list; the element annotation preserves the PEM wire format.
     val attestationStatement: List<@Serializable(with = CertificatePemSerializer::class) Certificate>,
     val revocationLists: List<ConfigWithList>,
-) : DebugStatement<KmmResult<List<Certificate>>> {
+) : DebugStatement<KmmResult<CertificateChain>> {
 
     init {
         require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
@@ -73,14 +75,14 @@ class AndroidDebugAttestationStatement(
     }
 
     //Reader<D, R : DebugStatement<R>>
-    companion object : DebugStatement.Reader<KmmResult<List<Certificate>>, AndroidDebugAttestationStatement> {
+    companion object : DebugStatement.Reader<KmmResult<CertificateChain>, AndroidDebugAttestationStatement> {
 
         suspend operator fun invoke(
             verifier: Roboto,
             configuration: AndroidAttestationConfiguration,
             verificationTime: Instant,
             challenge: ByteArray,
-            attestationStatement: List<Certificate>
+            attestationStatement: CertificateChain
         ) = AndroidDebugAttestationStatement(
             wardenVersion,
             configuration,
@@ -93,7 +95,7 @@ class AndroidDebugAttestationStatement(
         @JvmName("fromJavaCertificates")
         suspend operator fun invoke(
             verifier: Roboto, configuration: AndroidAttestationConfiguration, verificationTime: Instant,
-            challenge: ByteArray, attestationStatement: Collection<java.security.cert.X509Certificate>,
+            challenge: ByteArray, attestationStatement: List<java.security.cert.X509Certificate>,
         ) = invoke(verifier, configuration, verificationTime, challenge, attestationStatement.map { it.toKmpCertificate() })
 
         override fun deserialize(string: String): AndroidDebugAttestationStatement =

@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android.exceptions
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.contentEqualsIfArray
 import at.asitplus.signum.indispensable.contentEqualsIfArray
@@ -145,7 +146,7 @@ class AttestationValueException(
  */
 open class CertificateInvalidException(
     message: String, cause: Throwable? = null,
-    val certificateChain: List<Certificate>,
+    val certificateChain: CertificateChain,
     val invalidCertificate: Certificate?,
     val reason: Reason
 ) :
@@ -153,7 +154,7 @@ open class CertificateInvalidException(
 
     constructor(
         message: String, cause: Throwable? = null,
-        certificateChain: Collection<java.security.cert.X509Certificate>,
+        certificateChain: List<java.security.cert.X509Certificate>,
         invalidCertificate: java.security.cert.X509Certificate?, reason: Reason,
     ) : this(message, cause, certificateChain.map { it.toKmpCertificate() }, invalidCertificate?.toKmpCertificate(), reason)
 
@@ -200,13 +201,13 @@ open class CertificateInvalidException(
     class OtherMatchingRoot(
         message: String,
         cause: Throwable? = null,
-        certificateChain: List<Certificate>,
+        certificateChain: CertificateChain,
         invalidCertificate: Certificate?,
         val rootCertStage: Stage
     ) : CertificateInvalidException(message, cause, certificateChain, invalidCertificate, reason = Reason.TRUST) {
         constructor(
             message: String, cause: Throwable? = null,
-            certificateChain: Collection<java.security.cert.X509Certificate>,
+            certificateChain: List<java.security.cert.X509Certificate>,
             invalidCertificate: java.security.cert.X509Certificate?, rootCertStage: Stage,
         ) : this(message, cause, certificateChain.map { it.toKmpCertificate() }, invalidCertificate?.toKmpCertificate(), rootCertStage)
 
@@ -236,12 +237,12 @@ open class CertificateInvalidException(
     class NoMatchingRoot(
         message: String,
         cause: Throwable? = null,
-        certificateChain: List<Certificate>,
+        certificateChain: CertificateChain,
         invalidCertificate: Certificate?,
     ) : CertificateInvalidException(message, cause, certificateChain, invalidCertificate, reason = Reason.TRUST) {
         constructor(
             message: String, cause: Throwable? = null,
-            certificateChain: Collection<java.security.cert.X509Certificate>,
+            certificateChain: List<java.security.cert.X509Certificate>,
             invalidCertificate: java.security.cert.X509Certificate?,
         ) : this(message, cause, certificateChain.map { it.toKmpCertificate() }, invalidCertificate?.toKmpCertificate())
 
@@ -258,12 +259,12 @@ open class CertificateInvalidException(
         message: String,
         cause: Throwable? = null,
         reason: Reason,
-        certificateChain: List<Certificate>,
+        certificateChain: CertificateChain,
         invalidCertificate: Certificate?,
     ) : CertificateInvalidException(message, cause, certificateChain, invalidCertificate, reason) {
         constructor(
             message: String, cause: Throwable? = null,
-            certificateChain: Collection<java.security.cert.X509Certificate>,
+            certificateChain: List<java.security.cert.X509Certificate>,
             invalidCertificate: java.security.cert.X509Certificate?, reason: Reason,
         ) : this(message, cause, reason, certificateChain.map { it.toKmpCertificate() }, invalidCertificate?.toKmpCertificate())
 
@@ -332,13 +333,13 @@ sealed class RevocationException(message: String?, cause: Throwable? = null, val
     class Revoked(
         message: String?,
         cause: Throwable? = null,
-        val certificateChain: List<Certificate>,
+        val certificateChain: CertificateChain,
         val revokedCertificate: Certificate,
         val entry: AndroidRevocationList.Entry,
     ) : RevocationException(message, cause, Reason.REVOKED) {
         constructor(
             message: String?, cause: Throwable? = null,
-            certificateChain: Collection<java.security.cert.X509Certificate>,
+            certificateChain: List<java.security.cert.X509Certificate>,
             revokedCertificate: java.security.cert.X509Certificate, entry: AndroidRevocationList.Entry,
         ) : this(message, cause, certificateChain.map { it.toKmpCertificate() }, revokedCertificate.toKmpCertificate(), entry)
 

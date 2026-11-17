@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android.engine
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
@@ -13,7 +14,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
-import at.asitplus.signum.indispensable.pki.Certificate
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -28,9 +28,9 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
 
     protected abstract val type: EngineType<AttRecord, AuthList>
 
-    abstract val List<Certificate>.attestationRecord: AttRecord?
+    abstract val CertificateChain.attestationRecord: AttRecord?
 
-    protected abstract fun List<Certificate>.selectAttestedApplication(): AndroidAttestationConfiguration.AppData?
+    protected abstract fun CertificateChain.selectAttestedApplication(): AndroidAttestationConfiguration.AppData?
 
     protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
     protected abstract val AttRecord.challenge: ByteArray
@@ -73,7 +73,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
      */
     @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
     suspend fun verifyAttestation(
-        certificates: List<Certificate>,
+        certificates: CertificateChain,
         verificationDate: Instant,
         expectedChallenge: ByteArray,
         onRevocationLists: (List<ConfigWithList>) -> Unit = {},

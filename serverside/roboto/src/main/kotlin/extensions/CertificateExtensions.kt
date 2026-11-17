@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.catchingUnwrapped
 import at.asitplus.awesn1.Asn1Element
 import at.asitplus.awesn1.encoding.parse
@@ -9,7 +10,6 @@ import java.security.cert.X509Certificate
 import javax.security.auth.x500.X500Principal
 
 
-import at.asitplus.signum.indispensable.pki.Certificate
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.asn1
 import at.asitplus.awesn1.ObjectIdentifier
@@ -18,7 +18,7 @@ import co.nstant.`in`.cbor.model.UnsignedInteger
 import com.android.keyattestation.verifier.asInteger
 
 @JvmName("getSignumRkpData")
-fun List<Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
+fun CertificateChain.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
     require(isRemoteKeyProvisioned())
     get(1).tbsCertificate.extensions.firstOrNull { it.oid == ObjectIdentifier(OID_RKP) }?.let {
         CborDecoder.decode(it.asn1.toRepresentation().value).first() as co.nstant.`in`.cbor.model.Map
@@ -26,12 +26,12 @@ fun List<Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnw
 }.getOrNull()
 
 @JvmName("getSignumNumberOfRemotelyProvisionedCertificates")
-fun List<Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
+fun CertificateChain.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
     requireNotNull(getRkpData()?.get(UnsignedInteger(1L))).asInteger()
 }.getOrNull()
 
 @JvmName("isSignumRemoteKeyProvisioned")
-fun List<Certificate>.isRemoteKeyProvisioned(): Boolean {
+fun CertificateChain.isRemoteKeyProvisioned(): Boolean {
     if (size < 2) return false
     val attributes = get(size - 2).tbsCertificate.subjectName.relativeDistinguishedNames
         .flatMap { it.attrsAndValues }

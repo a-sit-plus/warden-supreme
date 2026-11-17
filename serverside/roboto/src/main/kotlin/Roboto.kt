@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.KmmResult
 import at.asitplus.attestation.android.engine.AndroidAttestationEngine
 import at.asitplus.attestation.android.engine.RtgAttestationEngine
@@ -9,7 +10,6 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.pki.Certificate
 import at.asitplus.signum.indispensable.toKmpCertificate
 import com.google.android.attestation.ParsedAttestationRecord
 import kotlinx.coroutines.runBlocking
@@ -149,11 +149,11 @@ constructor(
 
     @JvmName("collectDebugInfoSignumCertificates")
     suspend fun collectDebugInfo(
-        certificates: Collection<Certificate>,
+        certificates: CertificateChain,
         expectedChallenge: ByteArray,
         verificationDate: Instant = Clock.System.now(),
     ) = AndroidDebugAttestationStatement(
-        this, attestationConfiguration, verificationDate, expectedChallenge, certificates.toList(),
+        this, attestationConfiguration, verificationDate, expectedChallenge, certificates,
     )
 
     /**
@@ -181,16 +181,15 @@ constructor(
 
     @JvmName("verifySignumCertificates")
     suspend fun verify(
-        certificates: Collection<Certificate>,
+        certificates: CertificateChain,
         verificationDate: Instant = Clock.System.now(),
         expectedChallenge: ByteArray
-    ): KmmResult<List<Certificate>> = catching {
-        val chain = certificates.toList()
+    ): KmmResult<CertificateChain> = catching {
         var revocationLists = emptyList<ConfigWithList>()
         val results = engines.map {
             catchingUnwrapped {
                 it.verifyAttestation(
-                    chain,
+                    certificates,
                     verificationDate,
                     expectedChallenge,
                 ) { revocationLists = it }
@@ -209,7 +208,7 @@ constructor(
                 .mapNotNull { it.exceptionOrNull() }
                 .firstOrNull { it !is CertificateInvalidException.OtherMatchingRoot }
                 ?: results.last().exceptionOrNull()!!
-        } else chain
+        } else certificates
     }
 
     /**
@@ -249,10 +248,10 @@ fun Roboto.verifyBlocking(
 
 @JvmName("verifySignumCertificatesBlocking")
 fun Roboto.verifyBlocking(
-    certificates: Collection<Certificate>,
+    certificates: CertificateChain,
     verificationDate: Instant = Clock.System.now(),
     expectedChallenge: ByteArray,
-): KmmResult<List<Certificate>> = runBlocking { verify(certificates, verificationDate, expectedChallenge) }
+): KmmResult<CertificateChain> = runBlocking { verify(certificates, verificationDate, expectedChallenge) }
 
 /**
  * Blocking version of [Roboto.collectDebugInfo]
@@ -265,7 +264,7 @@ fun Roboto.collectDebugInfoBlocking(
 
 @JvmName("collectSignumDebugInfoBlocking")
 fun Roboto.collectDebugInfoBlocking(
-    certificates: Collection<Certificate>,
+    certificates: CertificateChain,
     expectedChallenge: ByteArray,
     verificationDate: Instant = Clock.System.now(),
 ) = runBlocking { collectDebugInfo(certificates, expectedChallenge, verificationDate) }

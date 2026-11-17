@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android.engine
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.hasAndroidKeyAttestationExtensionOid
@@ -14,7 +15,7 @@ import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.pki.Certificate
 
 /** Reads only the bounded application identity needed to choose an app-specific trust policy. */
-internal fun List<Certificate>.selectAttestedApplication(
+internal fun CertificateChain.selectAttestedApplication(
     applications: List<AndroidAttestationConfiguration.AppData>,
 ): AndroidAttestationConfiguration.AppData? {
     val certificate = lastOrNull { it.hasAndroidKeyAttestationExtensionOid } ?: return null
@@ -27,7 +28,7 @@ internal fun List<Certificate>.selectAttestedApplication(
 internal fun List<java.security.cert.X509Certificate>.selectAttestedApplication(
     applications: List<AndroidAttestationConfiguration.AppData>,
 ): AndroidAttestationConfiguration.AppData? =
-    map { at.asitplus.signum.indispensable.pki.Certificate.fromAsn1(it.encoded) }.selectAttestedApplication(applications)
+    map { Certificate.fromAsn1(it.encoded) }.selectAttestedApplication(applications)
 
 internal fun selectAttestedApplication(
     extension: ByteArray,

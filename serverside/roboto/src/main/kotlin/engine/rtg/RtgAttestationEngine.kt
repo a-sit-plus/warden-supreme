@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android.engine
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
@@ -8,7 +9,6 @@ import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
 import com.google.android.attestation.RootOfTrust
 import com.ionspin.kotlin.bignum.integer.BigInteger
-import at.asitplus.signum.indispensable.pki.Certificate
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
@@ -27,10 +27,10 @@ sealed class RtgAttestationEngine(
 
     override val certChainValidator = JvmCertChainValidator(attestationConfiguration)
 
-    override val List<Certificate>.attestationRecord: ParsedAttestationRecord
+    override val CertificateChain.attestationRecord: ParsedAttestationRecord
         get() = ParsedAttestationRecord.createParsedAttestationRecord(map { it.toJcaCertificateBlocking() })
 
-    override fun List<Certificate>.selectAttestedApplication() =
+    override fun CertificateChain.selectAttestedApplication() =
         selectAttestedApplication(attestationConfiguration.applications)
 
     override val ParsedAttestationRecord.attestationSecLevel: GeneralizedSecurityLevel

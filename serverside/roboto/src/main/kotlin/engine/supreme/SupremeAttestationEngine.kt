@@ -1,11 +1,11 @@
 package at.asitplus.attestation.android.engine
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.*
 import at.asitplus.awesn1.toBigInteger
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
-import at.asitplus.signum.indispensable.pki.Certificate
 import kotlin.time.Instant
 
 /**
@@ -21,10 +21,10 @@ sealed class SupremeAttestationEngine(
 ) {
     override val certChainValidator = JvmCertChainValidator(attestationConfiguration)
 
-    override val List<Certificate>.attestationRecord: AttestationKeyDescription?
+    override val CertificateChain.attestationRecord: AttestationKeyDescription?
         get() = lastOrNull { it.hasAndroidKeyAttestationExtensionOid }?.androidAttestationExtension
 
-    override fun List<Certificate>.selectAttestedApplication() =
+    override fun CertificateChain.selectAttestedApplication() =
         selectAttestedApplication(attestationConfiguration.applications)
 
     override val AttestationKeyDescription.attestationSecLevel: GeneralizedSecurityLevel
