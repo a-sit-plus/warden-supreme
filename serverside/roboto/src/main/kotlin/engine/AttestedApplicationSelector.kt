@@ -8,18 +8,26 @@ import at.asitplus.awesn1.Asn1Element
 import at.asitplus.awesn1.Asn1ExplicitlyTagged
 import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.awesn1.encoding.parse
-import com.google.android.attestation.Constants.KEY_DESCRIPTION_OID
-import java.nio.charset.StandardCharsets.UTF_8
-import java.security.cert.X509Certificate
+import at.asitplus.attestation.android.AttestationKeyDescription
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.signum.indispensable.pki.Certificate
 
 /** Reads only the bounded application identity needed to choose an app-specific trust policy. */
-internal fun List<X509Certificate>.selectAttestedApplication(
+internal fun List<Certificate>.selectAttestedApplication(
     applications: List<AndroidAttestationConfiguration.AppData>,
 ): AndroidAttestationConfiguration.AppData? {
     val certificate = lastOrNull { it.hasAndroidKeyAttestationExtensionOid } ?: return null
-    val extension = certificate.getExtensionValue(KEY_DESCRIPTION_OID) ?: return null
+    val extension = certificate.tbsCertificate.extensions.firstOrNull { it.oid == AttestationKeyDescription.oid }
+        ?.asn1?.toRepresentation()?.let { Asn1.OctetString(it.value).derEncoded } ?: return null
     return selectAttestedApplication(extension, applications)
 }
+
+@JvmName("selectAttestedApplicationJvm")
+internal fun List<java.security.cert.X509Certificate>.selectAttestedApplication(
+    applications: List<AndroidAttestationConfiguration.AppData>,
+): AndroidAttestationConfiguration.AppData? =
+    map { at.asitplus.signum.indispensable.pki.Certificate.fromAsn1(it.encoded) }.selectAttestedApplication(applications)
 
 internal fun selectAttestedApplication(
     extension: ByteArray,
@@ -53,7 +61,7 @@ internal fun selectAttestedApplication(
             if (values.size != PACKAGE_INFO_FIELD_COUNT) return@any false
             val name = values[0].asOctetString().content
             values[1].asPrimitive()
-            name.size <= MAX_PACKAGE_NAME_BYTES && String(name, UTF_8) == app.packageName
+            name.size <= MAX_PACKAGE_NAME_BYTES && name.decodeToString() == app.packageName
         }
     }
     if (packageMatches.isEmpty()) throw AttestationValueException(

@@ -9,6 +9,38 @@ import java.security.cert.X509Certificate
 import javax.security.auth.x500.X500Principal
 
 
+import at.asitplus.signum.indispensable.pki.Certificate
+import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.awesn1.ObjectIdentifier
+import at.asitplus.awesn1.encoding.decodeToString
+import co.nstant.`in`.cbor.model.UnsignedInteger
+import com.android.keyattestation.verifier.asInteger
+
+@JvmName("getSignumRkpData")
+fun List<Certificate>.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
+    require(isRemoteKeyProvisioned())
+    get(1).tbsCertificate.extensions.firstOrNull { it.oid == ObjectIdentifier(OID_RKP) }?.let {
+        CborDecoder.decode(it.asn1.toRepresentation().value).first() as co.nstant.`in`.cbor.model.Map
+    }
+}.getOrNull()
+
+@JvmName("getSignumNumberOfRemotelyProvisionedCertificates")
+fun List<Certificate>.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
+    requireNotNull(getRkpData()?.get(UnsignedInteger(1L))).asInteger()
+}.getOrNull()
+
+@JvmName("isSignumRemoteKeyProvisioned")
+fun List<Certificate>.isRemoteKeyProvisioned(): Boolean {
+    if (size < 2) return false
+    val attributes = get(size - 2).tbsCertificate.subjectName.relativeDistinguishedNames
+        .flatMap { it.attrsAndValues }
+        .filter { it.oid == AttributeTypeAndValue.OID.commonName || it.oid == AttributeTypeAndValue.OID.organizationName }
+        .associate { it.oid to it.asn1.toRepresentation().value.asPrimitive().decodeToString() }
+    return attributes[AttributeTypeAndValue.OID.commonName] == "Droid CA2" &&
+        attributes[AttributeTypeAndValue.OID.organizationName] == "Google LLC"
+}
+
 /**
  * Returns the parsed, but generic contents of the [Remote Key Provisioning
  * extension](https://source.android.com/docs/security/features/keystore/attestation#provisioninginfo_extension),

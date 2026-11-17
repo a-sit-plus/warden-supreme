@@ -10,7 +10,6 @@ import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.fromAsn1
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.Certificate
-import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
@@ -24,9 +23,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import net.mamoe.yamlkt.Yaml
-import java.security.KeyFactory
 import java.security.PublicKey
-import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
 import kotlin.io.encoding.Base64
 import kotlin.math.absoluteValue
@@ -91,7 +88,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
             uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
             -----END CERTIFICATE-----
             """.trimIndent()
-    ).toJcaCertificateBlocking(),
+    ),
     enforceFactoryProvisionedChainValidity = true /*NOOP for an RKP root, but better safe than sorry*/
 )
 
@@ -134,7 +131,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             w1IdYIg2Wxg7yHcQZemFQg==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).toJcaCertificateBlocking(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
     //new Google EC Root
@@ -175,7 +172,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             wDB5y0USicV3YgYGmi+NZfhA4URSh77Yd6uuJOJENRaNVTzk
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).toJcaCertificateBlocking(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 
@@ -214,7 +211,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             ex0SdDrx+tWUDqG8At2JHA==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).toJcaCertificateBlocking(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 
@@ -253,33 +250,19 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             mD/vFDkzF+wm7cyWpQpCVQ==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).toJcaCertificateBlocking(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 )
 
 private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
-    KeyFactory.getInstance("EC")
-        .generatePublic(
-            X509EncodedKeySpec(
-                Base64.decode(
-                    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
-                            "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
-                )
-            )
-        ),
-    KeyFactory.getInstance("RSA")
-        .generatePublic(
-            X509EncodedKeySpec(
-                Base64.decode(
-                    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
-                            "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
-                            "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
-                            "+Vfkl5YLCazOkjWFmwIDAQAB"
-                )
-            )
-        )
-)
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+        "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA==",
+    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+        "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+        "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+        "+Vfkl5YLCazOkjWFmwIDAQAB",
+).map { CryptoPublicKey.fromAsn1(Base64.decode(it)) }
 
 /**
  * Default trust anchors used to verify software attestation working up to Android 12. Useful for testing.
@@ -290,7 +273,7 @@ private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
 val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
     GOOGLE_OLD_TRUST_ANCHORS.map {
         TrustedRoot.PublicKey(
-            publicKey = it,
+            value = it,
             enforceFactoryProvisionedChainValidity = false
         )
     }.toSet()

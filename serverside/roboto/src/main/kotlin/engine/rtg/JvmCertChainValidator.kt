@@ -5,6 +5,11 @@ import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catching
+import at.asitplus.signum.indispensable.pki.CertificateChain
+import at.asitplus.signum.indispensable.toJcaCertificateBlocking
+import at.asitplus.signum.indispensable.toKmpCertificate
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 import at.asitplus.catchingUnwrapped
 import com.android.keyattestation.verifier.SecurityLevel
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
@@ -16,7 +21,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.toKotlinInstant
 
 class JvmCertChainValidator(private val attestationConfiguration: AndroidAttestationConfiguration) :
-    CertChainValidator<X509Certificate, KeyAttestationCertPath> {
+    CertChainValidator {
 
     companion object {
         init {
@@ -34,16 +39,33 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
 
 
     @Throws(CertificateInvalidException::class, RevocationException::class)
-    override suspend fun List<X509Certificate>.verifyCertificateChain(
-        verificationDate: Date,
+    override suspend fun CertificateChain.verifyCertificateChain(
+        verificationDate: Instant,
         actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
-    ): CertificateChainValidation<KeyAttestationCertPath> {
+    ): CertificateChainValidation {
         var revocationLists = emptyList<ConfigWithList>()
         val verdict = catching {
-            verifyCertificateChainAndCollect(verificationDate, actualTrustAnchors, requireRKP) {
-                revocationLists = it
-            }
+            map { it.toJcaCertificateBlocking() }.verifyCertificateChainAndCollect(
+                Date.from(verificationDate.toJavaInstant()), actualTrustAnchors, requireRKP,
+            ) { revocationLists = it }.securityLevel().toGeneralizedSecurityLevel()
+        }
+        return CertificateChainValidation(verdict, revocationLists)
+    }
+
+    /** Java certificate compatibility boundary; validation itself remains in the existing JVM backend. */
+    suspend fun List<X509Certificate>.verifyCertificateChain(
+        verificationDate: Date,
+        actualTrustAnchors: Collection<TrustedRoot>,
+        requireRKP: Boolean,
+    ): CertificateChainValidation {
+        var revocationLists = emptyList<ConfigWithList>()
+        val verdict = catching {
+            val result = map { it.toKmpCertificate() }.verifyCertificateChain(
+                verificationDate.toInstant().toKotlinInstant(), actualTrustAnchors, requireRKP,
+            )
+            revocationLists = result.revocationLists
+            result.verdict.getOrThrow()
         }
         return CertificateChainValidation(verdict, revocationLists)
     }
@@ -240,8 +262,6 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         }
     }
 
-    override val KeyAttestationCertPath.generalizedSecurityLevel: GeneralizedSecurityLevel
-        get() = securityLevel()?.toGeneralizedSecurityLevel() ?: GeneralizedSecurityLevel.SOFTWARE
 }
 
 fun SecurityLevel?.toGeneralizedSecurityLevel(): GeneralizedSecurityLevel = when (this) {

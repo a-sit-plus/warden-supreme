@@ -2,13 +2,13 @@ package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.catchingUnwrapped
-import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
+import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import com.google.android.attestation.AttestationApplicationId
 import com.google.android.attestation.AuthorizationList
 import com.google.android.attestation.ParsedAttestationRecord
 import com.google.android.attestation.RootOfTrust
 import com.ionspin.kotlin.bignum.integer.BigInteger
-import java.security.cert.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
@@ -20,17 +20,17 @@ import kotlin.time.toKotlinInstant
 sealed class RtgAttestationEngine(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
-) : AndroidAttestationEngine<ParsedAttestationRecord, AuthorizationList, X509Certificate, KeyAttestationCertPath>(
+) : AndroidAttestationEngine<ParsedAttestationRecord, AuthorizationList>(
     attestationConfiguration,
     verifyChallenge
 ) {
 
     override val certChainValidator = JvmCertChainValidator(attestationConfiguration)
 
-    override val List<X509Certificate>.attestationRecord: ParsedAttestationRecord
-        get() = ParsedAttestationRecord.createParsedAttestationRecord(this)
+    override val List<Certificate>.attestationRecord: ParsedAttestationRecord
+        get() = ParsedAttestationRecord.createParsedAttestationRecord(map { it.toJcaCertificateBlocking() })
 
-    override fun List<X509Certificate>.selectAttestedApplication() =
+    override fun List<Certificate>.selectAttestedApplication() =
         selectAttestedApplication(attestationConfiguration.applications)
 
     override val ParsedAttestationRecord.attestationSecLevel: GeneralizedSecurityLevel

@@ -9,7 +9,8 @@ import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
-import java.security.cert.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
+import at.asitplus.signum.indispensable.toKmpCertificate
 import kotlin.time.Instant
 
 internal val jsonDebug by lazy {
@@ -41,9 +42,9 @@ class AndroidDebugAttestationStatement(
     val configuration: AndroidAttestationConfiguration,
     val verificationTime: Instant,
     @Serializable(with = ByteArrayBase64UrlSerializer::class) val challenge: ByteArray,
-    val attestationStatement: List<@Serializable(with = CertPemSerializer::class) X509Certificate>,
+    val attestationStatement: List<@Serializable(with = CertificatePemSerializer::class) Certificate>,
     val revocationLists: List<ConfigWithList>,
-) : DebugStatement<KmmResult<List<X509Certificate>>> {
+) : DebugStatement<KmmResult<List<Certificate>>> {
 
     init {
         require(version == wardenVersion) { "Version mismatch! This debug statement was created using Warden Supreme $version. The current version is $wardenVersion" }
@@ -72,14 +73,14 @@ class AndroidDebugAttestationStatement(
     }
 
     //Reader<D, R : DebugStatement<R>>
-    companion object : DebugStatement.Reader<KmmResult<List<X509Certificate>>, AndroidDebugAttestationStatement> {
+    companion object : DebugStatement.Reader<KmmResult<List<Certificate>>, AndroidDebugAttestationStatement> {
 
         suspend operator fun invoke(
             verifier: Roboto,
             configuration: AndroidAttestationConfiguration,
             verificationTime: Instant,
             challenge: ByteArray,
-            attestationStatement: List<X509Certificate>
+            attestationStatement: List<Certificate>
         ) = AndroidDebugAttestationStatement(
             wardenVersion,
             configuration,
@@ -88,6 +89,12 @@ class AndroidDebugAttestationStatement(
             attestationStatement,
             verifier.revocationListsForChallenge(challenge)
         )
+
+        @JvmName("fromJavaCertificates")
+        suspend operator fun invoke(
+            verifier: Roboto, configuration: AndroidAttestationConfiguration, verificationTime: Instant,
+            challenge: ByteArray, attestationStatement: Collection<java.security.cert.X509Certificate>,
+        ) = invoke(verifier, configuration, verificationTime, challenge, attestationStatement.map { it.toKmpCertificate() })
 
         override fun deserialize(string: String): AndroidDebugAttestationStatement =
             jsonDebug.decodeFromString<AndroidDebugAttestationStatement>(string)

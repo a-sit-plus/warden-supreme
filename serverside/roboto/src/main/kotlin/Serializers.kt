@@ -27,6 +27,12 @@ object CertPemSerializer : TransformingSerializerTemplate<java.security.cert.X50
     }
 )
 
+object CertificatePemSerializer : TransformingSerializerTemplate<at.asitplus.signum.indispensable.pki.Certificate, String>(
+    parent = String.serializer(),
+    encodeAs = { it.asn1.toPem() },
+    decodeAs = { at.asitplus.signum.indispensable.pki.Certificate.fromAsn1(it) },
+)
+
 object DateTimeSerializer : KSerializer<Date> {
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US).apply {
         timeZone = TimeZone.getTimeZone("UTC")

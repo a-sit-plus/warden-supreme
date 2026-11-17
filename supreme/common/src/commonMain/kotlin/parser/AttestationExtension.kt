@@ -182,6 +182,10 @@ data class AttestationKeyDescription(
     }
 }
 
+/** Whether a non-critical Android attestation extension is present, without parsing its contents. */
+val Certificate.hasAndroidKeyAttestationExtensionOid: Boolean
+    get() = tbsCertificate.extensions.any { it.oid == AttestationKeyDescription.oid && !it.critical }
+
 /**
  * Tries to parse an [AttestationKeyDescription] certificate extension, if present.
  * Never throws.

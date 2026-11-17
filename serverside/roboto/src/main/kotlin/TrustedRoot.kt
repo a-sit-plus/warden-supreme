@@ -2,9 +2,9 @@ package at.asitplus.attestation.android
 
 import at.asitplus.awesn1.Asn1Exception
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.Signum
 import at.asitplus.signum.indispensable.*
-import at.asitplus.signum.indispensable.pki.Certificate
+import at.asitplus.signum.indispensable.pki.Certificate as SignumCertificate
+import at.asitplus.signum.indispensable.pki.Name
 import io.ktor.util.*
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -50,104 +50,101 @@ sealed interface TrustedRoot {
      */
     @Serializable(with = TrustedRootSerializer::class)
     open class PublicKey @JvmOverloads constructor(
-        override val publicKey: java.security.PublicKey,
-        val caName: X500Principal? = null
+        override val value: CryptoPublicKey,
+        val name: Name? = null,
     ) : TrustedRoot {
-        @Throws(Throwable::class)
-        constructor(encoded: ByteArray) : this(
-            CryptoPublicKey.fromAsn1(encoded).toJcaPublicKey()
-        )
+        @JvmOverloads
+        constructor(publicKey: java.security.PublicKey, caName: X500Principal? = null) :
+            this(publicKey.toCryptoPublicKey(), caName?.let { Name.fromAsn1(it.encoded) })
 
-        override val value = publicKey.let {
-            Signum.installIndispensable()
-            it.toCryptoPublicKey()
-        }
+        constructor(encoded: ByteArray) : this(CryptoPublicKey.fromAsn1(encoded))
 
-        override val trustAnchor = TrustAnchor(
-            caName ?: X500Principal(
-                "CN=" + MessageDigest.getInstance("SHA-256").digest(publicKey.encoded)
-            ), publicKey, null
+        override val cryptoPublicKey: CryptoPublicKey get() = value
+
+        /** Java compatibility accessors; the stored key and name are Signum models. */
+        override val publicKey: java.security.PublicKey get() = value.toJcaPublicKey()
+        val caName: X500Principal? get() = name?.let { X500Principal(it.asn1.toDer()) }
+        override val trustAnchor: TrustAnchor get() = TrustAnchor(
+            caName ?: X500Principal("CN=" + MessageDigest.getInstance("SHA-256").digest(derEncoded)), publicKey, null,
         )
 
         override fun toString(): String = derEncoded.encodeBase64()
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            return other is PublicKey &&
-                    publicKey.encoded.contentEquals(other.publicKey.encoded) &&
-                    caName == other.caName &&
-                    androidValidityPolicy() == other.androidValidityPolicy()
-        }
+        override fun equals(other: Any?): Boolean = this === other || other is PublicKey &&
+            derEncoded.contentEquals(other.derEncoded) && caName == other.caName &&
+            androidValidityPolicy() == other.androidValidityPolicy()
 
         override fun hashCode(): Int =
-            31 * (31 * publicKey.encoded.contentHashCode() + (caName?.hashCode() ?: 0)) +
-                    (androidValidityPolicy()?.hashCode() ?: 0)
+            31 * (31 * derEncoded.contentHashCode() + (caName?.hashCode() ?: 0)) +
+                (androidValidityPolicy()?.hashCode() ?: 0)
 
         class AndroidSpecific @JvmOverloads constructor(
-            publicKey: java.security.PublicKey,
-            caName: X500Principal? = null,
+            value: CryptoPublicKey,
+            name: Name? = null,
             override val enforceFactoryProvisionedChainValidity: Boolean,
-        ) : PublicKey(publicKey, caName), TrustedRoot.AndroidSpecific {
+        ) : PublicKey(value, name), TrustedRoot.AndroidSpecific {
+            @JvmOverloads
+            constructor(publicKey: java.security.PublicKey, caName: X500Principal? = null,
+                enforceFactoryProvisionedChainValidity: Boolean) :
+                this(publicKey.toCryptoPublicKey(), caName?.let { Name.fromAsn1(it.encoded) }, enforceFactoryProvisionedChainValidity)
+
             override fun toString() =
                 "[${super.toString()},  enforceFactoryProvisionedChainValidity=$enforceFactoryProvisionedChainValidity]"
         }
 
         companion object {
-            /** Constructs an Android-specific public-key trust root. */
-            operator fun invoke(
-                publicKey: java.security.PublicKey,
-                caName: X500Principal? = null,
-                enforceFactoryProvisionedChainValidity: Boolean,
-            ): PublicKey = AndroidSpecific(publicKey, caName, enforceFactoryProvisionedChainValidity)
-        }
+            operator fun invoke(value: CryptoPublicKey, name: Name? = null,
+                enforceFactoryProvisionedChainValidity: Boolean): PublicKey =
+                AndroidSpecific(value, name, enforceFactoryProvisionedChainValidity)
 
+            operator fun invoke(publicKey: java.security.PublicKey, caName: X500Principal? = null,
+                enforceFactoryProvisionedChainValidity: Boolean): PublicKey =
+                AndroidSpecific(publicKey, caName, enforceFactoryProvisionedChainValidity)
+        }
     }
 
     @Serializable(with = TrustedRootSerializer::class)
-    open class Certificate(val certificate: java.security.cert.X509Certificate) : TrustedRoot {
-        override val value = certificate.toKmpCertificate()
+    open class Certificate(override val value: SignumCertificate) : TrustedRoot {
+        constructor(certificate: java.security.cert.X509Certificate) : this(certificate.toKmpCertificate())
+        constructor(encoded: ByteArray) : this(SignumCertificate.fromAsn1(encoded))
 
-        @Throws(Throwable::class)
-        constructor(encoded: ByteArray) : this(
-            at.asitplus.signum.indispensable.pki.Certificate.fromAsn1(encoded)
-                .toJcaCertificateBlocking()
-        )
+        override val cryptoPublicKey: CryptoPublicKey get() = value.publicKey
 
-        override val publicKey: java.security.PublicKey by lazy { certificate.publicKey }
-        override val trustAnchor = TrustAnchor(certificate, null)
+        /** Java compatibility accessors; certificate data is stored only in Signum form. */
+        val certificate: java.security.cert.X509Certificate get() = value.toJcaCertificateBlocking()
+        override val publicKey: java.security.PublicKey get() = cryptoPublicKey.toJcaPublicKey()
+        override val trustAnchor: TrustAnchor get() = TrustAnchor(certificate, null)
 
         override fun toString(): String = Base64.encode(derEncoded)
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            return other is Certificate &&
-                    certificate.encoded.contentEquals(other.certificate.encoded) &&
-                    androidValidityPolicy() == other.androidValidityPolicy()
-        }
+        override fun equals(other: Any?): Boolean = this === other || other is Certificate &&
+            derEncoded.contentEquals(other.derEncoded) && androidValidityPolicy() == other.androidValidityPolicy()
 
-        override fun hashCode(): Int =
-            31 * certificate.encoded.contentHashCode() + (androidValidityPolicy()?.hashCode() ?: 0)
+        override fun hashCode(): Int = 31 * derEncoded.contentHashCode() + (androidValidityPolicy()?.hashCode() ?: 0)
 
         class AndroidSpecific(
-            certificate: java.security.cert.X509Certificate,
+            value: SignumCertificate,
             override val enforceFactoryProvisionedChainValidity: Boolean,
-        ) : Certificate(certificate), TrustedRoot.AndroidSpecific {
+        ) : Certificate(value), TrustedRoot.AndroidSpecific {
+            constructor(certificate: java.security.cert.X509Certificate, enforceFactoryProvisionedChainValidity: Boolean) :
+                this(certificate.toKmpCertificate(), enforceFactoryProvisionedChainValidity)
 
             override fun toString() =
                 "[${super.toString()},  enforceFactoryProvisionedChainValidity=$enforceFactoryProvisionedChainValidity]"
         }
 
         companion object {
-            /** Constructs an Android-specific certificate trust root. */
-            operator fun invoke(
-                certificate: java.security.cert.X509Certificate,
-                enforceFactoryProvisionedChainValidity: Boolean,
-            ): Certificate = AndroidSpecific(certificate, enforceFactoryProvisionedChainValidity)
+            operator fun invoke(value: SignumCertificate, enforceFactoryProvisionedChainValidity: Boolean): Certificate =
+                AndroidSpecific(value, enforceFactoryProvisionedChainValidity)
+
+            operator fun invoke(certificate: java.security.cert.X509Certificate,
+                enforceFactoryProvisionedChainValidity: Boolean): Certificate =
+                AndroidSpecific(certificate, enforceFactoryProvisionedChainValidity)
         }
     }
 
+    val cryptoPublicKey: CryptoPublicKey
     val publicKey: java.security.PublicKey
-
 
     val derEncoded: ByteArray
         get() = when (this) {
@@ -168,6 +165,8 @@ sealed interface TrustedRoot {
             TrustedRoot.PublicKey(publicKey, caName)
 
         operator fun invoke(cert: java.security.cert.X509Certificate) = TrustedRoot.Certificate(cert)
+        operator fun invoke(cert: SignumCertificate) = TrustedRoot.Certificate(cert)
+        operator fun invoke(publicKey: CryptoPublicKey, name: Name? = null) = TrustedRoot.PublicKey(publicKey, name)
     }
 
 }
@@ -204,8 +203,8 @@ object TrustedRootSerializer : KSerializer<TrustedRoot> {
         value: TrustedRoot
     ) {
         val pem = when (value) {
-            is TrustedRoot.Certificate -> value.certificate.toKmpCertificate().asn1.toPem()
-            is TrustedRoot.PublicKey -> value.publicKey.toCryptoPublicKey().asn1.toPem()
+            is TrustedRoot.Certificate -> value.value.asn1.toPem()
+            is TrustedRoot.PublicKey -> value.value.asn1.toPem()
         }
         val caName = (value as? TrustedRoot.PublicKey)?.caName?.name
         val policy = value.androidValidityPolicy()
@@ -267,7 +266,7 @@ object TrustedRootSerializer : KSerializer<TrustedRoot> {
 
         val publicKey = strings.firstNotNullOfOrNull { pem ->
             catchingUnwrapped {
-                CryptoPublicKey.fromAsn1(pem).toJcaPublicKey()
+                CryptoPublicKey.fromAsn1(pem)
             }.getOrNull()
         }
         if (publicKey != null) {
@@ -275,13 +274,13 @@ object TrustedRootSerializer : KSerializer<TrustedRoot> {
                 catchingUnwrapped { CryptoPublicKey.fromAsn1(pem) }.isFailure
             }
             require(caNames.size <= 1) { "Public-key trust root may contain at most one CA name" }
-            return if (policy == null) TrustedRoot.PublicKey(publicKey, caNames.singleOrNull()?.let(::X500Principal))
-            else TrustedRoot.PublicKey(publicKey, caNames.singleOrNull()?.let(::X500Principal), policy)
+            return if (policy == null) TrustedRoot.PublicKey(publicKey, caNames.singleOrNull()?.let(Name::fromString))
+            else TrustedRoot.PublicKey(publicKey, caNames.singleOrNull()?.let(Name::fromString), policy)
         }
 
         val certificates = strings.mapNotNull { pem ->
             catchingUnwrapped {
-                Certificate.fromAsn1(pem).toJcaCertificateBlocking()
+                SignumCertificate.fromAsn1(pem)
             }.getOrNull()
         }
         require(certificates.size == 1 && strings.size == 1) { "Certificate trust root must contain exactly one PEM certificate" }

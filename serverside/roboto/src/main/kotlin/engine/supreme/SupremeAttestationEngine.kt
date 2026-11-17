@@ -2,11 +2,10 @@ package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.*
 import at.asitplus.awesn1.toBigInteger
-import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
-import java.security.cert.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
 import kotlin.time.Instant
 
 /**
@@ -16,16 +15,16 @@ import kotlin.time.Instant
 sealed class SupremeAttestationEngine(
     attestationConfiguration: AndroidAttestationConfiguration,
     verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
-) : AndroidAttestationEngine<AttestationKeyDescription, AuthorizationList, X509Certificate, KeyAttestationCertPath>(
+) : AndroidAttestationEngine<AttestationKeyDescription, AuthorizationList>(
     attestationConfiguration,
     verifyChallenge
 ) {
     override val certChainValidator = JvmCertChainValidator(attestationConfiguration)
 
-    override val List<X509Certificate>.attestationRecord: AttestationKeyDescription?
-        get() = closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }?.androidAttestationExtension
+    override val List<Certificate>.attestationRecord: AttestationKeyDescription?
+        get() = lastOrNull { it.hasAndroidKeyAttestationExtensionOid }?.androidAttestationExtension
 
-    override fun List<X509Certificate>.selectAttestedApplication() =
+    override fun List<Certificate>.selectAttestedApplication() =
         selectAttestedApplication(attestationConfiguration.applications)
 
     override val AttestationKeyDescription.attestationSecLevel: GeneralizedSecurityLevel

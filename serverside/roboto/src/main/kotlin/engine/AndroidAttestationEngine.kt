@@ -13,25 +13,24 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
-import java.util.*
+import at.asitplus.signum.indispensable.pki.Certificate
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
-import kotlin.time.toJavaInstant
 
 
-sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList, Cert, CertPath>(
+sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList>(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
     protected val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
 ) {
-    abstract val certChainValidator: CertChainValidator<Cert, CertPath>
+    abstract val certChainValidator: CertChainValidator
     val trustAnchors: Collection<TrustedRoot> by lazy { type.trustAnchors }
 
     protected abstract val type: EngineType<AttRecord, AuthList>
 
-    abstract val List<Cert>.attestationRecord: AttRecord?
+    abstract val List<Certificate>.attestationRecord: AttRecord?
 
-    protected abstract fun List<Cert>.selectAttestedApplication(): AndroidAttestationConfiguration.AppData?
+    protected abstract fun List<Certificate>.selectAttestedApplication(): AndroidAttestationConfiguration.AppData?
 
     protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
     protected abstract val AttRecord.challenge: ByteArray
@@ -74,13 +73,13 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
      */
     @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
     suspend fun verifyAttestation(
-        certificates: List<Cert>,
+        certificates: List<Certificate>,
         verificationDate: Instant,
         expectedChallenge: ByteArray,
         onRevocationLists: (List<ConfigWithList>) -> Unit = {},
     ): AttRecord {
         val actualVerificationDate =
-            Date.from((verificationDate + attestationConfiguration.verificationSecondsOffset.seconds).toJavaInstant())
+            verificationDate + attestationConfiguration.verificationSecondsOffset.seconds
 
 
         //limited, purpose-build extractor, hardened application id extractor is used here
@@ -108,7 +107,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
         }
         onRevocationLists(chainValidation.revocationLists)
-        val certPath = chainValidation.verdict.getOrThrow()
+        val chainSecurityLevel = chainValidation.verdict.getOrThrow()
 
         val parsedAttestationRecord = catchingUnwrapped {
             certificates.attestationRecord ?: throw IllegalArgumentException("No attestation record present")
@@ -136,14 +135,11 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             actualValue = receivedChallenge
         )
         parsedAttestationRecord.verifyAttestationTime(verificationDate)
-        with(certChainValidator) {
-
-            type.verifySecurityLevel(
-                certPath.generalizedSecurityLevel,
-                parsedAttestationRecord,
-                attestedApp.requireStrongBoxOverride
-            )
-        }
+        type.verifySecurityLevel(
+            chainSecurityLevel,
+            parsedAttestationRecord,
+            attestedApp.requireStrongBoxOverride,
+        )
 
         type.verifyBootStateAndSystemImage(
             parsedAttestationRecord,
