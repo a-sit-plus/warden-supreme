@@ -1,7 +1,6 @@
 package at.asitplus.warden.collector
 
-import at.asitplus.signum.Signum
-import kotlinx.serialization.decodeFromByteArray
+import at.asitplus.signum.indispensable.fromAsn1
 import at.asitplus.signum.indispensable.pki.Certificate
 import at.asitplus.warden.collector.shared.androidAttestationJson
 import kotlinx.serialization.json.JsonObject
@@ -15,5 +14,5 @@ import java.security.KeyStore
 actual fun localAttestationExtensionJson(alias: String): JsonObject? = runCatching {
     val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
     val leaf = keyStore.getCertificateChain(alias)?.firstOrNull() ?: return@runCatching null
-    Signum.Der.decodeFromByteArray<Certificate>(leaf.encoded).androidAttestationJson()
+    Certificate.fromAsn1(leaf.encoded).androidAttestationJson()
 }.getOrNull()

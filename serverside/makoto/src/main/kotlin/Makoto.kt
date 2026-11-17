@@ -1,8 +1,8 @@
 package at.asitplus.attestation
 
 
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.Signum
-import kotlinx.serialization.encodeToByteArray
 
 import at.asitplus.signum.indispensable.sign.*
 
@@ -575,7 +575,7 @@ class Makoto
             }
 
             is AndroidKeystoreAttestation -> verifyAttestationAndroid(
-                attestationProof.certificateChain.map { Signum.Der.encodeToByteArray(it) },
+                attestationProof.certificateChain.map { it.asn1.toDer() },
                 challenge
             ).let {
                 when (it) {

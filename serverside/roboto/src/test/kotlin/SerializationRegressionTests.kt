@@ -1,7 +1,6 @@
 package at.asitplus.attestation.android
 
-import at.asitplus.signum.Signum
-import at.asitplus.signum.indispensable.decodeFromPem
+import at.asitplus.signum.indispensable.fromAsn1
 
 import at.asitplus.attestation.wardenVersion
 import at.asitplus.signum.indispensable.CryptoPublicKey
@@ -125,11 +124,11 @@ val SerializationRegressionTests by matrixSuite {
                     fixture.enforceFactoryProvisionedChainValidity
             when (root) {
                 is TrustedRoot.PublicKey -> root.publicKey.encoded.contentEquals(
-                    Signum.Der.decodeFromPem<CryptoPublicKey>(fixture.expectedPem).toJcaPublicKey().encoded
+                    CryptoPublicKey.fromAsn1(fixture.expectedPem).toJcaPublicKey().encoded
                 ) shouldBe true
 
                 is TrustedRoot.Certificate -> root.certificate.encoded.contentEquals(
-                    Signum.Der.decodeFromPem<Certificate>(fixture.expectedPem).toJcaCertificateBlocking().encoded
+                    Certificate.fromAsn1(fixture.expectedPem).toJcaCertificateBlocking().encoded
                 ) shouldBe true
             }
         }

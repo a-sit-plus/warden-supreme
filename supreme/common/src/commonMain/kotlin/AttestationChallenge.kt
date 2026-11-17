@@ -1,14 +1,13 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.pki.value
 
 import at.asitplus.KmmResult
-import at.asitplus.attestation.supreme.AttestationChallenge.Companion.CURRENT_VERSION
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.awesn1.*
 import at.asitplus.awesn1.encoding.*
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.io.ByteArrayBase64UrlSerializer
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.CertificationRequest
@@ -309,7 +308,7 @@ fun TbsCertificationRequest.attestationStatementForChallenge(challenge: Attestat
  */
 fun TbsCertificationRequest.attestationStatementForOid(oid: ObjectIdentifier): KmmResult<Attestation> =
     catching {
-        attributes.find { it.oid == oid }?.value?.singleOrNull()
+        attributes.find { it.oid == oid }?.asn1?.toRepresentation()?.value?.singleOrNull()
             ?.let {
                 it.asPrimitive()
                 val json = Asn1String.decodeFromTlv(it.asPrimitive()).value
@@ -372,14 +371,14 @@ val TbsCertificationRequest.nonce: KmmResult<ByteArray>
             subjectName.relativeDistinguishedNames.mapNotNull { name -> name.attrsAndValues.find { attributeTypeAndValue -> attributeTypeAndValue.oid == KnownOIDs.serialNumber } }
         if (noncesRecovered.isEmpty()) throw Asn1StructuralException("No nonce present")
         else if (noncesRecovered.size != 1) throw Asn1StructuralException("More than one nonce present!")
-        noncesRecovered.first().value.asPrimitive().decodeToString().hexToByteArray()
+        noncesRecovered.first().asn1.toRepresentation().value.asPrimitive().decodeToString().hexToByteArray()
     }
 
 /**
  * Tries to extract a device name from a TBS CSR, given it is present as an attribute with [oid]
  */
 fun TbsCertificationRequest.deviceNameForOid(oid: ObjectIdentifier): String? = catchingUnwrapped {
-    attributes.find { it.oid == oid }?.value?.singleOrNull()?.asPrimitive()
+    attributes.find { it.oid == oid }?.asn1?.toRepresentation()?.value?.singleOrNull()?.asPrimitive()
         ?.decodeToUtf8String()?.value
 }.getOrNull()
 

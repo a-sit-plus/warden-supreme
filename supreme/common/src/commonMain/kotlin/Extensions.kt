@@ -1,6 +1,5 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.pki.value
 
 import at.asitplus.attestation.android.androidAttestationExtension
 import at.asitplus.catchingUnwrapped
@@ -9,7 +8,6 @@ import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.Certificate
-import at.asitplus.signum.indispensable.digest.digest
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor

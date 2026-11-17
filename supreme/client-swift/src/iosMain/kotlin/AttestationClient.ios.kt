@@ -1,7 +1,7 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.Signum
-import kotlinx.serialization.encodeToByteArray
 import at.asitplus.signum.HazardousMaterials
 import at.asitplus.signum.internals.giveToCF
 import at.asitplus.signum.internals.toNSData
@@ -136,7 +136,7 @@ class KotlinAttestationClient private constructor(pins: List<KotlinPinnedCertifi
             is AttestationResponse.Success -> {
                 // ponytail: certificates are public data; UserDefaults avoids a second Keychain schema.
                 NSUserDefaults.standardUserDefaults.setObject(
-                    response.certificateChain.map { Signum.Der.encodeToByteArray(it).toNSData() },
+                    response.certificateChain.map { it.asn1.toDer().toNSData() },
                     certificateKey(alias),
                 )
                 KotlinIosAttestationResult(

@@ -4,8 +4,6 @@ package at.asitplus.attestation.generator
 
 import at.asitplus.signum.Signum
 import kotlinx.serialization.encodeToByteArray
-import at.asitplus.signum.indispensable.decodeFromPem
-import at.asitplus.signum.indispensable.encodeToPem
 
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.signum.indispensable.CryptoPrivateKey
@@ -13,6 +11,7 @@ import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.digest.Digest
 import at.asitplus.signum.indispensable.sign.SignatureAlgorithm
 import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.Asn1Integer
 import at.asitplus.awesn1.Asn1Primitive
 import at.asitplus.awesn1.Asn1String
 import at.asitplus.awesn1.Asn1Time
@@ -23,16 +22,19 @@ import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
 import at.asitplus.signum.indispensable.pki.Certificate
-import at.asitplus.signum.indispensable.pki.X509CertificateExtension
 import at.asitplus.signum.indispensable.digest.digest
 import at.asitplus.signum.indispensable.sign.sign
 import at.asitplus.signum.indispensable.sign.Signer
 import at.asitplus.signum.indispensable.sign.signerFor
 import at.asitplus.signum.supreme.installSupreme
-import at.asitplus.signum.indispensable.pki.X500Name
 import at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue
 import at.asitplus.awesn1.encoding.parse
+import at.asitplus.awesn1.toBigInteger
 import at.asitplus.signum.dsl.ec
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.pki.CertificateExtension
+import at.asitplus.signum.indispensable.pki.Name
 import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -120,8 +122,8 @@ data class IssuedAttestation(
     val leafCertificate: Certificate get() = certificateChain.first()
     val rootCertificate: Certificate get() = certificateChain.last()
 
-    fun chainPem(): String = certificateChain.joinToString("\n") { Signum.Der.encodeToPem(it) }
-    fun leafPrivateKeyPem(): String = runBlocking { Signum.Der.encodeToPem(leafSigner.exportPrivateKey()) }
+    fun chainPem(): String = certificateChain.joinToString("\n") { it.asn1.toPem() }
+    fun leafPrivateKeyPem(): String = runBlocking { leafSigner.exportPrivateKey().asn1.toPem() }
 }
 
 /** Certificate validity: not-before and not-after. */
@@ -140,7 +142,7 @@ class CertifiedKey(val certificate: Certificate, val signer: Signer.WithExportab
         subjectKey: CryptoPublicKey,
         validity: Validity,
         role: Role,
-        extensions: List<X509CertificateExtension> = emptyList(),
+        extensions: List<CertificateExtension> = emptyList(),
     ): Certificate = issueCertificate(
         issuer = this.subject,
         subject = subject,
@@ -161,8 +163,8 @@ class CertifiedKey(val certificate: Certificate, val signer: Signer.WithExportab
 
     /** This key as reusable configuration. */
     fun export() = RootSpec(
-        certificatePem = Signum.Der.encodeToPem(certificate),
-        privateKeyPkcs8Pem = runBlocking { Signum.Der.encodeToPem(signer.exportPrivateKey()) },
+        certificatePem = certificate.asn1.toPem(),
+        privateKeyPkcs8Pem = runBlocking { signer.exportPrivateKey().asn1.toPem() },
     )
 }
 
@@ -212,8 +214,8 @@ private val TITLE = ObjectIdentifier("2.5.4.12")
 private fun randomHex() = Random.nextBytes(16).toHexString()
 
 private fun RootSpec.load(): CertifiedKey {
-    val certificate = Signum.Der.decodeFromPem<Certificate>(certificatePem)
-    val key = Signum.Der.decodeFromPem<CryptoPrivateKey>(privateKeyPkcs8Pem) as? CryptoPrivateKey.WithPublicKey
+    val certificate = Certificate.fromAsn1(certificatePem)
+    val key = CryptoPrivateKey.fromAsn1(privateKeyPkcs8Pem) as? CryptoPrivateKey.WithPublicKey
         ?: error("Imported root private key carries no public key")
     require(key.publicKey == certificate.publicKey) {
         "Imported root certificate does not match its private key"
@@ -250,7 +252,7 @@ sealed interface Role {
 
     data object EndEntity : Role
 
-    fun extensions(subjectKey: CryptoPublicKey, issuerKey: CryptoPublicKey): List<X509CertificateExtension> =
+    fun extensions(subjectKey: CryptoPublicKey, issuerKey: CryptoPublicKey): List<CertificateExtension> =
         listOf(subjectKeyIdentifier(subjectKey), authorityKeyIdentifier(issuerKey)) + when (this) {
             is CertificateAuthority -> listOf(basicConstraints(pathLength), keyUsage(KEY_CERT_SIGN, CRL_SIGN))
             EndEntity -> listOf(keyUsage(DIGITAL_SIGNATURE))
@@ -288,14 +290,14 @@ private fun authorityKeyIdentifier(issuerKey: CryptoPublicKey) = extension("2.5.
 private fun CryptoPublicKey.keyIdentifier(): ByteArray {
     // SubjectPublicKeyInfo ::= SEQUENCE { algorithm, subjectPublicKey BIT STRING }; the BIT STRING's
     // content starts with its count of unused bits, which is not part of the key.
-    val subjectPublicKey = at.asitplus.awesn1.Asn1Element.parse(Signum.Der.encodeToByteArray(this)).asSequence().children[1].asPrimitive().content
+    val subjectPublicKey = at.asitplus.awesn1.Asn1Element.parse(asn1.toDer()).asSequence().children[1].asPrimitive().content
     return runBlocking { Digest.SHA1.digest(subjectPublicKey.copyOfRange(1, subjectPublicKey.size)) }
 }
 
 private fun extension(oid: String, critical: Boolean = false, value: () -> Asn1Element) =
-    X509CertificateExtension(ObjectIdentifier(oid), critical, Asn1.OctetStringEncapsulating { +value() })
+    CertificateExtension(ObjectIdentifier(oid), critical, Asn1.OctetStringEncapsulating { +value() })
 
-internal fun AttestationKeyDescription.asCertificateExtension() = X509CertificateExtension(
+internal fun AttestationKeyDescription.asCertificateExtension() = CertificateExtension(
     AttestationKeyDescription.oid,
     false,
     Asn1.OctetStringEncapsulating { +this@asCertificateExtension },
@@ -323,17 +325,17 @@ private fun issueCertificate(
     subjectKey: CryptoPublicKey,
     signer: Signer,
     validity: Validity,
-    extensions: List<X509CertificateExtension> = emptyList(),
+    extensions: List<CertificateExtension> = emptyList(),
 ): Certificate = runBlocking {
     signer.sign(
         TbsCertificate(
-            serialNumber = at.asitplus.awesn1.Asn1Integer.fromUnsignedByteArray(randomSerialNumber()),
+            serialNumber = Asn1Integer.fromUnsignedByteArray(randomSerialNumber()).toBigInteger(),
             publicKey = subjectKey,
             signatureAlgorithm = signer.signatureAlgorithm,
             validFrom = validity.first.instant,
             validUntil = validity.second.instant,
-            issuerName = X500Name(issuer),
-            subjectName = X500Name(subject),
+            issuerName = Name(issuer),
+            subjectName = Name(subject),
             extensions = extensions,
         )
     )

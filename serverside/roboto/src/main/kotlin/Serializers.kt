@@ -15,15 +15,15 @@ import java.util.*
 
 object PubKeyBasePemSerializer : TransformingSerializerTemplate<java.security.PublicKey, String>(
     parent = String.serializer(),
-    encodeAs = { Signum.Der.encodeToPem(it.toCryptoPublicKey()) },
-    decodeAs = { Signum.Der.decodeFromPem<CryptoPublicKey>(it).toJcaPublicKey() }
+    encodeAs = { it.toCryptoPublicKey().asn1.toPem() },
+    decodeAs = { CryptoPublicKey.fromAsn1(it).toJcaPublicKey() }
 )
 
 object CertPemSerializer : TransformingSerializerTemplate<java.security.cert.X509Certificate, String>(
     parent = String.serializer(),
-    encodeAs = { Signum.Der.encodeToPem(it.toKmpCertificate().getOrThrow()) },
+    encodeAs = { it.toKmpCertificate().asn1.toPem() },
     decodeAs = {
-        Signum.Der.decodeFromPem<at.asitplus.signum.indispensable.pki.Certificate>(it).toJcaCertificateBlocking()
+       at.asitplus.signum.indispensable.pki.Certificate.fromAsn1(it).toJcaCertificateBlocking()
     }
 )
 

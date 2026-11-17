@@ -1,29 +1,26 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.pki.X500Name
-import at.asitplus.signum.Signum
-
-import at.asitplus.signum.indispensable.pki.value
-
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.parseHex
-import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.Asn1Integer
 import at.asitplus.awesn1.Asn1String
 import at.asitplus.awesn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.decodeFromPem
-import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
-import at.asitplus.signum.indispensable.pki.CertificationRequest
+import at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue
+import at.asitplus.awesn1.toBigInteger
+import at.asitplus.signum.dsl.ec
+import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.pki.Name
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
-import at.asitplus.signum.indispensable.toJcaPublicKey
-import at.asitplus.signum.indispensable.sign.sign
-import at.asitplus.signum.dsl.ec
-import at.asitplus.awesn1.Asn1Integer
 import at.asitplus.signum.indispensable.sign.Signer
+import at.asitplus.signum.indispensable.sign.sign
+import at.asitplus.signum.indispensable.toJcaPublicKey
 import at.asitplus.testballoon.matrix.matrixConfig
 import at.asitplus.testballoon.matrix.matrixSuite
 import de.infix.testBalloon.framework.core.TestConfig
@@ -54,7 +51,10 @@ private val authenticationScenarios = mapOf(
     "signed-optional-present" to AuthenticationScenario(DataAuthentication.Signature, listOf("required", 42)),
     "signed-optional-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf("required", null)),
     "hashed-optional-present" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf("required", 42)),
-    "hashed-optional-omitted" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf("required", null)),
+    "hashed-optional-omitted" to AuthenticationScenario(
+        DataAuthentication.Hash(Digest.SHA256),
+        listOf("required", null)
+    ),
     "signed-required-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf(null, 42)),
     "hashed-required-omitted" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf(null, 42)),
     "signed-all-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf(null, null)),
@@ -93,7 +93,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                         )
                     ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(
                         TrustedRoot.PublicKey(
-                            Signum.Der.decodeFromPem<CryptoPublicKey>(
+                            CryptoPublicKey.fromAsn1(
                                 "-----BEGIN PUBLIC KEY-----\n" +
                                         "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
                                         "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
@@ -133,7 +133,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                     val actual = toBeAttestedAttributes?.let { requested ->
                         val tbsCsr = received.tbsCsr
                         val encoded = tbsCsr.attributes.singleOrNull { it.oid == requested.oid }
-                            ?.value?.singleOrNull()?.asSequence()
+                            ?.asn1?.toRepresentation()?.value?.singleOrNull()?.asSequence()
                         AttestedAttributes(encoded).parsedAttributesBy(this)
                     }
                     if (actual == scenario.expectedAttributes) null
@@ -148,16 +148,19 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                     Signer.Ephemeral { ec { } }.let { signer ->
                         signer.sign(
                             TbsCertificate(
-                                serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19)),
+                                serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19))
+                                    .toBigInteger(),
                                 publicKey = tbsCsr.publicKey,
                                 signatureAlgorithm = signer.signatureAlgorithm,
                                 validFrom = Clock.System.now(),
                                 validUntil = Clock.System.now() + 10.days,
-                                issuerName = X500Name(listOf(
-                                    RelativeDistinguishedName(
-                                        at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme"))
+                                issuerName = Name(
+                                    listOf(
+                                        RelativeDistinguishedName(
+                                            X500AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme"))
+                                        )
                                     )
-                                )),
+                                ),
                                 subjectName = tbsCsr.subjectName,
                             )
                         ).let { listOf(it) }

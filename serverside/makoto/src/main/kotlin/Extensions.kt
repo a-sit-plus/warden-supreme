@@ -2,10 +2,7 @@
 
 package at.asitplus.attestation
 
-import at.asitplus.signum.Signum
 import kotlinx.serialization.encodeToByteArray
-import kotlinx.serialization.decodeFromByteArray
-import at.asitplus.awesn1.serialization.decodeFromTlv
 
 
 import at.asitplus.signum.indispensable.*
@@ -131,7 +128,7 @@ data class CanonicalIosAttestation(val cert: X509Certificate, val receipt: Recei
 
     override fun encodeToTlv() = Asn1.Sequence {
         +Asn1Element.parse(cert.encoded)
-        +receipt.p7.encodeToAsn1OctetStringPrimitive()
+        +Asn1OctetString(receipt.p7)
         iosVersion?.let { +Asn1String.UTF8(it) }
     }
 
@@ -171,7 +168,7 @@ data class CanonicalIosAttestation(val cert: X509Certificate, val receipt: Recei
 
     companion object : Asn1Decodable<Asn1Sequence, CanonicalIosAttestation> {
         override fun doDecode(src: Asn1Sequence): CanonicalIosAttestation = src.decodeAs {
-            val cert = Signum.Der.decodeFromTlv<at.asitplus.signum.indispensable.pki.Certificate>(next())
+            val cert = at.asitplus.signum.indispensable.pki.Certificate.fromAsn1(next())
 
             val receipt = next().asOctetString().content.let {
                 Receipt(Receipt.Payload.parse((it.readAsSignedData())), it)
@@ -196,7 +193,7 @@ object ValidatedAttestationSerializer : KSerializer<ValidatedAttestation> {
         val encoder = encoder.beginCollection(descriptor, if (value.iOSVersion == null) 2 else 3)
         encoder.encodeSerializableElement(
             X509CertificateBase64Serializer.descriptor, 0,
-            X509CertificateBase64Serializer, value.certificate.toKmpCertificate().getOrThrow()
+            X509CertificateBase64Serializer, value.certificate.toKmpCertificate()
         )
         encoder.encodeSerializableElement(
             ByteArrayBase64Serializer.descriptor,
@@ -233,14 +230,14 @@ object ValidatedAttestationSerializer : KSerializer<ValidatedAttestation> {
 internal fun PublicKey.transcodeToAllFormats() = toCryptoPublicKey().let {
     when (it) {
         is CryptoPublicKey.EC -> listOf(
-            Signum.Der.encodeToByteArray(it),
+            it.asn1.toDer(),
             it.toAnsiX963Encoded(useCompressed = it.preferCompressedRepresentation),
             it.toAnsiX963Encoded(useCompressed = !it.preferCompressedRepresentation),
             it.didEncoded.encodeToByteArray()
         )
 
         is CryptoPublicKey.RSA -> listOf(
-            Signum.Der.encodeToByteArray(it),
+            it.asn1.toDer(),
             it.iosEncoded,
             it.didEncoded.encodeToByteArray()
         )
@@ -269,7 +266,7 @@ internal fun kotlin.time.Instant.toJavaDate() = Date.from(toJavaInstant())
 
 fun ByteArray.parseToPublicKey(): PublicKey =
     try {
-        Signum.Der.decodeFromByteArray<CryptoPublicKey>(this).toJcaPublicKey()
+        CryptoPublicKey.fromAsn1(this).toJcaPublicKey()
     } catch (e: Throwable) {
         when (firstOrNull()?.toUByte()) {
             ANSIECPrefix.UNCOMPRESSED.prefixUByte -> EcdsaPublicKey.fromIosEncoded(this)

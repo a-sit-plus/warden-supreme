@@ -2,10 +2,7 @@
 
 package at.asitplus.attestation.generator
 
-import at.asitplus.signum.Signum
-import kotlinx.serialization.encodeToByteArray
-
-import at.asitplus.signum.indispensable.pki.value
+import at.asitplus.signum.indispensable.asn1
 
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.AuthorizationList
@@ -459,7 +456,7 @@ private val at.asitplus.signum.indispensable.pki.Certificate.pathLength: Int?
 
 private val at.asitplus.signum.indispensable.pki.Certificate.asJava: java.security.cert.X509Certificate
     get() = CertificateFactory.getInstance("X.509")
-        .generateCertificate(Signum.Der.encodeToByteArray(this).inputStream()) as java.security.cert.X509Certificate
+        .generateCertificate(this.asn1.toDer().inputStream()) as java.security.cert.X509Certificate
 
 /** Full RFC 5280 path validation by the JVM: signatures, basic constraints, path length, key usage. */
 private fun IssuedAttestation.validateStrictPkix(at: Instant) {

@@ -1,13 +1,13 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.fromAsn1
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.awesn1.*
 import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.awesn1.encoding.decodeToInt
-import at.asitplus.signum.Signum
 import at.asitplus.signum.indispensable.pki.*
 import at.asitplus.awesn1.serialization.encodeToTlv
-import at.asitplus.awesn1.serialization.decodeFromTlv
+import at.asitplus.signum.indispensable.asn1
 
 /**
  * Canonical DER structure authenticated by [DataAuthentication.Hash].
@@ -17,7 +17,7 @@ import at.asitplus.awesn1.serialization.decodeFromTlv
  * inverse operation. This makes the mapping explicit and keeps hash construction aligned with the actual TBS CSR.
  */
 data class AttestationHashInput internal constructor(
-    val version: Int = 0,
+    val version: Int,
     val subjectName: List<RelativeDistinguishedName>,
     val attributes: List<CsrAttribute> = emptyList(),
 ) : Asn1Encodable<Asn1Sequence> {
@@ -26,23 +26,22 @@ data class AttestationHashInput internal constructor(
 
     constructor(
         subjectName: List<RelativeDistinguishedName>,
-        extensions: List<X509CertificateExtension> = emptyList(),
-        version: Int = 0,
+        extensions: List<CertificateExtension> = emptyList(),
         attributes: List<CsrAttribute> = emptyList(),
     ) : this(
-        version,
+        0,
         subjectName,
         extensions.ifEmpty { null }?.let { extns ->
             attributes + CsrAttribute(
                 KnownOIDs.extensionRequest,
-                Asn1.Sequence { extns.forEach { +Signum.Der.encodeToTlv(it) } })
+                Asn1.Sequence { extns.forEach { add(it.asn1.toTlv()) } })
         } ?: attributes,
     )
 
     override fun encodeToTlv() = Asn1.Sequence {
-        +Asn1.Int(version)
-        +Asn1.Sequence { subjectName.forEach { +Signum.Der.encodeToTlv(it) } }
-        +(Asn1.SetOf { attributes.forEach { +Signum.Der.encodeToTlv(it) } } withImplicitTag 0u)
+        add(Asn1.Int(version))
+        add(Asn1.Sequence { subjectName.forEach { add(it.asn1.toTlv()) } })
+        add(Asn1.SetOf { attributes.forEach { add(it.asn1.toTlv()) } } withImplicitTag 0u)
     }
 
     /** Completes this hash input with the attested [publicKey] and exactly one [proof] attribute. */
@@ -54,22 +53,22 @@ data class AttestationHashInput internal constructor(
             "Attestation proof attribute already present for OID ${proof.oid}"
         }
         return TbsCertificationRequest(
-            X500Name(subjectName),
+            Name(subjectName),
             publicKey,
-            Asn1.SetOf { (attributes + proof).forEach { +Signum.Der.encodeToTlv(it) } }
-                .map { Signum.Der.decodeFromTlv<CsrAttribute>(it) },
+            Asn1.SetOf { (attributes + proof).forEach { add(it.asn1.toTlv()) } }
+                .map { CsrAttribute.fromAsn1(it) },
         )
     }
 
     companion object : Asn1Decodable<Asn1Sequence, AttestationHashInput> {
         override fun doDecode(src: Asn1Sequence) = src.decodeRethrowing {
             val version = next().asPrimitive().decodeToInt()
-            val subjectName = next().asSequence().map { Signum.Der.decodeFromTlv<RelativeDistinguishedName>(it.asSet()) }
+            val subjectName = next().asSequence().map { RelativeDistinguishedName.fromAsn1(it.asSet()) }
             val taggedAttributes = next().asStructure()
             if (taggedAttributes.tag.tagValue != 0uL || taggedAttributes.tag.tagClass != TagClass.CONTEXT_SPECIFIC) {
                 throw Asn1StructuralException("Expected implicitly tagged TBS CSR attributes at [0]")
             }
-            val attributes = taggedAttributes.map { Signum.Der.decodeFromTlv<CsrAttribute>(it.asSequence()) }
+            val attributes = taggedAttributes.map { CsrAttribute.fromAsn1(it.asSequence()) }
             if (hasNext()) throw Asn1StructuralException("Superfluous structure in attestation hash input")
             AttestationHashInput(version, subjectName, attributes)
         }

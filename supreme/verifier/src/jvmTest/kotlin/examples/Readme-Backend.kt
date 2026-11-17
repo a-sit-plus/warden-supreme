@@ -9,6 +9,7 @@ import at.asitplus.signum.indispensable.sign.sign
 import at.asitplus.signum.supreme.installSupreme
 import at.asitplus.signum.dsl.ec
 import at.asitplus.awesn1.Asn1Integer
+import at.asitplus.awesn1.toBigInteger
 import at.asitplus.signum.indispensable.sign.Signer
 import examples.docs.config.minimal.verifier
 import io.ktor.serialization.kotlinx.json.*
@@ -32,12 +33,12 @@ val signer = kotlinx.coroutines.runBlocking {
     Signer.Ephemeral { ec { } }
 }
 
-var issuerName = X500Name(listOf(
+var issuerName = Name(listOf(
     RelativeDistinguishedName(
         at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue.CommonName("Supreme Verifier")
     )
 ))
-var subjectName = X500Name(listOf(
+var subjectName = Name(listOf(
     RelativeDistinguishedName(
         at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue.CommonName("Supreme Client")
     )
@@ -73,7 +74,7 @@ val server = embeddedServer(Netty, port = 8080) {
                 val tbsCsr = received.tbsCsr
              /*(7)!*/val leafCertificate = signer.sign(
                  /*(8)!*/TbsCertificate(
-                      /*(9)!*/serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19)),
+                      /*(9)!*/serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19)).toBigInteger(),
                       /*(10)!*/publicKey = tbsCsr.publicKey,
                          signatureAlgorithm = signer.signatureAlgorithm,
                          validFrom = Clock.System.now(),

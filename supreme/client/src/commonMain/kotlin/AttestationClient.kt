@@ -1,15 +1,17 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.Signum
 import at.asitplus.signum.supreme.installSupreme
 import at.asitplus.awesn1.encoding.encodeToDer
-import kotlinx.serialization.encodeToByteArray
 
 import at.asitplus.KmmResult
 import at.asitplus.attestation.supreme.AttestationChallenge.Companion.CURRENT_VERSION
 import at.asitplus.catching
 import at.asitplus.awesn1.Asn1String
 import at.asitplus.awesn1.KnownOIDs
+import at.asitplus.awesn1.crypto.pki.Pkcs10CsrAttribute
+import at.asitplus.awesn1.crypto.pki.X509CertificateExtension
 import at.asitplus.awesn1.serialNumber
 import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.*
@@ -100,8 +102,8 @@ open class AttestationClient(
             contentType(ContentType.Application.OctetStream)
             setBody(
                 when (attestationProof) {
-                    is AttestationProof.Signed -> Signum.Der.encodeToByteArray(attestationProof.data)
-                    is AttestationProof.Hashed -> Signum.Der.encodeToByteArray(attestationProof.data)
+                    is AttestationProof.Signed -> attestationProof.data.asn1.toDer()
+                    is AttestationProof.Hashed -> attestationProof.data.asn1.toDer()
                 }
             )
         }.boundedPayload(maxAttestationPayloadBytes))
@@ -163,7 +165,7 @@ suspend fun AttestationClient.performAttestationFlow(
     alias: String, fetchChallengeEndpoint: Url,
     authPromptMessage: String? = null,
     authPromptCancelText: String? = null,
-    additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
+    additionalCsrExtensions: List<CertificateExtension> = listOf(),
     additionalCsrAttributes: List<CsrAttribute> = listOf(),
     toBeAttestedAttributes: (List<AttestationChallenge.AttributeAttestationDescriptor>) -> List<Primitive>,
 ): AttestationResponse {
@@ -186,7 +188,7 @@ suspend fun AttestationClient.performAttestationFlow(
     fetchChallengeEndpoint: Url,
     authPromptMessage: String? = null,
     authPromptCancelText: String? = null,
-    additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
+    additionalCsrExtensions: List<CertificateExtension> = listOf(),
     additionalCsrAttributes: List<CsrAttribute> = listOf(),
 ): AttestationResponse {
     val challenge = getChallenge(fetchChallengeEndpoint).getOrThrow()
@@ -242,7 +244,7 @@ suspend fun AttestationChallenge.createAttestationProof(
     alias: String,
     authPromptMessage: String? = null,
     authPromptCancelText: String? = null,
-    additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
+    additionalCsrExtensions: List<CertificateExtension> = listOf(),
     additionalCsrAttributes: List<CsrAttribute> = listOf(),
     attestAttributes: (List<AttestationChallenge.AttributeAttestationDescriptor>) -> List<Primitive>,
 ): KmmResult<AttestationProof> {
@@ -343,7 +345,7 @@ suspend fun AttestationChallenge.createAttestationProof(
     alias: String,
     authPromptMessage: String? = null,
     authPromptCancelText: String? = null,
-    additionalCsrExtensions: List<X509CertificateExtension> = listOf(),
+    additionalCsrExtensions: List<CertificateExtension> = listOf(),
     additionalCsrAttributes: List<CsrAttribute> = listOf(),
 ): KmmResult<CertificationRequest> = catching {
     require(toBeAttestedAttributes == null) {
@@ -380,7 +382,7 @@ suspend fun AttestationChallenge.createAttestationProof(
 suspend fun Signer.Attestable<*>.createCsr(
     challenge: AttestationChallenge,
     subjectName: List<RelativeDistinguishedName> = listOf(),
-    additionalExtensions: List<X509CertificateExtension> = listOf(),
+    additionalExtensions: List<CertificateExtension> = listOf(),
     additionalAttributes: List<CsrAttribute> = listOf(),
 ): KmmResult<CertificationRequest> = catching {
     sign(createTbsCsr(challenge, subjectName, additionalExtensions, additionalAttributes).getOrThrow())
@@ -393,7 +395,7 @@ suspend fun Signer.Attestable<*>.createCsr(
 fun Signer.Attestable<*>.createTbsCsr(
     challenge: AttestationChallenge,
     subjectName: List<RelativeDistinguishedName> = listOf(),
-    additionalExtensions: List<X509CertificateExtension> = listOf(),
+    additionalExtensions: List<CertificateExtension> = listOf(),
     additionalAttributes: List<CsrAttribute> = listOf(),
 ): KmmResult<TbsCertificationRequest> = catching {
     createTbsCsr(

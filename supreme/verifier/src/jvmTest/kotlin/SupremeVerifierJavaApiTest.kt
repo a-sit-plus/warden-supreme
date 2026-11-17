@@ -76,7 +76,7 @@ val SupremeVerifierJavaApiTest by matrixSuite(matrixConfig { execution = Executi
             documentedVerifier,
             Hashed(
                 TbsCertificationRequest(
-                    subjectName = at.asitplus.signum.indispensable.pki.X500Name.EMPTY,
+                    subjectName = at.asitplus.signum.indispensable.pki.Name.EMPTY,
                     publicKey = generateRsaKeyPair(1024).public.toCryptoPublicKey(),
                     attributes = emptyList(),
                 ),

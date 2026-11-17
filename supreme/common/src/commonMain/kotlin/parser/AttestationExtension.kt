@@ -1,13 +1,12 @@
 package at.asitplus.attestation.android
 
-import at.asitplus.signum.indispensable.pki.value
 
 import at.asitplus.catchingUnwrapped
 import at.asitplus.awesn1.*
 import at.asitplus.awesn1.encoding.*
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.Certificate
-import at.asitplus.signum.indispensable.pki.asn1Representation
 
 
 interface AttestationExtension<A: AttestationExtension.AuthList> {
@@ -188,10 +187,10 @@ data class AttestationKeyDescription(
  * Never throws.
  */
 val Certificate.androidAttestationExtension: AttestationKeyDescription?
-    get() = tbsCertificate.extensions?.firstOrNull { it.oid == AttestationKeyDescription.oid }
+    get() = tbsCertificate.extensions.firstOrNull { it.oid == AttestationKeyDescription.oid }
         ?.let {
             catchingUnwrapped {
-                val children = Asn1OctetString(requireNotNull(it.asn1Representation).value).asEncapsulatingOctetString().children
+                val children = Asn1OctetString(requireNotNull(it.asn1.toRepresentation()).value).asEncapsulatingOctetString().children
                 require(children.size == 1)
                 AttestationKeyDescription.decodeFromTlv(children.first().asSequence())
             }.getOrElse {

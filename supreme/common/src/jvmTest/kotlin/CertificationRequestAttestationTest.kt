@@ -1,3 +1,5 @@
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.KmmResult
 import at.asitplus.attestation.supreme.*
 import at.asitplus.attestation.supreme.AttestationProof.Hashed
@@ -7,12 +9,9 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.CryptoSignature
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.Signum
 import at.asitplus.signum.indispensable.sign.SignatureAlgorithm
 import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.awesn1.serialization.encodeToTlv
-import kotlinx.serialization.encodeToByteArray
-import kotlinx.serialization.decodeFromByteArray
 import at.asitplus.awesn1.Asn1String
 import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.awesn1.encoding.Asn1
@@ -35,8 +34,7 @@ private val publicKey = CryptoPublicKey.EC.fromUncompressed(
 
 private data class RoundTripCase(
     val subjectName: List<RelativeDistinguishedName>,
-    val extensions: List<X509CertificateExtension>,
-    val version: Int,
+    val extensions: List<CertificateExtension>,
     val attributes: List<CsrAttribute>,
     val proof: CsrAttribute,
 )
@@ -56,7 +54,7 @@ private val subjectNameArb = Arb.list(
 )
 private val extensionsArb = Arb.list(Arb.bind(bytesArb, Arb.boolean(), ::Pair), 0..3).map { values ->
     values.mapIndexed { index, (value, critical) ->
-        X509CertificateExtension(
+        CertificateExtension(
             ObjectIdentifier("1.3.6.1.4.1.60387.2.${index + 1}"),
             critical,
             Asn1.OctetString(value),
@@ -74,14 +72,12 @@ private val attributesArb = Arb.list(Arb.list(stringArb, 1..3), 0..4).map { valu
 private val roundTripArb = Arb.bind(
     subjectNameArb,
     extensionsArb,
-    Arb.constant(0),
     attributesArb,
     stringArb,
-) { subjectName, extensions, version, attributes, proof ->
+) { subjectName, extensions, attributes, proof ->
     RoundTripCase(
         subjectName,
         extensions,
-        version,
         attributes,
         CsrAttribute(proofOid, Asn1String.UTF8(proof).encodeToTlv()),
     )
@@ -93,43 +89,42 @@ val CertificationRequestAttestationTest by matrixSuite {
             val hashInput = AttestationHashInput(
                 subjectName = subjectName,
                 extensions = extensions,
-                version = version,
                 attributes = attributes,
             )
             val received = hashInput.toTbsCsr(publicKey, proof)
-            Signum.Der.encodeToTlv(received).asSequence().children[3].asStructure().toList() shouldBe
-                    Asn1.SetOf { (hashInput.attributes + proof).forEach { +Signum.Der.encodeToTlv(it) } }.toList()
+            received.asn1.toTlv().asSequence().children[3].asStructure().toList() shouldBe
+                    Asn1.SetOf { (hashInput.attributes + proof).forEach { +it.asn1.toTlv() } }.toList()
             val decodedHashInput = AttestationHashInput.decodeFromTlv(hashInput.encodeToTlv())
             decodedHashInput.encodeToDer().contentEquals(hashInput.encodeToDer()) shouldBe true
             received.toHashInput(proofOid).encodeToDer().contentEquals(hashInput.encodeToDer()) shouldBe true
-            Signum.Der.encodeToByteArray(received.toHashInput(proofOid).toTbsCsr(received.publicKey, proof))
-                .contentEquals(Signum.Der.encodeToByteArray(received)) shouldBe true
+            received.toHashInput(proofOid).toTbsCsr(received.publicKey, proof).asn1.toDer()
+                .contentEquals(received.asn1.toDer()) shouldBe true
         }
     }
 
     "normalization requires exactly one proof attribute" {
-        val tbsCsr = TbsCertificationRequest(X500Name.EMPTY, publicKey)
+        val tbsCsr = TbsCertificationRequest(Name.EMPTY, publicKey, attributes = emptyList())
         shouldThrow<IllegalArgumentException> {
             tbsCsr.toHashInput(proofOid)
         }
 
         val proof = CsrAttribute(proofOid, Asn1String.UTF8("proof").encodeToTlv())
         shouldThrow<IllegalArgumentException> {
-            TbsCertificationRequest(X500Name.EMPTY, publicKey, attributes = listOf(proof, proof))
+            TbsCertificationRequest(Name.EMPTY, publicKey, attributes = listOf(proof, proof))
         }
     }
 
     "DER transport decoding infers signed and unsigned CSR shapes" {
-        val tbsCsr = TbsCertificationRequest(X500Name.EMPTY, publicKey)
+        val tbsCsr = TbsCertificationRequest(Name.EMPTY, publicKey, attributes = emptyList())
         val csr = CertificationRequest(
             tbsCsr,
             SignatureAlgorithm.RSAwithSHA256andPKCS1Padding,
             CryptoSignature.RSA(byteArrayOf(1)),
         )
 
-        AttestationProof.decodeFromDer(Signum.Der.encodeToByteArray(tbsCsr)).getOrThrow()
+        AttestationProof.decodeFromDer(tbsCsr.asn1.toDer()).getOrThrow()
             .shouldBeInstanceOf<AttestationProof.Hashed>()
-        AttestationProof.decodeFromDer(Signum.Der.encodeToByteArray(csr)).getOrThrow()
+        AttestationProof.decodeFromDer(csr.asn1.toDer()).getOrThrow()
             .shouldBeInstanceOf<AttestationProof.Signed>()
         AttestationProof.decodeFromDer(byteArrayOf()).isFailure shouldBe true
     }
@@ -155,7 +150,7 @@ val CertificationRequestAttestationTest by matrixSuite {
             attributeOid,
             listOf<Primitive>("account-123", null).toSequence(),
         )
-        val tbsCsr = TbsCertificationRequest(X500Name.EMPTY, publicKey, attributes = listOf(attribute))
+        val tbsCsr = TbsCertificationRequest(Name.EMPTY, publicKey, attributes = listOf(attribute))
         val csr = CertificationRequest(tbsCsr, SignatureAlgorithm.RSAwithSHA256andPKCS1Padding, CryptoSignature.RSA(byteArrayOf(1)))
 
         listOf(AttestationProof.Hashed(tbsCsr), AttestationProof.Signed(csr)).forEach { received ->
@@ -168,8 +163,8 @@ val CertificationRequestAttestationTest by matrixSuite {
 
 private fun AttestationProof.Companion.decodeFromDer(src: ByteArray): KmmResult<AttestationProof> = catching {
     catchingUnwrapped {
-        Signed(Signum.Der.decodeFromByteArray<CertificationRequest>(src))
+        Signed(CertificationRequest.fromAsn1(src))
     }.getOrElse {
-        Hashed(Signum.Der.decodeFromByteArray<TbsCertificationRequest>(src))
+        Hashed(TbsCertificationRequest.fromAsn1(src))
     }
 }

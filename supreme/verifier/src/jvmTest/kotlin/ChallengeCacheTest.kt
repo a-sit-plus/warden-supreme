@@ -32,14 +32,14 @@ private val csrKeyPair by lazy { generateRsaKeyPair(1024) }
 
 private fun csrForChallenge(challenge: AttestationChallenge): CertificationRequest {
     val tbsCsr = TbsCertificationRequest(
-        subjectName = at.asitplus.signum.indispensable.pki.X500Name(listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber()))),
+        subjectName = at.asitplus.signum.indispensable.pki.Name(listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber()))),
         publicKey = csrKeyPair.public.toCryptoPublicKey(),
         attributes = emptyList(),
     )
     return CertificationRequest(
         tbsCsr = tbsCsr,
         signatureAlgorithm = SignatureAlgorithm.RSAwithSHA256andPSSPadding,
-        signature = CryptoSignature.RSA(byteArrayOf(0x01)),
+        signatureValue = CryptoSignature.RSA(byteArrayOf(0x01)),
     )
 }
 

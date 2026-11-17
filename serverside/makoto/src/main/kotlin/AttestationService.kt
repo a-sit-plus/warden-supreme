@@ -13,6 +13,7 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.Attestation
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.toJcaPublicKey
 import ch.veehait.devicecheck.appattest.assertion.Assertion
 import ch.veehait.devicecheck.appattest.assertion.AssertionChallengeValidator
@@ -466,12 +467,12 @@ object NoopAttestationService : AttestationService() {
         when (attestationProof) {
             is IosHomebrewAttestation -> KeyAttestation(
                 attestationProof.parsedClientData.publicKey.toJcaPublicKey(),
-                AttestationResult.IOS.NOOP(Signum.Der.encodeToByteArray(attestationProof.parsedClientData.publicKey))
+                AttestationResult.IOS.NOOP(attestationProof.parsedClientData.publicKey.asn1.toDer())
             )
 
             is AndroidKeystoreAttestation -> KeyAttestation(
                 attestationProof.certificateChain.first().publicKey.toJcaPublicKey(),
-                AttestationResult.Android.NOOP(attestationProof.certificateChain.map { Signum.Der.encodeToByteArray(it) })
+                AttestationResult.Android.NOOP(attestationProof.certificateChain.map { it.asn1.toDer()})
             )
 
             else -> KeyAttestation(

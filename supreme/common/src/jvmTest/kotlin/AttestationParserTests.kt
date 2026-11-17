@@ -1,5 +1,4 @@
-import at.asitplus.signum.Signum
-import kotlinx.serialization.encodeToByteArray
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.attestation.android.AttestationKeyDescription
 import at.asitplus.attestation.android.androidAttestationExtension
@@ -125,8 +124,7 @@ val CustomParserTests by matrixSuite {
                 "certificates",
                 attestationCertChain,
                 nameFn = { _, value -> value.subjectX500Principal.toString() + " (" + value.sigAlgName + ")" }) test {
-                it.toKmpCertificate().isSuccess shouldBe true
-                Signum.Der.encodeToByteArray(it.toKmpCertificate().getOrThrow()) shouldBe it.encoded
+                it.toKmpCertificate().asn1.toDer() shouldBe it.encoded
             }
         }
         val fromGoogle =

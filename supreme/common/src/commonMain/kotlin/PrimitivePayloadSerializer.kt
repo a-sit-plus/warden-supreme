@@ -2,8 +2,8 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.awesn1.*
 import at.asitplus.awesn1.encoding.decodeToBoolean
-import at.asitplus.awesn1.encoding.encodeToAsn1OctetStringPrimitive
 import at.asitplus.awesn1.encoding.encodeToAsn1Primitive
+import at.asitplus.signum.Signum
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -103,7 +103,7 @@ enum class PrimitiveType(
     ),
     BYTEARRAY(
         11,
-        { (it as ByteArray?)?.encodeToAsn1OctetStringPrimitive() ?: Asn1Null },
+        { (it as ByteArray?)?.let{ Asn1OctetString(it)} ?: Asn1Null },
         { if (it == Asn1Null) null else it.asOctetString().content }
     ),
 

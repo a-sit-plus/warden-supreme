@@ -1,9 +1,9 @@
 package at.asitplus.warden
 
-import at.asitplus.signum.Signum
-import kotlinx.serialization.decodeFromByteArray
-import at.asitplus.signum.indispensable.pki.X500Name
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.pki.Name
 import at.asitplus.awesn1.Asn1Integer
+import at.asitplus.awesn1.toBigInteger
 import at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue
 import at.asitplus.signum.dsl.ec
 
@@ -272,7 +272,7 @@ fun Application.configureRouting() {
                             val verified = this as AttestationResult.Android.Verified
                             val nonce = verified.androidAttestationExtension.attestationChallenge
                             val chain = verified.attestationCertificateChain
-                                .map { Signum.Der.decodeFromByteArray<SignumX509Certificate>(it.encoded) }
+                                .map { SignumX509Certificate.fromAsn1(it.encoded) }
                             statement = verifier.makoto
                                 .collectDebugInfo(AndroidKeystoreAttestation(chain), nonce)
                                 .serializeCompact()
@@ -283,12 +283,12 @@ fun Application.configureRouting() {
                         Signer.Ephemeral { ec { } }.let { signer ->
                             signer.sign(
                                 TbsCertificate(
-                                    serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19)),
+                                    serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19)).toBigInteger(),
                                     publicKey = tbsCsr.publicKey,
                                     signatureAlgorithm = signer.signatureAlgorithm,
                                     validFrom = Clock.System.now(),
                                     validUntil = Clock.System.now() + 10.days,
-                                    issuerName = X500Name(listOf(
+                                    issuerName = Name(listOf(
                                         RelativeDistinguishedName(
                                             X500AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme Collector"))
                                         )

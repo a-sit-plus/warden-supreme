@@ -1,6 +1,6 @@
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.Encodable
+import at.asitplus.signum.indispensable.WithSourceRepresentation
 import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 
@@ -13,7 +13,7 @@ import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
  * [AttestationChallenge].
  */
 sealed interface AttestationProof {
-    val data: Encodable
+    val data: WithSourceRepresentation
 
     /** A complete PKCS#10 CSR whose signature proves possession of the attested private key. */
     class Signed(override val data: CertificationRequest) : AttestationProof

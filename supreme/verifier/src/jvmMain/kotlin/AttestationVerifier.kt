@@ -1,12 +1,8 @@
 package at.asitplus.attestation.supreme
 
 import at.asitplus.signum.Signum
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.encodeToByteArray
 
 import at.asitplus.awesn1.encoding.encodeToDer
-import at.asitplus.awesn1.serialization.encodeToTlv
-import at.asitplus.awesn1.serialization.decodeFromTlv
 import at.asitplus.signum.indispensable.pki.*
 
 import at.asitplus.KmmResult
@@ -27,7 +23,7 @@ import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.indispensable.pki.X509CertificateExtension
+import at.asitplus.signum.indispensable.pki.CertificateExtension
 import at.asitplus.signum.indispensable.digest.digest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -327,8 +323,8 @@ constructor(
                     val proof = tbsCsr.attributes.single { it.oid == validatedChallenge.proofOID }
                     val hashInput = tbsCsr.toHashInput(validatedChallenge.proofOID)
                     require(
-                        Signum.Der.encodeToByteArray(hashInput.toTbsCsr(tbsCsr.publicKey, proof))
-                            .contentEquals(Signum.Der.encodeToByteArray(tbsCsr))
+                        hashInput.toTbsCsr(tbsCsr.publicKey, proof).asn1.toDer()
+                            .contentEquals(tbsCsr.asn1.toDer())
                     ) { "TBS CSR does not use the canonical attestation binding" }
                     (expectedAuthentication as DataAuthentication.Hash).algorithm.digest(hashInput.encodeToDer())
                 }.getOrElse {
@@ -370,8 +366,8 @@ constructor(
         }
         attributes.singleOrNull { it.oid == extensionRequestOid }?.let { extensionRequest ->
             val extensions = catchingUnwrapped {
-                extensionRequest.value.single().asSequence().map {
-                    Signum.Der.decodeFromTlv<CertificateExtension>(it.asSequence())
+                extensionRequest.asn1.toRepresentation().value.single().asSequence().map {
+                    CertificateExtension.fromAsn1(it.asSequence())
                 }
             }.getOrElse {
                 return clientDataValidationFailure(
@@ -395,8 +391,8 @@ constructor(
                 )
             }
         }
-        return if (challenge.dataAuth != DataAuthentication.Signature && (attributes.map { Signum.Der.encodeToTlv(it) } != Asn1.SetOf {
-                attributes.forEach { +Signum.Der.encodeToTlv(it) }
+        return if (challenge.dataAuth != DataAuthentication.Signature && (attributes.map { it.asn1.toTlv() } != Asn1.SetOf {
+                attributes.forEach { +it.asn1.toTlv() }
             }
                 .toList())) {
             clientDataValidationFailure(
@@ -444,7 +440,7 @@ constructor(
                 )
             },
             onSuccess = { publicKey, details ->
-                if (publicKey.encoded.contentEquals(Signum.Der.encodeToByteArray(tbsCsr.publicKey))) KeyVerification.Success(
+                if (publicKey.encoded.contentEquals(tbsCsr.publicKey.asn1.toDer())) KeyVerification.Success(
                     VerifiedAttestation(publicKey, details)
                 )
                 else KeyVerification.Failure(
@@ -472,7 +468,7 @@ constructor(
             val signatureValid = catchingUnwrapped {
                 csr.jcaSignature().run {
                     initVerify(verified.publicKey)
-                    update(Signum.Der.encodeToByteArray(csr.tbsCsr))
+                    update(csr.tbsCsr.asn1.toDer())
                     verify(csr.signature.jcaSignatureBytes)
                 }
             }.getOrElse {
@@ -581,7 +577,7 @@ constructor(
     context(challenge: AttestationChallenge)
     private fun TbsCertificationRequest.attestedAttributes() = AttestedAttributes(
         otherAttributesEncoded = challenge.toBeAttestedAttributes?.let { requested ->
-            attributes.singleOrNull { it.oid == requested.oid }?.value?.singleOrNull()?.asSequence()
+            attributes.singleOrNull { it.oid == requested.oid }?.asn1?.toRepresentation()?.value?.singleOrNull()?.asSequence()
                 ?: throw Asn1StructuralException("Requested attested attributes not present")
         },
     )
@@ -745,9 +741,9 @@ fun AttestationVerifier.decodeAttestationProof(payload: ByteArray): KmmResult<At
         "Attestation payload exceeds $maxAttestationPayloadBytes bytes"
     }
     catchingUnwrapped {
-        Signed(Signum.Der.decodeFromByteArray<CertificationRequest>(payload))
+        Signed(CertificationRequest.fromAsn1(payload))
     }.getOrElse {
-        Hashed(Signum.Der.decodeFromByteArray<TbsCertificationRequest>(payload))
+        Hashed(TbsCertificationRequest.fromAsn1(payload))
     }
 }
 

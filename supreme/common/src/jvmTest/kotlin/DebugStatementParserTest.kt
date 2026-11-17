@@ -1,9 +1,8 @@
-import at.asitplus.signum.Signum
-import kotlinx.serialization.encodeToByteArray
 import at.asitplus.attestation.android.*
 import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.catchingUnwrapped
 import at.asitplus.io.MultiBase
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.toKmpCertificate
 import at.asitplus.testballoon.matrix.CompactReport
@@ -11,6 +10,7 @@ import at.asitplus.testballoon.matrix.matrixSuite
 import com.android.keyattestation.verifier.KeyDescription
 import com.google.android.attestation.ParsedAttestationRecord
 import io.kotest.assertions.fail
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.nulls.shouldBeNull
@@ -72,7 +72,7 @@ val DebugStatementParserTest by matrixSuite {
                             parsed.getValue("androidAttestationConfiguration").jsonObject.getValue("applications").jsonArray.first().jsonObject
                         val pkg = androidApp.getValue("packageName").jsonPrimitive.content
 
-                        val digests = (catchingUnwrapped { androidApp.getValue("signatureDigests")}.getOrNull()
+                        val digests = (catchingUnwrapped { androidApp.getValue("signatureDigests") }.getOrNull()
                             ?: androidApp.getValue("signerFingerprints")).jsonArray.map {
                             catchingUnwrapped { it.jsonPrimitive.content.decodeToByteArray(Base64UrlStrict) }.getOrNull()
                                 ?: it.jsonPrimitive.content.parseHex()
@@ -136,14 +136,14 @@ val DebugStatementParserTest by matrixSuite {
                         "certificates",
                         attestationCertChain,
                         nameFn = { _, value -> value.subjectX500Principal.toString() }) test {
-                        it.toKmpCertificate().isSuccess shouldBe true
+                        shouldNotThrowAny { it.toKmpCertificate() }
 
-                        var own = it.toKmpCertificate().getOrThrow()
-                        if (!Signum.Der.encodeToByteArray(own).contentEquals(it.encoded)) {
-                            System.err.println("OWN: ${Signum.Der.encodeToByteArray(own).toHexString()}")
+                        var own = it.toKmpCertificate()
+                        if (!own.asn1.toDer().contentEquals(it.encoded)) {
+                            System.err.println("OWN: ${own.asn1.toDer().toHexString()}")
                             System.err.println("ORI: ${it.encoded.toHexString()}")
                         }
-                        Signum.Der.encodeToByteArray(own) shouldBe it.encoded
+                        own.asn1.toDer() shouldBe it.encoded
                     }
                 }
 
@@ -174,12 +174,13 @@ val DebugStatementParserTest by matrixSuite {
                 "Own" {
                     if (fromGoogle == null) {
                         System.err.println("Old Google parser glitched out")
-                        val newParser = attestationCertChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }
-                            ?.let { catchingUnwrapped { KeyDescription.parseFrom(it) }.getOrNull() }
+                        val newParser =
+                            attestationCertChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }
+                                ?.let { catchingUnwrapped { KeyDescription.parseFrom(it) }.getOrNull() }
 
                         if (newParser == null) {
                             attestationCertChain.closestToRootOrNull { it.hasAndroidKeyAttestationExtensionOid }
-                            .shouldBeNull()
+                                .shouldBeNull()
                             return@invoke//well, well, well…}
                         }
                     }

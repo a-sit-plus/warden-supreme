@@ -2,12 +2,12 @@ package at.asitplus.attestation.android
 
 import at.asitplus.signum.supreme.installSupreme
 import at.asitplus.signum.Signum
-import at.asitplus.signum.indispensable.decodeFromPem
 
 
 import at.asitplus.attestation.AttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.fromAsn1
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
@@ -74,7 +74,7 @@ data class PatchLevel @JvmOverloads constructor(
 
 
 val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
-    Signum.Der.decodeFromPem<Certificate>(
+    Certificate.fromAsn1(
         """
             -----BEGIN CERTIFICATE-----
             MIICIjCCAaigAwIBAgIRAISp0Cl7DrWK5/8OgN52BgUwCgYIKoZIzj0EAwMwUjEc
@@ -101,7 +101,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
 val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
     //Current RSA ROOT
     TrustedRoot.Certificate(
-        Signum.Der.decodeFromPem<Certificate>(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAPHBcqaZ6vUdMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -141,7 +141,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
     GOOGLE_RKP_EC_ROOT,
     //Old, but as of 2025 still valid root certificate. Will expire in 2026
     TrustedRoot.Certificate(
-        Signum.Der.decodeFromPem<Certificate>(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFYDCCA0igAwIBAgIJAOj6GWMU0voYMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -181,7 +181,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
 
     //old, but still valid
     TrustedRoot.Certificate(
-        Signum.Der.decodeFromPem<Certificate>(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJANUP8luj8tazMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -220,7 +220,7 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
 
     //old, but still valid
     TrustedRoot.Certificate(
-        Signum.Der.decodeFromPem<Certificate>(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAMNrfES5rhgxMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV

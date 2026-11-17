@@ -1,8 +1,8 @@
 package at.asitplus.attestation.android
 
 import at.asitplus.signum.Signum
+import at.asitplus.signum.indispensable.fromAsn1
 import at.asitplus.signum.indispensable.pki.Certificate
-import at.asitplus.signum.indispensable.decodeFromPem
 import at.asitplus.signum.indispensable.installIndispensable
 import kotlin.io.encoding.Base64
 import kotlinx.serialization.decodeFromByteArray
@@ -20,9 +20,9 @@ fun main(args: Array<String>) {
     val certB64 = if (args[0] == "-f") java.io.File(args[1]).readText() else args[0]
 
     val certificate = if (certB64.trimStart().startsWith("-----BEGIN")) {
-        Signum.Der.decodeFromPem<Certificate>(certB64)
+        Certificate.fromAsn1(certB64)
     } else {
-        Signum.Der.decodeFromByteArray<Certificate>(Base64.Mime.decode(certB64))
+        Certificate.fromAsn1(Base64.Mime.decode(certB64))
     }
     println(certificate.androidAttestationExtension?.prettyPrint())
 }

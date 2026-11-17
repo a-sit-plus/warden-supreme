@@ -13,7 +13,7 @@ import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
 import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
-import at.asitplus.signum.indispensable.pki.X509CertificateExtension
+import at.asitplus.signum.indispensable.pki.CertificateExtension
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.digest.digest
 import at.asitplus.testballoon.matrix.matrixSuite
@@ -35,7 +35,7 @@ private suspend fun hashBindingFixture(
     attestedAlgorithm: Digest = expectedAlgorithm,
     genericDeviceNameOid: ObjectIdentifier? = null,
     attributes: List<CsrAttribute> = emptyList(),
-    extensions: List<X509CertificateExtension> = emptyList(),
+    extensions: List<CertificateExtension> = emptyList(),
     mutate: (AttestationHashInput) -> AttestationHashInput = { it },
 ): HashBindingFixture {
     val nonce = byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8)
@@ -96,7 +96,6 @@ val AttestationVerifierHashBindingTest by matrixSuite {
     test("subject mutation after hashed attestation is rejected") {
         hashBindingFixture { input ->
             AttestationHashInput(
-                version = input.version,
                 subjectName = input.subjectName + RelativeDistinguishedName(
                     at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue.CommonName(Asn1String.UTF8("mutated"))
                 ),
@@ -106,13 +105,12 @@ val AttestationVerifierHashBindingTest by matrixSuite {
     }
 
     test("Subject Alternative Name extension mutation after hashed attestation is rejected") {
-        val original = X509CertificateExtension(bindingExtensionOid, false, Asn1.OctetString(byteArrayOf(1)))
+        val original = CertificateExtension(bindingExtensionOid, false, Asn1.OctetString(byteArrayOf(1)))
         hashBindingFixture(extensions = listOf(original)) { input ->
             AttestationHashInput(
-                version = input.version,
                 subjectName = input.subjectName,
                 extensions = listOf(
-                    X509CertificateExtension(bindingExtensionOid, false, Asn1.OctetString(byteArrayOf(2)))
+                    CertificateExtension(bindingExtensionOid, false, Asn1.OctetString(byteArrayOf(2)))
                 ),
                 attributes = input.attributes.filterNot { it.oid == bindingExtensionRequestOid },
             )
@@ -122,7 +120,6 @@ val AttestationVerifierHashBindingTest by matrixSuite {
     test("arbitrary attribute mutation after hashed attestation is rejected") {
         hashBindingFixture { input ->
             AttestationHashInput(
-                version = input.version,
                 subjectName = input.subjectName,
                 attributes = input.attributes + CsrAttribute(
                     bindingAttributeOid,
@@ -168,7 +165,6 @@ val AttestationVerifierHashBindingTest by matrixSuite {
             ),
         ) { input ->
             AttestationHashInput(
-                version = input.version,
                 subjectName = input.subjectName,
                 attributes = input.attributes.map {
                     if (it.oid == bindingDeviceNameOid) CsrAttribute(

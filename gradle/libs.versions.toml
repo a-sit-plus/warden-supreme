@@ -63,7 +63,7 @@ spring-boot-starter = { group = "org.springframework.boot", name = "spring-boot-
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring-boot" }
 
 yamltk = {module = "net.mamoe.yamlkt:yamlkt", version.ref = "yamlkt"}
-signum = { group = "at.asitplus.signum", name = "indispensable", version.ref = "signum" }
+signum = { group = "at.asitplus.signum", name = "indispensable-pkix", version.ref = "signum" }
 supreme = { group = "at.asitplus.signum", name = "supreme", version.ref = "supreme" }
 devicecheck = { group = "ch.veehait.devicecheck", name = "devicecheck-appattest", version.ref = "devicecheck" }
 jackson-cbor = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-cbor", version.ref = "jackson" }

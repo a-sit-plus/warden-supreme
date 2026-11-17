@@ -2,22 +2,22 @@
 
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.asn1
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.throwables.shouldThrowAny
 import at.asitplus.awesn1.Asn1Sequence
 import at.asitplus.awesn1.Asn1CustomStructure
 import at.asitplus.awesn1.TagClass
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.Signum
 import at.asitplus.awesn1.serialization.encodeToTlv
-import at.asitplus.awesn1.serialization.decodeFromTlv
 
 import at.asitplus.signum.indispensable.digest.Digest
 import at.asitplus.awesn1.Asn1String
 import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.awesn1.encoding.Asn1
 import at.asitplus.signum.indispensable.pki.CsrAttribute
-import at.asitplus.signum.indispensable.pki.X509CertificateExtension
+import at.asitplus.signum.indispensable.pki.CertificateExtension
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -59,10 +59,10 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
         }
         val valid = createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, listOf(proof))
         val malformed = Asn1Sequence(
-            Signum.Der.encodeToTlv(valid.tbsCsr).asSequence().children.take(3) +
-                    Asn1CustomStructure(attributes.map { Signum.Der.encodeToTlv(it) }, 0uL, TagClass.CONTEXT_SPECIFIC),
+            valid.tbsCsr.asn1.toTlv().asSequence().children.take(3) +
+                    Asn1CustomStructure(attributes.map { it.asn1.toTlv() }, 0uL, TagClass.CONTEXT_SPECIFIC),
         )
-        shouldThrowAny { Signum.Der.decodeFromTlv<TbsCertificationRequest>(malformed) }
+        shouldThrowAny { TbsCertificationRequest.fromAsn1(malformed) }
     }
 
     data(
@@ -77,14 +77,14 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
             },
             Triple("extensions", PreAttestationError.ClientDataValidation.Reason.DUPLICATE_CSR_EXTENSION_OID) { proof: CsrAttribute ->
                 val extensions = listOf(
-                    X509CertificateExtension(duplicateOid, false, Asn1.OctetString(byteArrayOf(1))),
-                    X509CertificateExtension(duplicateOid, true, Asn1.OctetString(byteArrayOf(2))),
+                    CertificateExtension(duplicateOid, false, Asn1.OctetString(byteArrayOf(1))),
+                    CertificateExtension(duplicateOid, true, Asn1.OctetString(byteArrayOf(2))),
                 )
                 listOf(
                     proof,
                     CsrAttribute(
                         extensionRequestOid,
-                        Asn1.Sequence { extensions.forEach { +Signum.Der.encodeToTlv(it) } },
+                        Asn1.Sequence { extensions.forEach { +it.asn1.toTlv() } },
                     ),
                 )
             },
@@ -136,8 +136,8 @@ val AttestationVerifierOidUniquenessTest by matrixSuite {
             duplicateOid,
             Asn1String.UTF8("value").encodeToTlv(),
         )
-        val nonCanonical = Asn1.SetOf { listOf(proof, other).forEach { +Signum.Der.encodeToTlv(it) } }
-            .map { Signum.Der.decodeFromTlv<CsrAttribute>(it.asSequence()) }
+        val nonCanonical = Asn1.SetOf { listOf(proof, other).forEach { +it.asn1.toTlv() } }
+            .map { CsrAttribute.fromAsn1(it.asSequence()) }
             .reversed()
         val csr = createCsrWithAttributes(challenge, fixture.fake.leafKeyPair, nonCanonical)
 
