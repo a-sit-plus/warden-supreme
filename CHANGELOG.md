@@ -13,6 +13,7 @@
       Keep `AttestedAttributeValue` as a deprecated typealias with a rename hint for source compatibility.
 * Add data-driven JSON/CBOR primitive-map round-trip and malformed-payload tests, and iOS primitive-bridge tests.
 * Add Collector APIs to query to statements within a timeframe
+* Enforce security level consistency between chain ↔ attestation extension
 
 ## 1.2.0
 * **Add iOS (Swift) Client**

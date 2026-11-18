@@ -469,6 +469,18 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             record: AttRecord,
             appOverride: Boolean? /*irrelevant for SW*/
         ) = record.run {
+            for ((name, claimedLevel) in listOf("Attestation" to attestationSecLevel, "Keymaster" to keymasterSecLevel)) {
+                val overclaims = claimedLevel == GeneralizedSecurityLevel.STRONGBOX && securityLevelFromChain != GeneralizedSecurityLevel.STRONGBOX
+                val underclaims = securityLevelFromChain == GeneralizedSecurityLevel.STRONGBOX &&
+                        claimedLevel == GeneralizedSecurityLevel.TEE && !attestationConfiguration.allowTeeSecurityLevelForStrongbox
+                if (overclaims || underclaims)
+                    throw AttestationValueException(
+                        message = "$name security $claimedLevel level does not match security level $securityLevelFromChain inferred from certificate chain",
+                        reason = AttestationValueException.Reason.SEC_LEVEL,
+                        expectedValue = securityLevelFromChain,
+                        actualValue = claimedLevel,
+                    )
+            }
             if (appOverride ?: attestationConfiguration.requireStrongBox) {
                 if (attestationSecLevel != GeneralizedSecurityLevel.STRONGBOX)
                     throw AttestationValueException(
@@ -482,14 +494,6 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
                         "Keymaster security level not StrongBox",
                         reason = AttestationValueException.Reason.SEC_LEVEL,
                         expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = keymasterSecLevel
-                    )
-                if (securityLevelFromChain != GeneralizedSecurityLevel.STRONGBOX)
-                    throw AttestationValueException(
-                        message = "Keymaster security ${keymasterSecLevel} level does not match security level $securityLevelFromChain inferred from certificate chain",
-                        cause = null,
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = securityLevelFromChain,
                         actualValue = keymasterSecLevel
                     )
             } else {
