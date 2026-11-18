@@ -27,6 +27,7 @@ import at.asitplus.signum.indispensable.pki.validate.CertificateValidator
 import at.asitplus.signum.indispensable.sign.verifierFor
 import at.asitplus.signum.indispensable.sign.verify
 import at.asitplus.signum.supreme.installSupreme
+import java.util.Date
 import kotlin.time.Instant
 
 /** Validates the supplied leaf-first Android chain without path building or Java certificate conversion. */
@@ -47,13 +48,13 @@ class SupremeCertChainValidator(private val attestationConfiguration: AndroidAtt
             // Preserve the JVM reference's millisecond verification time, including revocation snapshots.
             val date = Instant.fromEpochMilliseconds(verificationDate.toEpochMilliseconds())
             val root = last()
-            val trustedRoot = resolveRoot(actualTrustAnchors)
+            val trustedRoot = resolveRoot(actualTrustAnchors, date)
             val verifyValidity = isRemoteKeyProvisioned() ||
                 ((trustedRoot as? TrustedRoot.AndroidSpecific)?.enforceFactoryProvisionedChainValidity
                     ?: attestationConfiguration.enforceFactoryProvisionedChainValidity)
             if (verifyValidity) catchingUnwrapped { root.checkTime(date) }.getOrElse {
                 throw CertificateInvalidException.InvalidRoot(
-                    "Could not verify root validity", cause = it, reason = CertificateInvalidException.Reason.TIME,
+                    root.verificationFailureMessage(date), cause = it, reason = CertificateInvalidException.Reason.TIME,
                     certificateChain = this, invalidCertificate = root,
                 )
             }
@@ -68,7 +69,7 @@ class SupremeCertChainValidator(private val attestationConfiguration: AndroidAtt
                 CertificateValidationContext(date = date, trustAnchors = setOf(anchor)),
             )
             if (requireRKP && !isRemoteKeyProvisioned()) throw AttestationValueException(
-                "Certificate chain does not contain a remotely-provisioned attestation certificate",
+                "X509Certificate chain does not contain a remotely-provisioned attestation certificate",
                 reason = AttestationValueException.Reason.SEC_LEVEL, expectedValue = true, actualValue = false,
             )
             securityLevel()
@@ -76,7 +77,7 @@ class SupremeCertChainValidator(private val attestationConfiguration: AndroidAtt
         return CertificateChainValidation(verdict, revocationLists)
     }
 
-    private suspend fun CertificateChain.resolveRoot(roots: Collection<TrustedRoot>): TrustedRoot {
+    private suspend fun CertificateChain.resolveRoot(roots: Collection<TrustedRoot>, date: Instant): TrustedRoot {
         val root = last()
         val rootKey = root.publicKey.asn1.toDer()
         val trusted = roots.filterIsInstance<TrustedRoot.Certificate>().firstOrNull { root.asn1.toDer().contentEquals(it.derEncoded) }
@@ -92,13 +93,13 @@ class SupremeCertChainValidator(private val attestationConfiguration: AndroidAtt
                 throw if (stage == null) CertificateInvalidException.NoMatchingRoot(
                     "No matching root certificate. Found an unknown Root", certificateChain = this, invalidCertificate = root,
                 ) else CertificateInvalidException.OtherMatchingRoot(
-                    "No matching root certificate. Found a default $stage Root", certificateChain = this,
+                    "No matching root certificate. Found a default ${if (stage == CertificateInvalidException.OtherMatchingRoot.Stage.SOFTWARE) "SOFTWARE (pre-Android-13)" else "HARDWARE"} Root", certificateChain = this,
                     invalidCertificate = root, rootCertStage = stage,
                 )
             }
         catchingUnwrapped { root.signatureAlgorithm.verifierFor(trusted.cryptoPublicKey).verify(root) }.getOrElse {
             throw CertificateInvalidException.InvalidRoot(
-                "Could not verify root certificate", cause = it, reason = CertificateInvalidException.Reason.TRUST,
+                root.verificationFailureMessage(date), cause = it, reason = CertificateInvalidException.Reason.TRUST,
                 certificateChain = this, invalidCertificate = root,
             )
         }
@@ -125,7 +126,7 @@ class SupremeCertChainValidator(private val attestationConfiguration: AndroidAtt
                     certificate.signatureAlgorithm.verifierFor(parent.publicKey).verify(certificate)
                 }.getOrElse {
                     throw CertificateInvalidException(
-                        "Certificate ${certificate.tbsCertificate.serialNumber} could not be verified", cause = it,
+                        "X509Certificate ${certificate.tbsCertificate.serialNumber} could not be verified", cause = it,
                         reason = if (it is CertificateTimeValidityException) CertificateInvalidException.Reason.TIME
                             else CertificateInvalidException.Reason.TRUST,
                         certificateChain = chain, invalidCertificate = certificate,
@@ -156,7 +157,7 @@ class SupremeCertChainValidator(private val attestationConfiguration: AndroidAtt
                 }
             }.getOrElse {
                 throw CertificateInvalidException(
-                    "Android cert path validation failed", cause = it, reason = CertificateInvalidException.Reason.TRUST,
+                    "PKIX cert path validation failed", cause = it, reason = CertificateInvalidException.Reason.TRUST,
                     certificateChain = chain, invalidCertificate = null,
                 )
             }
@@ -179,7 +180,7 @@ class SupremeCertChainValidator(private val attestationConfiguration: AndroidAtt
             lists.forEach { snapshot ->
                 snapshot.list.find(currCert.tbsCertificate.serialNumber.toString(16))?.let { entry ->
                     throw RevocationException.Revoked(
-                        "Certificate ${currCert.tbsCertificate.serialNumber} revoked", certificateChain = chain,
+                        "X509Certificate ${currCert.tbsCertificate.serialNumber} revoked", certificateChain = chain,
                         revokedCertificate = currCert, entry = entry,
                     )
                 }
@@ -206,6 +207,10 @@ class SupremeCertChainValidator(private val attestationConfiguration: AndroidAtt
     }
 
     private fun Name.matches(other: Name): Boolean = toRfc2253String() == other.toRfc2253String()
+
+    // Date is used only for legacy diagnostic formatting; validity checks use Instant.
+    private fun Certificate.verificationFailureMessage(date: Instant): String =
+        "could not verify root certificate (valid from: ${Date(tbsCertificate.validFrom.toEpochMilliseconds())} to ${Date(tbsCertificate.validUntil.toEpochMilliseconds())}), verification date: ${Date(date.toEpochMilliseconds())}"
 
     private fun Certificate.checkTime(date: Instant) {
         if (date < tbsCertificate.validFrom) throw CertificateNotYetValidException(tbsCertificate.validFrom, date)

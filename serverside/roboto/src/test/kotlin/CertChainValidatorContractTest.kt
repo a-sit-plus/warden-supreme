@@ -81,6 +81,10 @@ val CertChainValidatorContractTest by matrixSuite {
                 ChainOutcome(failure = CertificateInvalidException.OtherMatchingRoot::class, reason = "TRUST",
                     certificateIndex = chain.lastIndex), roots = emptySet(), date = date))
         }
+        add(ChainCase("reject default software root when not trusted",
+            listOf(root.reissue(factory.rootKey, publicKey = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.first().publicKey)),
+            ChainOutcome(failure = CertificateInvalidException.OtherMatchingRoot::class, reason = "TRUST", certificateIndex = 0),
+            roots = emptySet()))
 
         add(ChainCase("accept unnamed public-key anchor", factory.chain, acceptedFactory,
             roots = setOf(TrustedRoot.PublicKey(root.publicKey))))
@@ -263,15 +267,15 @@ private suspend fun assertChainValidatorContract(
 ) {
     val firstOutcome = observeChainValidator(first, case)
     val secondOutcome = observeChainValidator(second, case)
-    withClue("first validator: ${first::class.simpleName}") { firstOutcome shouldBe case.expected }
-    withClue("second validator: ${second::class.simpleName}") { secondOutcome shouldBe case.expected }
-    withClue("validators must agree") { firstOutcome shouldBe secondOutcome }
+    withClue("first validator: ${first::class.simpleName}") { firstOutcome.first shouldBe case.expected }
+    withClue("second validator: ${second::class.simpleName}") { secondOutcome.first shouldBe case.expected }
+    withClue("validators must agree, including failure messages") { secondOutcome shouldBe firstOutcome }
 }
 
-private suspend fun observeChainValidator(validator: CertChainValidator, case: ChainCase): ChainOutcome {
+private suspend fun observeChainValidator(validator: CertChainValidator, case: ChainCase): Pair<ChainOutcome, String?> {
     val result = with(validator) { case.chain.map { it.toKmpCertificate() }.verifyCertificateChain(case.date.toInstant().toKotlinInstant(), case.roots, case.requireRkp) }
     val lists = result.revocationLists
-    return when (val failure = result.verdict.exceptionOrNull()) {
+    val outcome = when (val failure = result.verdict.exceptionOrNull()) {
         null -> ChainOutcome(securityLevel = result.verdict.getOrThrow(), revocationLists = lists)
         is CertificateInvalidException -> ChainOutcome(failure::class, failure.reason.name,
             case.chain.map { it.toKmpCertificate() }.indexOf(failure.invalidCertificate).takeIf { it >= 0 }, revocationLists = lists)
@@ -281,6 +285,7 @@ private suspend fun observeChainValidator(validator: CertChainValidator, case: C
         is RevocationException.ListUnavailable -> ChainOutcome(failure::class, revocationLists = lists)
         else -> throw AssertionError("Unexpected validator failure", failure)
     }
+    return outcome to result.verdict.exceptionOrNull()?.message
 }
 
 private data class ChainFixture(
