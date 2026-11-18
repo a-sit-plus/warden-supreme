@@ -7,8 +7,47 @@ import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.VerifiedBootKey
 import at.asitplus.testballoon.matrix.*
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 
 val AndroidConfigurationBuilderTests by matrixSuite {
+    data("TEE underclaim configuration", listOf(false, true)) test { allow ->
+        val app = AndroidAttestationConfiguration.AppData("com.example", setOf(ByteArray(32) { 1 }))
+        val baseline = AndroidAttestationConfiguration(listOf(app), revocation = emptyList())
+        baseline.allowTeeSecurityLevelForStrongbox shouldBe false
+        val expected = baseline.copy(allowTeeSecurityLevelForStrongbox = allow)
+        val configurations = listOf(
+            AndroidAttestationConfiguration(listOf(app), revocation = emptyList(), allowTeeSecurityLevelForStrongbox = allow),
+            AndroidAttestationConfiguration(singleApp = app, revocation = emptyList(), allowTeeSecurityLevelForStrongbox = allow),
+            AndroidAttestationConfiguration(apps = listOf(app), revocation = emptyList(), allowTeeSecurityLevelForStrongbox = allow),
+            AndroidAttestationConfiguration.Builder(app).revocation(emptyList()).allowTeeSecurityLevelForStrongbox(allow).build(),
+            AndroidAttestationConfiguration.Builder(listOf(app)).revocation(emptyList()).allowTeeSecurityLevelForStrongbox(allow).build(),
+        )
+        configurations.forEach { config ->
+            config.allowTeeSecurityLevelForStrongbox shouldBe allow
+            config.toString() shouldContain "allowTeeSecurityLevelForStrongbox=$allow"
+            AndroidAttestationConfiguration.fromJsonString(config.toJsonString()) shouldBe config
+            AndroidAttestationConfiguration.fromYamlString(config.toYamlString()) shouldBe config
+        }
+        if (allow) {
+            expected shouldNotBe baseline
+            expected.hashCode() shouldNotBe baseline.hashCode()
+        } else {
+            expected.toJsonString() shouldNotContain "allowTeeSecurityLevelForStrongbox"
+            expected.toYamlString() shouldNotContain "allowTeeSecurityLevelForStrongbox"
+        }
+    }
+
+    "Java constructor overload and builders keep the strict default" {
+        val app = AndroidAttestationConfiguration.AppData("com.example", setOf(byteArrayOf(1)))
+        AndroidAttestationConfiguration::class.java.getConstructor(List::class.java)
+            .newInstance(listOf(app)).allowTeeSecurityLevelForStrongbox shouldBe false
+        AndroidAttestationConfiguration.Builder(app).build().allowTeeSecurityLevelForStrongbox shouldBe false
+        AndroidAttestationConfiguration(singleApp = app).allowTeeSecurityLevelForStrongbox shouldBe false
+        AndroidAttestationConfiguration(apps = listOf(app)).allowTeeSecurityLevelForStrongbox shouldBe false
+    }
+
     "Android AppData builder applies overrides" {
         val signer = ByteArray(32) { it.toByte() }
         val patch = PatchLevel(2024, 2)

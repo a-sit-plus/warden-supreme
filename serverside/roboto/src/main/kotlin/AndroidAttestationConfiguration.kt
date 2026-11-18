@@ -13,6 +13,7 @@ import at.asitplus.signum.indispensable.pki.Certificate
 import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -311,6 +312,8 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
  * @param enforceFactoryProvisionedChainValidity Whether to enforce timely validity for factory-provisioned certificate
  * chains. Some old devices may have expired intermediate certificates, which will trip a validity check unless this is
  * false.
+ * @param allowTeeSecurityLevelForStrongbox Allows a StrongBox certificate chain to attest TEE security levels.
+ * Defaults to `false`; does not relax [requireStrongBox].
  */
 @Serializable
 data class AndroidAttestationConfiguration @JvmOverloads constructor(
@@ -450,7 +453,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * Allows attaching custom configuration properties to this configuration.
      * Sensible for extending it with custom configs while still relying on the configuration parser.
      */
-    val customProperties: Map<String, String> = emptyMap()
+    val customProperties: Map<String, String> = emptyMap(),
+
+    /**
+     * Allows either leaf security-level field to report `TRUSTED_ENVIRONMENT` when the verified certificate chain
+     * identifies StrongBox. Defaults to `false`, requiring both fields to report StrongBox for a StrongBox chain.
+     *
+     * This never permits a StrongBox claim on a non-StrongBox chain or a software security level on a hardware chain.
+     * [requireStrongBox], including an app's override, still requires both leaf fields to report StrongBox.
+     */
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val allowTeeSecurityLevelForStrongbox: Boolean = false
 
 ) : AttestationConfiguration {
 
@@ -574,7 +587,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * Allows attaching custom configuration properties to this configuration.
          * Sensible for extending it with custom configs while still relying on the configuration parser.
          */
-        customProperties: Map<String, String> = emptyMap()
+        customProperties: Map<String, String> = emptyMap(),
+
+        /** @see AndroidAttestationConfiguration.allowTeeSecurityLevelForStrongbox */
+        allowTeeSecurityLevelForStrongbox: Boolean = false
     ) : this(
         listOf(singleApp),
         androidVersion = androidVersion,
@@ -595,6 +611,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
         supremeParser = supremeParser,
         customProperties = customProperties,
+        allowTeeSecurityLevelForStrongbox = allowTeeSecurityLevelForStrongbox,
     )
 
     /**
@@ -720,7 +737,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * Allows attaching custom configuration properties to this configuration.
          * Sensible for extending it with custom configs while still relying on the configuration parser.
          */
-        customProperties: Map<String, String> = emptyMap()
+        customProperties: Map<String, String> = emptyMap(),
+
+        /** @see AndroidAttestationConfiguration.allowTeeSecurityLevelForStrongbox */
+        allowTeeSecurityLevelForStrongbox: Boolean = false
     ) : this(
         applications = apps,
         androidVersion = version,
@@ -740,7 +760,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         verifiedBootKeys = verifiedBootKeys,
         enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
         supremeParser = supremeParser,
-        customProperties = customProperties
+        customProperties = customProperties,
+        allowTeeSecurityLevelForStrongbox = allowTeeSecurityLevelForStrongbox,
     )
 
     /**
@@ -1044,6 +1065,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM)
         private var enforceFactoryProvisionedChainValidity: Boolean = true
         private var supremeParser: Boolean = false
+        private var allowTeeSecurityLevelForStrongbox: Boolean = false
         private var customProperties: Map<String, String> = emptyMap()
 
         /**
@@ -1187,6 +1209,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /** @see AndroidAttestationConfiguration.supremeParser */
         fun supremeParser(supremeParser: Boolean) = apply { this.supremeParser = supremeParser }
 
+        /** @see AndroidAttestationConfiguration.allowTeeSecurityLevelForStrongbox */
+        fun allowTeeSecurityLevelForStrongbox(allow: Boolean) = apply { allowTeeSecurityLevelForStrongbox = allow }
+
 
         /**
          * @see AndroidAttestationConfiguration.customProperties
@@ -1212,6 +1237,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             verifiedBootKeys = verifiedBootKeys,
             enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
             supremeParser = supremeParser,
+            allowTeeSecurityLevelForStrongbox = allowTeeSecurityLevelForStrongbox,
             customProperties = customProperties,
         )
 
@@ -1236,6 +1262,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "verifiedBootKeys=$verifiedBootKeys, " +
                 "osPatchLevel=$osPatchLevel, " +
                 "enforceFactoryProvisionedChainValidity=$enforceFactoryProvisionedChainValidity, " +
+                "allowTeeSecurityLevelForStrongbox=$allowTeeSecurityLevelForStrongbox, " +
                 "supremeParser=$supremeParser" +
                 "customProperties=$customProperties" +
                 ")"
@@ -1267,6 +1294,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (verifiedBootKeys != other.verifiedBootKeys) return false
         if (enforceFactoryProvisionedChainValidity != other.enforceFactoryProvisionedChainValidity) return false
         if (supremeParser != other.supremeParser) return false
+        if (allowTeeSecurityLevelForStrongbox != other.allowTeeSecurityLevelForStrongbox) return false
         if (customProperties != other.customProperties) return false
 
         return true
@@ -1292,6 +1320,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + verifiedBootKeys.hashCode()
         result = 31 * result + enforceFactoryProvisionedChainValidity.hashCode()
         result = 31 * result + supremeParser.hashCode()
+        result = 31 * result + allowTeeSecurityLevelForStrongbox.hashCode()
         result = 31 * result + customProperties.hashCode()
         return result
     }
