@@ -369,6 +369,7 @@ private object SpringFixtures {
         androidVersion = 330000,
         patchLevel = PatchLevel(2025, 2, maxFuturePatchLevelMonths = 3),
         requireStrongBox = true,
+        allowTeeSecurityLevelForStrongbox = true,
         allowBootloaderUnlock = false,
         requireRollbackResistance = true,
         ignoreLeafValidity = false,
