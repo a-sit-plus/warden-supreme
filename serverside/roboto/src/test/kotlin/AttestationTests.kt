@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.indispensable.pki.Certificate as SignumCertificate
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
@@ -150,9 +151,9 @@ val AttestationTests by matrixSuite {
                             collectDebugInfo(attestationCertChain, challenge, verificationDate).serialize()
 
                         AndroidDebugAttestationStatement.deserialize(collectDebugInfo).replay().getOrThrow()
-                            .shouldBeInstanceOf<List<X509Certificate>>().apply {
-                                closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
-                                closestToRoot { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                            .shouldBeInstanceOf<List<SignumCertificate>>().apply {
+                                last { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.attestationSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
+                                last { it.hasAndroidKeyAttestationExtensionOid }.androidAttestationExtension!!.keymasterSecurityLevel shouldBe AttestationKeyDescription.SecurityLevel.SOFTWARE
                             }
 
                     }
@@ -399,7 +400,7 @@ val AttestationTests by matrixSuite {
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.challenge,
                                     recordedAttestation.verificationDate
-                                ).replay().getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
+                                ).replay().getOrThrow().shouldBeInstanceOf<List<SignumCertificate>>()
                             }
                         }
 
@@ -414,7 +415,7 @@ val AttestationTests by matrixSuite {
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.challenge,
                                     recordedAttestation.verificationDate
-                                ).replay().getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
+                                ).replay().getOrThrow().shouldBeInstanceOf<List<SignumCertificate>>()
                             }
                         }
 
@@ -461,7 +462,7 @@ val AttestationTests by matrixSuite {
                                     recordedAttestation.challenge,
                                     recordedAttestation.verificationDate
                                 )
-                                debugInfo.replay().getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
+                                debugInfo.replay().getOrThrow().shouldBeInstanceOf<List<SignumCertificate>>()
                             }
                         }
 
@@ -476,7 +477,7 @@ val AttestationTests by matrixSuite {
                                     recordedAttestation.attestationCertChain,
                                     recordedAttestation.challenge,
                                     recordedAttestation.verificationDate
-                                ).replay().getOrThrow().shouldBeInstanceOf<List<X509Certificate>>()
+                                ).replay().getOrThrow().shouldBeInstanceOf<List<SignumCertificate>>()
                             }
                         }
                     }

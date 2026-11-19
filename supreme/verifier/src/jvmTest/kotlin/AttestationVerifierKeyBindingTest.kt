@@ -2,14 +2,17 @@
 
 package at.asitplus.attestation.supreme
 
+import at.asitplus.awesn1.encoding.encodeToDer
+import at.asitplus.awesn1.serialization.encodeToTlv
+
 import at.asitplus.attestation.android.TrustedRoot
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.toCryptoPublicKey
-import at.asitplus.signum.supreme.hash.digest
+import at.asitplus.signum.indispensable.digest.digest
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -53,14 +56,14 @@ val AttestationVerifierKeyBindingTest by matrixSuite {
             nonceGenerator = suspend { nonce },
         )
         val challenge = verifier.issueChallenge(attestationEndpoint, dataAuth = authentication)
-        val claimedPublicKey = generateEcKeyPair().public.toCryptoPublicKey().getOrThrow()
+        val claimedPublicKey = generateEcKeyPair().public.toCryptoPublicKey()
         val proof = when (authentication) {
             DataAuthentication.Signature -> AttestationProof.Signed(
                 createCsrWithSubject(
                     subjectName = listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber())),
                     keyPair = fake.leafKeyPair,
                     attributes = listOf(
-                        Pkcs10CertificationRequestAttribute(
+                        CsrAttribute(
                             challenge.proofOID,
                             Asn1String.UTF8(fake.attestationJson()).encodeToTlv(),
                         )
@@ -72,7 +75,7 @@ val AttestationVerifierKeyBindingTest by matrixSuite {
             is DataAuthentication.Hash -> AttestationProof.Hashed(
                 hashInput.toTbsCsr(
                     claimedPublicKey,
-                    Pkcs10CertificationRequestAttribute(
+                    CsrAttribute(
                         challenge.proofOID,
                         Asn1String.UTF8(fake.attestationJson()).encodeToTlv(),
                     ),

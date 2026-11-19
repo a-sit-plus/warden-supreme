@@ -5,21 +5,26 @@ import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.parseHex
+import at.asitplus.awesn1.Asn1Integer
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.awesn1.ObjectIdentifier
+import at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue
+import at.asitplus.awesn1.toBigInteger
+import at.asitplus.signum.dsl.ec
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.Asn1String
-import at.asitplus.signum.indispensable.asn1.Asn1Time
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.signum.indispensable.pki.Name
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificate
+import at.asitplus.signum.indispensable.sign.Signer
+import at.asitplus.signum.indispensable.sign.sign
 import at.asitplus.signum.indispensable.toJcaPublicKey
-import at.asitplus.signum.indispensable.toX509SignatureAlgorithm
-import at.asitplus.signum.supreme.sign
-import at.asitplus.signum.supreme.sign.Signer
+import at.asitplus.testballoon.matrix.matrixConfig
+import at.asitplus.testballoon.matrix.matrixSuite
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
-import at.asitplus.testballoon.matrix.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -46,7 +51,10 @@ private val authenticationScenarios = mapOf(
     "signed-optional-present" to AuthenticationScenario(DataAuthentication.Signature, listOf("required", 42)),
     "signed-optional-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf("required", null)),
     "hashed-optional-present" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf("required", 42)),
-    "hashed-optional-omitted" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf("required", null)),
+    "hashed-optional-omitted" to AuthenticationScenario(
+        DataAuthentication.Hash(Digest.SHA256),
+        listOf("required", null)
+    ),
     "signed-required-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf(null, 42)),
     "hashed-required-omitted" to AuthenticationScenario(DataAuthentication.Hash(Digest.SHA256), listOf(null, 42)),
     "signed-all-omitted" to AuthenticationScenario(DataAuthentication.Signature, listOf(null, null)),
@@ -85,12 +93,12 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                         )
                     ).enableSoftwareAttestation().disableHardwareAttestation().addSoftwareTrustedRoot(
                         TrustedRoot.PublicKey(
-                            CryptoPublicKey.decodeFromPem(
+                            CryptoPublicKey.fromAsn1(
                                 "-----BEGIN PUBLIC KEY-----\n" +
                                         "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9+hz7A0vjTx6w2x7E6wW8Cy3MlJY\n" +
                                         "+E3HadGEUI8McOFz3VytQgylZWfT+LUKDjTq3CBffGbo1GeBH+leQlFoaw==\n" +
                                         "-----END PUBLIC KEY-----"
-                            ).getOrThrow().toJcaPublicKey().getOrThrow()
+                            ).toJcaPublicKey()
                         )
                     )
                         .build(),
@@ -125,7 +133,7 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                     val actual = toBeAttestedAttributes?.let { requested ->
                         val tbsCsr = received.tbsCsr
                         val encoded = tbsCsr.attributes.singleOrNull { it.oid == requested.oid }
-                            ?.value?.singleOrNull()?.asSequence()
+                            ?.asn1?.toRepresentation()?.value?.singleOrNull()?.asSequence()
                         AttestedAttributes(encoded).parsedAttributesBy(this)
                     }
                     if (actual == scenario.expectedAttributes) null
@@ -137,22 +145,25 @@ val TestEnv by matrixSuite(matrixConfig { testConfig = TestConfig.testScope(isEn
                 certificateIssuer = { received ->
                     val tbsCsr = received.tbsCsr
                     println("Successfully attested device ${tbsCsr.deviceNameForOid(attestationValidator.genericDeviceNameOID ?: WardenDefaults.OIDs.DEVICE_NAME)}")
-                    Signer.Ephemeral { ec { } }.getOrThrow().let { signer ->
+                    Signer.Ephemeral { ec { } }.let { signer ->
                         signer.sign(
                             TbsCertificate(
-                                serialNumber = Random.nextBytes(32),
+                                serialNumber = Asn1Integer.fromUnsignedByteArray(byteArrayOf(1) + Random.nextBytes(19))
+                                    .toBigInteger(),
                                 publicKey = tbsCsr.publicKey,
-                                signatureAlgorithm = signer.signatureAlgorithm.toX509SignatureAlgorithm().getOrThrow(),
-                                validFrom = Asn1Time(Clock.System.now()),
-                                validUntil = Asn1Time(Clock.System.now() + 10.days),
-                                issuerName = listOf(
-                                    RelativeDistinguishedName(
-                                        AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme"))
+                                signatureAlgorithm = signer.signatureAlgorithm,
+                                validFrom = Clock.System.now(),
+                                validUntil = Clock.System.now() + 10.days,
+                                issuerName = Name(
+                                    listOf(
+                                        RelativeDistinguishedName(
+                                            X500AttributeTypeAndValue.CommonName(Asn1String.UTF8("WARDEN Supreme"))
+                                        )
                                     )
                                 ),
                                 subjectName = tbsCsr.subjectName,
                             )
-                        ).map { listOf(it) }.getOrThrow()
+                        ).let { listOf(it) }
                     }
                 },
             )

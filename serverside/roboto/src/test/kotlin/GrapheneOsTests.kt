@@ -199,19 +199,7 @@ private fun grapheneBaseConfig(
 
 private fun AndroidAttestationConfiguration.withAppVerifiedBootKeys(overrideKeys: Set<VerifiedBootKey>) =
     AndroidAttestationConfiguration(
-        applications = applications.map {
-            AndroidAttestationConfiguration.AppData(
-                packageName = it.packageName,
-                signerFingerprints = it.signerFingerprints,
-                appVersion = it.appVersion,
-                androidVersionOverride = it.androidVersionOverride,
-                patchLevelOverride = it.patchLevelOverride,
-                requireRemoteKeyProvisioningOverride = it.requireRemoteKeyProvisioningOverride,
-                trustedRootOverrides = it.trustedRootOverrides,
-                requireStrongBoxOverride = it.requireStrongBoxOverride,
-                verifiedBootKeys = overrideKeys
-            )
-        },
+        applications = applications.map { it.copy(verifiedBootKeys = overrideKeys) },
         androidVersion = androidVersion,
         patchLevel = patchLevel,
         requireStrongBox = requireStrongBox,

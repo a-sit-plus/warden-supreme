@@ -2,24 +2,27 @@
 
 package at.asitplus.warden
 
-import at.asitplus.attestation.WardenDebugAttestationStatement
 import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.KeyAttestation
+import at.asitplus.attestation.WardenDebugAttestationStatement
 import at.asitplus.attestation.android.*
 import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.Signum
 import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.pki.leaf
 import at.asitplus.warden.collector.shared.CollectorPaths
 import at.asitplus.warden.collector.shared.androidAttestationJson
-import kotlinx.html.*
-import kotlinx.html.stream.appendHTML
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.html.*
+import kotlinx.html.stream.appendHTML
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.json.*
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
@@ -319,7 +322,7 @@ class CollectorStore(private val dir: File) : AutoCloseable {
         val chainFile = File(recordDir, "chain.der")
         val hasChain = chain != null && catchingUnwrapped {
             val der =
-                ByteArrayOutputStream().use { out -> chain.forEach { out.write(it.encodeToDer()) }; out.toByteArray() }
+                ByteArrayOutputStream().use { out -> chain.forEach { out.write(it.asn1.toDer()) }; out.toByteArray() }
             chainFile.writeBytes(der)
         }.isSuccess
         if (!hasChain) chainFile.delete()
@@ -355,8 +358,8 @@ class CollectorStore(private val dir: File) : AutoCloseable {
             avb = extract { (hw?.rootOfTrust?.getOrNull() ?: sw?.rootOfTrust?.getOrNull())?.let { avbStatus(it) } },
             packageName = extract { sw?.attestationApplicationId?.getOrNull()?.packageInfos?.firstOrNull()?.packageName },
             packageVersion = extract { sw?.attestationApplicationId?.getOrNull()?.packageInfos?.firstOrNull()?.version?.toString() },
-            certValidityStart = extract { chain?.leaf?.tbsCertificate?.let { "${it.validFrom.instant}" } } ?: NA,
-            certValidityEnd = extract { chain?.leaf?.tbsCertificate?.let { "${it.validUntil.instant}" } } ?: NA,
+            certValidityStart = extract { chain?.leaf?.tbsCertificate?.let { "${it.validFrom}" } } ?: NA,
+            certValidityEnd = extract { chain?.leaf?.tbsCertificate?.let { "${it.validUntil}" } } ?: NA,
             provisioning = extract {
                 if (extension?.keyMintSecurityLevel != AttestationKeyDescription.SecurityLevel.SOFTWARE) chain?.let {
                     provisioning(
@@ -409,7 +412,8 @@ private fun avbStatus(rootOfTrust: AuthorizationList.RootOfTrust): String = when
 
 private fun provisioning(chain: CertificateChain): String {
     val factory = CertificateFactory.getInstance("X.509")
-    val jca = chain.map { factory.generateCertificate(ByteArrayInputStream(it.encodeToDer())) as X509Certificate }
+    val jca =
+        chain.map { factory.generateCertificate(ByteArrayInputStream(it.asn1.toDer())) as X509Certificate }
     return if (jca.isRemoteKeyProvisioned()) "RKP" else "factory-provisioned"
 }
 

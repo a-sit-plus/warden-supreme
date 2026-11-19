@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.AndroidAttestationConfiguration.TrustedRootOverrides
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.generator.Provisioning
 import at.asitplus.attestation.data.FakeAttestations
@@ -87,6 +88,23 @@ val FakeRkpAttestationTests by matrixSuite {
                 certificates = chain,
                 expectedChallenge = challenge
             ).getOrThrow() shouldBe chain
+        }
+
+        "a hardware chain requires its root in the hardware override when both engines are enabled" {
+            val chain = fakeRkpChain()
+            val config = checkerFor(chain).attestationConfiguration.copy(
+                hardwareTrustedRoots = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS,
+                enableSoftwareAttestation = true,
+                revocation = emptyList(),
+            )
+            val app = config.applications.single()
+            val roots = setOf(TrustedRoot.PublicKey(chain.last().publicKey))
+            val software = app.copy(trustedRootOverrides = TrustedRootOverrides(software = roots))
+            val hardware = app.copy(trustedRootOverrides = TrustedRootOverrides(hardware = roots))
+            shouldThrow<AttestationValueException> {
+                Roboto(config.copy(applications = listOf(software))).verify(chain, expectedChallenge = challenge).getOrThrow()
+            }.reason shouldBe AttestationValueException.Reason.SEC_LEVEL
+            Roboto(config.copy(applications = listOf(hardware))).verify(chain, expectedChallenge = challenge).getOrThrow() shouldBe chain
         }
 
         "a factory-provisioned chain does not" {

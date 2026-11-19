@@ -2,6 +2,8 @@
 
 package at.asitplus.attestation.supreme
 
+import kotlinx.serialization.encodeToByteArray
+
 import at.asitplus.attestation.Makoto
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidRevocationList

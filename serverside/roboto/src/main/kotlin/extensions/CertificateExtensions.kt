@@ -1,13 +1,45 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.catchingUnwrapped
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.encoding.parse
+import at.asitplus.awesn1.Asn1Element
+import at.asitplus.awesn1.encoding.parse
 import co.nstant.`in`.cbor.CborDecoder
 import com.android.keyattestation.verifier.provisioningInfo
 import java.security.cert.X509Certificate
 import javax.security.auth.x500.X500Principal
 
+
+import at.asitplus.signum.indispensable.pki.AttributeTypeAndValue
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.awesn1.ObjectIdentifier
+import at.asitplus.awesn1.encoding.decodeToString
+import co.nstant.`in`.cbor.model.UnsignedInteger
+import com.android.keyattestation.verifier.asInteger
+
+@JvmName("getSignumRkpData")
+fun CertificateChain.getRkpData(): co.nstant.`in`.cbor.model.Map? = catchingUnwrapped {
+    require(isRemoteKeyProvisioned())
+    get(1).tbsCertificate.extensions.firstOrNull { it.oid == ObjectIdentifier(OID_RKP) }?.let {
+        CborDecoder.decode(it.asn1.toRepresentation().value).first() as co.nstant.`in`.cbor.model.Map
+    }
+}.getOrNull()
+
+@JvmName("getSignumNumberOfRemotelyProvisionedCertificates")
+fun CertificateChain.getNumberOfRemotelyProvisionedCertificates(): Int? = catchingUnwrapped {
+    requireNotNull(getRkpData()?.get(UnsignedInteger(1L))).asInteger()
+}.getOrNull()
+
+@JvmName("isSignumRemoteKeyProvisioned")
+fun CertificateChain.isRemoteKeyProvisioned(): Boolean {
+    if (size < 2) return false
+    val attributes = get(size - 2).tbsCertificate.subjectName.relativeDistinguishedNames
+        .flatMap { it.attrsAndValues }
+        .filter { it.oid == AttributeTypeAndValue.OID.commonName || it.oid == AttributeTypeAndValue.OID.organizationName }
+        .associate { it.oid to it.asn1.toRepresentation().value.asPrimitive().decodeToString() }
+    return attributes[AttributeTypeAndValue.OID.commonName] == "Droid CA2" &&
+        attributes[AttributeTypeAndValue.OID.organizationName] == "Google LLC"
+}
 
 /**
  * Returns the parsed, but generic contents of the [Remote Key Provisioning

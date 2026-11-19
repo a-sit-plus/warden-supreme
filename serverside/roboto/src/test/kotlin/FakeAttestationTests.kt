@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.data.FakeAttestations
@@ -7,6 +8,7 @@ import at.asitplus.attestation.data.BootState
 import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import java.time.YearMonth
 import java.time.ZoneOffset
 import java.util.*
@@ -398,7 +400,9 @@ val FakeAttestationTests by matrixSuite {
                                 packageName = packageName,
                                 signerFingerprints = setOf(signatureDigest),
                                 appVersion = appVersion,
-                                trustedRootOverrides = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
+                                trustedRootOverrides = AndroidAttestationConfiguration.TrustedRootOverrides(
+                                    hardware = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
+                                )
                             ),
                             androidVersion = androidVersion,
                             patchLevel = patchLevel,
@@ -419,26 +423,15 @@ val FakeAttestationTests by matrixSuite {
                         checker.verify(attestationProof, expectedChallenge = challenge).getOrThrow()
                     }.reason shouldBe CertificateInvalidException.Reason.TRUST
                 }
-                "but never without trust anchors" {
-                    val checker = Roboto(
-                        AndroidAttestationConfiguration(
-                            AndroidAttestationConfiguration.AppData(
-                                packageName = packageName,
-                                signerFingerprints = setOf(signatureDigest),
-                                appVersion = appVersion,
-                                trustedRootOverrides = setOf()
-                            ),
-                            androidVersion = androidVersion,
-                            patchLevel = patchLevel,
-                            requireStrongBox = false,
-                            allowBootloaderUnlock = false,
-                            ignoreLeafValidity = false,
-                            supremeParser = supreme
+                "empty app trust anchor overrides are rejected at construction" {
+                    shouldThrow<AndroidAttestationException> {
+                        AndroidAttestationConfiguration.AppData(
+                            packageName = packageName,
+                            signerFingerprints = setOf(signatureDigest),
+                            appVersion = appVersion,
+                            deprecatedSecurityLevelUnawareTrustedRootOverrides = emptySet()
                         )
-                    )
-                    shouldThrow<CertificateInvalidException> {
-                        checker.verify(certificates = attestationProof, expectedChallenge = challenge).getOrThrow()
-                    }.reason shouldBe CertificateInvalidException.Reason.TRUST
+                    }.message.orEmpty() shouldContain "attestation would always fail"
                 }
 
             }

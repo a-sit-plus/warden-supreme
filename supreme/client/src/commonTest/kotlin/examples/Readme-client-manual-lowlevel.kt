@@ -10,7 +10,9 @@ import at.asitplus.attestation.supreme.attestationEndpointUrl
 import at.asitplus.attestation.supreme.createCsr
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.pki.CertificateChain
-import at.asitplus.signum.supreme.dsl.REQUIRED
+import at.asitplus.signum.dsl.*
+import at.asitplus.signum.Signum
+import at.asitplus.signum.supreme.installSupreme
 import at.asitplus.signum.supreme.os.PlatformSigningProvider
 import io.ktor.client.*
 import io.ktor.http.*
@@ -29,6 +31,7 @@ suspend fun lowlevel() {
 
 
     // --8<-- [start:manual-client-flow]
+    Signum.installSupreme()
  /*(1)!*/val client = AttestationClient(ktorClient)
  /*(2)!*/val serverChallenge = client.getChallenge(Url(ENDPOINT_CHALLENGE)).getOrThrow()
     require(serverChallenge.dataAuth == DataAuthentication.Signature) {
@@ -58,7 +61,7 @@ suspend fun lowlevel() {
                 timeout = 30.seconds
             }
         }
-    }.getOrThrow() //handle error
+    } //handle exceptions
 
  /*(5)!*/val csr = signer.createCsr(serverChallenge,
      /*optional SubjectName, extns, attributes go here*/

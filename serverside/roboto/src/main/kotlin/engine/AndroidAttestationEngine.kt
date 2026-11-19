@@ -1,5 +1,6 @@
 package at.asitplus.attestation.android.engine
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.*
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
@@ -8,30 +9,28 @@ import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
 import com.google.android.attestation.ParsedAttestationRecord
 import com.ionspin.kotlin.bignum.integer.BigInteger
-import io.ktor.util.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
-import java.util.*
+import kotlin.io.encoding.Base64
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
-import kotlin.time.toJavaInstant
 
 
-sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList, Cert, CertPath>(
+sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList>(
     protected val attestationConfiguration: AndroidAttestationConfiguration,
     protected val verifyChallenge: (expected: ByteArray, actual: ByteArray) -> Boolean
 ) {
-    abstract val certChainValidator: CertChainValidator<Cert, CertPath>
+    abstract val certChainValidator: CertChainValidator
     val trustAnchors: Collection<TrustedRoot> by lazy { type.trustAnchors }
 
     protected abstract val type: EngineType<AttRecord, AuthList>
 
-    abstract val List<Cert>.attestationRecord: AttRecord?
+    abstract val CertificateChain.attestationRecord: AttRecord?
 
-    protected abstract fun List<Cert>.selectAttestedApplication(): AndroidAttestationConfiguration.AppData?
+    protected abstract fun CertificateChain.selectAttestedApplication(): AndroidAttestationConfiguration.AppData?
 
     protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
     protected abstract val AttRecord.challenge: ByteArray
@@ -74,13 +73,13 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
      */
     @Throws(AttestationValueException::class, CertificateInvalidException::class, RevocationException::class)
     suspend fun verifyAttestation(
-        certificates: List<Cert>,
+        certificates: CertificateChain,
         verificationDate: Instant,
         expectedChallenge: ByteArray,
         onRevocationLists: (List<ConfigWithList>) -> Unit = {},
     ): AttRecord {
         val actualVerificationDate =
-            Date.from((verificationDate + attestationConfiguration.verificationSecondsOffset.seconds).toJavaInstant())
+            verificationDate + attestationConfiguration.verificationSecondsOffset.seconds
 
 
         //limited, purpose-build extractor, hardened application id extractor is used here
@@ -101,14 +100,19 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             )
         }
 
-        val thisAppsTrustAnchors = attestedApp.trustedRootOverrides ?: trustAnchors
+        val overrides = attestedApp.trustedRootOverrides
+        @Suppress("DEPRECATION")
+        val thisAppsTrustAnchors = when (type) {
+            is AndroidAttestationEngine.HardwareEngine -> overrides?.hardware
+            is AndroidAttestationEngine.SoftwareEngine -> overrides?.software
+        } ?: attestedApp.deprecatedSecurityLevelUnawareTrustedRootOverrides ?: trustAnchors
         val rkpRequired =
             attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
         val chainValidation = with(certChainValidator) {
-            certificates.verifyCertificateChain(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
+            certificates.verify(actualVerificationDate, thisAppsTrustAnchors, rkpRequired)
         }
         onRevocationLists(chainValidation.revocationLists)
-        val certPath = chainValidation.verdict.getOrThrow()
+        val chainSecurityLevel = chainValidation.verdict.getOrThrow()
 
         val parsedAttestationRecord = catchingUnwrapped {
             certificates.attestationRecord ?: throw IllegalArgumentException("No attestation record present")
@@ -130,16 +134,15 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
                 receivedChallenge
             )
         ) throw AttestationValueException(
-            "verification of attestation challenge failed. Expected challenge: ${expectedChallenge.encodeBase64()}, received challenge: ${receivedChallenge.encodeBase64()}",
+            "verification of attestation challenge failed. Expected challenge: ${Base64.encode(expectedChallenge)}, received challenge: ${Base64.encode(receivedChallenge)}",
             reason = AttestationValueException.Reason.CHALLENGE,
             expectedValue = expectedChallenge,
             actualValue = receivedChallenge
         )
         parsedAttestationRecord.verifyAttestationTime(verificationDate)
         with(certChainValidator) {
-
             type.verifySecurityLevel(
-                certPath.generalizedSecurityLevel,
+                with(type) { chainSecurityLevel.coerce() },
                 parsedAttestationRecord,
                 attestedApp.requireStrongBoxOverride
             )
@@ -366,6 +369,8 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             appOverride: Boolean?
         )
 
+        fun GeneralizedSecurityLevel?.coerce(): GeneralizedSecurityLevel
+
         val trustAnchors: Collection<TrustedRoot>
 
         @Throws(AttestationValueException::class)
@@ -391,6 +396,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             if (attestationConfiguration.softwareTrustedRoots.isEmpty()) throw ConfigurationException("No software attestation trust anchors configured")
         }
 
+        override fun GeneralizedSecurityLevel?.coerce() = this?:GeneralizedSecurityLevel.SOFTWARE
 
         override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
 
@@ -440,6 +446,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw ConfigurationException("No hardware attestation trust anchors configured")
         }
 
+        override fun GeneralizedSecurityLevel?.coerce() = this?:GeneralizedSecurityLevel.TEE
 
         override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.hardwareTrustedRoots
 
@@ -469,6 +476,22 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             record: AttRecord,
             appOverride: Boolean? /*irrelevant for SW*/
         ) = record.run {
+            for ((name, claimedLevel) in listOf("Attestation" to attestationSecLevel, "Keymaster" to keymasterSecLevel)) {
+                //@formatter:off
+                val overclaims  = claimedLevel >  securityLevelFromChain
+
+                val underclaims = claimedLevel <  securityLevelFromChain        && /*↓↓ set underclaims to false, if this property is true ↓↓*/
+  /* never go lower than TEE → */ claimedLevel == GeneralizedSecurityLevel.TEE  && !attestationConfiguration.allowTeeSecurityLevelForStrongbox
+                //@formatter:on
+
+                if (overclaims || underclaims)
+                    throw AttestationValueException(
+                        message = "$name security $claimedLevel level does not match security level $securityLevelFromChain inferred from certificate chain",
+                        reason = AttestationValueException.Reason.SEC_LEVEL,
+                        expectedValue = securityLevelFromChain,
+                        actualValue = claimedLevel,
+                    )
+            }
             if (appOverride ?: attestationConfiguration.requireStrongBox) {
                 if (attestationSecLevel != GeneralizedSecurityLevel.STRONGBOX)
                     throw AttestationValueException(
@@ -482,14 +505,6 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
                         "Keymaster security level not StrongBox",
                         reason = AttestationValueException.Reason.SEC_LEVEL,
                         expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = keymasterSecLevel
-                    )
-                if (securityLevelFromChain != GeneralizedSecurityLevel.STRONGBOX)
-                    throw AttestationValueException(
-                        message = "Keymaster security ${keymasterSecLevel} level does not match security level $securityLevelFromChain inferred from certificate chain",
-                        cause = null,
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = securityLevelFromChain,
                         actualValue = keymasterSecLevel
                     )
             } else {

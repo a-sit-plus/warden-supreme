@@ -3,7 +3,7 @@ import at.asitplus.attestation.supreme.DataAuthentication
 import at.asitplus.attestation.supreme.PrimitiveType
 import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.attestation.supreme.requireBoundedArrayNesting
-import at.asitplus.signum.indispensable.Digest
+import at.asitplus.signum.indispensable.digest.Digest
 import at.asitplus.testballoon.matrix.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe

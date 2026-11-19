@@ -40,7 +40,7 @@ val attestation = issuer.issue {
 /*(4)!*/val attestedKey = attestation.leafSigner
 // --8<-- [end:generator-issue]
         chain.size shouldBe 4
-        attestedKey.publicKey shouldBe attestation.leafCertificate.decodedPublicKey.getOrThrow()
+        attestedKey.publicKey shouldBe attestation.leafCertificate.publicKey
         requireNotNull(attestation.leafCertificate.androidAttestationExtension)
             .hardwareEnforced.algorithm?.getOrThrow() shouldBe AuthorizationList.Algorithm.EC
     }

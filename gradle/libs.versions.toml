@@ -5,8 +5,8 @@ kotlin = "2.4.10"
 
 guava = "33.5.0-jre"
 autovalue = "1.11.0"
-signum = "3.26.0"
-supreme = "0.16.0"
+signum = "4.0.0"
+supreme = "1.0.0"
 agp = "9.1.1"
 cbor = "0.9"
 gson = "2.13.2"
@@ -47,7 +47,6 @@ ktorPlugin = "3.5.0"
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 autovalue-value = { group = "com.google.auto.value", name = "auto-value", version.ref = "autovalue" }
 autovalue-annotations = { group = "com.google.auto.value", name = "auto-value-annotations", version.ref = "autovalue" }
-androidx-annotations = { group = "androidx.annotation", name = "annotation", version.ref = "androidx" }
 cbor = { group = "co.nstant.in", name = "cbor", version.ref = "cbor" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 protobuf-javalite = { group = "com.google.protobuf", name = "protobuf-javalite", version.ref = "protobuf" }
@@ -63,7 +62,7 @@ spring-boot-starter = { group = "org.springframework.boot", name = "spring-boot-
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring-boot" }
 
 yamltk = {module = "net.mamoe.yamlkt:yamlkt", version.ref = "yamlkt"}
-signum = { group = "at.asitplus.signum", name = "indispensable", version.ref = "signum" }
+signum = { group = "at.asitplus.signum", name = "indispensable-pkix", version.ref = "signum" }
 supreme = { group = "at.asitplus.signum", name = "supreme", version.ref = "supreme" }
 devicecheck = { group = "ch.veehait.devicecheck", name = "devicecheck-appattest", version.ref = "devicecheck" }
 jackson-cbor = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-cbor", version.ref = "jackson" }

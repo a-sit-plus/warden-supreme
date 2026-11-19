@@ -1,3 +1,9 @@
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.attestation.android.AttestationKeyDescription
+import at.asitplus.attestation.android.androidAttestationExtension
+import at.asitplus.attestation.android.prettyPrint
+import at.asitplus.awesn1.encoding.encodeToDer
 import at.asitplus.attestation.android.*
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.asn1.encoding.Asn1
@@ -119,8 +125,7 @@ val CustomParserTests by matrixSuite {
                 "certificates",
                 attestationCertChain,
                 nameFn = { _, value -> value.subjectX500Principal.toString() + " (" + value.sigAlgName + ")" }) test {
-                it.toKmpCertificate().isSuccess shouldBe true
-                it.toKmpCertificate().getOrThrow().encodeToDer() shouldBe it.encoded
+                it.toKmpCertificate().asn1.toDer() shouldBe it.encoded
             }
         }
         val fromGoogle =

@@ -2,6 +2,11 @@
 
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.fromAsn1
+import kotlinx.serialization.encodeToByteArray
+import at.asitplus.awesn1.serialization.encodeToTlv
+
+
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.attestation.IosAttestationConfiguration
 import at.asitplus.attestation.Makoto
@@ -17,14 +22,16 @@ import at.asitplus.signum.indispensable.AndroidKeystoreAttestation
 import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.CryptoSignature
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
-import at.asitplus.signum.indispensable.X509SignatureAlgorithm
-import at.asitplus.signum.indispensable.asn1.Asn1String
+import at.asitplus.awesn1.Asn1String
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.jsonEncoded
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequest
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
+import at.asitplus.signum.indispensable.pki.CertificationRequest
+import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.indispensable.pki.X509Certificate as SignumX509Certificate
+import at.asitplus.signum.indispensable.sign.EcdsaAlgorithm
+import at.asitplus.signum.indispensable.sign.RsaAlgorithm
+import at.asitplus.signum.indispensable.pki.Certificate as SignumX509Certificate
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
@@ -151,7 +158,7 @@ internal fun publicKeyForAttestation(attestationJson: String): CryptoPublicKey {
     val attestation = Attestation.fromJSON(attestationJson)
     return when (attestation) {
         is AndroidKeystoreAttestation ->
-            attestation.certificateChain.first().decodedPublicKey.getOrThrow()
+            attestation.certificateChain.first().publicKey
         is IosHomebrewAttestation ->
             attestation.parsedClientData.publicKey
         else -> error("Unsupported attestation type: ${attestation::class.simpleName}")
@@ -163,6 +170,7 @@ internal fun keyPairForAttestation(attestationJson: String): KeyPair {
     return when (publicKey) {
         is CryptoPublicKey.EC -> generateEcKeyPair()
         is CryptoPublicKey.RSA -> generateRsaKeyPair(publicKey.bits.number.toInt())
+        else -> error("Unsupported public key: ${publicKey::class.simpleName}")
     }
 }
 
@@ -170,27 +178,27 @@ internal fun createCsr(
     challenge: AttestationChallenge,
     attestationJson: String,
     keyPair: KeyPair,
-): Pkcs10CertificationRequest {
+): CertificationRequest {
     return createCsrWithAttributes(
         challenge,
         keyPair,
         listOf(
-            Pkcs10CertificationRequestAttribute(
+            CsrAttribute(
                 challenge.proofOID,
                 Asn1String.UTF8(attestationJson).encodeToTlv()
             )
         ),
         publicKey = catchingUnwrapped { publicKeyForAttestation(attestationJson) }
-            .getOrElse { keyPair.public.toCryptoPublicKey().getOrThrow() },
+            .getOrElse { keyPair.public.toCryptoPublicKey() },
     )
 }
 
 internal fun createCsrWithAttributes(
     challenge: AttestationChallenge,
     keyPair: KeyPair,
-    attributes: List<Pkcs10CertificationRequestAttribute>,
-    publicKey: CryptoPublicKey = keyPair.public.toCryptoPublicKey().getOrThrow(),
-): Pkcs10CertificationRequest {
+    attributes: List<CsrAttribute>,
+    publicKey: CryptoPublicKey = keyPair.public.toCryptoPublicKey(),
+): CertificationRequest {
     return createCsrWithSubject(
         subjectName = listOf(RelativeDistinguishedName(challenge.getRdnSerialNumber())),
         keyPair = keyPair,
@@ -202,11 +210,11 @@ internal fun createCsrWithAttributes(
 internal fun createCsrWithoutNonce(
     keyPair: KeyPair,
     attestationJson: String,
-): Pkcs10CertificationRequest = createCsrWithSubject(
+): CertificationRequest = createCsrWithSubject(
     subjectName = emptyList(),
     keyPair = keyPair,
     attributes = listOf(
-        Pkcs10CertificationRequestAttribute(
+        CsrAttribute(
             WardenDefaults.OIDs.ATTESTATION_PROOF,
             Asn1String.UTF8(attestationJson).encodeToTlv()
         )
@@ -216,31 +224,31 @@ internal fun createCsrWithoutNonce(
 internal fun createCsrWithSubject(
     subjectName: List<RelativeDistinguishedName>,
     keyPair: KeyPair,
-    attributes: List<Pkcs10CertificationRequestAttribute>,
-    publicKey: CryptoPublicKey = keyPair.public.toCryptoPublicKey().getOrThrow(),
-): Pkcs10CertificationRequest {
+    attributes: List<CsrAttribute>,
+    publicKey: CryptoPublicKey = keyPair.public.toCryptoPublicKey(),
+): CertificationRequest {
     val tbsCsr = TbsCertificationRequest(
-        subjectName = subjectName,
+        subjectName = at.asitplus.signum.indispensable.pki.Name(subjectName),
         publicKey = publicKey,
         attributes = attributes,
     )
     val (sigAlg, signature) = when (keyPair.private) {
-        is ECPrivateKey -> X509SignatureAlgorithm.ES256 to "SHA256withECDSA"
-        is RSAPrivateKey -> X509SignatureAlgorithm.RS256 to "SHA256withRSA"
+        is ECPrivateKey -> EcdsaAlgorithm.withSHA256 to "SHA256withECDSA"
+        is RSAPrivateKey -> RsaAlgorithm.withSHA256andPKCS1Padding to "SHA256withRSA"
         else -> error("Unsupported key algorithm: ${keyPair.private.algorithm}")
     }.let { (alg, jcaAlg) ->
         val signatureBytes = Signature.getInstance(jcaAlg).apply {
             initSign(keyPair.private)
-            update(tbsCsr.encodeToDer())
+            update(tbsCsr.asn1.toDer())
         }.sign()
         alg to signatureBytes
     }
     val cryptoSignature = when (sigAlg) {
-        X509SignatureAlgorithm.ES256 -> CryptoSignature.EC.decodeFromDer(signature)
-        X509SignatureAlgorithm.RS256 -> CryptoSignature.RSA(signature)
+        EcdsaAlgorithm.withSHA256 -> CryptoSignature.EC.fromRawSignatureValue(signature)
+        RsaAlgorithm.withSHA256andPKCS1Padding -> CryptoSignature.RSA(signature)
         else -> error("Unsupported signature algorithm: $sigAlg")
     }
-    return Pkcs10CertificationRequest(tbsCsr, sigAlg, cryptoSignature)
+    return CertificationRequest(tbsCsr, sigAlg, cryptoSignature)
 }
 
 internal data class FakeAndroidAttestation(
@@ -287,7 +295,7 @@ internal fun FakeAndroidAttestation.prependForgedLeaf(
 }
 
 internal fun List<JcaX509Certificate>.toSignumChain(): List<SignumX509Certificate> =
-    map { SignumX509Certificate.decodeFromDer(it.encoded) }
+    map { SignumX509Certificate.fromAsn1(it.encoded) }
 
 internal data class AndroidFixture(
     val nonce: ByteArray,
@@ -300,12 +308,12 @@ internal data class AndroidFixture(
         verifier: AttestationVerifier,
         attestationJson: String = fake.attestationJson(),
         keyPair: KeyPair = fake.leafKeyPair,
-    ): Pkcs10CertificationRequest {
+    ): CertificationRequest {
         val challenge = verifier.issueChallenge(attestationEndpoint)
         return createCsr(challenge, attestationJson, keyPair)
     }
 
-    suspend fun issueCsrWithoutAttestationProof(verifier: AttestationVerifier): Pkcs10CertificationRequest {
+    suspend fun issueCsrWithoutAttestationProof(verifier: AttestationVerifier): CertificationRequest {
         val challenge = verifier.issueChallenge(attestationEndpoint)
         return createCsrWithAttributes(challenge, fake.leafKeyPair, attributes = emptyList())
     }
