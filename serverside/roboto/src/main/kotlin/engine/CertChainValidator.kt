@@ -43,5 +43,5 @@ interface CertChainValidator<T, Path> {
     ): CertificateChainValidation<Path>
     val revocationCheckers: List<Pair<AndroidRevocationList.Loader.Configuration<*>, AndroidRevocationList.Loader>>
 
-    val Path.generalizedSecurityLevel: GeneralizedSecurityLevel
+    val Path.generalizedSecurityLevel: GeneralizedSecurityLevel?
 }

@@ -856,10 +856,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /**
          * Legacy app trust roots for configurations with one attestation engine enabled.
          */
-        @Deprecated("Use trustedRootOverrides with explicit hardware or software roots.")
+        @Deprecated("Use trustedRootOverrides with explicit hardware or software roots. Will be removed in the next release!")
         @EncodeDefault(EncodeDefault.Mode.NEVER)
         @Serializable(with = AppTrustedRootOverridesSerializer::class)
-        val deprecatedSecurityLevelUnawareTrustedRootOverrides: Set<TrustedRoot>? = null,
+        internal val deprecatedSecurityLevelUnawareTrustedRootOverrides: Set<TrustedRoot>? = null,
 
         /** Overrides the roots for each attestation engine independently. */
         val trustedRootOverrides: TrustedRootOverrides? = null,

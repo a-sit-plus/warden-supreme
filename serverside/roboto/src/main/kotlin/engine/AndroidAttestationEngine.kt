@@ -144,7 +144,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         with(certChainValidator) {
 
             type.verifySecurityLevel(
-                certPath.generalizedSecurityLevel,
+                with(type) { certPath.generalizedSecurityLevel.coerce() },
                 parsedAttestationRecord,
                 attestedApp.requireStrongBoxOverride
             )
@@ -371,6 +371,8 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             appOverride: Boolean?
         )
 
+        fun GeneralizedSecurityLevel?.coerce(): GeneralizedSecurityLevel
+
         val trustAnchors: Collection<TrustedRoot>
 
         @Throws(AttestationValueException::class)
@@ -396,6 +398,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             if (attestationConfiguration.softwareTrustedRoots.isEmpty()) throw ConfigurationException("No software attestation trust anchors configured")
         }
 
+        override fun GeneralizedSecurityLevel?.coerce() = this?:GeneralizedSecurityLevel.SOFTWARE
 
         override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
 
@@ -445,6 +448,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw ConfigurationException("No hardware attestation trust anchors configured")
         }
 
+        override fun GeneralizedSecurityLevel?.coerce() = this?:GeneralizedSecurityLevel.TEE
 
         override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.hardwareTrustedRoots
 
