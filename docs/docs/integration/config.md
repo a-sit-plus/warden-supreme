@@ -220,6 +220,18 @@ It is also possible to add other time sources and externalise their configuratio
 
 ## Android Configuration
 
+### App-Specific Trust Anchors
+
+Omit `trustedRootOverrides` from an Android app entry to inherit the globally configured trust anchors. Supply a
+nonempty list of roots to replace them for that app. The generated examples show `null`, which also means inheritance.
+
+An empty list (`trustedRootOverrides: []`) in a configuration file is read as `null` and inherits global roots. This
+matches Spring Boot YAML loading, which flattens an empty list to a blank value. If an existing configuration used an
+empty list to reject all attestations for an app, remove that app from `applications` before upgrading.
+
+When constructing `AppData` in Kotlin or Java, passing an empty set throws a configuration error because it would
+leave the app without any trusted roots. Omit the argument or pass `null` to inherit the global roots.
+
 ### Android Trusted-Root Validity Overrides
 
 `enforceFactoryProvisionedChainValidity` defaults to `true` and is the configuration-wide policy for

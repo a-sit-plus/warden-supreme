@@ -69,6 +69,26 @@ val AndroidConfigurationBuilderTests by matrixSuite {
         app.requireRemoteKeyProvisioningOverride shouldBe true
         app.requireStrongBoxOverride shouldBe true
         app.trustedRootOverrides shouldBe setOf(TrustedRoot.PublicKey(publicKey))
+
+        val config = AndroidAttestationConfiguration(listOf(app))
+        AndroidAttestationConfiguration.fromJsonString(config.toJsonString()) shouldBe config
+        AndroidAttestationConfiguration.fromYamlString(config.toYamlString()) shouldBe config
+    }
+
+    "Empty trust root override lists inherit global roots in JSON and YAML" {
+        val signer = "01".repeat(32)
+        val json = """
+            {"applications": [{"packageName": "com.example", "signerFingerprints": ["$signer"], "trustedRootOverrides": []}]}
+        """.trimIndent()
+        val yaml = """
+            applications:
+              - packageName: com.example
+                signerFingerprints: ["$signer"]
+                trustedRootOverrides: []
+        """.trimIndent()
+
+        AndroidAttestationConfiguration.fromJsonString(json).applications.single().trustedRootOverrides shouldBe null
+        AndroidAttestationConfiguration.fromYamlString(yaml).applications.single().trustedRootOverrides shouldBe null
     }
 
     "Android configuration builder sets fields" {

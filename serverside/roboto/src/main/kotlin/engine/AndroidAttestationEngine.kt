@@ -470,9 +470,13 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             appOverride: Boolean? /*irrelevant for SW*/
         ) = record.run {
             for ((name, claimedLevel) in listOf("Attestation" to attestationSecLevel, "Keymaster" to keymasterSecLevel)) {
-                val overclaims = claimedLevel == GeneralizedSecurityLevel.STRONGBOX && securityLevelFromChain != GeneralizedSecurityLevel.STRONGBOX
-                val underclaims = securityLevelFromChain == GeneralizedSecurityLevel.STRONGBOX &&
-                        claimedLevel == GeneralizedSecurityLevel.TEE && !attestationConfiguration.allowTeeSecurityLevelForStrongbox
+                //@formatter:off
+                val overclaims  = claimedLevel >  securityLevelFromChain
+
+                val underclaims = claimedLevel <  securityLevelFromChain        && /*↓↓ set underclaims to false, if this property is true ↓↓*/
+  /* never go lower than TEE → */ claimedLevel == GeneralizedSecurityLevel.TEE  && !attestationConfiguration.allowTeeSecurityLevelForStrongbox
+                //@formatter:on
+
                 if (overclaims || underclaims)
                     throw AttestationValueException(
                         message = "$name security $claimedLevel level does not match security level $securityLevelFromChain inferred from certificate chain",

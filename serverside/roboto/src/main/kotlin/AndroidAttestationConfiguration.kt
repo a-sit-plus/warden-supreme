@@ -9,7 +9,9 @@ import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -467,14 +469,15 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
     val customProperties: Map<String, String> = emptyMap(),
 
     /**
-     * Allows either leaf security-level field to report `TRUSTED_ENVIRONMENT` when the verified certificate chain
-     * identifies StrongBox. Defaults to `false`, requiring both fields to report StrongBox for a StrongBox chain.
+     * Allows the security-level field in the attestation extension to report `TRUSTED_ENVIRONMENT` when the verified certificate chain
+     * identifies the security level as Strongbox based on the certificate chain's shape.
+     * Defaults to `false`, requiring field and chain to agree on the same security level.
      *
      * This never permits a StrongBox claim on a non-StrongBox chain or a software security level on a hardware chain.
      * [requireStrongBox], including an app's override, still requires both leaf fields to report StrongBox.
      */
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    val allowTeeSecurityLevelForStrongbox: Boolean = false
+    val allowTeeSecurityLevelForStrongbox: Boolean = false,
 
 ) : AttestationConfiguration {
 
@@ -749,7 +752,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         customProperties: Map<String, String> = emptyMap(),
 
         /** @see AndroidAttestationConfiguration.allowTeeSecurityLevelForStrongbox */
-        allowTeeSecurityLevelForStrongbox: Boolean = false
+        allowTeeSecurityLevelForStrongbox: Boolean = false,
+
     ) : this(
         applications = apps,
         androidVersion = version,
@@ -824,8 +828,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         val requireRemoteKeyProvisioningOverride: Boolean? = null,
 
         /**
-         * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
+         * Replaces the globally configured trust anchors for this app when set.
+         * Configuration loaders treat an empty list as omitted.
          */
+        @Serializable(with = AppTrustedRootOverridesSerializer::class)
         val trustedRootOverrides: Set<TrustedRoot>? = null,
 
         /**
@@ -853,6 +859,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         init {
             if (signerFingerprints.isEmpty()) throw object :
                 AndroidAttestationException("No signature digests specified", null) {}
+            if (trustedRootOverrides?.isEmpty() == true) throw object : AndroidAttestationException(
+                "An empty trustedRootOverrides set would leave $packageName without trusted roots, so attestation " +
+                        "would always fail. Omit the override to inherit the global trust anchors.", null
+            ) {}
         }
 
         /**
@@ -1376,6 +1386,20 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             jsonDebug.decodeFromJsonElement<AndroidAttestationConfiguration>(jsonRepresentation)
 
     }
+}
+
+private object AppTrustedRootOverridesSerializer : KSerializer<Set<TrustedRoot>?> {
+    private val delegate = SetSerializer(TrustedRootSerializer)
+    // The nullable AppData property handles wire nulls before it delegates to the set decoder.
+    override val descriptor: SerialDescriptor = delegate.descriptor
+
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun serialize(encoder: Encoder, value: Set<TrustedRoot>?) {
+        if (value == null) encoder.encodeNull() else delegate.serialize(encoder, value)
+    }
+
+    override fun deserialize(decoder: Decoder): Set<TrustedRoot>? =
+        delegate.deserialize(decoder).takeIf { it.isNotEmpty() }
 }
 
 /**
