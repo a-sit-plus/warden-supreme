@@ -1,15 +1,23 @@
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.AndroidAttestationConfiguration.TrustedRootOverrides
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.GOOGLE_RKP_EC_ROOT
 import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
 import at.asitplus.attestation.android.PatchLevel
 import at.asitplus.attestation.android.TrustedRoot
 import at.asitplus.attestation.android.VerifiedBootKey
+import at.asitplus.attestation.android.exceptions.AndroidAttestationException
 import at.asitplus.testballoon.matrix.*
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 
 val AndroidConfigurationBuilderTests by matrixSuite {
     data("TEE underclaim configuration", listOf(false, true)) test { allow ->
@@ -52,11 +60,15 @@ val AndroidConfigurationBuilderTests by matrixSuite {
         val signer = ByteArray(32) { it.toByte() }
         val patch = PatchLevel(2024, 2)
         val publicKey = GOOGLE_RKP_EC_ROOT.publicKey
+        val overrides = TrustedRootOverrides(
+            hardware = setOf(TrustedRoot.PublicKey(publicKey)),
+            software = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12,
+        )
         val app = AndroidAttestationConfiguration.AppData.Builder("com.example", signer)
             .appVersion(5)
             .androidVersionOverride(150000)
             .patchLevelOverride(patch)
-            .trustedRootOverrides(setOf(publicKey))
+            .trustedRootOverrides(overrides)
             .requireRemoteProvisioningOverride(true)
             .requireStrongBoxOverride(true)
             .build()
@@ -68,27 +80,68 @@ val AndroidConfigurationBuilderTests by matrixSuite {
         app.patchLevelOverride shouldBe patch
         app.requireRemoteKeyProvisioningOverride shouldBe true
         app.requireStrongBoxOverride shouldBe true
-        app.trustedRootOverrides shouldBe setOf(TrustedRoot.PublicKey(publicKey))
+        app.trustedRootOverrides shouldBe overrides
 
-        val config = AndroidAttestationConfiguration(listOf(app))
+        val config = AndroidAttestationConfiguration(listOf(app), enableSoftwareAttestation = true)
+        val encodedApp = config.toJsonElement().getValue("applications").jsonArray.single().jsonObject
+        (encodedApp["trustedRootOverrides"] as JsonObject).keys shouldBe setOf("hardware", "software")
         AndroidAttestationConfiguration.fromJsonString(config.toJsonString()) shouldBe config
         AndroidAttestationConfiguration.fromYamlString(config.toYamlString()) shouldBe config
     }
 
-    "Empty trust root override lists inherit global roots in JSON and YAML" {
+    "Legacy trust roots round-trip for one engine and are rejected in mixed mode" {
+        val roots = setOf(GOOGLE_RKP_EC_ROOT)
+        @Suppress("DEPRECATION")
+        val app = AndroidAttestationConfiguration.AppData.Builder("com.example", ByteArray(32) { 1 })
+            .trustedRootOverrides(roots)
+            .build()
+        @Suppress("DEPRECATION")
+        app.deprecatedSecurityLevelUnawareTrustedRootOverrides shouldBe roots
+        val configuration = AndroidAttestationConfiguration(listOf(app))
+        listOf(configuration, configuration.copy(disableHardwareAttestation = true, enableSoftwareAttestation = true))
+            .forEach { config ->
+                val encodedApp = config.toJsonElement().getValue("applications").jsonArray.single().jsonObject
+                (encodedApp["trustedRootOverrides"] is JsonArray) shouldBe true
+                encodedApp.keys.any { it.startsWith("deprecatedSecurity") } shouldBe false
+                AndroidAttestationConfiguration.fromJsonString(config.toJsonString()) shouldBe config
+                AndroidAttestationConfiguration.fromYamlString(config.toYamlString()) shouldBe config
+            }
+        shouldThrow<AndroidAttestationException> {
+            configuration.copy(enableSoftwareAttestation = true)
+        }.message.orEmpty() shouldContain "single attestation engine"
+        shouldThrow<IllegalArgumentException> {
+            app.copy(trustedRootOverrides = TrustedRootOverrides())
+        }.message.orEmpty() shouldContain "Use one form of trustedRootOverrides"
+    }
+
+    "Empty trust root overrides inherit global roots in JSON and YAML" {
         val signer = "01".repeat(32)
-        val json = """
-            {"applications": [{"packageName": "com.example", "signerFingerprints": ["$signer"], "trustedRootOverrides": []}]}
+        fun json(overrides: String) = """
+            {"applications": [{"packageName": "com.example", "signerFingerprints": ["$signer"], "trustedRootOverrides": $overrides}]}
         """.trimIndent()
-        val yaml = """
+        fun yaml(overrides: String) = """
             applications:
               - packageName: com.example
                 signerFingerprints: ["$signer"]
-                trustedRootOverrides: []
+                trustedRootOverrides: $overrides
         """.trimIndent()
 
-        AndroidAttestationConfiguration.fromJsonString(json).applications.single().trustedRootOverrides shouldBe null
-        AndroidAttestationConfiguration.fromYamlString(yaml).applications.single().trustedRootOverrides shouldBe null
+        val cases = listOf(
+            "null" to null,
+            "[]" to null,
+            "{}" to TrustedRootOverrides(),
+            """{"hardware": [], "software": null}""" to TrustedRootOverrides(),
+        )
+        for ((overrides, expected) in cases) {
+            val fromJson = AndroidAttestationConfiguration.fromJsonString(json(overrides)).applications.single()
+            val fromYaml = AndroidAttestationConfiguration.fromYamlString(yaml(overrides)).applications.single()
+            fromJson.trustedRootOverrides shouldBe expected
+            fromYaml shouldBe fromJson
+        }
+        shouldThrow<SerializationException> {
+            AndroidAttestationConfiguration.fromJsonString(json("""{"hardwrae": []}"""))
+        }.message.orEmpty() shouldContain "hardwrae"
+        shouldThrow<IllegalArgumentException> { TrustedRootOverrides(hardware = emptySet()) }
     }
 
     "Android configuration builder sets fields" {

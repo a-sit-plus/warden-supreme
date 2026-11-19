@@ -222,15 +222,19 @@ It is also possible to add other time sources and externalise their configuratio
 
 ### App-Specific Trust Anchors
 
-Omit `trustedRootOverrides` from an Android app entry to inherit the globally configured trust anchors. Supply a
-nonempty list of roots to replace them for that app. The generated examples show `null`, which also means inheritance.
+Set `trustedRootOverrides.hardware` or `trustedRootOverrides.software` on an Android app entry to replace the global
+roots for that attestation engine. Each field accepts a list of roots in the same format as the corresponding global
+list. Omit a field or set it to `null` to inherit that engine's global roots. An omitted override, `null`, and an object
+with both fields omitted or `null` all inherit both sets of global roots.
+In Kotlin, construct an `AndroidAttestationConfiguration.TrustedRootOverrides` for the app.
 
-An empty list (`trustedRootOverrides: []`) in a configuration file is read as `null` and inherits global roots. This
-matches Spring Boot YAML loading, which flattens an empty list to a blank value. If an existing configuration used an
-empty list to reject all attestations for an app, remove that app from `applications` before upgrading.
+A nonempty list in the deprecated `trustedRootOverrides: [ ... ]` form requires exactly one enabled attestation
+engine. To use app overrides with both engines enabled, place the roots under `hardware` or `software` explicitly.
 
-When constructing `AppData` in Kotlin or Java, passing an empty set throws a configuration error because it would
-leave the app without any trusted roots. Omit the argument or pass `null` to inherit the global roots.
+An empty list in a configuration file is read as `null`. This matches Spring Boot YAML loading, which flattens an
+empty list to a blank value. If an existing configuration used `trustedRootOverrides: []` to reject all attestations
+for an app, remove that app from `applications` before upgrading. In Kotlin or Java, passing an empty set throws a
+configuration error. Omit the argument or pass `null` to inherit the global roots.
 
 ### Android Trusted-Root Validity Overrides
 

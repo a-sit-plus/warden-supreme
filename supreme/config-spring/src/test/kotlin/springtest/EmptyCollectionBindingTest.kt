@@ -1,5 +1,6 @@
 package at.asitplus.attestation.springtest
 
+import at.asitplus.attestation.android.AndroidAttestationConfiguration.TrustedRootOverrides
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -20,6 +21,30 @@ import org.junit.jupiter.api.Test
  * `toYamlString()`. Blanks stay a hard error, and the error names the token.
  */
 class EmptyCollectionBindingTest {
+
+    @Test
+    fun `empty app trust root overrides inherit global roots`() {
+        val cases = listOf("[]" to null, "{hardware: [], software: []}" to TrustedRootOverrides())
+        cases.forEach { (overrides, expected) ->
+            runApp(
+                files = mapOf(
+                    "application.yaml" to """
+                        attestation:
+                          android:
+                            applications:
+                              - packageName: at.asitplus.empty.trust.roots
+                                signerFingerprints:
+                                  - ${Fixtures.SIGNER_FINGERPRINT}
+                                trustedRootOverrides: $overrides
+                    """.trimIndent()
+                )
+            ) { ctx ->
+                val android = ctx.attestationProperties().androidConfig.orFail("android configuration")
+                assertEquals(expected, android.applications.single().trustedRootOverrides)
+                assertEquals(android, ctx.environmentLoader().android())
+            }
+        }
+    }
 
     @Test
     fun `the DISABLED token disables revocation checking`() {

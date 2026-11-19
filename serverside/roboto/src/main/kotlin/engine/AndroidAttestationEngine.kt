@@ -101,7 +101,12 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             )
         }
 
-        val thisAppsTrustAnchors = attestedApp.trustedRootOverrides ?: trustAnchors
+        val overrides = attestedApp.trustedRootOverrides
+        @Suppress("DEPRECATION")
+        val thisAppsTrustAnchors = when (type) {
+            is AndroidAttestationEngine<*, *, *, *>.HardwareEngine -> overrides?.hardware
+            is AndroidAttestationEngine<*, *, *, *>.SoftwareEngine -> overrides?.software
+        } ?: attestedApp.deprecatedSecurityLevelUnawareTrustedRootOverrides ?: trustAnchors
         val rkpRequired =
             attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
         val chainValidation = with(certChainValidator) {

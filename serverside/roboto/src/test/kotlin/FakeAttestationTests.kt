@@ -400,7 +400,9 @@ val FakeAttestationTests by matrixSuite {
                                 packageName = packageName,
                                 signerFingerprints = setOf(signatureDigest),
                                 appVersion = appVersion,
-                                trustedRootOverrides = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
+                                trustedRootOverrides = AndroidAttestationConfiguration.TrustedRootOverrides(
+                                    hardware = setOf(TrustedRoot.PublicKey(attestationProof.last().publicKey))
+                                )
                             ),
                             androidVersion = androidVersion,
                             patchLevel = patchLevel,
@@ -427,7 +429,7 @@ val FakeAttestationTests by matrixSuite {
                             packageName = packageName,
                             signerFingerprints = setOf(signatureDigest),
                             appVersion = appVersion,
-                            trustedRootOverrides = emptySet()
+                            deprecatedSecurityLevelUnawareTrustedRootOverrides = emptySet()
                         )
                     }.message.orEmpty() shouldContain "attestation would always fail"
                 }

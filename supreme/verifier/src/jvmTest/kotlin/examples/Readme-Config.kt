@@ -30,7 +30,9 @@ val makoto = Makoto(
                  /*(6)!*/maxFuturePatchLevelMonths = 2
                 ),
              /*(7)!*/requireRemoteKeyProvisioningOverride = true,
-             /*(8)!*/trustedRootOverrides = setOf(GOOGLE_RKP_EC_ROOT),
+             /*(8)!*/trustedRootOverrides = AndroidAttestationConfiguration.TrustedRootOverrides(
+                    hardware = setOf(GOOGLE_RKP_EC_ROOT),
+                ),
              /*(9)!*/requireStrongBoxOverride = true,
              /*(10)!*/customProperties = mapOf("an app flag" to "is present"),
             )
