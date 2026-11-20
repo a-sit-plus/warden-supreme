@@ -2,9 +2,7 @@ package at.asitplus.attestation.android
 
 import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.engine.GeneralizedSecurityLevel
-import at.asitplus.attestation.android.engine.GeneralizedSecurityLevel.SOFTWARE
-import at.asitplus.attestation.android.engine.GeneralizedSecurityLevel.STRONGBOX
-import at.asitplus.attestation.android.engine.GeneralizedSecurityLevel.TEE
+import at.asitplus.attestation.android.engine.GeneralizedSecurityLevel.*
 import at.asitplus.attestation.android.engine.RtgAttestationEngine
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.generator.Provisioning
@@ -12,12 +10,12 @@ import at.asitplus.attestation.generator.androidAttestationIssuer
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.testballoon.matrix.matrixSuite
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
-import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel as ParsedSecurityLevel
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
+import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel as ParsedSecurityLevel
 
 val SecurityLevelConsistencyTest by matrixSuite {
     val issuedAt = Instant.parse("2025-01-10T00:00:00Z")
@@ -49,7 +47,7 @@ val SecurityLevelConsistencyTest by matrixSuite {
     }
 
     val teeBaseline = Claim(
-        "TEE baseline", tee, tee, tee,
+        "TEE baseline", issuer = tee, attestation = tee, keyMint = tee,
         strongBoxRejection = Rejection(attestation, ParsedSecurityLevel.STRONG_BOX, TEE),
     )
     val claims = listOf(
@@ -139,7 +137,8 @@ val SecurityLevelConsistencyTest by matrixSuite {
             if (provisioning == Provisioning.FACTORY && claim == teeBaseline) {
                 "hardware fallback distinguishes an unknown chain level from SOFTWARE" {
                     val engine = RtgAttestationEngine.Hardware(configuration, ByteArray::contentEquals)
-                    val chainLevel = with(engine.certChainValidator) { KeyAttestationCertPath(chain).generalizedSecurityLevel }
+                    val chainLevel =
+                        with(engine.certChainValidator) { KeyAttestationCertPath(chain).generalizedSecurityLevel }
                     chainLevel shouldBe null
                     val record = with(engine) { chain.attestationRecord }
                     with(engine.HardwareEngine()) {
@@ -160,7 +159,10 @@ val SecurityLevelConsistencyTest by matrixSuite {
                 }
             }
             data("supremeParser", listOf(false, true)) - { supreme ->
-                data("requireStrongBox", policies, nameFn = { "global=${it.global}, app=${it.appOverride}" }) - { policy ->
+                data(
+                    "requireStrongBox",
+                    policies,
+                    nameFn = { "global=${it.global}, app=${it.appOverride}" }) - { policy ->
                     data("allowTeeSecurityLevelForStrongbox", listOf(false, true)) test { allowUnderclaim ->
                         val checker = Roboto(
                             configuration.copy(
