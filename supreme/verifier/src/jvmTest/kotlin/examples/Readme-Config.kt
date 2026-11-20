@@ -19,6 +19,7 @@ val makoto = Makoto(
             AndroidAttestationConfiguration.AppData(
                 packageName = "at.asitplus.attestation_client",
                 signerFingerprints = setOf("34 b9 76 2c 4d 6c 90 d4 84 31 94 0c 57 bd e7 31 42 58 b2 64 20 ec".parseHex()),
+                // This app inherits the global trust anchors.
             ),
          /*(2)!*/AndroidAttestationConfiguration.AppData(
              /*(3)!*/packageName = "at.asitplus.attestation_client-hardened",
@@ -29,7 +30,9 @@ val makoto = Makoto(
                  /*(6)!*/maxFuturePatchLevelMonths = 2
                 ),
              /*(7)!*/requireRemoteKeyProvisioningOverride = true,
-             /*(8)!*/trustedRootOverrides = setOf(GOOGLE_RKP_EC_ROOT),
+             /*(8)!*/trustedRootOverrides = AndroidAttestationConfiguration.TrustedRootOverrides(
+                    hardware = setOf(GOOGLE_RKP_EC_ROOT),
+                ),
              /*(9)!*/requireStrongBoxOverride = true,
              /*(10)!*/customProperties = mapOf("an app flag" to "is present"),
             )

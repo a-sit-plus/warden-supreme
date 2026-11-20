@@ -13,6 +13,8 @@
       Keep `AttestedAttributeValue` as a deprecated typealias with a rename hint for source compatibility.
 * Add data-driven JSON/CBOR primitive-map round-trip and malformed-payload tests, and iOS primitive-bridge tests.
 * Add Collector APIs to query to statements within a timeframe
+* Enforce Android security-level consistency between the certificate chain and both signed fields. TEE claims on StrongBox chains require opt-in.
+* Split Android app `trustedRootOverrides` into `hardware` and `software`. Nonempty legacy lists require a single enabled engine.
 
 ## 1.2.0
 * **Add iOS (Swift) Client**

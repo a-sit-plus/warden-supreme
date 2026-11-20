@@ -101,7 +101,12 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             )
         }
 
-        val thisAppsTrustAnchors = attestedApp.trustedRootOverrides ?: trustAnchors
+        val overrides = attestedApp.trustedRootOverrides
+        @Suppress("DEPRECATION")
+        val thisAppsTrustAnchors = when (type) {
+            is AndroidAttestationEngine<*, *, *, *>.HardwareEngine -> overrides?.hardware
+            is AndroidAttestationEngine<*, *, *, *>.SoftwareEngine -> overrides?.software
+        } ?: attestedApp.deprecatedSecurityLevelUnawareTrustedRootOverrides ?: trustAnchors
         val rkpRequired =
             attestedApp.requireRemoteKeyProvisioningOverride ?: attestationConfiguration.requireRemoteKeyProvisioning
         val chainValidation = with(certChainValidator) {
@@ -139,7 +144,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
         with(certChainValidator) {
 
             type.verifySecurityLevel(
-                certPath.generalizedSecurityLevel,
+                with(type) { certPath.generalizedSecurityLevel.coerce() },
                 parsedAttestationRecord,
                 attestedApp.requireStrongBoxOverride
             )
@@ -366,6 +371,8 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             appOverride: Boolean?
         )
 
+        fun GeneralizedSecurityLevel?.coerce(): GeneralizedSecurityLevel
+
         val trustAnchors: Collection<TrustedRoot>
 
         @Throws(AttestationValueException::class)
@@ -391,6 +398,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             if (attestationConfiguration.softwareTrustedRoots.isEmpty()) throw ConfigurationException("No software attestation trust anchors configured")
         }
 
+        override fun GeneralizedSecurityLevel?.coerce() = this?:GeneralizedSecurityLevel.SOFTWARE
 
         override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
 
@@ -440,6 +448,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw ConfigurationException("No hardware attestation trust anchors configured")
         }
 
+        override fun GeneralizedSecurityLevel?.coerce() = this?:GeneralizedSecurityLevel.TEE
 
         override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.hardwareTrustedRoots
 
@@ -469,6 +478,22 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             record: AttRecord,
             appOverride: Boolean? /*irrelevant for SW*/
         ) = record.run {
+            for ((name, claimedLevel) in listOf("Attestation" to attestationSecLevel, "Keymaster" to keymasterSecLevel)) {
+                //@formatter:off
+                val overclaims  = claimedLevel >  securityLevelFromChain
+
+                val underclaims = claimedLevel <  securityLevelFromChain        && /*↓↓ set underclaims to false, if this property is true ↓↓*/
+  /* never go lower than TEE → */ claimedLevel == GeneralizedSecurityLevel.TEE  && !attestationConfiguration.allowTeeSecurityLevelForStrongbox
+                //@formatter:on
+
+                if (overclaims || underclaims)
+                    throw AttestationValueException(
+                        message = "$name security $claimedLevel level does not match security level $securityLevelFromChain inferred from certificate chain",
+                        reason = AttestationValueException.Reason.SEC_LEVEL,
+                        expectedValue = securityLevelFromChain,
+                        actualValue = claimedLevel,
+                    )
+            }
             if (appOverride ?: attestationConfiguration.requireStrongBox) {
                 if (attestationSecLevel != GeneralizedSecurityLevel.STRONGBOX)
                     throw AttestationValueException(
@@ -482,14 +507,6 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
                         "Keymaster security level not StrongBox",
                         reason = AttestationValueException.Reason.SEC_LEVEL,
                         expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = keymasterSecLevel
-                    )
-                if (securityLevelFromChain != GeneralizedSecurityLevel.STRONGBOX)
-                    throw AttestationValueException(
-                        message = "Keymaster security ${keymasterSecLevel} level does not match security level $securityLevelFromChain inferred from certificate chain",
-                        cause = null,
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = securityLevelFromChain,
                         actualValue = keymasterSecLevel
                     )
             } else {

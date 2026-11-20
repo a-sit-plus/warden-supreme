@@ -240,8 +240,8 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         }
     }
 
-    override val KeyAttestationCertPath.generalizedSecurityLevel: GeneralizedSecurityLevel
-        get() = securityLevel()?.toGeneralizedSecurityLevel() ?: GeneralizedSecurityLevel.SOFTWARE
+    override val KeyAttestationCertPath.generalizedSecurityLevel: GeneralizedSecurityLevel?
+        get() = securityLevel()?.toGeneralizedSecurityLevel()
 }
 
 fun SecurityLevel?.toGeneralizedSecurityLevel(): GeneralizedSecurityLevel = when (this) {

@@ -309,6 +309,10 @@ private object HopliteFixtures {
                 appVersion = 42,
                 androidVersionOverride = 340000,
                 patchLevelOverride = PatchLevel(2025, 3, maxFuturePatchLevelMonths = 2),
+                trustedRootOverrides = AndroidAttestationConfiguration.TrustedRootOverrides(
+                    hardware = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS.take(1).toSet(),
+                    software = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12,
+                ),
                 requireRemoteKeyProvisioningOverride = true,
                 requireStrongBoxOverride = true,
                 verifiedBootKeys = linkedSetOf(
@@ -323,6 +327,7 @@ private object HopliteFixtures {
         androidVersion = 330000,
         patchLevel = PatchLevel(2025, 2, maxFuturePatchLevelMonths = 3),
         requireStrongBox = true,
+        allowTeeSecurityLevelForStrongbox = true,
         allowBootloaderUnlock = false,
         requireRollbackResistance = true,
         ignoreLeafValidity = false,

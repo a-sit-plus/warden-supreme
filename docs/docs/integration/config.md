@@ -220,6 +220,22 @@ It is also possible to add other time sources and externalise their configuratio
 
 ## Android Configuration
 
+### App-Specific Trust Anchors
+
+Set `trustedRootOverrides.hardware` or `trustedRootOverrides.software` on an Android app entry to replace the global
+roots for that attestation engine. Each field accepts a list of roots in the same format as the corresponding global
+list. Omit a field or set it to `null` to inherit that engine's global roots. An omitted override, `null`, and an object
+with both fields omitted or `null` all inherit both sets of global roots.
+In Kotlin, construct an `AndroidAttestationConfiguration.TrustedRootOverrides` for the app.
+
+A nonempty list in the deprecated `trustedRootOverrides: [ ... ]` form requires exactly one enabled attestation
+engine. To use app overrides with both engines enabled, place the roots under `hardware` or `software` explicitly.
+
+An empty list in a configuration file is read as `null`. This matches Spring Boot YAML loading, which flattens an
+empty list to a blank value. If an existing configuration used `trustedRootOverrides: []` to reject all attestations
+for an app, remove that app from `applications` before upgrading. In Kotlin or Java, passing an empty set throws a
+configuration error. Omit the argument or pass `null` to inherit the global roots.
+
 ### Android Trusted-Root Validity Overrides
 
 `enforceFactoryProvisionedChainValidity` defaults to `true` and is the configuration-wide policy for
