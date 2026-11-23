@@ -1,13 +1,13 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.fromAsn1
 import at.asitplus.signum.indispensable.CryptoPublicKey
-import at.asitplus.signum.indispensable.asn1.*
-import at.asitplus.signum.indispensable.asn1.encoding.Asn1
-import at.asitplus.signum.indispensable.asn1.encoding.decodeToInt
-import at.asitplus.signum.indispensable.pki.Pkcs10CertificationRequestAttribute
-import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
-import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
-import at.asitplus.signum.indispensable.pki.X509CertificateExtension
+import at.asitplus.awesn1.*
+import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.awesn1.encoding.decodeToInt
+import at.asitplus.signum.indispensable.pki.*
+import at.asitplus.awesn1.serialization.encodeToTlv
+import at.asitplus.signum.indispensable.asn1
 
 /**
  * Canonical DER structure authenticated by [DataAuthentication.Hash].
@@ -17,81 +17,77 @@ import at.asitplus.signum.indispensable.pki.X509CertificateExtension
  * inverse operation. This makes the mapping explicit and keeps hash construction aligned with the actual TBS CSR.
  */
 data class AttestationHashInput internal constructor(
-    val version: Int = 0,
+    val version: Int,
     val subjectName: List<RelativeDistinguishedName>,
-    val attributes: List<Pkcs10CertificationRequestAttribute> = emptyList(),
+    val attributes: List<CsrAttribute> = emptyList(),
 ) : Asn1Encodable<Asn1Sequence> {
+
+    init { require(version == 0) { "PKCS#10 only supports version 0" } }
 
     constructor(
         subjectName: List<RelativeDistinguishedName>,
-        extensions: List<X509CertificateExtension> = emptyList(),
-        version: Int = 0,
-        attributes: List<Pkcs10CertificationRequestAttribute> = emptyList(),
+        extensions: List<CertificateExtension> = emptyList(),
+        attributes: List<CsrAttribute> = emptyList(),
     ) : this(
-        version,
+        0,
         subjectName,
         extensions.ifEmpty { null }?.let { extns ->
-            attributes + Pkcs10CertificationRequestAttribute(
+            attributes + CsrAttribute(
                 KnownOIDs.extensionRequest,
-                Asn1.Sequence { extns.forEach { +it } })
+                Asn1.Sequence { extns.forEach { add(it.asn1.toTlv()) } })
         } ?: attributes,
     )
 
     override fun encodeToTlv() = Asn1.Sequence {
-        +Asn1.Int(version)
-        +Asn1.Sequence { subjectName.forEach { +it } }
-        +(Asn1.SetOf { attributes.forEach { +it } } withImplicitTag 0u)
+        add(Asn1.Int(version))
+        add(Asn1.Sequence { subjectName.forEach { add(it.asn1.toTlv()) } })
+        add(Asn1.SetOf { attributes.forEach { add(it.asn1.toTlv()) } } withImplicitTag 0u)
     }
 
     /** Completes this hash input with the attested [publicKey] and exactly one [proof] attribute. */
     fun toTbsCsr(
         publicKey: CryptoPublicKey,
-        proof: Pkcs10CertificationRequestAttribute,
+        proof: CsrAttribute,
     ): TbsCertificationRequest {
         require(attributes.none { it.oid == proof.oid }) {
             "Attestation proof attribute already present for OID ${proof.oid}"
         }
         return TbsCertificationRequest(
-            version,
-            subjectName,
+            Name(subjectName),
             publicKey,
-            (attributes + proof).canonicalized(),
+            Asn1.SetOf { (attributes + proof).forEach { add(it.asn1.toTlv()) } }
+                .map { CsrAttribute.fromAsn1(it) },
         )
     }
 
     companion object : Asn1Decodable<Asn1Sequence, AttestationHashInput> {
         override fun doDecode(src: Asn1Sequence) = src.decodeRethrowing {
             val version = next().asPrimitive().decodeToInt()
-            val subjectName = next().asSequence().map { RelativeDistinguishedName.decodeFromTlv(it.asSet()) }
+            val subjectName = next().asSequence().map { RelativeDistinguishedName.fromAsn1(it.asSet()) }
             val taggedAttributes = next().asStructure()
             if (taggedAttributes.tag.tagValue != 0uL || taggedAttributes.tag.tagClass != TagClass.CONTEXT_SPECIFIC) {
                 throw Asn1StructuralException("Expected implicitly tagged TBS CSR attributes at [0]")
             }
-            val attributes = taggedAttributes.map { Pkcs10CertificationRequestAttribute.decodeFromTlv(it.asSequence()) }
+            val attributes = taggedAttributes.map { CsrAttribute.fromAsn1(it.asSequence()) }
             if (hasNext()) throw Asn1StructuralException("Superfluous structure in attestation hash input")
             AttestationHashInput(version, subjectName, attributes)
         }
     }
 }
 
-// TODO Remove after Signum canonicalizes PKCS#10's implicitly tagged SET OF attributes.
-private fun List<Pkcs10CertificationRequestAttribute>.canonicalized() = Asn1.SetOf {
-    forEach { +it }
-}.map { Pkcs10CertificationRequestAttribute.decodeFromTlv(it.asSequence()) }
-
 /**
  * Removes the public key and exactly one attestation-proof attribute identified by [proofOid], producing the canonical
  * input used by [DataAuthentication.Hash].
  */
 fun TbsCertificationRequest.toHashInput(proofOid: ObjectIdentifier) = AttestationHashInput(
-    version,
-    subjectName,
+    0,
+    subjectName.relativeDistinguishedNames,
     attributes.removeSingle(proofOid),
 )
 
-private fun List<Pkcs10CertificationRequestAttribute>.removeSingle(
+private fun List<CsrAttribute>.removeSingle(
     oid: ObjectIdentifier,
-): List<Pkcs10CertificationRequestAttribute> {
+): List<CsrAttribute> {
     require(count { it.oid == oid } == 1) { "Expected exactly one attestation proof attribute for OID $oid" }
     return filterNot { it.oid == oid }
 }

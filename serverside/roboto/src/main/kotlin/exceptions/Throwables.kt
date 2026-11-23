@@ -1,9 +1,12 @@
 package at.asitplus.attestation.android.exceptions
 
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.AndroidRevocationList
 import at.asitplus.attestation.android.contentEqualsIfArray
 import at.asitplus.signum.indispensable.contentEqualsIfArray
-import java.security.cert.X509Certificate
+import at.asitplus.signum.indispensable.pki.Certificate
+import at.asitplus.signum.indispensable.asn1
+import at.asitplus.signum.indispensable.toKmpCertificate
 
 /**
  * Base class for all well-defined Android attestation exceptions.
@@ -143,11 +146,20 @@ class AttestationValueException(
  */
 open class CertificateInvalidException(
     message: String, cause: Throwable? = null,
-    val certificateChain: List<X509Certificate>,
-    val invalidCertificate: X509Certificate?,
+    val certificateChain: CertificateChain,
+    val invalidCertificate: Certificate?,
     val reason: Reason
 ) :
     AndroidAttestationException(message, cause) {
+
+    constructor(
+        message: String, cause: Throwable? = null,
+        certificateChain: List<java.security.cert.X509Certificate>,
+        invalidCertificate: java.security.cert.X509Certificate?, reason: Reason,
+    ) : this(message, cause, certificateChain.map { it.toKmpCertificate() }, invalidCertificate?.toKmpCertificate(), reason)
+
+    private val encodedChain by lazy { certificateChain.map { it.asn1.toDer() }.toTypedArray() }
+    private val encodedInvalidCertificate by lazy { invalidCertificate?.asn1?.toDer() }
 
     /**
      * Possible reasons a [CertificateInvalidException] was thrown
@@ -170,8 +182,8 @@ open class CertificateInvalidException(
         if (other !is CertificateInvalidException) return false
         if (!super.equals(other)) return false
 
-        if (certificateChain != other.certificateChain) return false
-        if (invalidCertificate != other.invalidCertificate) return false
+        if (!encodedChain.contentDeepEquals(other.encodedChain)) return false
+        if (!encodedInvalidCertificate.contentEquals(other.encodedInvalidCertificate)) return false
         if (reason != other.reason) return false
 
         return true
@@ -179,8 +191,8 @@ open class CertificateInvalidException(
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + certificateChain.hashCode()
-        result = 31 * result + (invalidCertificate?.hashCode() ?: 0)
+        result = 31 * result + encodedChain.contentDeepHashCode()
+        result = 31 * result + (encodedInvalidCertificate?.contentHashCode() ?: 0)
         result = 31 * result + reason.hashCode()
         return result
     }
@@ -189,10 +201,16 @@ open class CertificateInvalidException(
     class OtherMatchingRoot(
         message: String,
         cause: Throwable? = null,
-        certificateChain: List<X509Certificate>,
-        invalidCertificate: X509Certificate?,
+        certificateChain: CertificateChain,
+        invalidCertificate: Certificate?,
         val rootCertStage: Stage
     ) : CertificateInvalidException(message, cause, certificateChain, invalidCertificate, reason = Reason.TRUST) {
+        constructor(
+            message: String, cause: Throwable? = null,
+            certificateChain: List<java.security.cert.X509Certificate>,
+            invalidCertificate: java.security.cert.X509Certificate?, rootCertStage: Stage,
+        ) : this(message, cause, certificateChain.map { it.toKmpCertificate() }, invalidCertificate?.toKmpCertificate(), rootCertStage)
+
         enum class Stage {
             SOFTWARE,
             HARDWARE,
@@ -219,9 +237,15 @@ open class CertificateInvalidException(
     class NoMatchingRoot(
         message: String,
         cause: Throwable? = null,
-        certificateChain: List<X509Certificate>,
-        invalidCertificate: X509Certificate?,
+        certificateChain: CertificateChain,
+        invalidCertificate: Certificate?,
     ) : CertificateInvalidException(message, cause, certificateChain, invalidCertificate, reason = Reason.TRUST) {
+        constructor(
+            message: String, cause: Throwable? = null,
+            certificateChain: List<java.security.cert.X509Certificate>,
+            invalidCertificate: java.security.cert.X509Certificate?,
+        ) : this(message, cause, certificateChain.map { it.toKmpCertificate() }, invalidCertificate?.toKmpCertificate())
+
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -235,9 +259,15 @@ open class CertificateInvalidException(
         message: String,
         cause: Throwable? = null,
         reason: Reason,
-        certificateChain: List<X509Certificate>,
-        invalidCertificate: X509Certificate?,
+        certificateChain: CertificateChain,
+        invalidCertificate: Certificate?,
     ) : CertificateInvalidException(message, cause, certificateChain, invalidCertificate, reason) {
+        constructor(
+            message: String, cause: Throwable? = null,
+            certificateChain: List<java.security.cert.X509Certificate>,
+            invalidCertificate: java.security.cert.X509Certificate?, reason: Reason,
+        ) : this(message, cause, reason, certificateChain.map { it.toKmpCertificate() }, invalidCertificate?.toKmpCertificate())
+
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -303,13 +333,19 @@ sealed class RevocationException(message: String?, cause: Throwable? = null, val
     class Revoked(
         message: String?,
         cause: Throwable? = null,
-        val certificateChain: List<X509Certificate>,
-        val revokedCertificate: X509Certificate,
+        val certificateChain: CertificateChain,
+        val revokedCertificate: Certificate,
         val entry: AndroidRevocationList.Entry,
     ) : RevocationException(message, cause, Reason.REVOKED) {
+        constructor(
+            message: String?, cause: Throwable? = null,
+            certificateChain: List<java.security.cert.X509Certificate>,
+            revokedCertificate: java.security.cert.X509Certificate, entry: AndroidRevocationList.Entry,
+        ) : this(message, cause, certificateChain.map { it.toKmpCertificate() }, revokedCertificate.toKmpCertificate(), entry)
 
-        private val encodedChain by lazy { certificateChain.map { it.encoded }.toTypedArray() }
-        private val encodedCertificate by lazy { revokedCertificate.encoded }
+
+        private val encodedChain by lazy { certificateChain.map { it.asn1.toDer() }.toTypedArray() }
+        private val encodedCertificate by lazy { revokedCertificate.asn1.toDer() }
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is Revoked) return false

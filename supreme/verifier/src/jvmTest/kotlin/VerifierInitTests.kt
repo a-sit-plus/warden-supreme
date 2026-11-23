@@ -35,7 +35,9 @@ val initTests by matrixSuite {
                     /*(5)!*/maxFuturePatchLevelMonths = 2
                 ),
                 /*(6)!*/requireRemoteKeyProvisioningOverride = true,
-                /*(7)!*/trustedRootOverrides = setOf(GOOGLE_RKP_EC_ROOT),
+                /*(7)!*/trustedRootOverrides = AndroidAttestationConfiguration.TrustedRootOverrides(
+                    hardware = setOf(GOOGLE_RKP_EC_ROOT),
+                ),
                 /*(8)!*/requireStrongBoxOverride = true,
             )
         ),

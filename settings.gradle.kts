@@ -44,3 +44,11 @@ project(":collector-shared").projectDir = file("collector/shared")
 project(":collector-app").projectDir = file("collector/app")
 project(":collector-backend").projectDir = file("collector/backend")
 project(":collector-android").projectDir = file("collector/androidApp")
+
+
+val signumFile = file("../signum/build.gradle.kts")
+if (signumFile.exists()) {
+    logger.warn("Detected signum in ${signumFile.absolutePath}.")
+    logger.warn("Including signum as composite build.")
+    includeBuild("../signum")
+}

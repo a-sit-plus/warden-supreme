@@ -2,7 +2,7 @@
 
 package at.asitplus.attestation.supreme
 
-import at.asitplus.signum.indispensable.Digest
+import at.asitplus.signum.indispensable.digest.Digest
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -74,7 +74,7 @@ sealed interface DataAuthentication {
 private data class SerializedDataAuthentication(
     val type: Type,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    val algorithm: Digest? = null,
+    val algorithm: @Serializable(with = DigestSerializer::class) Digest? = null,
 ) {
     @Serializable
     enum class Type {

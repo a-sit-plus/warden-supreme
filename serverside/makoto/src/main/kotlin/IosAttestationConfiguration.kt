@@ -1,5 +1,7 @@
 package at.asitplus.attestation
 
+import at.asitplus.signum.supreme.installSupreme
+import at.asitplus.signum.Signum
 import at.asitplus.attestation.android.TrustedRoot
 import ch.veehait.devicecheck.appattest.attestation.AttestationValidator
 import ch.veehait.devicecheck.appattest.receipt.ReceiptValidator
@@ -52,6 +54,8 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
     val customProperties: Map<String, String> = emptyMap(),
 
     ) : AttestationConfiguration {
+
+    init { Signum.installSupreme() }
 
 
     @JvmOverloads
@@ -334,6 +338,8 @@ data class IosAttestationConfiguration @JvmOverloads constructor(
     override fun toJsonElement(): JsonObject = jsonDebug.encodeToJsonElement(this).jsonObject
 
     companion object : AttestationConfiguration.Reader<IosAttestationConfiguration> {
+
+        init { Signum.installSupreme() }
 
         private val yaml by lazy {
             Yaml {

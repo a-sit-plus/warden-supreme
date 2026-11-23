@@ -5,10 +5,12 @@ import at.asitplus.attestation.android.*
 import at.asitplus.attestation.fromSpringEnvironment
 import at.asitplus.attestation.fromSpringMap
 import at.asitplus.attestation.supreme.SupremeConfiguration
-import at.asitplus.signum.indispensable.asn1.encodeToPEM
+import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import at.asitplus.signum.indispensable.toKmpCertificate
-import at.asitplus.testballoon.matrix.*
+import at.asitplus.testballoon.matrix.ExecutionMode
+import at.asitplus.testballoon.matrix.matrixConfig
+import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.WebApplicationType
@@ -412,6 +414,6 @@ private fun withTempConfigDir(
 }
 
 private fun trustedRootPem(root: TrustedRoot): String = when (root) {
-    is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().getOrThrow().encodeToPEM().getOrThrow()
-    is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().getOrThrow().encodeToPEM().getOrThrow()
+    is TrustedRoot.Certificate -> root.certificate.toKmpCertificate().asn1.toPem()
+    is TrustedRoot.PublicKey -> root.publicKey.toCryptoPublicKey().asn1.toPem()
 }

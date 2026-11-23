@@ -9,7 +9,7 @@ import at.asitplus.attestation.supreme.JavaAttestationVerifier;
 import at.asitplus.attestation.supreme.PreAttestationError;
 import at.asitplus.attestation.supreme.SupremeConfiguration;
 import at.asitplus.signum.indispensable.CryptoPublicKey;
-import at.asitplus.signum.indispensable.pki.X509Certificate;
+import at.asitplus.signum.indispensable.pki.Certificate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,7 @@ public final class JavaAttestationVerifierTestApi {
 
     public static final class RecordingCallbacks implements JavaAttestationVerifier.Callbacks {
         private final List<String> calls = new ArrayList<>();
-        private List<X509Certificate> certificates = Collections.emptyList();
+        private List<Certificate> certificates = Collections.emptyList();
         private AttestationResponse.Failure additionalFailure;
         private RuntimeException issuerException;
         private String preErrorExplanation;
@@ -121,7 +121,7 @@ public final class JavaAttestationVerifierTestApi {
         }
 
         @Override
-        public List<X509Certificate> certificateIssuer(
+        public List<Certificate> certificateIssuer(
                 AttestationResult.Verified verified,
                 AttestationProof proof
         ) {
@@ -138,7 +138,7 @@ public final class JavaAttestationVerifierTestApi {
             return calls;
         }
 
-        public void setCertificates(List<X509Certificate> certificates) {
+        public void setCertificates(List<Certificate> certificates) {
             this.certificates = certificates;
         }
 

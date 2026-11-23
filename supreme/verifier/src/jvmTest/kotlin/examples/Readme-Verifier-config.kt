@@ -1,5 +1,6 @@
 package examples.docs.config.supreme
 
+
 import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.AttestationChallengeValidator
 import at.asitplus.attestation.supreme.AttestationVerifier
@@ -11,8 +12,8 @@ import at.asitplus.attestation.supreme.PrimitiveType
 import at.asitplus.attestation.supreme.SupremeConfiguration
 import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.signum.indispensable.ECCurve
-import at.asitplus.signum.indispensable.Digest
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
+import at.asitplus.signum.indispensable.digest.Digest
+import at.asitplus.awesn1.ObjectIdentifier
 import at.asitplus.signum.indispensable.nativeDigest
 import examples.docs.config.minimal.makoto
 import org.kotlincrypto.random.CryptoRand

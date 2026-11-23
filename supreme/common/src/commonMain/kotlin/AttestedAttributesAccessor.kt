@@ -1,5 +1,8 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.signum.indispensable.asn1
+
+
 /**
  * Returns the client-provided attributes requested by [challenge], parsed and keyed by their configured names.
  * Optional absent values are present in the map with a `null` value. If the challenge requested no attributes, the
@@ -15,7 +18,7 @@ val AttestationProof.attestedAttributes: Map<String, Primitive>
         require(requested.attributes.map { it.name }.distinct().size == requested.attributes.size) {
             "Attested attribute names must be distinct"
         }
-        val encoded = tbsCsr.attributes.single { it.oid == requested.oid }.value.single().asSequence()
+        val encoded = tbsCsr.attributes.single { it.oid == requested.oid }.asn1.toRepresentation().value.single().asSequence()
         val values = requireNotNull(AttestedAttributes(encoded).parsedAttributesBy(requested.attributes))
         return requested.attributes.mapIndexed { index, attribute -> attribute.name to values[index] }.toMap()
     }

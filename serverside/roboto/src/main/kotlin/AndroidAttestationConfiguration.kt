@@ -1,15 +1,21 @@
 package at.asitplus.attestation.android
 
+import at.asitplus.signum.supreme.installSupreme
+import at.asitplus.signum.Signum
+
+
 import at.asitplus.attestation.AttestationConfiguration
 import at.asitplus.attestation.android.exceptions.AndroidAttestationException
+import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.fromAsn1
+import at.asitplus.attestation.isYamlDecoder
+import at.asitplus.attestation.isYamlEncoder
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
-import at.asitplus.signum.indispensable.pki.X509Certificate
-import at.asitplus.signum.indispensable.toJcaCertificateBlocking
+import at.asitplus.signum.indispensable.pki.Certificate
 import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.*
+import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -18,9 +24,11 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.plus
 import net.mamoe.yamlkt.Yaml
+import net.mamoe.yamlkt.YamlList
+import net.mamoe.yamlkt.YamlLiteral
+import net.mamoe.yamlkt.YamlMap
 import java.security.KeyFactory
 import java.security.PublicKey
-import java.security.spec.X509EncodedKeySpec
 import java.time.YearMonth
 import kotlin.io.encoding.Base64
 import kotlin.math.absoluteValue
@@ -68,7 +76,7 @@ data class PatchLevel @JvmOverloads constructor(
 
 
 val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
-    X509Certificate.decodeFromPem(
+    Certificate.fromAsn1(
         """
             -----BEGIN CERTIFICATE-----
             MIICIjCCAaigAwIBAgIRAISp0Cl7DrWK5/8OgN52BgUwCgYIKoZIzj0EAwMwUjEc
@@ -85,7 +93,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
             uR2zh/80lQyu9vAFCj6E4AXc+osmRg==
             -----END CERTIFICATE-----
             """.trimIndent()
-    ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+    ),
     enforceFactoryProvisionedChainValidity = true /*NOOP for an RKP root, but better safe than sorry*/
 )
 
@@ -95,7 +103,7 @@ val GOOGLE_RKP_EC_ROOT = TrustedRoot.Certificate.AndroidSpecific(
 val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
     //Current RSA ROOT
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAPHBcqaZ6vUdMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -128,14 +136,14 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             w1IdYIg2Wxg7yHcQZemFQg==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
     //new Google EC Root
     GOOGLE_RKP_EC_ROOT,
     //Old, but as of 2025 still valid root certificate. Will expire in 2026
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFYDCCA0igAwIBAgIJAOj6GWMU0voYMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -169,13 +177,13 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             wDB5y0USicV3YgYGmi+NZfhA4URSh77Yd6uuJOJENRaNVTzk
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 
     //old, but still valid
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJANUP8luj8tazMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -208,13 +216,13 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             ex0SdDrx+tWUDqG8At2JHA==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 
     //old, but still valid
     TrustedRoot.Certificate(
-        X509Certificate.decodeFromPem(
+        Certificate.fromAsn1(
             """
             -----BEGIN CERTIFICATE-----
             MIIFHDCCAwSgAwIBAgIJAMNrfES5rhgxMA0GCSqGSIb3DQEBCwUAMBsxGTAXBgNV
@@ -247,33 +255,19 @@ val GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS: Set<TrustedRoot> = linkedSetOf(
             mD/vFDkzF+wm7cyWpQpCVQ==
             -----END CERTIFICATE-----
             """.trimIndent()
-        ).getOrThrow().toJcaCertificateBlocking().getOrThrow(),
+        ),
         enforceFactoryProvisionedChainValidity = false
     ),
 )
 
 private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
-    KeyFactory.getInstance("EC")
-        .generatePublic(
-            X509EncodedKeySpec(
-                Base64.decode(
-                    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
-                            "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA=="
-                )
-            )
-        ),
-    KeyFactory.getInstance("RSA")
-        .generatePublic(
-            X509EncodedKeySpec(
-                Base64.decode(
-                    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
-                            "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
-                            "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
-                            "+Vfkl5YLCazOkjWFmwIDAQAB"
-                )
-            )
-        )
-)
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamgu" +
+        "D/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQBXT5DKyqO107sSHVBpA==",
+    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCia63rbi5EYe/VDoLmt5TRdSMf" +
+        "d5tjkWP/96r/C3JHTsAsQ+wzfNes7UA+jCigZtX3hwszl94OuE4TQKuvpSe/lWmg" +
+        "MdsGUmX4RFlXYfC78hdLt0GAZMAoDo9Sd47b0ke2RekZyOmLw9vCkT/X11DEHTVm" +
+        "+Vfkl5YLCazOkjWFmwIDAQAB",
+).map { CryptoPublicKey.fromAsn1(Base64.decode(it)) }
 
 /**
  * Default trust anchors used to verify software attestation working up to Android 12. Useful for testing.
@@ -284,7 +278,7 @@ private val GOOGLE_OLD_TRUST_ANCHORS = arrayOf(
 val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
     GOOGLE_OLD_TRUST_ANCHORS.map {
         TrustedRoot.PublicKey(
-            publicKey = it,
+            value = it,
             enforceFactoryProvisionedChainValidity = false
         )
     }.toSet()
@@ -322,6 +316,8 @@ val GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12: Set<TrustedRoot> =
  * @param enforceFactoryProvisionedChainValidity Whether to enforce timely validity for factory-provisioned certificate
  * chains. Some old devices may have expired intermediate certificates, which will trip a validity check unless this is
  * false.
+ * @param allowTeeSecurityLevelForStrongbox Allows a StrongBox certificate chain to attest TEE security levels.
+ * Defaults to `false`; does not relax [requireStrongBox].
  */
 @Serializable
 data class AndroidAttestationConfiguration @JvmOverloads constructor(
@@ -461,7 +457,18 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * Allows attaching custom configuration properties to this configuration.
      * Sensible for extending it with custom configs while still relying on the configuration parser.
      */
-    val customProperties: Map<String, String> = emptyMap()
+    val customProperties: Map<String, String> = emptyMap(),
+
+    /**
+     * Allows the security-level field in the attestation extension to report `TRUSTED_ENVIRONMENT` when the verified certificate chain
+     * identifies the security level as Strongbox based on the certificate chain's shape.
+     * Defaults to `false`, requiring field and chain to agree on the same security level.
+     *
+     * This never permits a StrongBox claim on a non-StrongBox chain or a software security level on a hardware chain.
+     * [requireStrongBox], including an app's override, still requires both leaf fields to report StrongBox.
+     */
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val allowTeeSecurityLevelForStrongbox: Boolean = false,
 
 ) : AttestationConfiguration {
 
@@ -583,7 +590,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * Allows attaching custom configuration properties to this configuration.
          * Sensible for extending it with custom configs while still relying on the configuration parser.
          */
-        customProperties: Map<String, String> = emptyMap()
+        customProperties: Map<String, String> = emptyMap(),
+
+        /** @see AndroidAttestationConfiguration.allowTeeSecurityLevelForStrongbox */
+        allowTeeSecurityLevelForStrongbox: Boolean = false
     ) : this(
         listOf(singleApp),
         androidVersion = androidVersion,
@@ -604,6 +614,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
         supremeParser = supremeParser,
         customProperties = customProperties,
+        allowTeeSecurityLevelForStrongbox = allowTeeSecurityLevelForStrongbox,
     )
 
     /**
@@ -729,7 +740,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * Allows attaching custom configuration properties to this configuration.
          * Sensible for extending it with custom configs while still relying on the configuration parser.
          */
-        customProperties: Map<String, String> = emptyMap()
+        customProperties: Map<String, String> = emptyMap(),
+
+        /** @see AndroidAttestationConfiguration.allowTeeSecurityLevelForStrongbox */
+        allowTeeSecurityLevelForStrongbox: Boolean = false,
+
     ) : this(
         applications = apps,
         androidVersion = version,
@@ -749,13 +764,33 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         verifiedBootKeys = verifiedBootKeys,
         enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
         supremeParser = supremeParser,
-        customProperties = customProperties
+        customProperties = customProperties,
+        allowTeeSecurityLevelForStrongbox = allowTeeSecurityLevelForStrongbox,
     )
 
     /**
      * Internal representation of the patch level as contained in the [com.google.android.attestation.ParsedAttestationRecord]
      */
     val osPatchLevel: Int? = patchLevel?.asSingleInt
+
+    /** App-specific trust roots. A null set inherits the global roots for that engine. */
+    @Serializable
+    data class TrustedRootOverrides @JvmOverloads constructor(
+        @Serializable(with = AppTrustedRootOverridesSerializer::class)
+        val hardware: Set<TrustedRoot>? = null,
+        @Serializable(with = AppTrustedRootOverridesSerializer::class)
+        val software: Set<TrustedRoot>? = null,
+    ) {
+        constructor(hardware: TrustedRoot, software: Set<TrustedRoot>? = null) : this(setOf(hardware), software)
+        constructor(hardware: Set<TrustedRoot>? = null, software: TrustedRoot) : this(hardware, setOf(software))
+
+        init {
+            require(hardware?.isEmpty() != true && software?.isEmpty() != true) {
+                "An empty trust root override would reject all attestations for its engine. " +
+                        "Omit the override to inherit the global trust anchors."
+            }
+        }
+    }
 
     /**
      * Specifies a to-be attested app
@@ -766,7 +801,10 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
      * builds and production builds in parallel.
      * @param appVersion optional parameter. If set, attestation enforces application version to be greater or equal to this parameter
      * */
-    @Serializable
+    @OptIn(ExperimentalSerializationApi::class)
+    @KeepGeneratedSerializer
+    @Serializable(with = AndroidAppDataSerializer::class)
+    @Suppress("DEPRECATION")
     data class AppData @JvmOverloads constructor(
         /**
          * Android app package name (e.g. `at.asitplus.demo`)
@@ -803,9 +841,15 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         val requireRemoteKeyProvisioningOverride: Boolean? = null,
 
         /**
-         * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
+         * Legacy app trust roots for configurations with one attestation engine enabled.
          */
-        val trustedRootOverrides: Set<TrustedRoot>? = null,
+        @Deprecated("Use trustedRootOverrides with explicit hardware or software roots. Will be removed in the next release!")
+        @EncodeDefault(EncodeDefault.Mode.NEVER)
+        @Serializable(with = AppTrustedRootOverridesSerializer::class)
+        internal val deprecatedSecurityLevelUnawareTrustedRootOverrides: Set<TrustedRoot>? = null,
+
+        /** Overrides the roots for each attestation engine independently. */
+        val trustedRootOverrides: TrustedRootOverrides? = null,
 
         /**
          * optional parameter. If set, this app will require StrongBox security level
@@ -825,13 +869,21 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
          * Allows attaching custom configuration properties to this configuration.
          * Sensible for extending it with custom configs while still relying on the configuration parser.
          */
-        val customProperties: Map<String, String> = emptyMap()
+        val customProperties: Map<String, String> = emptyMap(),
 
     ) {
 
         init {
             if (signerFingerprints.isEmpty()) throw object :
                 AndroidAttestationException("No signature digests specified", null) {}
+            if (deprecatedSecurityLevelUnawareTrustedRootOverrides?.isEmpty() == true) throw object :
+                AndroidAttestationException(
+                    "An empty trustedRootOverrides set would leave $packageName without trusted roots, so attestation " +
+                            "would always fail. Omit the override to inherit the global trust anchors.", null
+                ) {}
+            require(deprecatedSecurityLevelUnawareTrustedRootOverrides == null || trustedRootOverrides == null) {
+                "Use one form of trustedRootOverrides for $packageName."
+            }
         }
 
         /**
@@ -864,7 +916,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             private var androidVersionOverride: Int? = null
             private var patchLevelOverride: PatchLevel? = null
 
-            private var trustedRootOverrides: Set<TrustedRoot>? = null
+            private var legacyTrustedRootOverrides: Set<TrustedRoot>? = null
+            private var trustedRootOverrides: TrustedRootOverrides? = null
 
             private var requireRemoteKeyProvisioningOverride: Boolean? = null
 
@@ -897,17 +950,17 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
              */
             fun patchLevelOverride(level: PatchLevel) = apply { patchLevelOverride = level }
 
-            /**
-             * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
-             */
+            @Deprecated("Use trustedRootOverrides with explicit hardware or software roots.")
             @JvmName("overrideTrustedRootKeys")
             fun trustedRootOverrides(trustedRoots: Set<PublicKey>) =
-                apply { trustedRootOverrides = trustedRoots.map { TrustedRoot.PublicKey(it) }.toSet() }
+                apply { legacyTrustedRootOverrides = trustedRoots.map { TrustedRoot.PublicKey(it) }.toSet() }
 
-            /**
-             * optional parameter. If set, all globally configured trust anchors are discarded and only the trust anchors specified here are used to attest this app.
-             */
-            fun trustedRootOverrides(trustedRoots: Set<TrustedRoot>) = apply { trustedRootOverrides = trustedRoots }
+            @Deprecated("Use trustedRootOverrides with explicit hardware or software roots.")
+            fun trustedRootOverrides(trustedRoots: Set<TrustedRoot>) =
+                apply { legacyTrustedRootOverrides = trustedRoots }
+
+            /** @see AppData.trustedRootOverrides */
+            fun trustedRootOverrides(overrides: TrustedRootOverrides) = apply { trustedRootOverrides = overrides }
 
             /**
              * [Mandates Remote Key Provisioning (RKP)](https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning)
@@ -939,6 +992,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                     androidVersionOverride,
                     patchLevelOverride,
                     requireRemoteKeyProvisioningOverride,
+                    legacyTrustedRootOverrides,
                     trustedRootOverrides,
                     requireStrongBoxOverride,
                     verifiedBootKeys,
@@ -973,6 +1027,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
 
             if (requireRemoteKeyProvisioningOverride != other.requireRemoteKeyProvisioningOverride) return false
 
+            if (deprecatedSecurityLevelUnawareTrustedRootOverrides != other.deprecatedSecurityLevelUnawareTrustedRootOverrides) return false
             if (trustedRootOverrides != other.trustedRootOverrides) return false
 
             if (requireStrongBoxOverride != other.requireStrongBoxOverride) return false
@@ -991,6 +1046,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             result = 31 * result + packageName.hashCode()
             result = 31 * result + signerFingerprints.contentHashCodeIfArray()
             result = 31 * result + patchLevelOverride.hashCode()
+            result = 31 * result + deprecatedSecurityLevelUnawareTrustedRootOverrides.hashCode()
             result = 31 * result + trustedRootOverrides.hashCode()
             result = 31 * result + requireRemoteKeyProvisioningOverride.hashCode()
             result = 31 * result + requireStrongBoxOverride.hashCode()
@@ -1015,6 +1071,14 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             throw object : AndroidAttestationException(
                 "Neither hardware, nor software attestation enabled", null
             ) {}
+        if (!disableHardwareAttestation && enableSoftwareAttestation) {
+            @Suppress("DEPRECATION")
+            val legacyApp = applications.firstOrNull { it.deprecatedSecurityLevelUnawareTrustedRootOverrides != null }
+            if (legacyApp != null) throw object : AndroidAttestationException(
+                "Legacy trustedRootOverrides for ${legacyApp.packageName} requires a single attestation engine. " +
+                        "Specify hardware or software roots explicitly when both engines are enabled.", null
+            ) {}
+        }
         attestationStatementValiditySeconds?.let {
             if (it < 0) throw object :
                 AndroidAttestationException("Attestation statement validity must not be negative", null) {}
@@ -1053,6 +1117,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         private var verifiedBootKeys: Set<VerifiedBootKey> = linkedSetOf(VerifiedBootKey.OEM)
         private var enforceFactoryProvisionedChainValidity: Boolean = true
         private var supremeParser: Boolean = false
+        private var allowTeeSecurityLevelForStrongbox: Boolean = false
         private var customProperties: Map<String, String> = emptyMap()
 
         /**
@@ -1196,6 +1261,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         /** @see AndroidAttestationConfiguration.supremeParser */
         fun supremeParser(supremeParser: Boolean) = apply { this.supremeParser = supremeParser }
 
+        /** @see AndroidAttestationConfiguration.allowTeeSecurityLevelForStrongbox */
+        fun allowTeeSecurityLevelForStrongbox(allow: Boolean) = apply { allowTeeSecurityLevelForStrongbox = allow }
+
 
         /**
          * @see AndroidAttestationConfiguration.customProperties
@@ -1221,6 +1289,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             verifiedBootKeys = verifiedBootKeys,
             enforceFactoryProvisionedChainValidity = enforceFactoryProvisionedChainValidity,
             supremeParser = supremeParser,
+            allowTeeSecurityLevelForStrongbox = allowTeeSecurityLevelForStrongbox,
             customProperties = customProperties,
         )
 
@@ -1245,6 +1314,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 "verifiedBootKeys=$verifiedBootKeys, " +
                 "osPatchLevel=$osPatchLevel, " +
                 "enforceFactoryProvisionedChainValidity=$enforceFactoryProvisionedChainValidity, " +
+                "allowTeeSecurityLevelForStrongbox=$allowTeeSecurityLevelForStrongbox, " +
                 "supremeParser=$supremeParser" +
                 "customProperties=$customProperties" +
                 ")"
@@ -1276,6 +1346,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         if (verifiedBootKeys != other.verifiedBootKeys) return false
         if (enforceFactoryProvisionedChainValidity != other.enforceFactoryProvisionedChainValidity) return false
         if (supremeParser != other.supremeParser) return false
+        if (allowTeeSecurityLevelForStrongbox != other.allowTeeSecurityLevelForStrongbox) return false
         if (customProperties != other.customProperties) return false
 
         return true
@@ -1301,6 +1372,7 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         result = 31 * result + verifiedBootKeys.hashCode()
         result = 31 * result + enforceFactoryProvisionedChainValidity.hashCode()
         result = 31 * result + supremeParser.hashCode()
+        result = 31 * result + allowTeeSecurityLevelForStrongbox.hashCode()
         result = 31 * result + customProperties.hashCode()
         return result
     }
@@ -1347,6 +1419,96 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
             jsonDebug.decodeFromJsonElement<AndroidAttestationConfiguration>(jsonRepresentation)
 
     }
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+private object AndroidAppDataSerializer : KSerializer<AndroidAttestationConfiguration.AppData> {
+    private val delegate = AndroidAttestationConfiguration.AppData.generatedSerializer()
+    override val descriptor: SerialDescriptor = delegate.descriptor
+
+    private const val wireKey = "trustedRootOverrides"
+    private const val legacyKey = "deprecatedSecurityLevelUnawareTrustedRootOverrides"
+    private val yamlWireKey = YamlLiteral(wireKey)
+    private val yamlLegacyKey = YamlLiteral(legacyKey)
+
+    @Suppress("DEPRECATION")
+    override fun serialize(encoder: Encoder, value: AndroidAttestationConfiguration.AppData) {
+        if (value.deprecatedSecurityLevelUnawareTrustedRootOverrides == null) {
+            delegate.serialize(encoder, value)
+            return
+        }
+        when {
+            encoder is JsonEncoder -> {
+                val fields = encoder.json.encodeToJsonElement(delegate, value).jsonObject
+                encoder.encodeJsonElement(JsonObject(fields.moveOverride(legacyKey, wireKey)))
+            }
+
+            encoder.isYamlEncoder() -> {
+                val yaml = Yaml { serializersModule = encoder.serializersModule }
+                // ponytail: reuse the native YAML serializer to preserve the other AppData fields.
+                val fields = yaml.decodeYamlMapFromString(yaml.encodeToString(delegate, value))
+                encoder.encodeSerializableValue(
+                    YamlMap.serializer(), YamlMap(fields.content.moveOverride(yamlLegacyKey, yamlWireKey))
+                )
+            }
+
+            else -> delegate.serialize(encoder, value)
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): AndroidAttestationConfiguration.AppData = when {
+        decoder is JsonDecoder -> {
+            val fields = decoder.decodeJsonElement().jsonObject
+            val overrides = fields[wireKey]
+            if (overrides is JsonObject) validateOverrideKeys(overrides.keys)
+            val input = fields.decodeOverrides(wireKey, legacyKey, overrides is JsonArray)
+            decoder.json.decodeFromJsonElement(delegate, JsonObject(input))
+        }
+
+        decoder.isYamlDecoder() -> {
+            val yaml = Yaml { serializersModule = decoder.serializersModule }
+            val fields = decoder.decodeSerializableValue(YamlMap.serializer()).content
+            val overrides = fields[yamlWireKey]
+            if (overrides is YamlMap) validateOverrideKeys(overrides.keys.map { it.content })
+            val input = fields.decodeOverrides(yamlWireKey, yamlLegacyKey, overrides is YamlList)
+            yaml.decodeFromString(delegate, yaml.encodeToString(YamlMap.serializer(), YamlMap(input)))
+        }
+
+        else -> delegate.deserialize(decoder)
+    }
+
+    private fun validateOverrideKeys(keys: Iterable<Any?>) {
+        keys.forEach {
+            if (it != "hardware" && it != "software") {
+                throw SerializationException("Unknown $wireKey key '$it'. Expected hardware or software.")
+            }
+        }
+    }
+
+    private fun <K, V> Map<K, V>.decodeOverrides(wire: K, legacy: K, isLegacy: Boolean): Map<K, V> {
+        if (containsKey(legacy)) throw SerializationException("Use $wireKey to configure app trust roots.")
+        return if (isLegacy) moveOverride(wire, legacy) else this
+    }
+
+    private fun <K, V> Map<K, V>.moveOverride(from: K, to: K): Map<K, V> =
+        toMutableMap().apply {
+            put(to, getValue(from))
+            remove(from)
+        }
+}
+
+private object AppTrustedRootOverridesSerializer : KSerializer<Set<TrustedRoot>?> {
+    private val delegate = SetSerializer(TrustedRootSerializer)
+    // The nullable AppData property handles wire nulls before it delegates to the set decoder.
+    override val descriptor: SerialDescriptor = delegate.descriptor
+
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun serialize(encoder: Encoder, value: Set<TrustedRoot>?) {
+        if (value == null) encoder.encodeNull() else delegate.serialize(encoder, value)
+    }
+
+    override fun deserialize(decoder: Decoder): Set<TrustedRoot>? =
+        delegate.deserialize(decoder).takeIf { it.isNotEmpty() }
 }
 
 /**

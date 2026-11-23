@@ -1,22 +1,28 @@
 package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.*
+import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
-import com.android.keyattestation.verifier.SecurityLevel
+import at.asitplus.signum.indispensable.pki.CertificateChain
+import at.asitplus.signum.indispensable.toJcaCertificateBlocking
+import at.asitplus.signum.indispensable.toKmpCertificate
+import com.android.keyattestation.verifier.SecurityLevel as JvmSecurityLevel
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.android.keyattestation.verifier.provider.KeyAttestationProvider
 import java.security.Security
 import java.security.cert.*
 import java.util.*
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
 
 class JvmCertChainValidator(private val attestationConfiguration: AndroidAttestationConfiguration) :
-    CertChainValidator<X509Certificate, KeyAttestationCertPath> {
+    CertChainValidator {
 
     companion object {
         init {
@@ -34,16 +40,33 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
 
 
     @Throws(CertificateInvalidException::class, RevocationException::class)
-    override suspend fun List<X509Certificate>.verifyCertificateChain(
-        verificationDate: Date,
+    override suspend fun CertificateChain.verify(
+        verificationDate: Instant,
         actualTrustAnchors: Collection<TrustedRoot>,
         requireRKP: Boolean
-    ): CertificateChainValidation<KeyAttestationCertPath> {
+    ): CertificateChainValidation {
         var revocationLists = emptyList<ConfigWithList>()
         val verdict = catching {
-            verifyCertificateChainAndCollect(verificationDate, actualTrustAnchors, requireRKP) {
-                revocationLists = it
-            }
+            map { it.toJcaCertificateBlocking() }.verifyCertificateChainAndCollect(
+                Date.from(verificationDate.toJavaInstant()), actualTrustAnchors, requireRKP,
+            ) { revocationLists = it }.securityLevel()?.toSecurityLevel()
+        }
+        return CertificateChainValidation(verdict, revocationLists)
+    }
+
+    /** Java certificate compatibility boundary; validation itself remains in the existing JVM backend. */
+    suspend fun List<X509Certificate>.verifyCertificateChain(
+        verificationDate: Date,
+        actualTrustAnchors: Collection<TrustedRoot>,
+        requireRKP: Boolean,
+    ): CertificateChainValidation {
+        var revocationLists = emptyList<ConfigWithList>()
+        val verdict = catching {
+            val result = map { it.toKmpCertificate() }.verify(
+                verificationDate.toInstant().toKotlinInstant(), actualTrustAnchors, requireRKP,
+            )
+            revocationLists = result.revocationLists
+            result.verdict.getOrThrow()
         }
         return CertificateChainValidation(verdict, revocationLists)
     }
@@ -138,7 +161,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         //also: adding it here, makes sure it never interferes with other checks, so behavior stays the same
         if (requireRKP) {
             if (!certificateChain.isRemoteKeyProvisioned()) throw AttestationValueException(
-                "Certificate chain does not contain a remotely-provisioned attestation certificate",
+                "X509Certificate chain does not contain a remotely-provisioned attestation certificate",
                 reason = AttestationValueException.Reason.SEC_LEVEL, expectedValue = true, actualValue = false
             )
         }
@@ -161,7 +184,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
             certificate.verify(parent.publicKey)
         }.onFailure {
             throw CertificateInvalidException(
-                message = "Certificate ${certificate.serialNumber} could not be verified",
+                message = "X509Certificate ${certificate.serialNumber} could not be verified",
                 cause = it,
                 reason = if ((it is CertificateExpiredException) || (it is CertificateNotYetValidException)) CertificateInvalidException.Reason.TIME else CertificateInvalidException.Reason.TRUST,
                 certificateChain = fullChainForDebugging,
@@ -181,7 +204,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
                 revocationLists.forEach {
                     it.list.find(certificate.serialNumber)?.let { entry ->
                         throw RevocationException.Revoked(
-                            "Certificate ${certificate.serialNumber} revoked",
+                            "X509Certificate ${certificate.serialNumber} revoked",
                             certificateChain = fullChainForDebugging,
                             revokedCertificate = certificate,
                             entry = entry
@@ -239,13 +262,10 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
             } else it
         }
     }
-
-    override val KeyAttestationCertPath.generalizedSecurityLevel: GeneralizedSecurityLevel
-        get() = securityLevel()?.toGeneralizedSecurityLevel() ?: GeneralizedSecurityLevel.SOFTWARE
 }
 
-fun SecurityLevel?.toGeneralizedSecurityLevel(): GeneralizedSecurityLevel = when (this) {
-    null, SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-    SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-    SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
+private fun JvmSecurityLevel.toSecurityLevel(): SecurityLevel = when (this) {
+    JvmSecurityLevel.SOFTWARE -> SecurityLevel.SOFTWARE
+    JvmSecurityLevel.TRUSTED_ENVIRONMENT -> SecurityLevel.TRUSTED_ENVIRONMENT
+    JvmSecurityLevel.STRONG_BOX -> SecurityLevel.STRONGBOX
 }
