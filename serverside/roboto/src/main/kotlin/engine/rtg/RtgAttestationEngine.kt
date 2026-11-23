@@ -1,8 +1,10 @@
 package at.asitplus.attestation.android.engine
 
-import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
+import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
+import at.asitplus.attestation.android.AuthorizationList.RootOfTrust.VerifiedBootState
 import at.asitplus.catchingUnwrapped
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import com.google.android.attestation.AttestationApplicationId
 import com.google.android.attestation.AuthorizationList
@@ -33,12 +35,8 @@ sealed class RtgAttestationEngine(
     override fun CertificateChain.selectAttestedApplication() =
         selectAttestedApplication(attestationConfiguration.applications)
 
-    override val ParsedAttestationRecord.attestationSecLevel: GeneralizedSecurityLevel
-        get() = when (attestationSecurityLevel()) {
-            ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-            ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
-        }
+    override val ParsedAttestationRecord.attestationSecLevel: SecurityLevel
+        get() = attestationSecurityLevel().toSecurityLevel()
 
     override val ParsedAttestationRecord.challenge: ByteArray
         get() = this.attestationChallenge().toByteArray()
@@ -47,12 +45,14 @@ sealed class RtgAttestationEngine(
         get() = (teeEnforced().creationDateTime().getOrNull() ?: softwareEnforced().creationDateTime()
             .getOrNull())?.toKotlinInstant()
 
-    override val ParsedAttestationRecord.keymasterSecLevel: GeneralizedSecurityLevel
-        get() = when (keymasterSecurityLevel()) {
-            ParsedAttestationRecord.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-            ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-            ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
-        }
+    override val ParsedAttestationRecord.keymasterSecLevel: SecurityLevel
+        get() = keymasterSecurityLevel().toSecurityLevel()
+
+    private fun ParsedAttestationRecord.SecurityLevel.toSecurityLevel(): SecurityLevel = when (this) {
+        ParsedAttestationRecord.SecurityLevel.SOFTWARE -> SecurityLevel.SOFTWARE
+        ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT -> SecurityLevel.TRUSTED_ENVIRONMENT
+        ParsedAttestationRecord.SecurityLevel.STRONG_BOX -> SecurityLevel.STRONGBOX
+    }
 
     override val AuthorizationList.androidVersion: Result<BigInteger>?
         get() = catchingUnwrapped { BigInteger(osVersion().get()) }
@@ -65,13 +65,13 @@ sealed class RtgAttestationEngine(
         attestationApplicationId().get().packageInfos().filter { it.packageName() == packageName }
             .map { it.version().toUInt() }
 
-    override val AuthorizationList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
-        get() = when (catchingUnwrapped {  rootOfTrust().get()}.getOrNull()?.verifiedBootState()) {
-            RootOfTrust.VerifiedBootState.VERIFIED -> GeneralizedVerifiedBootState.VERIFIED
-            RootOfTrust.VerifiedBootState.SELF_SIGNED -> GeneralizedVerifiedBootState.SELF_SIGNED
-            RootOfTrust.VerifiedBootState.UNVERIFIED -> GeneralizedVerifiedBootState.UNVERIFIED
-            RootOfTrust.VerifiedBootState.FAILED -> GeneralizedVerifiedBootState.FAILED
-            else -> null
+    override val AuthorizationList.verifiedBootState: VerifiedBootState?
+        get() = when (catchingUnwrapped { rootOfTrust().get() }.getOrNull()?.verifiedBootState()) {
+            RootOfTrust.VerifiedBootState.VERIFIED -> VerifiedBootState.Verified
+            RootOfTrust.VerifiedBootState.SELF_SIGNED -> VerifiedBootState.SelfSigned
+            RootOfTrust.VerifiedBootState.UNVERIFIED -> VerifiedBootState.Unverified
+            RootOfTrust.VerifiedBootState.FAILED -> VerifiedBootState.Failed
+            null -> null
         }
 
     override val AuthorizationList.verifiedBootKeyDigest: ByteArray?

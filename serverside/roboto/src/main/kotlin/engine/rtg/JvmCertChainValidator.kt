@@ -1,6 +1,7 @@
 package at.asitplus.attestation.android.engine
 
 import at.asitplus.attestation.android.*
+import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.RevocationException
@@ -9,7 +10,7 @@ import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.signum.indispensable.toKmpCertificate
-import com.android.keyattestation.verifier.SecurityLevel
+import com.android.keyattestation.verifier.SecurityLevel as JvmSecurityLevel
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import com.android.keyattestation.verifier.provider.KeyAttestationProvider
 import java.security.Security
@@ -48,7 +49,7 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
         val verdict = catching {
             map { it.toJcaCertificateBlocking() }.verifyCertificateChainAndCollect(
                 Date.from(verificationDate.toJavaInstant()), actualTrustAnchors, requireRKP,
-            ) { revocationLists = it }.securityLevel().toGeneralizedSecurityLevel()
+            ) { revocationLists = it }.securityLevel()?.toSecurityLevel()
         }
         return CertificateChainValidation(verdict, revocationLists)
     }
@@ -263,9 +264,8 @@ class JvmCertChainValidator(private val attestationConfiguration: AndroidAttesta
     }
 }
 
-fun SecurityLevel?.toGeneralizedSecurityLevel(): GeneralizedSecurityLevel? = when (this) {
-    null -> null
-    SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-    SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-    SecurityLevel.STRONG_BOX -> GeneralizedSecurityLevel.STRONGBOX
+private fun JvmSecurityLevel.toSecurityLevel(): SecurityLevel = when (this) {
+    JvmSecurityLevel.SOFTWARE -> SecurityLevel.SOFTWARE
+    JvmSecurityLevel.TRUSTED_ENVIRONMENT -> SecurityLevel.TRUSTED_ENVIRONMENT
+    JvmSecurityLevel.STRONG_BOX -> SecurityLevel.STRONGBOX
 }

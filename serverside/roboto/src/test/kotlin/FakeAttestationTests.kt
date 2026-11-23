@@ -165,7 +165,7 @@ val FakeAttestationTests by matrixSuite {
                             verifiedAttestation,
                             linkedSetOf(VerifiedBootKey.Digest(customBootKey))
                         ).verify(certificates = verifiedAttestation, expectedChallenge = challenge).getOrThrow()
-                    }
+                    }.actualValue shouldBe AuthorizationList.RootOfTrust.VerifiedBootState.Verified
                 }
 
                 "OEM plus custom accepts both" {

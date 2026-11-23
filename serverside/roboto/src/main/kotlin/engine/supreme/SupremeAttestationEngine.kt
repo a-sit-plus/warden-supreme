@@ -1,11 +1,12 @@
 package at.asitplus.attestation.android.engine
 
-import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.*
+import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
+import at.asitplus.attestation.android.AuthorizationList.RootOfTrust.VerifiedBootState
 import at.asitplus.awesn1.toBigInteger
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.datetime.YearMonth
-import kotlinx.datetime.number
 import kotlin.time.Instant
 
 /**
@@ -27,12 +28,8 @@ sealed class SupremeAttestationEngine(
     override fun CertificateChain.selectAttestedApplication() =
         selectAttestedApplication(attestationConfiguration.applications)
 
-    override val AttestationKeyDescription.attestationSecLevel: GeneralizedSecurityLevel
-        get() = when (attestationSecurityLevel) {
-            AttestationKeyDescription.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-            AttestationKeyDescription.SecurityLevel.STRONGBOX -> GeneralizedSecurityLevel.STRONGBOX
-        }
+    override val AttestationKeyDescription.attestationSecLevel: SecurityLevel
+        get() = attestationSecurityLevel
 
     override val AttestationKeyDescription.challenge: ByteArray
         get() = attestationChallenge
@@ -41,12 +38,8 @@ sealed class SupremeAttestationEngine(
         get() = hardwareEnforced.creationDateTime?.getOrNull()?.timestamp
             ?: softwareEnforced.creationDateTime?.getOrNull()?.timestamp
 
-    override val AttestationKeyDescription.keymasterSecLevel: GeneralizedSecurityLevel
-        get() = when (keymasterSecurityLevel) {
-            AttestationKeyDescription.SecurityLevel.SOFTWARE -> GeneralizedSecurityLevel.SOFTWARE
-            AttestationKeyDescription.SecurityLevel.TRUSTED_ENVIRONMENT -> GeneralizedSecurityLevel.TEE
-            AttestationKeyDescription.SecurityLevel.STRONGBOX -> GeneralizedSecurityLevel.STRONGBOX
-        }
+    override val AttestationKeyDescription.keymasterSecLevel: SecurityLevel
+        get() = keyMintSecurityLevel
 
     override val AuthorizationList.androidVersion: Result<BigInteger>?
         get() = osVersion?.toResult()?.map { it.intValue.toBigInteger() }
@@ -60,14 +53,8 @@ sealed class SupremeAttestationEngine(
             it.packageName == packageName
         }?.map { it.version } ?: emptyList()
 
-    override val AuthorizationList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
-        get() = when (rootOfTrust?.getOrNull()?.verifiedBootState) {
-            AuthorizationList.RootOfTrust.VerifiedBootState.Verified -> GeneralizedVerifiedBootState.VERIFIED
-            AuthorizationList.RootOfTrust.VerifiedBootState.SelfSigned -> GeneralizedVerifiedBootState.SELF_SIGNED
-            AuthorizationList.RootOfTrust.VerifiedBootState.Unverified -> GeneralizedVerifiedBootState.UNVERIFIED
-            AuthorizationList.RootOfTrust.VerifiedBootState.Failed -> GeneralizedVerifiedBootState.FAILED
-            null -> null
-        }
+    override val AuthorizationList.verifiedBootState: VerifiedBootState?
+        get() = rootOfTrust?.getOrNull()?.verifiedBootState
 
     override val AuthorizationList.verifiedBootKeyDigest: ByteArray?
         get() = rootOfTrust?.getOrNull()?.verifiedBootKeyDigest

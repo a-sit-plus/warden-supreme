@@ -3,7 +3,7 @@ package at.asitplus.attestation.android
 import at.asitplus.attestation.android.engine.CertChainValidator
 import at.asitplus.signum.indispensable.toKmpCertificate
 import kotlin.time.toKotlinInstant
-import at.asitplus.attestation.android.engine.GeneralizedSecurityLevel
+import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel as AttestationSecurityLevel
 import at.asitplus.attestation.android.engine.JvmCertChainValidator
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
@@ -45,7 +45,7 @@ val CertChainValidatorContractTest by matrixSuite {
     val factoryStrongBox = chainFixture(Provisioning.FACTORY, SecurityLevel.STRONGBOX)
     val rkpStrongBox = chainFixture(Provisioning.RKP, SecurityLevel.STRONGBOX)
     val acceptedUnknownLevel = ChainOutcome()
-    val acceptedRkp = ChainOutcome(securityLevel = GeneralizedSecurityLevel.TEE)
+    val acceptedRkp = ChainOutcome(securityLevel = AttestationSecurityLevel.TRUSTED_ENVIRONMENT)
     val trustFailure = ChainOutcome(failure = CertificateInvalidException::class, reason = "TRUST")
     val rkpFailure = ChainOutcome(failure = AttestationValueException::class, reason = "SEC_LEVEL")
     val root = factory.chain.last()
@@ -63,10 +63,10 @@ val CertChainValidatorContractTest by matrixSuite {
         // Unmodified :generator output is the baseline; signed mutations exercise the edge cases below.
         add(ChainCase("accept generated factory TEE with unknown chain security level", factory.generatedChain, acceptedUnknownLevel))
         add(ChainCase("accept generated factory StrongBox", factoryStrongBox.generatedChain,
-            ChainOutcome(securityLevel = GeneralizedSecurityLevel.STRONGBOX)))
+            ChainOutcome(securityLevel = AttestationSecurityLevel.STRONGBOX)))
         add(ChainCase("accept generated RKP TEE when RKP is required", rkp.generatedChain, acceptedRkp, requireRkp = true))
         add(ChainCase("accept generated RKP StrongBox", rkpStrongBox.generatedChain,
-            ChainOutcome(securityLevel = GeneralizedSecurityLevel.STRONGBOX)))
+            ChainOutcome(securityLevel = AttestationSecurityLevel.STRONGBOX)))
         add(ChainCase("accept three-certificate software shape with unknown chain security level", softwareChain, acceptedUnknownLevel))
         add(ChainCase("reject generated factory chain when RKP is required", factory.generatedChain, rkpFailure, requireRkp = true))
 
@@ -203,7 +203,7 @@ private data class ChainOutcome(
     val failure: KClass<out Throwable>? = null,
     val reason: String? = null,
     val certificateIndex: Int? = null,
-    val securityLevel: GeneralizedSecurityLevel? = null,
+    val securityLevel: AttestationSecurityLevel? = null,
     val revocationLists: List<ConfigWithList> = emptyList(),
 )
 

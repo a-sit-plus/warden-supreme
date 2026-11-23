@@ -1,13 +1,14 @@
 package at.asitplus.attestation.android.engine
 
-import at.asitplus.signum.indispensable.pki.CertificateChain
 import at.asitplus.attestation.android.*
+import at.asitplus.attestation.android.AttestationKeyDescription.SecurityLevel
+import at.asitplus.attestation.android.AuthorizationList.RootOfTrust.VerifiedBootState
 import at.asitplus.attestation.android.exceptions.AttestationValueException
 import at.asitplus.attestation.android.exceptions.CertificateInvalidException
 import at.asitplus.attestation.android.exceptions.ConfigurationException
 import at.asitplus.attestation.android.exceptions.RevocationException
 import at.asitplus.catchingUnwrapped
-import com.google.android.attestation.ParsedAttestationRecord
+import at.asitplus.signum.indispensable.pki.CertificateChain
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.YearMonth
@@ -32,10 +33,10 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
 
     protected abstract fun CertificateChain.selectAttestedApplication(): AndroidAttestationConfiguration.AppData?
 
-    protected abstract val AttRecord.attestationSecLevel: GeneralizedSecurityLevel
+    protected abstract val AttRecord.attestationSecLevel: SecurityLevel
     protected abstract val AttRecord.challenge: ByteArray
     protected abstract val AttRecord.createdAt: Instant?
-    protected abstract val AttRecord.keymasterSecLevel: GeneralizedSecurityLevel
+    protected abstract val AttRecord.keymasterSecLevel: SecurityLevel
 
     protected abstract val AuthList.androidVersion: Result<BigInteger>?
 
@@ -44,7 +45,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     @Throws(Throwable::class)
     protected abstract fun AuthList.findMatchingPackageVersions(packageName: String): List<UInt>
 
-    protected abstract val AuthList.generalizedVerifiedBootState: GeneralizedVerifiedBootState?
+    protected abstract val AuthList.verifiedBootState: VerifiedBootState?
     protected abstract val AuthList.verifiedBootKeyDigest: ByteArray?
 
     protected abstract val AuthList.hasRootOfTrust: Boolean
@@ -333,17 +334,17 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
 
         val allowOem = fromConfiguration.any { it == VerifiedBootKey.OEM }
         val customDigests = fromConfiguration.mapNotNull { (it as? VerifiedBootKey.Digest)?.value }
-        val actualState = generalizedVerifiedBootState ?: GeneralizedVerifiedBootState.FAILED
+        val actualState = verifiedBootState ?: VerifiedBootState.Failed
 
         when (actualState) {
-            GeneralizedVerifiedBootState.VERIFIED -> if (!allowOem) throw AttestationValueException(
+            VerifiedBootState.Verified -> if (!allowOem) throw AttestationValueException(
                 "OEM-verified system image not permitted",
                 reason = AttestationValueException.Reason.SYSTEM_INTEGRITY,
                 expectedValue = fromConfiguration,
                 actualValue = actualState
             )
 
-            GeneralizedVerifiedBootState.SELF_SIGNED -> if ((verifiedBootKeyDigest == null)
+            VerifiedBootState.SelfSigned -> if ((verifiedBootKeyDigest == null)
                 || customDigests.none { it.contentEquals(verifiedBootKeyDigest!!) }
             ) throw AttestationValueException(
                 "SELF_SIGNED system image not verified",
@@ -373,14 +374,14 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
     sealed interface EngineType<AttRecord : AttestationExtension<AuthList>, AuthList : AttestationExtension.AuthList> {
         @Throws(AttestationValueException::class)
         fun verifySecurityLevel(
-            securityLevelFromChain: GeneralizedSecurityLevel,
+            securityLevelFromChain: SecurityLevel,
             record: AttRecord,
             appOverride: Boolean?
         )
 
         val AndroidAttestationConfiguration.AppData.matchingOverrides: Collection<TrustedRoot>?
 
-        fun GeneralizedSecurityLevel?.coerce(): GeneralizedSecurityLevel
+        fun SecurityLevel?.coerce(): SecurityLevel
 
         val trustAnchors: Collection<TrustedRoot>
 
@@ -407,25 +408,27 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             if (attestationConfiguration.softwareTrustedRoots.isEmpty()) throw ConfigurationException("No software attestation trust anchors configured")
         }
 
-        override fun GeneralizedSecurityLevel?.coerce() = this ?: GeneralizedSecurityLevel.SOFTWARE
+        override fun SecurityLevel?.coerce() = this ?: SecurityLevel.SOFTWARE
 
         override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.softwareTrustedRoots
 
         @Throws(AttestationValueException::class)
         override fun verifySecurityLevel(
-            securityLevelFromChain: GeneralizedSecurityLevel,
+            securityLevelFromChain: SecurityLevel,
             record: AttRecord,
             appOverride: Boolean? /*irrelevant for SW*/
         ) = record.run {
-            if (attestationSecLevel != GeneralizedSecurityLevel.SOFTWARE) throw AttestationValueException(
+            val attestationLevel = attestationSecLevel
+            if (attestationLevel != SecurityLevel.SOFTWARE) throw AttestationValueException(
                 "Attestation security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-                actualValue = attestationSecLevel
+                expectedValue = SecurityLevel.SOFTWARE,
+                actualValue = attestationLevel
             )
-            if (keymasterSecLevel != GeneralizedSecurityLevel.SOFTWARE) throw AttestationValueException(
+            val keymasterLevel = keymasterSecLevel
+            if (keymasterLevel != SecurityLevel.SOFTWARE) throw AttestationValueException(
                 "Keymaster security level not software", reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = ParsedAttestationRecord.SecurityLevel.SOFTWARE,
-                actualValue = keymasterSecLevel
+                expectedValue = SecurityLevel.SOFTWARE,
+                actualValue = keymasterLevel
             )
         }
 
@@ -460,7 +463,7 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
             if (attestationConfiguration.hardwareTrustedRoots.isEmpty()) throw ConfigurationException("No hardware attestation trust anchors configured")
         }
 
-        override fun GeneralizedSecurityLevel?.coerce() = this ?: GeneralizedSecurityLevel.TEE
+        override fun SecurityLevel?.coerce() = this ?: SecurityLevel.TRUSTED_ENVIRONMENT
 
         override val trustAnchors: Collection<TrustedRoot> = attestationConfiguration.hardwareTrustedRoots
 
@@ -489,64 +492,46 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
 
         @Throws(AttestationValueException::class)
         override fun verifySecurityLevel(
-            securityLevelFromChain: GeneralizedSecurityLevel,
+            securityLevelFromChain: SecurityLevel,
             record: AttRecord,
             appOverride: Boolean? /*irrelevant for SW*/
         ) = record.run {
+            val attestationLevel = attestationSecLevel
+            val keymasterLevel = keymasterSecLevel
 
-            val namedSecurityLevels = listOf("Attestation" to attestationSecLevel, "Keymaster" to keymasterSecLevel)
-
-            if (attestationSecLevel != keymasterSecLevel) throw AttestationValueException(
-                message = "${namedSecurityLevels.first().first} security level ${namedSecurityLevels.first().second} does not match ${namedSecurityLevels.last().first} security level ${namedSecurityLevels.last().second}",
+            if (attestationLevel != keymasterLevel) throw AttestationValueException(
+                message = "Attestation security level $attestationLevel does not match Keymaster security level $keymasterLevel",
                 reason = AttestationValueException.Reason.SEC_LEVEL,
-                expectedValue = namedSecurityLevels.last().second,
-                actualValue = namedSecurityLevels.first().second,
+                expectedValue = keymasterLevel,
+                actualValue = attestationLevel,
             )
 
-            for ((name, claimedLevel) in namedSecurityLevels) {
+            val overclaims = attestationLevel.intValue > securityLevelFromChain.intValue
+            val underclaims = attestationLevel.intValue < securityLevelFromChain.intValue &&
+                attestationLevel == SecurityLevel.TRUSTED_ENVIRONMENT &&
+                !attestationConfiguration.allowTeeSecurityLevelForStrongbox
+            if (overclaims || underclaims) throw AttestationValueException(
+                message = "Attestation security level $attestationLevel does not match security level $securityLevelFromChain inferred from certificate chain",
+                reason = AttestationValueException.Reason.SEC_LEVEL,
+                expectedValue = securityLevelFromChain,
+                actualValue = attestationLevel,
+            )
 
-                //@formatter:off
-                val overclaims  = claimedLevel >  securityLevelFromChain
-                val underclaims = claimedLevel <  securityLevelFromChain        && /*↓↓ set underclaims to false, if this property is true ↓↓*/
-  /* never go lower than TEE → */ claimedLevel == GeneralizedSecurityLevel.TEE  && !attestationConfiguration.allowTeeSecurityLevelForStrongbox
-                //@formatter:on
-
-                if (overclaims || underclaims) throw AttestationValueException(
-                    message = "$name security level $claimedLevel does not match security level $securityLevelFromChain inferred from certificate chain",
-                    reason = AttestationValueException.Reason.SEC_LEVEL,
-                    expectedValue = securityLevelFromChain,
-                    actualValue = claimedLevel,
-                )
-            }
             if (appOverride ?: attestationConfiguration.requireStrongBox) {
-                if (attestationSecLevel != GeneralizedSecurityLevel.STRONGBOX)
+                if (attestationLevel != SecurityLevel.STRONGBOX)
                     throw AttestationValueException(
                         "Attestation security level not StrongBox",
                         reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = attestationSecLevel
-                    )
-                if (keymasterSecLevel != GeneralizedSecurityLevel.STRONGBOX)
-                    throw AttestationValueException(
-                        "Keymaster security level not StrongBox",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.STRONG_BOX,
-                        actualValue = keymasterSecLevel
+                        expectedValue = SecurityLevel.STRONGBOX,
+                        actualValue = attestationLevel
                     )
             } else {
-                if (attestationSecLevel == GeneralizedSecurityLevel.SOFTWARE)
+                if (attestationLevel == SecurityLevel.SOFTWARE)
                     throw AttestationValueException(
                         "Attestation security level software",
                         reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                        actualValue = attestationSecLevel
-                    )
-                if (keymasterSecLevel == GeneralizedSecurityLevel.SOFTWARE)
-                    throw AttestationValueException(
-                        "Keymaster security level software",
-                        reason = AttestationValueException.Reason.SEC_LEVEL,
-                        expectedValue = ParsedAttestationRecord.SecurityLevel.TRUSTED_ENVIRONMENT,
-                        actualValue = keymasterSecLevel
+                        expectedValue = SecurityLevel.TRUSTED_ENVIRONMENT,
+                        actualValue = attestationLevel
                     )
             }
         }
@@ -556,19 +541,6 @@ sealed class AndroidAttestationEngine<AttRecord : AttestationExtension<AuthList>
 
 }
 
-
-enum class GeneralizedSecurityLevel {
-    SOFTWARE,
-    TEE,
-    STRONGBOX
-}
-
-enum class GeneralizedVerifiedBootState {
-    VERIFIED,
-    SELF_SIGNED,
-    UNVERIFIED,
-    FAILED
-}
 
 private fun monthsBetween(start: YearMonth, end: YearMonth): Int =
     (end.year - start.year) * 12 + (end.month.number - start.month.number)
