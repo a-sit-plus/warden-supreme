@@ -1,6 +1,7 @@
 import at.asitplus.attestation.android.AndroidAttestationConfiguration
 import at.asitplus.attestation.android.AndroidAttestationConfiguration.TrustedRootOverrides
 import at.asitplus.attestation.android.AndroidRevocationList
+import at.asitplus.attestation.android.GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
 import at.asitplus.attestation.android.GOOGLE_RKP_EC_ROOT
 import at.asitplus.attestation.android.GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
 import at.asitplus.attestation.android.PatchLevel
@@ -54,6 +55,47 @@ val AndroidConfigurationBuilderTests by matrixSuite {
         AndroidAttestationConfiguration.Builder(app).build().allowTeeSecurityLevelForStrongbox shouldBe false
         AndroidAttestationConfiguration(singleApp = app).allowTeeSecurityLevelForStrongbox shouldBe false
         AndroidAttestationConfiguration(apps = listOf(app)).allowTeeSecurityLevelForStrongbox shouldBe false
+    }
+
+    "TrustedRootOverrides accepts one hardware root with default, null or explicit software roots" {
+        val hardware = GOOGLE_RKP_EC_ROOT
+        val software = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
+        val hardwareOnly = TrustedRootOverrides(hardware = setOf(hardware))
+        val both = TrustedRootOverrides(setOf(hardware), software)
+
+        TrustedRootOverrides(hardware) shouldBe hardwareOnly
+        TrustedRootOverrides(hardware = hardware) shouldBe hardwareOnly
+        TrustedRootOverrides(hardware, null) shouldBe hardwareOnly
+        TrustedRootOverrides(hardware, software) shouldBe both
+        TrustedRootOverrides(hardware = hardware, software = software) shouldBe both
+        shouldThrow<IllegalArgumentException> { TrustedRootOverrides(hardware, emptySet()) }
+    }
+
+    "TrustedRootOverrides accepts one software root with default, null or explicit hardware roots" {
+        val hardware = GOOGLE_DEFAULT_HARDWARE_TRUST_ANCHORS
+        val software = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12.first()
+        val softwareOnly = TrustedRootOverrides(software = setOf(software))
+        val both = TrustedRootOverrides(hardware, setOf(software))
+
+        TrustedRootOverrides(software = software) shouldBe softwareOnly
+        TrustedRootOverrides(null, software) shouldBe softwareOnly
+        TrustedRootOverrides(hardware, software) shouldBe both
+        TrustedRootOverrides(hardware = hardware, software = software) shouldBe both
+        shouldThrow<IllegalArgumentException> { TrustedRootOverrides(emptySet(), software) }
+    }
+
+    "TrustedRootOverrides still accepts set and null arguments" {
+        val hardware = setOf(GOOGLE_RKP_EC_ROOT)
+        val software = GOOGLE_SOFTWARE_TRUST_ANCHORS_UNTIL_A12
+        val inherited = TrustedRootOverrides()
+
+        TrustedRootOverrides(null) shouldBe inherited
+        TrustedRootOverrides(hardware = null) shouldBe inherited
+        TrustedRootOverrides(software = null) shouldBe inherited
+        TrustedRootOverrides(null, null) shouldBe inherited
+        TrustedRootOverrides(hardware = null, software = null) shouldBe inherited
+        TrustedRootOverrides(hardware, null) shouldBe TrustedRootOverrides(hardware = hardware)
+        TrustedRootOverrides(null, software) shouldBe TrustedRootOverrides(software = software)
     }
 
     "Android AppData builder applies overrides" {

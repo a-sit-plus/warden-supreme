@@ -7,16 +7,9 @@ import at.asitplus.attestation.isYamlEncoder
 import at.asitplus.signum.indispensable.io.Base64UrlStrict
 import at.asitplus.signum.indispensable.pki.X509Certificate
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
-import io.ktor.util.*
 import io.matthewnelson.encoding.core.Decoder.Companion.decodeToByteArray
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KeepGeneratedSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
+import kotlinx.serialization.*
 import kotlinx.serialization.builtins.SetSerializer
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -797,6 +790,9 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         @Serializable(with = AppTrustedRootOverridesSerializer::class)
         val software: Set<TrustedRoot>? = null,
     ) {
+        constructor(hardware: TrustedRoot, software: Set<TrustedRoot>? = null) : this(setOf(hardware), software)
+        constructor(hardware: Set<TrustedRoot>? = null, software: TrustedRoot) : this(hardware, setOf(software))
+
         init {
             require(hardware?.isEmpty() != true && software?.isEmpty() != true) {
                 "An empty trust root override would reject all attestations for its engine. " +
@@ -889,10 +885,11 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
         init {
             if (signerFingerprints.isEmpty()) throw object :
                 AndroidAttestationException("No signature digests specified", null) {}
-            if (deprecatedSecurityLevelUnawareTrustedRootOverrides?.isEmpty() == true) throw object : AndroidAttestationException(
-                "An empty trustedRootOverrides set would leave $packageName without trusted roots, so attestation " +
-                        "would always fail. Omit the override to inherit the global trust anchors.", null
-            ) {}
+            if (deprecatedSecurityLevelUnawareTrustedRootOverrides?.isEmpty() == true) throw object :
+                AndroidAttestationException(
+                    "An empty trustedRootOverrides set would leave $packageName without trusted roots, so attestation " +
+                            "would always fail. Omit the override to inherit the global trust anchors.", null
+                ) {}
             require(deprecatedSecurityLevelUnawareTrustedRootOverrides == null || trustedRootOverrides == null) {
                 "Use one form of trustedRootOverrides for $packageName."
             }
@@ -968,7 +965,8 @@ data class AndroidAttestationConfiguration @JvmOverloads constructor(
                 apply { legacyTrustedRootOverrides = trustedRoots.map { TrustedRoot.PublicKey(it) }.toSet() }
 
             @Deprecated("Use trustedRootOverrides with explicit hardware or software roots.")
-            fun trustedRootOverrides(trustedRoots: Set<TrustedRoot>) = apply { legacyTrustedRootOverrides = trustedRoots }
+            fun trustedRootOverrides(trustedRoots: Set<TrustedRoot>) =
+                apply { legacyTrustedRootOverrides = trustedRoots }
 
             /** @see AppData.trustedRootOverrides */
             fun trustedRootOverrides(overrides: TrustedRootOverrides) = apply { trustedRootOverrides = overrides }
@@ -1510,6 +1508,7 @@ private object AndroidAppDataSerializer : KSerializer<AndroidAttestationConfigur
 
 private object AppTrustedRootOverridesSerializer : KSerializer<Set<TrustedRoot>?> {
     private val delegate = SetSerializer(TrustedRootSerializer)
+
     // The nullable AppData property handles wire nulls before it delegates to the set decoder.
     override val descriptor: SerialDescriptor = delegate.descriptor
 

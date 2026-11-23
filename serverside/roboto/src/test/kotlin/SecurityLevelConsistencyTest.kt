@@ -12,7 +12,6 @@ import at.asitplus.testballoon.matrix.matrixSuite
 import com.android.keyattestation.verifier.provider.KeyAttestationCertPath
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldStartWith
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import com.google.android.attestation.ParsedAttestationRecord.SecurityLevel as ParsedSecurityLevel
@@ -24,10 +23,9 @@ val SecurityLevelConsistencyTest by matrixSuite {
     val tee = SecurityLevel.TRUSTED_ENVIRONMENT
     val strongBox = SecurityLevel.STRONGBOX
     val software = SecurityLevel.SOFTWARE
-    val attestation = "Attestation"
-    val keyMint = "Keymaster"
+    val generalizedLevels = mapOf(tee to TEE, strongBox to STRONGBOX, software to SOFTWARE)
 
-    data class Rejection(val field: String, val expected: Any, val actual: GeneralizedSecurityLevel)
+    data class Rejection(val message: String, val expected: Any, val actual: GeneralizedSecurityLevel)
 
     data class Claim(
         val name: String, val issuer: SecurityLevel, val attestation: SecurityLevel, val keyMint: SecurityLevel,
@@ -41,60 +39,48 @@ val SecurityLevelConsistencyTest by matrixSuite {
 
     fun AttestationValueException.shouldMatch(rejection: Rejection) {
         reason shouldBe AttestationValueException.Reason.SEC_LEVEL
-        message.orEmpty() shouldStartWith "${rejection.field} security "
+        message shouldBe rejection.message
         expectedValue shouldBe rejection.expected
         actualValue shouldBe rejection.actual
     }
 
+    fun chainRejection(expected: GeneralizedSecurityLevel, actual: GeneralizedSecurityLevel) = Rejection(
+        "Attestation security level $actual does not match security level $expected inferred from certificate chain",
+        expected,
+        actual,
+    )
+
+    val teeRejectedByStrongBoxPolicy =
+        Rejection("Attestation security level not StrongBox", ParsedSecurityLevel.STRONG_BOX, TEE)
     val teeBaseline = Claim(
         "TEE baseline", issuer = tee, attestation = tee, keyMint = tee,
-        strongBoxRejection = Rejection(attestation, ParsedSecurityLevel.STRONG_BOX, TEE),
+        strongBoxRejection = teeRejectedByStrongBoxPolicy,
     )
     val claims = listOf(
         teeBaseline,
         Claim("genuine StrongBox", strongBox, strongBox, strongBox),
         Claim(
             "TEE chain with both leaf levels claiming StrongBox", tee, strongBox, strongBox,
-            chainRejection = Rejection(attestation, TEE, STRONGBOX),
+            chainRejection = chainRejection(TEE, STRONGBOX),
         ),
-        Claim(
-            "TEE chain with only attestation claiming StrongBox", tee, strongBox, tee,
-            chainRejection = Rejection(attestation, TEE, STRONGBOX),
-        ),
-        Claim(
-            "TEE chain with only KeyMint claiming StrongBox", tee, tee, strongBox,
-            chainRejection = Rejection(keyMint, TEE, STRONGBOX),
-        ),
+        Claim("TEE chain with only attestation claiming StrongBox", tee, strongBox, tee),
+        Claim("TEE chain with only KeyMint claiming StrongBox", tee, tee, strongBox),
         Claim(
             "StrongBox chain with both leaf levels claiming TEE", strongBox, tee, tee,
-            chainRejection = Rejection(attestation, STRONGBOX, TEE), allowTeeUnderclaim = true,
-            strongBoxRejection = Rejection(attestation, ParsedSecurityLevel.STRONG_BOX, TEE),
+            chainRejection = chainRejection(STRONGBOX, TEE), allowTeeUnderclaim = true,
+            strongBoxRejection = teeRejectedByStrongBoxPolicy,
         ),
-        Claim(
-            "StrongBox chain with only attestation claiming TEE", strongBox, tee, strongBox,
-            chainRejection = Rejection(attestation, STRONGBOX, TEE), allowTeeUnderclaim = true,
-            strongBoxRejection = Rejection(attestation, ParsedSecurityLevel.STRONG_BOX, TEE),
-        ),
-        Claim(
-            "StrongBox chain with only KeyMint claiming TEE", strongBox, strongBox, tee,
-            chainRejection = Rejection(keyMint, STRONGBOX, TEE), allowTeeUnderclaim = true,
-            strongBoxRejection = Rejection(keyMint, ParsedSecurityLevel.STRONG_BOX, TEE),
-        ),
+        Claim("StrongBox chain with only attestation claiming TEE", strongBox, tee, strongBox),
+        Claim("StrongBox chain with only KeyMint claiming TEE", strongBox, strongBox, tee),
         Claim(
             "StrongBox chain with software leaf levels", strongBox, software, software,
-            strongBoxRejection = Rejection(attestation, ParsedSecurityLevel.STRONG_BOX, SOFTWARE),
-            softwareRejection = Rejection(attestation, ParsedSecurityLevel.TRUSTED_ENVIRONMENT, SOFTWARE),
+            strongBoxRejection =
+                Rejection("Attestation security level not StrongBox", ParsedSecurityLevel.STRONG_BOX, SOFTWARE),
+            softwareRejection =
+                Rejection("Attestation security level software", ParsedSecurityLevel.TRUSTED_ENVIRONMENT, SOFTWARE),
         ),
-        Claim(
-            "StrongBox chain with only attestation claiming software", strongBox, software, strongBox,
-            strongBoxRejection = Rejection(attestation, ParsedSecurityLevel.STRONG_BOX, SOFTWARE),
-            softwareRejection = Rejection(attestation, ParsedSecurityLevel.TRUSTED_ENVIRONMENT, SOFTWARE),
-        ),
-        Claim(
-            "StrongBox chain with only KeyMint claiming software", strongBox, strongBox, software,
-            strongBoxRejection = Rejection(keyMint, ParsedSecurityLevel.STRONG_BOX, SOFTWARE),
-            softwareRejection = Rejection(keyMint, ParsedSecurityLevel.TRUSTED_ENVIRONMENT, SOFTWARE),
-        ),
+        Claim("StrongBox chain with only attestation claiming software", strongBox, software, strongBox),
+        Claim("StrongBox chain with only KeyMint claiming software", strongBox, strongBox, software),
     )
 
     data("provisioning", Provisioning.entries) - { provisioning ->
@@ -108,6 +94,15 @@ val SecurityLevelConsistencyTest by matrixSuite {
             }
         }
         data("claims", claims, nameFn = { it.name }) - { claim ->
+            val mismatchRejection = if (claim.attestation != claim.keyMint) {
+                val attestationLevel = generalizedLevels.getValue(claim.attestation)
+                val keyMintLevel = generalizedLevels.getValue(claim.keyMint)
+                Rejection(
+                    "Attestation security level $attestationLevel does not match Keymaster security level $keyMintLevel",
+                    expected = keyMintLevel,
+                    actual = attestationLevel,
+                )
+            } else null
             val chain = issuers.getValue(claim.issuer).issue {
                 createdAt = issuedAt
                 nonce = challenge
@@ -146,7 +141,7 @@ val SecurityLevelConsistencyTest by matrixSuite {
                         SOFTWARE.coerce() shouldBe SOFTWARE
                         shouldThrow<AttestationValueException> {
                             verifySecurityLevel(SOFTWARE.coerce(), record, appOverride = null)
-                        }.shouldMatch(Rejection(attestation, SOFTWARE, TEE))
+                        }.shouldMatch(chainRejection(SOFTWARE, TEE))
                     }
                 }
             }
@@ -171,7 +166,8 @@ val SecurityLevelConsistencyTest by matrixSuite {
                                 allowTeeSecurityLevelForStrongbox = allowUnderclaim,
                             )
                         )
-                        val rejection = claim.chainRejection?.takeUnless { claim.allowTeeUnderclaim && allowUnderclaim }
+                        val rejection = mismatchRejection
+                            ?: claim.chainRejection?.takeUnless { claim.allowTeeUnderclaim && allowUnderclaim }
                             ?: if (policy.expected) claim.strongBoxRejection else claim.softwareRejection
                         if (rejection != null) {
                             shouldThrow<AttestationValueException> {
