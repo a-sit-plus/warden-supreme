@@ -179,8 +179,8 @@ property; the expandable example below shows them together.
        use steps of 10,000, so Android 16 is `160000`; patch levels use a four-digit year and numeric month.
     6. Security patch levels this many months in the future are tolerated.
     7. Only remote key provisioning is considered trustworthy for this app
-    8. The global hardware and software trust anchors are discarded for this app; only the configured RKP root is
-       trusted here.
+    8. This app replaces its global hardware roots with the configured RKP root. The software field inherits the global
+       software roots. See [App-Specific Trust Anchors](config.md#app-specific-trust-anchors) for configuration-file semantics.
     9. The app's key is required to use Android StrongBox.
     10. We want to mark the hardened app. We can use a `Map<String,String>` to attach arbitrary properties to the attestation configuration.
         See [below](#attaching-custom-configuration-properties) for an example that reads those out.
