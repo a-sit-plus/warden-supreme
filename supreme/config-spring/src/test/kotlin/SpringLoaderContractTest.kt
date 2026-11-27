@@ -24,6 +24,8 @@ val SpringLoaderContractTest by matrixSuite {
         assertSpringMapMatchesCanonical(SpringFixtures.supremeAndroidOnly)
         assertSpringMapMatchesCanonical(SpringFixtures.supremeIosOnly)
         assertSpringMapMatchesCanonical(SpringFixtures.supremeDualPlatform)
+        assertSpringMapMatchesCanonical(SpringFixtures.supremeEcP384)
+        assertSpringMapMatchesCanonical(SpringFixtures.supremeRsa)
     }
 
     "spring environment binds prefixed subtrees without leaking sibling config" {
@@ -111,6 +113,8 @@ val SpringLoaderContractTest by matrixSuite {
         assertSpringCasingsEquivalent(SpringFixtures.androidMaximal)
         assertSpringCasingsEquivalent(SpringFixtures.iosMaximal)
         assertSpringCasingsEquivalent(SpringFixtures.supremeDualPlatform)
+        assertSpringCasingsEquivalent(SpringFixtures.supremeEcP384)
+        assertSpringCasingsEquivalent(SpringFixtures.supremeRsa)
     }
 
     "spring blanks become null only for optional values and fail for required ones" {
@@ -417,4 +421,26 @@ private object SpringFixtures {
     val supremeAndroidOnly = SupremeConfiguration(androidMinimal)
     val supremeIosOnly = SupremeConfiguration(iosMinimal)
     val supremeDualPlatform = SupremeConfiguration(androidMaximal, iosMaximal)
+
+    /** Non-default polymorphic `KeyConstraints.AlgorithmParameters`, which YAML encodes as `{type, value}`. */
+    val supremeEcP384 = SupremeConfiguration(
+        androidMaximal, iosMaximal,
+        defaultKeyConstraints = at.asitplus.attestation.supreme.KeyConstraints(
+            at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters.EC(
+                curve = at.asitplus.signum.indispensable.ECCurve.SECP_384_R_1,
+                allowKeyAgreement = true,
+            )
+        ),
+    )
+    val supremeRsa = SupremeConfiguration(
+        androidMaximal, iosMaximal,
+        defaultKeyConstraints = at.asitplus.attestation.supreme.KeyConstraints(
+            at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters.RSA(
+                keySize = at.asitplus.signum.indispensable.misc.BitLength(4096u),
+                paddings = setOf(at.asitplus.signum.indispensable.RSAPadding.PKCS1),
+                digests = setOf(at.asitplus.signum.indispensable.Digest.SHA512),
+                allowDecrypting = true,
+            )
+        ),
+    )
 }

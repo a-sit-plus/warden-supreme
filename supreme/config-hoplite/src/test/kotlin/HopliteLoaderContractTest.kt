@@ -47,6 +47,11 @@ val HopliteLoaderContractTest by matrixSuite {
         assertHopliteMatchesCanonical(HopliteFixtures.supremeDualPlatform)
     }
 
+    "hoplite preserves non-default polymorphic key constraints from yaml and json" {
+        assertHopliteMatchesCanonical(HopliteFixtures.supremeEcP384)
+        assertHopliteMatchesCanonical(HopliteFixtures.supremeRsa)
+    }
+
     "hoplite accepts explicit null for optional supreme oid" {
         val yaml = HopliteFixtures.supremeDualPlatform.toYamlString()
             .replace(
@@ -371,6 +376,28 @@ private object HopliteFixtures {
     val supremeAndroidOnly = SupremeConfiguration(androidMinimal)
     val supremeIosOnly = SupremeConfiguration(iosMinimal)
     val supremeDualPlatform = SupremeConfiguration(androidMaximal, iosMaximal)
+
+    /** Non-default polymorphic `KeyConstraints.AlgorithmParameters`, which YAML encodes as `{type, value}`. */
+    val supremeEcP384 = SupremeConfiguration(
+        androidMaximal, iosMaximal,
+        defaultKeyConstraints = at.asitplus.attestation.supreme.KeyConstraints(
+            at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters.EC(
+                curve = at.asitplus.signum.indispensable.ECCurve.SECP_384_R_1,
+                allowKeyAgreement = true,
+            )
+        ),
+    )
+    val supremeRsa = SupremeConfiguration(
+        androidMaximal, iosMaximal,
+        defaultKeyConstraints = at.asitplus.attestation.supreme.KeyConstraints(
+            at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters.RSA(
+                keySize = at.asitplus.signum.indispensable.misc.BitLength(4096u),
+                paddings = setOf(at.asitplus.signum.indispensable.RSAPadding.PKCS1),
+                digests = setOf(at.asitplus.signum.indispensable.Digest.SHA512),
+                allowDecrypting = true,
+            )
+        ),
+    )
 }
 
 private fun trustedRootPem(root: TrustedRoot): String = when (root) {
