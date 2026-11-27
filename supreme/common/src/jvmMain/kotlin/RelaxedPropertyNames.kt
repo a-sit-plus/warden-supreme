@@ -1,6 +1,5 @@
 package at.asitplus.attestation
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -16,15 +15,11 @@ private fun JsonElement.withRelaxedPropertyNames(descriptor: SerialDescriptor?):
     else -> this
 }
 
-private fun JsonObject.normalizeObject(declaredDescriptor: SerialDescriptor?): JsonObject {
+private fun JsonObject.normalizeObject(descriptor: SerialDescriptor?): JsonObject {
     // YAML (yamlkt) writes sealed classes as `{type: X, value: {...}}`; JSON expects them flat.
-    if (declaredDescriptor?.kind == PolymorphicKind.SEALED) flattenedSealedYamlForm()?.let {
-        return it.normalizeObject(declaredDescriptor)
+    if (descriptor?.kind == PolymorphicKind.SEALED) flattenedSealedYamlForm()?.let {
+        return it.normalizeObject(descriptor)
     }
-    // Sealed hierarchies (e.g. KeyConstraints.AlgorithmParameters) only describe their subclasses indirectly; resolve the
-    // concrete subclass from the discriminator, or camelCase properties such as `parameterSet` or `keySize` are lost
-    // when a loader lowercases keys.
-    val descriptor = declaredDescriptor?.sealedSubclassFor(this) ?: declaredDescriptor
     val descriptorInfo = descriptor?.objectDescriptorInfo()
     val mapValueDescriptor = descriptor?.mapValueDescriptor()
 
@@ -85,17 +80,6 @@ private fun JsonObject.flattenedSealedYamlForm(): JsonObject? {
     val value = entries.firstOrNull { it.key.relaxedLookupToken() == "value" }?.value as? JsonObject ?: return null
     if (value.keys.any { it.relaxedLookupToken() == CLASS_DISCRIMINATOR }) return null
     return JsonObject(mapOf(type.key to type.value) + value)
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-private fun SerialDescriptor.sealedSubclassFor(obj: JsonObject): SerialDescriptor? {
-    if (kind != PolymorphicKind.SEALED || elementsCount < 2) return null
-    val type = obj.entries.firstOrNull { it.key.relaxedLookupToken() == CLASS_DISCRIMINATOR }
-        ?.value?.let { it as? JsonPrimitive }?.contentOrNull ?: return null
-    val subclasses = getElementDescriptor(1)
-    return (0 until subclasses.elementsCount)
-        .firstOrNull { subclasses.getElementName(it) == type }
-        ?.let(subclasses::getElementDescriptor)
 }
 
 private fun SerialDescriptor.listElementDescriptor(): SerialDescriptor? =
