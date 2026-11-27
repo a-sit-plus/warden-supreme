@@ -1,5 +1,11 @@
 import at.asitplus.attestation.supreme.AttestationChallenge
 import at.asitplus.attestation.supreme.DataAuthentication
+import at.asitplus.attestation.supreme.KeyConstraints
+import at.asitplus.signum.indispensable.ECCurve
+import at.asitplus.signum.indispensable.misc.BitLength
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import at.asitplus.attestation.supreme.PrimitiveType
 import at.asitplus.attestation.supreme.WardenDefaults
 import at.asitplus.attestation.supreme.requireBoundedArrayNesting
@@ -78,9 +84,9 @@ val AttestationChallengeNonceTest by matrixSuite {
         "version reflects requested features",
         listOf(
             VersionCase("signature without attributes", DataAuthentication.Signature, null, 2),
-            VersionCase("signature with attributes", DataAuthentication.Signature, requestedAttributes, 3),
-            VersionCase("hash without attributes", DataAuthentication.Hash(Digest.SHA256), null, 3),
-            VersionCase("hash with attributes", DataAuthentication.Hash(Digest.SHA256), requestedAttributes, 3),
+            VersionCase("signature with attributes", DataAuthentication.Signature, requestedAttributes, AttestationChallenge.CURRENT_VERSION),
+            VersionCase("hash without attributes", DataAuthentication.Hash(Digest.SHA256), null, AttestationChallenge.CURRENT_VERSION),
+            VersionCase("hash with attributes", DataAuthentication.Hash(Digest.SHA256), requestedAttributes, AttestationChallenge.CURRENT_VERSION),
         ),
         nameFn = { _, case -> case.name },
     ) test { case ->
@@ -89,6 +95,64 @@ val AttestationChallengeNonceTest by matrixSuite {
             dataAuth = case.dataAuth,
             requestedAttributes = case.requestedAttributes,
         ).version shouldBe case.expectedVersion
+    }
+}
+
+private data class WireVersionCase(
+    val name: String,
+    val dataAuth: DataAuthentication,
+    val keyConstraints: KeyConstraints?,
+    val inMemoryVersion: Int,
+    val wireVersion: Int,
+)
+
+private val ec = KeyConstraints(KeyConstraints.AlgorithmParameters.EC(ECCurve.SECP_384_R_1))
+private val rsa = KeyConstraints(KeyConstraints.AlgorithmParameters.RSA(BitLength(3072u)))
+private val mlDsa = WardenDefaults.KeyConstraints.mlDsa65Signer
+private val hash = DataAuthentication.Hash(Digest.SHA256)
+
+val AttestationChallengeWireVersionTest by matrixSuite {
+    test("version 4 is the first after the pre-ML-DSA version") {
+        AttestationChallenge.CURRENT_VERSION shouldBe 4
+        AttestationChallenge.WireSerializer.PRE_ML_DSA_VERSION shouldBe 3
+    }
+
+    data(
+        "wire version",
+        listOf(
+            WireVersionCase("signature, no key constraints", DataAuthentication.Signature, null, 2, 2),
+            WireVersionCase("signature, EC", DataAuthentication.Signature, ec, 2, 2),
+            WireVersionCase("signature, RSA", DataAuthentication.Signature, rsa, 2, 2),
+            WireVersionCase("signature, ML-DSA", DataAuthentication.Signature, mlDsa, 4, 4),
+            WireVersionCase("hash, no key constraints", hash, null, 4, 3),
+            WireVersionCase("hash, EC", hash, ec, 4, 3),
+            WireVersionCase("hash, RSA", hash, rsa, 4, 3),
+            WireVersionCase("hash, ML-DSA", hash, mlDsa, 4, 4),
+        ),
+        nameFn = { _, case -> case.name },
+    ) test { case ->
+        val challenge = AttestationChallenge(
+            issuedAt = Instant.fromEpochMilliseconds(0),
+            validity = 5.seconds,
+            nonce = ByteArray(8),
+            attestationEndpoint = "https://example.invalid/attest",
+            proofOID = WardenDefaults.OIDs.ATTESTATION_PROOF,
+            keyConstraints = case.keyConstraints,
+            dataAuth = case.dataAuth,
+        )
+        challenge.version shouldBe case.inMemoryVersion
+
+        val json = Json.encodeToString(AttestationChallenge.serializer(), challenge)
+        Json.parseToJsonElement(json).jsonObject["version"]!!.jsonPrimitive.int shouldBe case.wireVersion
+        // decoding yields the wire version; everything else is unchanged
+        val decoded = Json.decodeFromString(AttestationChallenge.serializer(), json)
+        decoded.version shouldBe case.wireVersion
+        decoded.keyConstraints shouldBe challenge.keyConstraints
+        decoded.dataAuth shouldBe challenge.dataAuth
+        decoded.nonce.contentEquals(challenge.nonce) shouldBe true
+        // pre-ML-DSA clients accept any challenge whose wire version is at most 3, i.e. all but ML-DSA ones
+        (case.wireVersion <= AttestationChallenge.WireSerializer.PRE_ML_DSA_VERSION) shouldBe
+                (case.keyConstraints != mlDsa)
     }
 }
 

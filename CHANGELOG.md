@@ -1,6 +1,24 @@
 # Changelog
 
 ## NEXT
+* **Add post-quantum ML-DSA (FIPS 204) key attestation**, implemented as Signum providers in Warden (no Signum changes)
+    * Request it via `KeyConstraints.AlgorithmParameters.MLDSA(parameterSet)` or `WardenDefaults.KeyConstraints.mlDsa65Signer`;
+      clients create attested ML-DSA keys and prove possession with ML-DSA-signed CSRs (or hashed TBS CSRs)
+    * Android: Android Keystore, API 37+ with KeyMint ≥ 5; ML-DSA-65 and ML-DSA-87
+    * iOS: CryptoKit Secure Enclave keys (iOS 26+), bound to App Attest; ML-DSA-65 and ML-DSA-87. The CryptoKit shim is a
+      static library embedded in the `supreme-common` klib (and the Swift client's framework), built with `swiftc` on macOS hosts
+    * Verifier: ML-DSA-44/65/87 through BouncyCastle (used as a provider instance, never registered globally)
+    * New `MlDsaParameterSet`, `MlDsaPublicKey`, `MlDsaSignature`, `MlDsaSignatureAlgorithm`, the `mlDsa { }` key-creation DSL
+      option and `Signum.installWardenMlDsa()` in `at.asitplus.attestation.supreme.mldsa`
+    * Bump `AttestationChallenge.CURRENT_VERSION` to 4, which signifies ML-DSA support. On the wire, challenges that do not
+      request ML-DSA (ECDSA on a NIST curve, RSA, or no key constraints) are still encoded as version 3
+      (`AttestationChallenge.WireSerializer.PRE_ML_DSA_VERSION`; version 2 where it applied before), so existing clients
+      keep working. Only challenges requesting ML-DSA go out as version 4, which older clients reject
+* Fix Android key binding on JDK 17 for public keys of algorithms the JDK does not know: compare the certificate's
+  original `subjectPublicKeyInfo` (`X509Certificate.canonicalPublicKey()`) instead of the JDK's re-encoding
+* Fix loading key constraints with non-default algorithm parameters from YAML via Hoplite, and of camelCase properties of
+  polymorphic configuration values with relaxed (lowercased) property names
+* Generator: `AndroidAttestationIssuer.issueChain(subjectKey)` issues fake attestation chains for externally held keys
 * Add `info: MutableMap<String, Primitive>` to successful and failed `AttestationResponse` values.
     * Accepts ordinary Kotlin primitives, including `null`, numeric types, `Char`, and `ByteArray`.
       Empty maps are omitted from the wire and missing maps default to empty mutable maps.

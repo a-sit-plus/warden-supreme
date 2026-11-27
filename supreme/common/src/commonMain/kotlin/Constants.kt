@@ -44,5 +44,15 @@ object WardenDefaults {
                 allowKeyAgreement = false
             )
         )
+
+        /**
+         * Pure ML-DSA-65 signing key (post-quantum). Supported on Android 17 (API 37, KeyMint ≥ 5) and iOS 26+.
+         * Requires [at.asitplus.signum.Signum.installWardenMlDsa] on client and verifier.
+         */
+        val mlDsa65Signer = at.asitplus.attestation.supreme.KeyConstraints(
+            at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters.MLDSA(
+                at.asitplus.attestation.supreme.mldsa.MlDsaParameterSet.ML_DSA_65
+            )
+        )
     }
 }

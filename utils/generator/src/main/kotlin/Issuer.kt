@@ -67,23 +67,36 @@ class AndroidAttestationIssuer private constructor(
     ) = GeneratorConfig(spec, attestations, outputDirectory)
 
     fun issue(attestation: AttestationSpec = AttestationSpec()): IssuedAttestation {
+        val leafKey = ephemeralEcP256Signer()
+        return IssuedAttestation(
+            certificateChain = issueChain(attestation, leafKey.publicKey),
+            leafSigner = leafKey,
+        )
+    }
+
+    /**
+     * Issues an attestation chain (leaf first, root last) for an externally held [subjectKey].
+     * Works for any key type Signum can encode, e.g. provider-defined post-quantum keys.
+     * The attestation certificates above the leaf stay EC, as on real devices.
+     */
+    fun issueChain(attestation: AttestationSpec = AttestationSpec(), subjectKey: CryptoPublicKey): List<Certificate> {
         val validity = attestation.createdAt.validFor(spec.validity)
         val attestationKey = attestationCa.certifySubordinateCa(spec.attestationSubject, validity, pathLength = 0)
-        val leafKey = ephemeralEcP256Signer()
         val leaf = attestationKey.certify(
             subject = commonName("Android Keystore Key"),
-            subjectKey = leafKey.publicKey,
+            subjectKey = subjectKey,
             validity = validity,
             // A leaf that may sign certificates is only ever wanted for chain-extension attack vectors.
             role = if (attestation.leafCanSignCertificates) Role.CertificateAuthority(pathLength = 0)
             else Role.EndEntity,
             extensions = listOf(attestation.keyDescription.asCertificateExtension()),
         )
-        return IssuedAttestation(
-            certificateChain = listOf(leaf, attestationKey.certificate) + caChain + root.certificate,
-            leafSigner = leafKey,
-        )
+        return listOf(leaf, attestationKey.certificate) + caChain + root.certificate
     }
+
+    /** [issueChain] with the type-safe DSL. */
+    fun issueChain(subjectKey: CryptoPublicKey, block: AttestationSpecBuilder.() -> Unit): List<Certificate> =
+        issueChain(AttestationSpecBuilder().apply(block).build(), subjectKey)
 
     /** Builds the statement with the type-safe DSL instead of passing a prepared [AttestationSpec]. */
     fun issue(block: AttestationSpecBuilder.() -> Unit): IssuedAttestation =

@@ -16,6 +16,10 @@ import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.serializers.TimeZoneSerializer
 import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import at.asitplus.signum.indispensable.isBuiltIn
 import kotlin.time.Duration
 import kotlin.time.Instant
 
@@ -54,7 +58,8 @@ import kotlin.time.Instant
  */
 @OptIn(ExperimentalSerializationApi::class)
 @ConsistentCopyVisibility
-@Serializable
+@KeepGeneratedSerializer
+@Serializable(with = AttestationChallenge.WireSerializer::class)
 data class AttestationChallenge
 /**
  * @throws IllegalArgumentException in case the [nonce] is larger than 128 bytes
@@ -205,7 +210,10 @@ private constructor(
         attestationEndpoint = attestationEndpoint,
         proofOID = proofOID,
         genericDeviceNameOID = genericDeviceNameOID,
-        version = if (dataAuth == DataAuthentication.Signature && toBeAttestedAttributes == null) 2 else CURRENT_VERSION,
+        // Version 2 predates hashing and attributes, version 3 predates ML-DSA; see also WireSerializer.
+        version = if (dataAuth == DataAuthentication.Signature && toBeAttestedAttributes == null &&
+            keyConstraints?.algorithmParameters.isPreMlDsaCompatible()
+        ) 2 else CURRENT_VERSION,
         keyConstraints = keyConstraints,
         additionalPayload = additionalPayload,
         transientData = transientData,
@@ -287,8 +295,46 @@ private constructor(
     @Serializable
     data class AttributeAttestationDescriptor(val name: String, val type: PrimitiveType, val required: Boolean = true)
 
+    /**
+     * Wire format of [AttestationChallenge]: the generated serializer, except that [version] is downgraded on encoding
+     * whenever the challenge is understood by clients predating ML-DSA support (see [wireVersion]).
+     *
+     * Version 4 only signifies that ML-DSA keys may be requested. Encoding challenges that do not request ML-DSA as
+     * [PRE_ML_DSA_VERSION] keeps clients that only support version 3 working, since they reject newer versions outright.
+     */
+    object WireSerializer : KSerializer<AttestationChallenge> {
+        /** The last challenge version before ML-DSA key constraints were introduced. */
+        const val PRE_ML_DSA_VERSION: Int = 3
+
+        private val generated get() = AttestationChallenge.generatedSerializer()
+        override val descriptor: SerialDescriptor get() = generated.descriptor
+
+        override fun serialize(encoder: Encoder, value: AttestationChallenge) {
+            val wireVersion = value.wireVersion()
+            encoder.encodeSerializableValue(
+                generated,
+                if (wireVersion == value.version) value else value.copy(version = wireVersion)
+            )
+        }
+
+        override fun deserialize(decoder: Decoder): AttestationChallenge =
+            decoder.decodeSerializableValue(generated)
+
+        /**
+         * The version put on the wire: [PRE_ML_DSA_VERSION] if [version] is the first version after it and the requested
+         * key (if any) is ECDSA on a NIST curve or RSA; otherwise [version] as-is.
+         */
+        internal fun AttestationChallenge.wireVersion(): Int? {
+            val v = version ?: return null
+            if (v - 1 != PRE_ML_DSA_VERSION) return v
+            return if (keyConstraints?.algorithmParameters.isPreMlDsaCompatible()) PRE_ML_DSA_VERSION else v
+        }
+
+    }
+
     companion object {
-        const val CURRENT_VERSION: Int = 3
+        /** Version 4: ML-DSA key constraints. Challenges not using them are encoded as version 3, see [WireSerializer]. */
+        const val CURRENT_VERSION: Int = 4
     }
 }
 
@@ -396,3 +442,13 @@ fun CertificationRequest.deviceNameForOid(oid: ObjectIdentifier): String? = tbsC
  */
 fun CertificationRequest.deviceNameForChallenge(challenge: AttestationChallenge): String? =
     tbsCsr.deviceNameForChallenge(challenge)
+
+/**
+ * Whether clients predating ML-DSA support understand this key request: ECDSA on a NIST curve, RSA, or no key request.
+ */
+internal fun KeyConstraints.AlgorithmParameters?.isPreMlDsaCompatible(): Boolean = when (this) {
+    null -> true // no key requested, so nothing ML-DSA-specific to signify
+    is KeyConstraints.AlgorithmParameters.EC -> curve.isBuiltIn // NIST P-256/384/521
+    is KeyConstraints.AlgorithmParameters.RSA -> true
+    is KeyConstraints.AlgorithmParameters.MLDSA -> false
+}

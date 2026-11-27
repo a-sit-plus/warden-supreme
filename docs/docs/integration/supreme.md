@@ -439,6 +439,38 @@ hands a `SupremeConfiguration` to the verifier and relies on the defaults for ev
 1. Default, secure nonce generator.
 2. Default bounded in-memory challenge validator.
 
+#### Requesting Post-Quantum (ML-DSA) Keys
+
+Warden Supreme can request, attest and verify **ML-DSA** (FIPS 204, pure ML-DSA as profiled for X.509 by RFC 9881) keys
+instead of P-256:
+
+```kotlin
+SupremeConfiguration(
+    android, ios,
+    defaultKeyConstraints = WardenDefaults.KeyConstraints.mlDsa65Signer,
+    // or: KeyConstraints(KeyConstraints.AlgorithmParameters.MLDSA(MlDsaParameterSet.ML_DSA_87))
+)
+```
+
+The client creates an attested ML-DSA key and proves possession with an ML-DSA-signed CSR (or sends a hashed TBS CSR).
+Nothing else changes in the flow. Warden's client and verifier install the required Signum providers automatically
+(`Signum.installWardenMlDsa()`); call it yourself only when you use Signum or Makoto directly.
+
+| Parameter set | Android Keystore              | iOS (CryptoKit)                           | Verifier (JVM)  |
+|---------------|-------------------------------|-------------------------------------------|-----------------|
+| ML-DSA-44     | –                             | –                                         | ✓ (BouncyCastle) |
+| ML-DSA-65     | API 37+ with KeyMint ≥ 5 (TEE) | iOS 26+, Secure Enclave (App Attest bound) | ✓               |
+| ML-DSA-87     | API 37+ with KeyMint ≥ 5 (TEE) | iOS 26+, Secure Enclave (App Attest bound) | ✓               |
+
+* Android attests ML-DSA keys like any other Keystore key: the leaf certificate carries the ML-DSA key, the attestation
+  certificates above it stay EC. StrongBox is never requested for ML-DSA.
+* On iOS, keys live in the Secure Enclave and are bound to App Attest exactly like EC keys. Without a Secure Enclave
+  (simulator) and with `backing = DISCOURAGED`, unprotected software keys are used; protected keys require the Secure Enclave.
+* Key constraints are advisory: the verifier checks the attestation and proof of possession, not that the client used the
+  requested algorithm. Use an additional verification policy if you need to enforce ML-DSA.
+* Challenges requesting ML-DSA carry challenge version 4, which clients older than this release reject when fetching the
+  challenge. All other challenges are still sent as version 3 (or 2), so existing clients are unaffected.
+
 #### Additional Verification Policy
 
 `Makoto` verifies the generic platform and app attestation policy: challenge freshness, attestation statement validity,

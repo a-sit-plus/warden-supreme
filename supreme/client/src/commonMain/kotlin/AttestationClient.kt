@@ -2,7 +2,8 @@ package at.asitplus.attestation.supreme
 
 import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.Signum
-import at.asitplus.signum.supreme.installSupreme
+import at.asitplus.attestation.supreme.mldsa.installWardenMlDsa
+import at.asitplus.attestation.supreme.mldsa.mlDsa
 import at.asitplus.awesn1.encoding.encodeToDer
 
 import at.asitplus.KmmResult
@@ -46,7 +47,7 @@ open class AttestationClient(
     private val maxAttestationPayloadBytes: Int = WardenDefaults.DEFAULT_MAX_ATTESTATION_PAYLOAD_BYTES,
 ) {
     init {
-        Signum.installSupreme()
+        Signum.installWardenMlDsa()
         require(maxAttestationPayloadBytes > 0) { "maxAttestationPayloadBytes must be positive" }
     }
 
@@ -276,7 +277,7 @@ suspend fun AttestationChallenge.createAttestationProof(
     )
 
 
-    Signum.installSupreme()
+    Signum.installWardenMlDsa()
     val attestationNonce = when (val authentication = dataAuth) {
         DataAuthentication.Signature -> nonce
         is DataAuthentication.Hash -> authentication.algorithm.digest(hashInput.encodeToDer())
@@ -302,6 +303,10 @@ suspend fun AttestationChallenge.createAttestationProof(
                     signing = params.allowSigning
                     decrypting = params.allowDecrypting
                 }
+            }
+
+            is KeyConstraints.AlgorithmParameters.MLDSA -> mlDsa {
+                parameterSet = params.parameterSet
             }
         }
         hardware {

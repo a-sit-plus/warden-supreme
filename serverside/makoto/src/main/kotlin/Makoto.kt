@@ -3,6 +3,7 @@ package at.asitplus.attestation
 
 import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.Signum
+import at.asitplus.attestation.supreme.mldsa.installWardenMlDsa
 
 import at.asitplus.signum.indispensable.sign.*
 
@@ -71,6 +72,8 @@ class Makoto
 ) : AttestationService() {
 
     init {
+        // ML-DSA keys (iOS ClientData v2, Android leaf keys) decode through Warden's providers
+        Signum.installWardenMlDsa()
         require(androidAttestationConfiguration != null || iosAttestationConfiguration != null) { "At least one attestation configuration (iOS or Android) must be provided" }
     }
 
@@ -488,7 +491,7 @@ class Makoto
         else if (attestationProof.size > 2) verifyAttestationAndroid(attestationProof, challenge).let {
             if (it is AttestationResult.Android) clientData?.let { encodedKey ->
                 val attestedLeafKey = it.requireLeafAttestationCertificateForKeyBinding().fold(
-                    onSuccess = { leaf -> leaf.publicKey.encoded },
+                    onSuccess = { leaf -> leaf.canonicalPublicKey().encoded },
                     onFailure = { return it.toAttestationResultError() }
                 )
                 if (!attestedLeafKey.contentEquals(encodedKey)) {
@@ -580,7 +583,7 @@ class Makoto
             ).let {
                 when (it) {
                     is AttestationResult.Android -> it.requireLeafAttestationCertificateForKeyBinding().fold(
-                        onSuccess = { leaf -> KeyAttestation(leaf.publicKey, it) },
+                        onSuccess = { leaf -> KeyAttestation(leaf.canonicalPublicKey(), it) },
                         onFailure = { error -> KeyAttestation(null, error.toAttestationResultError()) }
                     )
 

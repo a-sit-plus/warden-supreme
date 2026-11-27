@@ -11,6 +11,8 @@ import at.asitplus.attestation.generator.CertifiedKey
 import at.asitplus.attestation.generator.Provisioning
 import at.asitplus.attestation.generator.RootSpec
 import at.asitplus.attestation.generator.androidAttestationIssuer
+import at.asitplus.attestation.generator.AttestationSpecBuilder
+import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.attestation.generator.mangle
 import at.asitplus.signum.indispensable.CryptoPrivateKey
 import kotlinx.coroutines.runBlocking
@@ -98,8 +100,58 @@ object FakeAttestations {
         provisioning: Provisioning? = null,
     ): CreatedAttestation {
         val createdAt = Instant.fromEpochMilliseconds(creationTime.time)
+        val issuer = fakeIssuer(createdAt, securityLevel, reuse, provisioning)
+        val issued = issuer.issue(
+            attestationSpec(createdAt, challenge, packageName, signatureDigest, appVersion, androidVersion,
+                androidPatchLevel, vendorPatchLevel, verifiedBootKey, deviceLocked, verifiedBootState,
+                verifiedBootHash, securityLevel, attestationLeafCanSignCertificates)
+        )
 
-        val issuer = androidAttestationIssuer {
+        return CreatedAttestation(
+            certificateChain = issued.certificateChain.map { it.toJava() },
+            leafKeyPair = issued.leafSigner.toJavaKeyPair(),
+            intermediateKeyPair = issuer.attestationCa.toJavaKeyPair(),
+            rootKeyPair = issuer.root.toJavaKeyPair(),
+            rootCertificate = issuer.root.certificate.toJava(),
+            factoryIntermediateCertificate =
+                if (issuer.spec.provisioning == Provisioning.FACTORY) issuer.attestationCa.certificate.toJava() else null,
+        )
+    }
+
+    /**
+     * Like [createAttestationWithKeys], but attests an externally held [subjectKey] of any type Signum can
+     * encode (e.g. ML-DSA). Returns the chain, leaf first; the CA certificates above the leaf stay EC.
+     */
+    fun createAttestationForKey(
+        subjectKey: CryptoPublicKey,
+        challenge: ByteArray,
+        packageName: String,
+        signatureDigest: ByteArray,
+        appVersion: Int = 1,
+        androidVersion: Int = 11,
+        androidPatchLevel: Int = 202108,
+        verifiedBootKey: ByteArray = Random.nextBytes(32),
+        deviceLocked: Boolean = true,
+        verifiedBootState: BootState = BootState.VERIFIED,
+        verifiedBootHash: ByteArray = Random.nextBytes(32),
+        creationTime: Date = Date(),
+        securityLevel: SecurityLevel = SecurityLevel.TEE,
+    ): List<X509Certificate> {
+        val createdAt = Instant.fromEpochMilliseconds(creationTime.time)
+        return fakeIssuer(createdAt, securityLevel, reuse = null, provisioning = null).issueChain(
+            subjectKey,
+            attestationSpec(createdAt, challenge, packageName, signatureDigest, appVersion, androidVersion,
+                androidPatchLevel, vendorPatchLevel = null, verifiedBootKey, deviceLocked, verifiedBootState,
+                verifiedBootHash, securityLevel, attestationLeafCanSignCertificates = false),
+        ).map { it.toJava() }
+    }
+
+    private fun fakeIssuer(
+        createdAt: Instant,
+        securityLevel: SecurityLevel,
+        reuse: ProvisioningAuthority?,
+        provisioning: Provisioning?,
+    ) = androidAttestationIssuer {
             issuedAt = createdAt
             // The old generator issued everything for exactly one hour; several tests depend on it.
             validity = 60.minutes
@@ -112,7 +164,22 @@ object FakeAttestations {
             reuse?.let { root = it.asRootSpec() }
         }
 
-        val issued = issuer.issue {
+    private fun attestationSpec(
+        createdAt: Instant,
+        challenge: ByteArray,
+        packageName: String,
+        signatureDigest: ByteArray,
+        appVersion: Int,
+        androidVersion: Int,
+        androidPatchLevel: Int,
+        vendorPatchLevel: Int?,
+        verifiedBootKey: ByteArray,
+        deviceLocked: Boolean,
+        verifiedBootState: BootState,
+        verifiedBootHash: ByteArray,
+        securityLevel: SecurityLevel,
+        attestationLeafCanSignCertificates: Boolean,
+    ): AttestationSpecBuilder.() -> Unit = {
             this.createdAt = createdAt
             attestationVersion = 4
             keyMintVersion = 4
@@ -145,17 +212,6 @@ object FakeAttestations {
                 .withRawInt(AuthorizationList.OsPatchLevel, androidPatchLevel)
                 .let { list -> vendorPatchLevel?.let { list.withRawInt(AuthorizationList.PatchLevel.Vendor, it) } ?: list }
         }
-
-        return CreatedAttestation(
-            certificateChain = issued.certificateChain.map { it.toJava() },
-            leafKeyPair = issued.leafSigner.toJavaKeyPair(),
-            intermediateKeyPair = issuer.attestationCa.toJavaKeyPair(),
-            rootKeyPair = issuer.root.toJavaKeyPair(),
-            rootCertificate = issuer.root.certificate.toJava(),
-            factoryIntermediateCertificate =
-                if (issuer.spec.provisioning == Provisioning.FACTORY) issuer.attestationCa.certificate.toJava() else null,
-        )
-    }
 }
 
 data class CreatedAttestation(

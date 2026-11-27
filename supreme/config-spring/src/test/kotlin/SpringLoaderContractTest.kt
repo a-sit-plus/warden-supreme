@@ -24,6 +24,7 @@ val SpringLoaderContractTest by matrixSuite {
         assertSpringMapMatchesCanonical(SpringFixtures.supremeAndroidOnly)
         assertSpringMapMatchesCanonical(SpringFixtures.supremeIosOnly)
         assertSpringMapMatchesCanonical(SpringFixtures.supremeDualPlatform)
+        assertSpringMapMatchesCanonical(SpringFixtures.supremeMlDsa)
     }
 
     "spring environment binds prefixed subtrees without leaking sibling config" {
@@ -111,6 +112,7 @@ val SpringLoaderContractTest by matrixSuite {
         assertSpringCasingsEquivalent(SpringFixtures.androidMaximal)
         assertSpringCasingsEquivalent(SpringFixtures.iosMaximal)
         assertSpringCasingsEquivalent(SpringFixtures.supremeDualPlatform)
+        assertSpringCasingsEquivalent(SpringFixtures.supremeMlDsa)
     }
 
     "spring blanks become null only for optional values and fail for required ones" {
@@ -421,4 +423,14 @@ private object SpringFixtures {
     val supremeAndroidOnly = SupremeConfiguration(androidMinimal)
     val supremeIosOnly = SupremeConfiguration(iosMinimal)
     val supremeDualPlatform = SupremeConfiguration(androidMaximal, iosMaximal)
+
+    /** ML-DSA default key constraints (polymorphic `KeyConstraints.AlgorithmParameters.MLDSA`). */
+    val supremeMlDsa = SupremeConfiguration(
+        androidMaximal, iosMaximal,
+        defaultKeyConstraints = at.asitplus.attestation.supreme.KeyConstraints(
+            at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters.MLDSA(
+                at.asitplus.attestation.supreme.mldsa.MlDsaParameterSet.ML_DSA_87
+            )
+        ),
+    )
 }

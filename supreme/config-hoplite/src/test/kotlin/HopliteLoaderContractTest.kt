@@ -45,6 +45,7 @@ val HopliteLoaderContractTest by matrixSuite {
         assertHopliteMatchesCanonical(HopliteFixtures.supremeAndroidOnly)
         assertHopliteMatchesCanonical(HopliteFixtures.supremeIosOnly)
         assertHopliteMatchesCanonical(HopliteFixtures.supremeDualPlatform)
+        assertHopliteMatchesCanonical(HopliteFixtures.supremeMlDsa)
     }
 
     "hoplite accepts explicit null for optional supreme oid" {
@@ -375,6 +376,16 @@ private object HopliteFixtures {
     val supremeAndroidOnly = SupremeConfiguration(androidMinimal)
     val supremeIosOnly = SupremeConfiguration(iosMinimal)
     val supremeDualPlatform = SupremeConfiguration(androidMaximal, iosMaximal)
+
+    /** ML-DSA default key constraints (polymorphic `KeyConstraints.AlgorithmParameters.MLDSA`). */
+    val supremeMlDsa = SupremeConfiguration(
+        androidMaximal, iosMaximal,
+        defaultKeyConstraints = at.asitplus.attestation.supreme.KeyConstraints(
+            at.asitplus.attestation.supreme.KeyConstraints.AlgorithmParameters.MLDSA(
+                at.asitplus.attestation.supreme.mldsa.MlDsaParameterSet.ML_DSA_87
+            )
+        ),
+    )
 }
 
 private fun trustedRootPem(root: TrustedRoot): String = when (root) {

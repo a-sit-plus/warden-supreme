@@ -1,0 +1,14 @@
+# CryptoKit ML-DSA shim (cinterop/MlDsaSwift/MlDsaSwift.swift), compiled by the buildMlDsaSwift* Gradle tasks.
+# The static library is embedded into the klib, so consumers need no extra setup.
+
+package = at.asitplus.attestation.supreme.mldsa.internal.ios
+language = Objective-C
+
+headers = MlDsaSwift/MlDsaSwift-Swift.h
+headerFilter = MlDsaSwift/*
+
+staticLibraries = libMlDsaSwift.a
+
+linkerOpts = -L/usr/lib/swift
+linkerOpts.ios_arm64 = -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/
+linkerOpts.ios_simulator_arm64 = -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/

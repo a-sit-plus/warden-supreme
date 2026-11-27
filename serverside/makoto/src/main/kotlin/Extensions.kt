@@ -49,6 +49,28 @@ import kotlin.time.toKotlinInstant
 private val ecKeyFactory = KeyFactory.getInstance("EC")
 private val rsaKeyFactory = KeyFactory.getInstance("RSA")
 
+/**
+ * The certificate's public key, encoded exactly as in the certificate's `subjectPublicKeyInfo`.
+ *
+ * For algorithms the JDK does not know (e.g. ML-DSA on JDK < 24), [X509Certificate.getPublicKey] returns a generic
+ * `X509Key`, which JDK 17 re-encodes with NULL algorithm parameters. That breaks byte-wise key comparisons against the
+ * client's SPKI. For all keys whose JDK encoding already matches, this returns [X509Certificate.getPublicKey] itself.
+ */
+fun X509Certificate.canonicalPublicKey(): PublicKey {
+    val jdkKey = publicKey
+    val spki = org.bouncycastle.asn1.x509.Certificate.getInstance(encoded).subjectPublicKeyInfo.encoded
+    return if (jdkKey.encoded.contentEquals(spki)) jdkKey else CanonicallyEncodedPublicKey(jdkKey.algorithm, spki)
+}
+
+private class CanonicallyEncodedPublicKey(private val alg: String, private val der: ByteArray) : PublicKey {
+    override fun getAlgorithm() = alg
+    override fun getFormat() = "X.509"
+    override fun getEncoded(): ByteArray = der.copyOf()
+    override fun equals(other: Any?) = (other is PublicKey) && other.format == "X.509" && der.contentEquals(other.encoded)
+    override fun hashCode() = der.contentHashCode()
+    override fun toString() = "CanonicallyEncodedPublicKey($alg, ${der.size} bytes)"
+}
+
 //copied from AppAttest Library
 private val certificateFactory = CertificateFactory.getInstance("X.509")
 fun ByteArray.parseToCertificate(): X509Certificate? = kotlin.runCatching {

@@ -1,5 +1,6 @@
 package at.asitplus.attestation.supreme
 
+import at.asitplus.attestation.supreme.mldsa.MlDsaParameterSet
 import at.asitplus.signum.indispensable.digest.Digest
 import at.asitplus.signum.indispensable.ECCurve
 import at.asitplus.signum.indispensable.sign.RsaAlgorithm
@@ -99,6 +100,32 @@ data class KeyConstraints(
                 result = 31 * result + digests.hashCode()
                 return result
             }
+        }
+
+        /**
+         * Pure ML-DSA (FIPS 204, RFC 9881), without pre-hashing; hence no [digests].
+         * Android (API 37+) and iOS (26+) support [MlDsaParameterSet.ML_DSA_65] and [MlDsaParameterSet.ML_DSA_87] only.
+         * Clients and verifiers must call [at.asitplus.signum.Signum.installWardenMlDsa]
+         * (Warden's own client and verifier do so automatically).
+         */
+        @Serializable
+        @SerialName("ML-DSA")
+        class MLDSA(
+            val parameterSet: MlDsaParameterSet = MlDsaParameterSet.ML_DSA_65,
+        ) : AlgorithmParameters() {
+            //must be true as of now, because we require signing for proof of possession
+            override val allowSigning: Boolean = true
+            override val digests: Set<Digest> get() = emptySet()
+
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is MLDSA) return false
+                if (!super.equals(other)) return false
+                return parameterSet == other.parameterSet
+            }
+
+            override fun hashCode(): Int = 31 * super.hashCode() + parameterSet.hashCode()
+            override fun toString() = "MLDSA(parameterSet=$parameterSet)"
         }
 
         override fun equals(other: Any?): Boolean {
