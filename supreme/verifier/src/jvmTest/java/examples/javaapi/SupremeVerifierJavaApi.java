@@ -11,7 +11,7 @@ import at.asitplus.attestation.IosAttestationConfiguration;
 import at.asitplus.attestation.supreme.JavaAttestationVerifier;
 import at.asitplus.attestation.supreme.PreAttestationError;
 import at.asitplus.attestation.supreme.SupremeConfiguration;
-import at.asitplus.signum.indispensable.CryptoPublicKey;
+import at.asitplus.signum.indispensable.PublicKey;
 import at.asitplus.signum.indispensable.pki.Certificate;
 import java.time.Clock;
 import java.time.Duration;
@@ -87,7 +87,7 @@ public final class SupremeVerifierJavaApi {
             @Override
             public void onAttestationSuccess(
                     /*(4)!*/AttestationResult.Verified verified,
-                    CryptoPublicKey publicKey
+                    PublicKey publicKey
             ) {
                 // Record successful attestation metrics here.
             }

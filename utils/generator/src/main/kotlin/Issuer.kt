@@ -31,6 +31,7 @@ import at.asitplus.awesn1.crypto.pki.X500AttributeTypeAndValue
 import at.asitplus.awesn1.encoding.parse
 import at.asitplus.awesn1.toBigInteger
 import at.asitplus.signum.dsl.ec
+import at.asitplus.signum.indispensable.PrivateKey
 import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.fromAsn1
 import at.asitplus.signum.indispensable.pki.CertificateExtension
@@ -215,7 +216,7 @@ private fun randomHex() = Random.nextBytes(16).toHexString()
 
 private fun RootSpec.load(): CertifiedKey {
     val certificate = Certificate.fromAsn1(certificatePem)
-    val key = CryptoPrivateKey.fromAsn1(privateKeyPkcs8Pem) as? CryptoPrivateKey.WithPublicKey
+    val key = PrivateKey.fromAsn1(privateKeyPkcs8Pem) as? PrivateKey.WithPublicKey
         ?: error("Imported root private key carries no public key")
     require(key.publicKey == certificate.publicKey) {
         "Imported root certificate does not match its private key"

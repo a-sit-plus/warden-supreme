@@ -15,6 +15,7 @@ import at.asitplus.attestation.generator.mangle
 import at.asitplus.signum.indispensable.CryptoPrivateKey
 import kotlinx.coroutines.runBlocking
 import at.asitplus.awesn1.encoding.Asn1
+import at.asitplus.signum.indispensable.PrivateKey
 import at.asitplus.signum.indispensable.misc.BitLength
 import at.asitplus.signum.indispensable.toJcaCertificateBlocking
 import at.asitplus.signum.indispensable.toJcaPrivateKey
@@ -255,6 +256,6 @@ private fun at.asitplus.signum.indispensable.pki.Certificate.toJava(): X509Certi
 private fun CertifiedKey.toJavaKeyPair(): KeyPair = signer.toJavaKeyPair()
 
 private fun Signer.WithExportableKey.toJavaKeyPair(): KeyPair = runBlocking {
-    val privateKey = exportPrivateKey() as CryptoPrivateKey.WithPublicKey
+    val privateKey = exportPrivateKey()
     KeyPair(publicKey.toJcaPublicKey(), privateKey.toJcaPrivateKey())
 }

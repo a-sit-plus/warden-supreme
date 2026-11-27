@@ -12,6 +12,7 @@ import at.asitplus.awesn1.*
 import at.asitplus.awesn1.encoding.*
 import at.asitplus.signum.indispensable.io.ByteArrayBase64Serializer
 import at.asitplus.signum.indispensable.io.X509CertificateBase64Serializer
+import at.asitplus.signum.indispensable.toPublicKey
 import ch.veehait.devicecheck.appattest.attestation.ValidatedAttestation
 import ch.veehait.devicecheck.appattest.common.AuthenticatorData
 import ch.veehait.devicecheck.appattest.common.AuthenticatorDataFlag
@@ -227,16 +228,16 @@ object ValidatedAttestationSerializer : KSerializer<ValidatedAttestation> {
     }
 }
 
-internal fun PublicKey.transcodeToAllFormats() = toCryptoPublicKey().let {
+internal fun PublicKey.transcodeToAllFormats() = toPublicKey().let {
     when (it) {
-        is CryptoPublicKey.EC -> listOf(
+        is EcdsaPublicKey -> listOf(
             it.asn1.toDer(),
             it.toAnsiX963Encoded(useCompressed = it.preferCompressedRepresentation),
             it.toAnsiX963Encoded(useCompressed = !it.preferCompressedRepresentation),
             it.didEncoded.encodeToByteArray()
         )
 
-        is CryptoPublicKey.RSA -> listOf(
+        is RsaPublicKey -> listOf(
             it.asn1.toDer(),
             it.iosEncoded,
             it.didEncoded.encodeToByteArray()

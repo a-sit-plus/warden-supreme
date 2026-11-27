@@ -23,6 +23,7 @@ import at.asitplus.signum.indispensable.CryptoPublicKey
 import at.asitplus.signum.indispensable.CryptoSignature
 import at.asitplus.signum.indispensable.IosHomebrewAttestation
 import at.asitplus.awesn1.Asn1String
+import at.asitplus.signum.indispensable.PublicKey
 import at.asitplus.signum.indispensable.asn1
 import at.asitplus.signum.indispensable.jsonEncoded
 import at.asitplus.signum.indispensable.pki.CertificationRequest
@@ -30,7 +31,11 @@ import at.asitplus.signum.indispensable.pki.CsrAttribute
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
 import at.asitplus.signum.indispensable.sign.EcdsaAlgorithm
+import at.asitplus.signum.indispensable.sign.EcdsaPublicKey
+import at.asitplus.signum.indispensable.sign.EcdsaSignature
 import at.asitplus.signum.indispensable.sign.RsaAlgorithm
+import at.asitplus.signum.indispensable.sign.RsaPublicKey
+import at.asitplus.signum.indispensable.sign.RsaSignature
 import at.asitplus.signum.indispensable.pki.Certificate as SignumX509Certificate
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
@@ -168,8 +173,8 @@ internal fun publicKeyForAttestation(attestationJson: String): CryptoPublicKey {
 internal fun keyPairForAttestation(attestationJson: String): KeyPair {
     val publicKey = publicKeyForAttestation(attestationJson)
     return when (publicKey) {
-        is CryptoPublicKey.EC -> generateEcKeyPair()
-        is CryptoPublicKey.RSA -> generateRsaKeyPair(publicKey.bits.number.toInt())
+        is EcdsaPublicKey -> generateEcKeyPair()
+        is RsaPublicKey -> generateRsaKeyPair(publicKey.bits.number.toInt())
         else -> error("Unsupported public key: ${publicKey::class.simpleName}")
     }
 }
@@ -244,8 +249,8 @@ internal fun createCsrWithSubject(
         alg to signatureBytes
     }
     val cryptoSignature = when (sigAlg) {
-        EcdsaAlgorithm.withSHA256 -> CryptoSignature.EC.fromRawSignatureValue(signature)
-        RsaAlgorithm.withSHA256andPKCS1Padding -> CryptoSignature.RSA(signature)
+        EcdsaAlgorithm.withSHA256 -> EcdsaSignature.fromRawSignatureValue(signature)
+        RsaAlgorithm.withSHA256andPKCS1Padding -> RsaSignature(signature)
         else -> error("Unsupported signature algorithm: $sigAlg")
     }
     return CertificationRequest(tbsCsr, sigAlg, cryptoSignature)

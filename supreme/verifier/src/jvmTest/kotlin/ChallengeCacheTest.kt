@@ -4,10 +4,11 @@ package at.asitplus.attestation.supreme
 import at.asitplus.attestation.FixedTimeClock
 import at.asitplus.catching
 import at.asitplus.signum.indispensable.CryptoSignature
-import at.asitplus.signum.indispensable.sign.SignatureAlgorithm
 import at.asitplus.signum.indispensable.pki.CertificationRequest
 import at.asitplus.signum.indispensable.pki.RelativeDistinguishedName
 import at.asitplus.signum.indispensable.pki.TbsCertificationRequest
+import at.asitplus.signum.indispensable.sign.RsaAlgorithm
+import at.asitplus.signum.indispensable.sign.RsaSignature
 import at.asitplus.signum.indispensable.toCryptoPublicKey
 import de.infix.testBalloon.framework.core.TestConfig
 import de.infix.testBalloon.framework.core.testScope
@@ -38,8 +39,8 @@ private fun csrForChallenge(challenge: AttestationChallenge): CertificationReque
     )
     return CertificationRequest(
         tbsCsr = tbsCsr,
-        signatureAlgorithm = SignatureAlgorithm.RSAwithSHA256andPSSPadding,
-        signatureValue = CryptoSignature.RSA(byteArrayOf(0x01)),
+        signatureAlgorithm = RsaAlgorithm.withSHA256andPSSPadding,
+        signatureValue = RsaSignature(byteArrayOf(0x01)),
     )
 }
 

@@ -8,7 +8,7 @@ import at.asitplus.attestation.supreme.AttestationResponse;
 import at.asitplus.attestation.supreme.JavaAttestationVerifier;
 import at.asitplus.attestation.supreme.PreAttestationError;
 import at.asitplus.attestation.supreme.SupremeConfiguration;
-import at.asitplus.signum.indispensable.CryptoPublicKey;
+import at.asitplus.signum.indispensable.PublicKey;
 import at.asitplus.signum.indispensable.pki.Certificate;
 
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public final class JavaAttestationVerifierTestApi {
         private AttestationResult.Verified issuerVerified;
         private AttestationProof issuerProof;
         private AttestationResult.Verified successfulVerified;
-        private CryptoPublicKey successfulPublicKey;
+        private PublicKey successfulPublicKey;
 
         @Override
         public void onChallengeValidated(AttestationChallenge challenge, AttestationProof proof) {
@@ -97,7 +97,7 @@ public final class JavaAttestationVerifierTestApi {
         @Override
         public void onAttestationSuccess(
                 AttestationResult.Verified verified,
-                CryptoPublicKey publicKey
+                PublicKey publicKey
         ) {
             calls.add("success");
             successfulVerified = verified;
@@ -210,7 +210,7 @@ public final class JavaAttestationVerifierTestApi {
             return successfulVerified;
         }
 
-        public CryptoPublicKey getSuccessfulPublicKey() {
+        public PublicKey getSuccessfulPublicKey() {
             return successfulPublicKey;
         }
     }

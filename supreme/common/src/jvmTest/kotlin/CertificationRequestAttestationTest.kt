@@ -10,7 +10,9 @@ import at.asitplus.catching
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.*
 import at.asitplus.signum.indispensable.pki.*
-import at.asitplus.signum.indispensable.sign.SignatureAlgorithm
+import at.asitplus.signum.indispensable.sign.EcdsaPublicKey
+import at.asitplus.signum.indispensable.sign.RsaAlgorithm
+import at.asitplus.signum.indispensable.sign.RsaSignature
 import at.asitplus.testballoon.matrix.matrixSuite
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -21,7 +23,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
 private val proofOid = ObjectIdentifier("1.3.6.1.4.1.60387.99")
-private val publicKey = CryptoPublicKey.EC.fromUncompressed(
+private val publicKey = EcdsaPublicKey.fromUncompressed(
     ECCurve.SECP_256_R_1,
     "6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296".hexToByteArray(),
     "4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5".hexToByteArray(),
@@ -113,8 +115,8 @@ val CertificationRequestAttestationTest by matrixSuite {
         val tbsCsr = TbsCertificationRequest(Name.EMPTY, publicKey, attributes = emptyList())
         val csr = CertificationRequest(
             tbsCsr,
-            SignatureAlgorithm.RSAwithSHA256andPKCS1Padding,
-            CryptoSignature.RSA(byteArrayOf(1)),
+            RsaAlgorithm.withSHA256andPKCS1Padding,
+            RsaSignature(byteArrayOf(1)),
         )
 
         AttestationProof.decodeFromDer(tbsCsr.asn1.toDer()).getOrThrow()
@@ -148,8 +150,8 @@ val CertificationRequestAttestationTest by matrixSuite {
         val tbsCsr = TbsCertificationRequest(Name.EMPTY, publicKey, attributes = listOf(attribute))
         val csr = CertificationRequest(
             tbsCsr,
-            SignatureAlgorithm.RSAwithSHA256andPKCS1Padding,
-            CryptoSignature.RSA(byteArrayOf(1))
+            RsaAlgorithm.withSHA256andPKCS1Padding,
+            RsaSignature(byteArrayOf(1))
         )
 
         listOf(AttestationProof.Hashed(tbsCsr), AttestationProof.Signed(csr)).forEach { received ->

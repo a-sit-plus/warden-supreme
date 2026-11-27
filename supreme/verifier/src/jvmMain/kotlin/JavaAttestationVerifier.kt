@@ -4,6 +4,7 @@ import at.asitplus.attestation.AttestationResult
 import at.asitplus.attestation.WardenDebugAttestationStatement
 import at.asitplus.catchingUnwrapped
 import at.asitplus.signum.indispensable.CryptoPublicKey
+import at.asitplus.signum.indispensable.PublicKey
 import at.asitplus.signum.indispensable.pki.Certificate
 import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.CoroutineScope
@@ -54,7 +55,7 @@ internal class JavaAttestationVerifier internal constructor(configuration: Supre
             debugInfo: WardenDebugAttestationStatement,
         ): String?
 
-        fun onAttestationSuccess(verified: AttestationResult.Verified, publicKey: CryptoPublicKey)
+        fun onAttestationSuccess(verified: AttestationResult.Verified, publicKey: PublicKey)
 
         fun additionalVerifications(
             challenge: AttestationChallenge,
